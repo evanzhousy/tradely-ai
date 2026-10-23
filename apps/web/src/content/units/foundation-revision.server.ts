@@ -104,15 +104,21 @@ function contractsCase(variant: number): TeachingCase {
 				),
 			],
 		};
-	const different = variant === 3;
-	const count = different ? 2 : 7;
-	const price = different ? 3 : 1.5;
-	const multiplier = different ? 100 : 10;
+	/** Case 3 shows B from the previous day's data: a second date that is when B was seen, not a term. */
+	const previousDay = variant === 3;
+	const count = previousDay ? 2 : 7;
+	const price = previousDay ? 3 : 1.5;
+	const multiplier = previousDay ? 100 : 10;
 	return {
-		brief: t(
-			`In this exercise each contract delivers ${multiplier} shares, and prices are in dollars per share. Record A is an ALFA 105 call expiring October 16, 2026, seen at 10:30 ET. Record B ${different ? "has the same terms, except that it is a put" : "has the same underlying, type, strike, expiry and terms, seen at 10:31 ET at a different price"}. You bought record A; the purchase is below.`,
-			`在本练习中，每张合约交付 ${multiplier} 股，价格按每股美元计。记录 A 是 2026 年 10 月 16 日到期的 ALFA 105 看涨，10:30 ET 观测到。记录 B ${different ? "条款相同，只是它是看跌" : "的标的、类型、行权价、到期日和条款都相同，在 10:31 ET 观测到，价格不同"}。你买入的是记录 A，成交见下方。`,
-		),
+		brief: previousDay
+			? t(
+					`In this exercise each contract delivers ${multiplier} shares, and prices are in dollars per share. Record A is an ALFA 105 call expiring October 16, 2026, seen at 10:30 ET on October 2. Record B is an ALFA 105 call expiring October 16, 2026, with the same terms, taken from October 1's closing data at a different price. You bought record A; the purchase is below.`,
+					`在本练习中，每张合约交付 ${multiplier} 股，价格按每股美元计。记录 A 是 2026 年 10 月 16 日到期的 ALFA 105 看涨，于 10 月 2 日 10:30 ET 观测到。记录 B 是 2026 年 10 月 16 日到期的 ALFA 105 看涨，条款相同，取自 10 月 1 日的收盘数据，价格不同。你买入的是记录 A，成交见下方。`,
+				)
+			: t(
+					`In this exercise each contract delivers ${multiplier} shares, and prices are in dollars per share. Record A is an ALFA 105 call expiring October 16, 2026, seen at 10:30 ET. Record B has the same underlying, type, strike, expiry and terms, seen at 10:31 ET at a different price. You bought record A; the purchase is below.`,
+					`在本练习中，每张合约交付 ${multiplier} 股，价格按每股美元计。记录 A 是 2026 年 10 月 16 日到期的 ALFA 105 看涨，10:30 ET 观测到。记录 B 的标的、类型、行权价、到期日和条款都相同，在 10:31 ET 观测到，价格不同。你买入的是记录 A，成交见下方。`,
+				),
 		facts: [
 			f("Purchased contracts", "买入张数", String(count)),
 			f("Execution price (USD per share)", "成交价（美元/股）", String(price)),
@@ -124,25 +130,26 @@ function contractsCase(variant: number): TeachingCase {
 				"Are A and B the same contract?",
 				"A 和 B 是同一份合约吗？",
 				identityChoices({
-					same: [
-						"B is a put and A a call. Ticker, strike and expiry match, but the right differs, so they're different contracts.",
-						"B 是看跌，A 是看涨。代码、行权价和到期日相同，但权利不同，所以是不同的合约。",
-					],
-					different: [
-						"Every defining term matches. A different time and price are two observations of one contract, not a second contract.",
-						"每一项定义条款都相同。时间和价格不同，只是对同一份合约的两次观测，而不是另一份合约。",
-					],
+					different: previousDay
+						? [
+								"The two dates aren't the same kind. Both records expire October 16, 2026; October 1 is only the day B's price was taken, so B is another observation of the same contract.",
+								"这两个日期不是一回事。两条记录都在 2026 年 10 月 16 日到期；10 月 1 日只是记录 B 价格的日期，所以 B 是对同一份合约的另一次观测。",
+							]
+						: [
+								"Every defining term matches. A different time and price are two observations of one contract, not a second contract.",
+								"每一项定义条款都相同。时间和价格不同，只是对同一份合约的两次观测，而不是另一份合约。",
+							],
 					unknown: [
 						"Nothing is missing: both records state every defining term, so you can compare them directly.",
 						"没有缺失：两条记录都写明了全部定义条款，可以直接比较。",
 					],
 				}),
-				different ? "different" : "same",
-				different
-					? "A call and a put give different rights, so they're different contracts even with the same ticker, strike and expiry."
+				"same",
+				previousDay
+					? "Both expire October 16, 2026. October 1 is the day B's price was taken, not a term of the contract, so A and B are one contract seen on two days."
 					: "Every defining term matches. What changed is the time it was seen and its price, not the contract.",
-				different
-					? "看涨和看跌赋予不同的权利，所以即使代码、行权价和到期日都相同，也是不同的合约。"
+				previousDay
+					? "两者都在 2026 年 10 月 16 日到期。10 月 1 日只是 B 的价格被记录的日期，不是合约条款，所以 A 和 B 是同一份合约在两天里的观测。"
 					: "每一项定义条款都相同。变化的是观测时间和价格，而不是合约本身。",
 			),
 			n(
@@ -494,10 +501,18 @@ function settlementCase(variant: number): TeachingCase {
 				),
 			],
 		};
+	/** Case 2: the official value lands above the puts' strike while the last price shown is below it. */
+	const strike = 4000;
+	const official = 4010;
+	const last = 3980;
+	const perPoint = 50;
+	const count = 2;
+	const points = (value: number) => value.toLocaleString("en-US");
+	const lastPays = Math.max(strike - last, 0) * perPoint * count;
 	return {
 		brief: t(
-			"You hold 2 cash-settled IDX puts with a 4,000 strike, paying $50 per index point per contract. The official settlement value is 3,990, though the index last showed 3,980. Ignore the premium and fees.",
-			"你持有 2 张行权价 4,000 的 IDX 现金结算看跌，每张每个指数点 $50。官方结算值为 3,990，而指数最近显示为 3,980。不计权利金和费用。",
+			`You hold ${count} cash-settled IDX puts with a ${points(strike)} strike, paying $${perPoint} per index point per contract. The official settlement value is ${points(official)}, though the index last showed ${points(last)}. Ignore the premium and fees.`,
+			`你持有 ${count} 张行权价 ${points(strike)} 的 IDX 现金结算看跌，每张每个指数点 $${perPoint}。官方结算值为 ${points(official)}，而指数最近显示为 ${points(last)}。不计权利金和费用。`,
 		),
 		questions: [
 			c(
@@ -507,15 +522,15 @@ function settlementCase(variant: number): TeachingCase {
 				[
 					[
 						"official",
-						"The official settlement value, 3,990",
-						"官方结算值 3,990",
+						`The official settlement value, ${points(official)}`,
+						`官方结算值 ${points(official)}`,
 					],
 					[
 						"last",
-						"The last price shown, 3,980",
-						"最近显示的价格 3,980",
-						"3,980 is the last level shown, but the terms settle on the official value, 3,990. A more recent-looking price can't replace it.",
-						"3,980 是最近显示的点位，但条款按官方结算值 3,990 结算。看起来更新的价格也不能替代它。",
+						`The last price shown, ${points(last)}`,
+						`最近显示的价格 ${points(last)}`,
+						`${points(last)} is the last level shown, but the terms settle on the official value, ${points(official)}. A more recent-looking price can't replace it.`,
+						`${points(last)} 是最近显示的点位，但条款按官方结算值 ${points(official)} 结算。看起来更新的价格也不能替代它。`,
 					],
 				],
 				"official",
@@ -526,29 +541,40 @@ function settlementCase(variant: number): TeachingCase {
 				"cash",
 				"What cash do the two puts pay in total?",
 				"两张看跌一共支付多少现金？",
-				1000,
+				Math.max(strike - official, 0) * perPoint * count,
 				"dollars",
 				"美元",
-				"max(4,000 − 3,990, 0) × $50 × 2 = $1,000. A put subtracts the other way round from a call.",
-				"max(4,000 − 3,990, 0) × $50 × 2 = $1,000。看跌的相减方向与看涨相反。",
+				`max(${points(strike)} − ${points(official)}, 0) × $${perPoint} × ${count} = $0. A put subtracts the other way round from a call, and against the official value these puts are out of the money. The ${points(last)} last price would have paid ${money(lastPays, 0)}, but it isn't the value the terms name.`,
+				`max(${points(strike)} − ${points(official)}, 0) × $${perPoint} × ${count} = $0。看跌的相减方向与看涨相反，按官方结算值这些看跌是虚值。按最近显示的 ${points(last)} 本可支付 ${money(lastPays, 0)}，但它不是条款指定的数值。`,
 			),
 			c(
 				"delivery",
 				"What do you receive?",
 				"你会收到什么？",
 				[
-					["cash", "Cash; no shares of the index", "现金；不交付指数的股票"],
+					[
+						"cash",
+						"Cash; no shares of the index",
+						"现金；不交付指数的股票",
+						`The puts pay cash only if the official value is below the strike. At ${points(official)} it's above ${points(strike)}, so they pay nothing. Only the ${points(last)} last price would have paid, and it isn't the value the terms name.`,
+						`只有官方结算值低于行权价，这些看跌才会支付现金。${points(official)} 高于 ${points(strike)}，所以它们什么也不付。只有按最近显示的 ${points(last)} 才会有支付，而它不是条款指定的数值。`,
+					],
 					[
 						"shares",
 						"100 shares for each contract",
 						"每张 100 股",
-						"The $50 a point converts index points into dollars. An index has no shares to deliver, so these puts pay cash.",
-						"每点 $50 是把指数点换算成美元。指数没有可交付的股票，所以这些看跌支付现金。",
+						`The $${perPoint} a point converts index points into dollars, and an index has no shares to deliver. At ${points(official)} these puts are out of the money anyway, so nothing is paid or delivered.`,
+						`每点 $${perPoint} 是把指数点换算成美元，指数也没有可交付的股票。而且在 ${points(official)} 时这些看跌是虚值，什么也不会支付或交付。`,
+					],
+					[
+						"nothing",
+						"Nothing: the puts expire worthless",
+						"什么也没有：看跌到期作废",
 					],
 				],
-				"cash",
-				"The $50 per point turns index points into dollars; it doesn't mean shares are delivered.",
-				"每点 $50 是把指数点换算成美元，并不表示要交付股票。",
+				"nothing",
+				`Against the official ${points(official)}, above the ${points(strike)} strike, the puts are out of the money: they expire worthless and pay nothing. A cash-settled option pays only how far it is in the money at the official value.`,
+				`按官方结算值 ${points(official)}，高于 ${points(strike)} 的行权价，这些看跌是虚值：到期作废，什么也不支付。现金结算期权只按官方结算值下的实值幅度支付。`,
 			),
 		],
 	};
@@ -936,7 +962,8 @@ const v5Revisions: Record<string, (unit: TeachingUnit) => TeachingUnit> = {
 	}),
 	"expiration-settlement": (unit) => ({
 		...unit,
-		version: 5,
+		// 6: case 2's settlement value finishes the puts out of the money (version 5 is archived).
+		version: 6,
 		conceptLab: unit.conceptLab && {
 			...unit.conceptLab,
 			intro: t(

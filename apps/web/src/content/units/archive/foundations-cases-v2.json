@@ -1,0 +1,2446 @@
+[
+	{
+		"id": "quotes-orders-trades-practice-1",
+		"lessonId": "quotes-orders-trades",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "quotes-orders-trades",
+				"brief": {
+					"en": "Read a quote against its last trade, watch orders change the book without printing, and combine three venues into one best quote.",
+					"zh": "对照最新成交读懂报价，观察订单如何改变订单簿却不产生成交记录，再把三个场所合成一个最优报价。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "The size on a quote and the size that traded are different numbers. Working out a midpoint doesn't mean anyone traded there.",
+					"zh": "报价上的数量和成交的数量是两个不同的数。算出中点，并不代表有人在那里成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call is quoted $2.00 bid and $2.10 ask. Then a seller cancels an offer that never filled, and no trade message follows.",
+					"zh": "某 ALFA 看涨报价为买价 $2.00、卖价 $2.10。随后一位卖方撤销了一张从未成交的卖单，之后没有任何成交消息。"
+				},
+				"questions": [
+					{
+						"id": "midpoint",
+						"prompt": {
+							"en": "What is the quote's midpoint, per share?",
+							"zh": "这个报价的中点是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.05"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "($2.00 + $2.10) ÷ 2 = $2.05. A midpoint is a reference price; nobody has traded there.",
+							"zh": "($2.00 + $2.10) ÷ 2 = $2.05。中点只是参考价格，没有人在那里成交。"
+						}
+					},
+					{
+						"id": "event",
+						"prompt": {
+							"en": "What does the cancellation tell you?",
+							"zh": "这次撤单能说明什么？"
+						},
+						"choices": [
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer took the offer",
+									"zh": "有买方吃掉了这张卖单"
+								},
+								"why": {
+									"en": "Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
+									"zh": "如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。"
+								}
+							},
+							{
+								"id": "trade",
+								"label": {
+									"en": "The cancelled contracts traded",
+									"zh": "被撤销的合约成交了"
+								},
+								"why": {
+									"en": "A cancel removes an order from the book. Only a trade message means contracts changed hands, and none followed.",
+									"zh": "撤单只是把一张订单从订单簿移走。只有成交消息才表示合约换手，而之后并没有成交消息。"
+								}
+							},
+							{
+								"id": "quote",
+								"label": {
+									"en": "An order left the book; nothing traded",
+									"zh": "一张订单离开了订单簿；没有成交"
+								}
+							}
+						],
+						"accepted": ["quote"],
+						"explanation": {
+							"en": "A cancel is an order event. With no trade message, nothing traded.",
+							"zh": "撤单是订单事件。没有成交消息，就没有成交。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The size on a quote and the size that traded are different numbers. Working out a midpoint doesn't mean anyone traded there.",
+					"zh": "报价上的数量和成交的数量是两个不同的数。算出中点，并不代表有人在那里成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call is quoted $3.20 bid and $3.40 ask. Then a seller cancels an offer that never filled, and no trade message follows.",
+					"zh": "某 ALFA 看涨报价为买价 $3.20、卖价 $3.40。随后一位卖方撤销了一张从未成交的卖单，之后没有任何成交消息。"
+				},
+				"questions": [
+					{
+						"id": "midpoint",
+						"prompt": {
+							"en": "What is the quote's midpoint, per share?",
+							"zh": "这个报价的中点是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["3.3000000000000003"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "($3.20 + $3.40) ÷ 2 = $3.30. A midpoint is a reference price; nobody has traded there.",
+							"zh": "($3.20 + $3.40) ÷ 2 = $3.30。中点只是参考价格，没有人在那里成交。"
+						}
+					},
+					{
+						"id": "event",
+						"prompt": {
+							"en": "What does the cancellation tell you?",
+							"zh": "这次撤单能说明什么？"
+						},
+						"choices": [
+							{
+								"id": "trade",
+								"label": {
+									"en": "The cancelled contracts traded",
+									"zh": "被撤销的合约成交了"
+								},
+								"why": {
+									"en": "A cancel removes an order from the book. Only a trade message means contracts changed hands, and none followed.",
+									"zh": "撤单只是把一张订单从订单簿移走。只有成交消息才表示合约换手，而之后并没有成交消息。"
+								}
+							},
+							{
+								"id": "quote",
+								"label": {
+									"en": "An order left the book; nothing traded",
+									"zh": "一张订单离开了订单簿；没有成交"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer took the offer",
+									"zh": "有买方吃掉了这张卖单"
+								},
+								"why": {
+									"en": "Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
+									"zh": "如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。"
+								}
+							}
+						],
+						"accepted": ["quote"],
+						"explanation": {
+							"en": "A cancel is an order event. With no trade message, nothing traded.",
+							"zh": "撤单是订单事件。没有成交消息，就没有成交。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The size on a quote and the size that traded are different numbers. Working out a midpoint doesn't mean anyone traded there.",
+					"zh": "报价上的数量和成交的数量是两个不同的数。算出中点，并不代表有人在那里成交。"
+				}
+			}
+		]
+	},
+	{
+		"id": "quotes-orders-trades-practice-2",
+		"lessonId": "quotes-orders-trades",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "quotes-orders-trades",
+				"brief": {
+					"en": "Read a quote against its last trade, watch orders change the book without printing, and combine three venues into one best quote.",
+					"zh": "对照最新成交读懂报价，观察订单如何改变订单簿却不产生成交记录，再把三个场所合成一个最优报价。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "The size on a quote and the size that traded are different numbers. Working out a midpoint doesn't mean anyone traded there.",
+					"zh": "报价上的数量和成交的数量是两个不同的数。算出中点，并不代表有人在那里成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call is quoted $2.00 bid and $2.10 ask. Then a seller cancels an offer that never filled, and no trade message follows.",
+					"zh": "某 ALFA 看涨报价为买价 $2.00、卖价 $2.10。随后一位卖方撤销了一张从未成交的卖单，之后没有任何成交消息。"
+				},
+				"questions": [
+					{
+						"id": "midpoint",
+						"prompt": {
+							"en": "What is the quote's midpoint, per share?",
+							"zh": "这个报价的中点是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.05"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "($2.00 + $2.10) ÷ 2 = $2.05. A midpoint is a reference price; nobody has traded there.",
+							"zh": "($2.00 + $2.10) ÷ 2 = $2.05。中点只是参考价格，没有人在那里成交。"
+						}
+					},
+					{
+						"id": "event",
+						"prompt": {
+							"en": "What does the cancellation tell you?",
+							"zh": "这次撤单能说明什么？"
+						},
+						"choices": [
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer took the offer",
+									"zh": "有买方吃掉了这张卖单"
+								},
+								"why": {
+									"en": "Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
+									"zh": "如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。"
+								}
+							},
+							{
+								"id": "trade",
+								"label": {
+									"en": "The cancelled contracts traded",
+									"zh": "被撤销的合约成交了"
+								},
+								"why": {
+									"en": "A cancel removes an order from the book. Only a trade message means contracts changed hands, and none followed.",
+									"zh": "撤单只是把一张订单从订单簿移走。只有成交消息才表示合约换手，而之后并没有成交消息。"
+								}
+							},
+							{
+								"id": "quote",
+								"label": {
+									"en": "An order left the book; nothing traded",
+									"zh": "一张订单离开了订单簿；没有成交"
+								}
+							}
+						],
+						"accepted": ["quote"],
+						"explanation": {
+							"en": "A cancel is an order event. With no trade message, nothing traded.",
+							"zh": "撤单是订单事件。没有成交消息，就没有成交。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The size on a quote and the size that traded are different numbers. Working out a midpoint doesn't mean anyone traded there.",
+					"zh": "报价上的数量和成交的数量是两个不同的数。算出中点，并不代表有人在那里成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call is quoted $4.10 bid and $4.50 ask. Then a seller cancels an offer that never filled, and no trade message follows.",
+					"zh": "某 ALFA 看涨报价为买价 $4.10、卖价 $4.50。随后一位卖方撤销了一张从未成交的卖单，之后没有任何成交消息。"
+				},
+				"questions": [
+					{
+						"id": "midpoint",
+						"prompt": {
+							"en": "What is the quote's midpoint, per share?",
+							"zh": "这个报价的中点是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["4.3"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "($4.10 + $4.50) ÷ 2 = $4.30. A midpoint is a reference price; nobody has traded there.",
+							"zh": "($4.10 + $4.50) ÷ 2 = $4.30。中点只是参考价格，没有人在那里成交。"
+						}
+					},
+					{
+						"id": "event",
+						"prompt": {
+							"en": "What does the cancellation tell you?",
+							"zh": "这次撤单能说明什么？"
+						},
+						"choices": [
+							{
+								"id": "quote",
+								"label": {
+									"en": "An order left the book; nothing traded",
+									"zh": "一张订单离开了订单簿；没有成交"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer took the offer",
+									"zh": "有买方吃掉了这张卖单"
+								},
+								"why": {
+									"en": "Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
+									"zh": "如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。"
+								}
+							},
+							{
+								"id": "trade",
+								"label": {
+									"en": "The cancelled contracts traded",
+									"zh": "被撤销的合约成交了"
+								},
+								"why": {
+									"en": "A cancel removes an order from the book. Only a trade message means contracts changed hands, and none followed.",
+									"zh": "撤单只是把一张订单从订单簿移走。只有成交消息才表示合约换手，而之后并没有成交消息。"
+								}
+							}
+						],
+						"accepted": ["quote"],
+						"explanation": {
+							"en": "A cancel is an order event. With no trade message, nothing traded.",
+							"zh": "撤单是订单事件。没有成交消息，就没有成交。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The size on a quote and the size that traded are different numbers. Working out a midpoint doesn't mean anyone traded there.",
+					"zh": "报价上的数量和成交的数量是两个不同的数。算出中点，并不代表有人在那里成交。"
+				}
+			}
+		]
+	},
+	{
+		"id": "execution-counterparties-practice-1",
+		"lessonId": "execution-counterparties",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "execution-counterparties",
+				"brief": {
+					"en": "Watch your order meet Ben's resting offer in one trade, send a limit order through the book, and see what a print can't tell you.",
+					"zh": "观察你的订单与 Ben 的挂单撮合成一笔成交，把限价单送进订单簿，再看看成交记录无法告诉你什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Every trade has a seller, but that doesn't mean a seller started it. Two parties, one trade: count it once.",
+					"zh": "每笔成交都有卖方，但这不代表是卖方发起的。两方参与，一笔成交：只计一次。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You send a limit buy for 40 ALFA calls at $2.10. The ask is $2.10, so it can trade at once, but only 30 contracts are offered there. Nobody adds, cancels or sends other orders.",
+					"zh": "你发出 40 张 ALFA 看涨、限价 $2.10 的买单。卖价是 $2.10，所以可以立即成交，但那里只挂着 30 张。没有人新增、撤销或发出其他订单。"
+				},
+				"questions": [
+					{
+						"id": "unfilled",
+						"prompt": {
+							"en": "How many of your contracts can't fill right away?",
+							"zh": "你的订单中有多少张不能立即成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["10"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "40 − 30 = 10. They wait in the book at your limit until someone sells there.",
+							"zh": "40 − 30 = 10。它们按你的限价留在订单簿中，等有人在那里卖出。"
+						}
+					},
+					{
+						"id": "aggressor",
+						"prompt": {
+							"en": "Who started the trade?",
+							"zh": "这笔成交是谁发起的？"
+						},
+						"choices": [
+							{
+								"id": "both",
+								"label": {
+									"en": "Neither: count the buyer and the seller as two prints",
+									"zh": "都不是：把买方和卖方算作两笔成交"
+								},
+								"why": {
+									"en": "One trade has two sides but prints once. Your incoming order started it; the resting order is the other side of the same trade.",
+									"zh": "一笔成交有两方，但只记录一次。你的订单发起了它，挂单是同一笔成交的另一方。"
+								}
+							},
+							{
+								"id": "seller",
+								"label": {
+									"en": "The resting seller, who supplied the offer",
+									"zh": "挂单的卖方，因为卖单是他挂的"
+								},
+								"why": {
+									"en": "The resting seller only supplied the offer. Your incoming buy asked for an immediate fill, so you started the trade.",
+									"zh": "挂单的卖方只是提供了卖单。你的买单要求立即成交，所以是你发起的。"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "You, the incoming buyer; both sides trade at the ask",
+									"zh": "你，主动到来的买方；双方都在卖价成交"
+								}
+							}
+						],
+						"accepted": ["buyer"],
+						"explanation": {
+							"en": "Your incoming order asked for an immediate fill, so you started it. The resting order on the other side takes part in the same single trade.",
+							"zh": "你的订单要求立即成交，所以是你发起的。对面的挂单参与的是同一笔成交。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Every trade has a seller, but that doesn't mean a seller started it. Two parties, one trade: count it once.",
+					"zh": "每笔成交都有卖方，但这不代表是卖方发起的。两方参与，一笔成交：只计一次。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You send a limit buy for 40 ALFA calls at $2.10. The ask is $2.10, so it can trade at once, but only 25 contracts are offered there. Nobody adds, cancels or sends other orders.",
+					"zh": "你发出 40 张 ALFA 看涨、限价 $2.10 的买单。卖价是 $2.10，所以可以立即成交，但那里只挂着 25 张。没有人新增、撤销或发出其他订单。"
+				},
+				"questions": [
+					{
+						"id": "unfilled",
+						"prompt": {
+							"en": "How many of your contracts can't fill right away?",
+							"zh": "你的订单中有多少张不能立即成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["15"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "40 − 25 = 15. They wait in the book at your limit until someone sells there.",
+							"zh": "40 − 25 = 15。它们按你的限价留在订单簿中，等有人在那里卖出。"
+						}
+					},
+					{
+						"id": "aggressor",
+						"prompt": {
+							"en": "Who started the trade?",
+							"zh": "这笔成交是谁发起的？"
+						},
+						"choices": [
+							{
+								"id": "seller",
+								"label": {
+									"en": "The resting seller, who supplied the offer",
+									"zh": "挂单的卖方，因为卖单是他挂的"
+								},
+								"why": {
+									"en": "The resting seller only supplied the offer. Your incoming buy asked for an immediate fill, so you started the trade.",
+									"zh": "挂单的卖方只是提供了卖单。你的买单要求立即成交，所以是你发起的。"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "You, the incoming buyer; both sides trade at the ask",
+									"zh": "你，主动到来的买方；双方都在卖价成交"
+								}
+							},
+							{
+								"id": "both",
+								"label": {
+									"en": "Neither: count the buyer and the seller as two prints",
+									"zh": "都不是：把买方和卖方算作两笔成交"
+								},
+								"why": {
+									"en": "One trade has two sides but prints once. Your incoming order started it; the resting order is the other side of the same trade.",
+									"zh": "一笔成交有两方，但只记录一次。你的订单发起了它，挂单是同一笔成交的另一方。"
+								}
+							}
+						],
+						"accepted": ["buyer"],
+						"explanation": {
+							"en": "Your incoming order asked for an immediate fill, so you started it. The resting order on the other side takes part in the same single trade.",
+							"zh": "你的订单要求立即成交，所以是你发起的。对面的挂单参与的是同一笔成交。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Every trade has a seller, but that doesn't mean a seller started it. Two parties, one trade: count it once.",
+					"zh": "每笔成交都有卖方，但这不代表是卖方发起的。两方参与，一笔成交：只计一次。"
+				}
+			}
+		]
+	},
+	{
+		"id": "execution-counterparties-practice-2",
+		"lessonId": "execution-counterparties",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "execution-counterparties",
+				"brief": {
+					"en": "Watch your order meet Ben's resting offer in one trade, send a limit order through the book, and see what a print can't tell you.",
+					"zh": "观察你的订单与 Ben 的挂单撮合成一笔成交，把限价单送进订单簿，再看看成交记录无法告诉你什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Every trade has a seller, but that doesn't mean a seller started it. Two parties, one trade: count it once.",
+					"zh": "每笔成交都有卖方，但这不代表是卖方发起的。两方参与，一笔成交：只计一次。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You send a limit buy for 40 ALFA calls at $2.10. The ask is $2.10, so it can trade at once, but only 30 contracts are offered there. Nobody adds, cancels or sends other orders.",
+					"zh": "你发出 40 张 ALFA 看涨、限价 $2.10 的买单。卖价是 $2.10，所以可以立即成交，但那里只挂着 30 张。没有人新增、撤销或发出其他订单。"
+				},
+				"questions": [
+					{
+						"id": "unfilled",
+						"prompt": {
+							"en": "How many of your contracts can't fill right away?",
+							"zh": "你的订单中有多少张不能立即成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["10"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "40 − 30 = 10. They wait in the book at your limit until someone sells there.",
+							"zh": "40 − 30 = 10。它们按你的限价留在订单簿中，等有人在那里卖出。"
+						}
+					},
+					{
+						"id": "aggressor",
+						"prompt": {
+							"en": "Who started the trade?",
+							"zh": "这笔成交是谁发起的？"
+						},
+						"choices": [
+							{
+								"id": "both",
+								"label": {
+									"en": "Neither: count the buyer and the seller as two prints",
+									"zh": "都不是：把买方和卖方算作两笔成交"
+								},
+								"why": {
+									"en": "One trade has two sides but prints once. Your incoming order started it; the resting order is the other side of the same trade.",
+									"zh": "一笔成交有两方，但只记录一次。你的订单发起了它，挂单是同一笔成交的另一方。"
+								}
+							},
+							{
+								"id": "seller",
+								"label": {
+									"en": "The resting seller, who supplied the offer",
+									"zh": "挂单的卖方，因为卖单是他挂的"
+								},
+								"why": {
+									"en": "The resting seller only supplied the offer. Your incoming buy asked for an immediate fill, so you started the trade.",
+									"zh": "挂单的卖方只是提供了卖单。你的买单要求立即成交，所以是你发起的。"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "You, the incoming buyer; both sides trade at the ask",
+									"zh": "你，主动到来的买方；双方都在卖价成交"
+								}
+							}
+						],
+						"accepted": ["buyer"],
+						"explanation": {
+							"en": "Your incoming order asked for an immediate fill, so you started it. The resting order on the other side takes part in the same single trade.",
+							"zh": "你的订单要求立即成交，所以是你发起的。对面的挂单参与的是同一笔成交。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Every trade has a seller, but that doesn't mean a seller started it. Two parties, one trade: count it once.",
+					"zh": "每笔成交都有卖方，但这不代表是卖方发起的。两方参与，一笔成交：只计一次。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You send a limit sell for 30 ALFA calls at $2.00. The bid is $2.00, so it can trade at once, but only 18 contracts are bid there. Nobody adds, cancels or sends other orders.",
+					"zh": "你发出 30 张 ALFA 看涨、限价 $2.00 的卖单。买价是 $2.00，所以可以立即成交，但那里只挂着 18 张买单。没有人新增、撤销或发出其他订单。"
+				},
+				"questions": [
+					{
+						"id": "unfilled",
+						"prompt": {
+							"en": "How many of your contracts can't fill right away?",
+							"zh": "你的订单中有多少张不能立即成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["12"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "30 − 18 = 12. They wait in the book at your limit until someone buys there.",
+							"zh": "30 − 18 = 12。它们按你的限价留在订单簿中，等有人在那里买入。"
+						}
+					},
+					{
+						"id": "aggressor",
+						"prompt": {
+							"en": "Who started the trade?",
+							"zh": "这笔成交是谁发起的？"
+						},
+						"choices": [
+							{
+								"id": "buyer",
+								"label": {
+									"en": "The resting buyer, since it printed at the bid",
+									"zh": "挂单的买方，因为成交在买价"
+								},
+								"why": {
+									"en": "The resting buyer only supplied the bid. Your incoming sell asked for an immediate fill, so you started the trade.",
+									"zh": "挂单的买方只是提供了买单。你的卖单要求立即成交，所以是你发起的。"
+								}
+							},
+							{
+								"id": "both",
+								"label": {
+									"en": "Neither: count the buyer and the seller as two prints",
+									"zh": "都不是：把买方和卖方算作两笔成交"
+								},
+								"why": {
+									"en": "One trade has two sides but prints once. Your incoming order started it; the resting order is the other side of the same trade.",
+									"zh": "一笔成交有两方，但只记录一次。你的订单发起了它，挂单是同一笔成交的另一方。"
+								}
+							},
+							{
+								"id": "seller",
+								"label": {
+									"en": "You, the incoming seller; both sides trade at the bid",
+									"zh": "你，主动到来的卖方；双方都在买价成交"
+								}
+							}
+						],
+						"accepted": ["seller"],
+						"explanation": {
+							"en": "Your incoming order asked for an immediate fill, so you started it. The resting order on the other side takes part in the same single trade.",
+							"zh": "你的订单要求立即成交，所以是你发起的。对面的挂单参与的是同一笔成交。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Every trade has a seller, but that doesn't mean a seller started it. Two parties, one trade: count it once.",
+					"zh": "每笔成交都有卖方，但这不代表是卖方发起的。两方参与，一笔成交：只计一次。"
+				}
+			}
+		]
+	},
+	{
+		"id": "validate-option-print-practice-1",
+		"lessonId": "validate-option-print",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "validate-option-print",
+				"brief": {
+					"en": "Read a 500-contract block field by field, sort what it establishes from what it can't, and pick the record that fills each gap.",
+					"zh": "逐项读取一笔 500 张的大单，区分它能确定和不能确定的内容，再为每个缺口选择合适的记录。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "An old quote makes the side uncertain; it doesn't flip it. Premium measures dollars exchanged, not conviction.",
+					"zh": "旧报价让方向变得不确定，但不会把它反过来。权利金衡量的是交换的金额，而不是信心。"
+				}
+			},
+			{
+				"brief": {
+					"en": "300 ALFA calls trade at $2.10, and one contract covers 100 shares. The quote you have shows the bid at the trade price and the ask $0.10 higher. That quote is from the same moment and isn't crossed. Nothing says whether the trade opened or closed a position, or whether it was part of a multi-leg order.",
+					"zh": "300 张 ALFA 看涨以 $2.10 成交，一张合约对应 100 股。你手上的报价显示买价等于成交价，卖价高 $0.10。这个报价与成交同一时刻，且没有交叉。没有信息说明这笔成交是开仓还是平仓，也不知道它是否属于多腿订单。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "How much premium changed hands?",
+							"zh": "这笔成交交换了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["63000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.10 × 300 × 100 = $63,000.",
+							"zh": "$2.10 × 300 × 100 = $63,000。"
+						}
+					},
+					{
+						"id": "inference",
+						"prompt": {
+							"en": "What can you say about who started the trade?",
+							"zh": "关于谁发起了这笔成交，你能得出什么结论？"
+						},
+						"choices": [
+							{
+								"id": "unknown",
+								"label": {
+									"en": "You can't reliably say who started it",
+									"zh": "无法可靠判断是谁发起的"
+								},
+								"why": {
+									"en": "With a bid from the same moment, the print points to a seller starting it. That much you can say; it's the strategy that stays unknown.",
+									"zh": "有同一时刻的买价，这笔成交说明大概是卖方发起的。这一点可以说，仍然未知的是策略。"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer probably started it",
+									"zh": "大概是买方发起的"
+								},
+								"why": {
+									"en": "It printed at a bid from the same moment, which points to a seller starting it, not a buyer.",
+									"zh": "它成交在同一时刻的买价上，说明大概是卖方发起的，而不是买方。"
+								}
+							},
+							{
+								"id": "seller",
+								"label": {
+									"en": "A seller probably started it; the strategy is still unknown",
+									"zh": "大概是卖方发起的；策略仍然未知"
+								}
+							}
+						],
+						"accepted": ["seller"],
+						"explanation": {
+							"en": "It printed at a bid from the same moment, which points to a seller starting it. That says nothing about whether it opened a position or what strategy it served.",
+							"zh": "它成交在同一时刻的买价上，说明大概是卖方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An old quote makes the side uncertain; it doesn't flip it. Premium measures dollars exchanged, not conviction.",
+					"zh": "旧报价让方向变得不确定，但不会把它反过来。权利金衡量的是交换的金额，而不是信心。"
+				}
+			},
+			{
+				"brief": {
+					"en": "400 ALFA calls trade at $1.80, and one contract covers 100 shares. The quote you have shows the bid at the trade price and the ask $0.10 higher. That quote is from the same moment and isn't crossed. Nothing says whether the trade opened or closed a position, or whether it was part of a multi-leg order.",
+					"zh": "400 张 ALFA 看涨以 $1.80 成交，一张合约对应 100 股。你手上的报价显示买价等于成交价，卖价高 $0.10。这个报价与成交同一时刻，且没有交叉。没有信息说明这笔成交是开仓还是平仓，也不知道它是否属于多腿订单。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "How much premium changed hands?",
+							"zh": "这笔成交交换了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["72000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$1.80 × 400 × 100 = $72,000.",
+							"zh": "$1.80 × 400 × 100 = $72,000。"
+						}
+					},
+					{
+						"id": "inference",
+						"prompt": {
+							"en": "What can you say about who started the trade?",
+							"zh": "关于谁发起了这笔成交，你能得出什么结论？"
+						},
+						"choices": [
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer probably started it",
+									"zh": "大概是买方发起的"
+								},
+								"why": {
+									"en": "It printed at a bid from the same moment, which points to a seller starting it, not a buyer.",
+									"zh": "它成交在同一时刻的买价上，说明大概是卖方发起的，而不是买方。"
+								}
+							},
+							{
+								"id": "seller",
+								"label": {
+									"en": "A seller probably started it; the strategy is still unknown",
+									"zh": "大概是卖方发起的；策略仍然未知"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "You can't reliably say who started it",
+									"zh": "无法可靠判断是谁发起的"
+								},
+								"why": {
+									"en": "With a bid from the same moment, the print points to a seller starting it. That much you can say; it's the strategy that stays unknown.",
+									"zh": "有同一时刻的买价，这笔成交说明大概是卖方发起的。这一点可以说，仍然未知的是策略。"
+								}
+							}
+						],
+						"accepted": ["seller"],
+						"explanation": {
+							"en": "It printed at a bid from the same moment, which points to a seller starting it. That says nothing about whether it opened a position or what strategy it served.",
+							"zh": "它成交在同一时刻的买价上，说明大概是卖方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An old quote makes the side uncertain; it doesn't flip it. Premium measures dollars exchanged, not conviction.",
+					"zh": "旧报价让方向变得不确定，但不会把它反过来。权利金衡量的是交换的金额，而不是信心。"
+				}
+			}
+		]
+	},
+	{
+		"id": "validate-option-print-practice-2",
+		"lessonId": "validate-option-print",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "validate-option-print",
+				"brief": {
+					"en": "Read a 500-contract block field by field, sort what it establishes from what it can't, and pick the record that fills each gap.",
+					"zh": "逐项读取一笔 500 张的大单，区分它能确定和不能确定的内容，再为每个缺口选择合适的记录。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "An old quote makes the side uncertain; it doesn't flip it. Premium measures dollars exchanged, not conviction.",
+					"zh": "旧报价让方向变得不确定，但不会把它反过来。权利金衡量的是交换的金额，而不是信心。"
+				}
+			},
+			{
+				"brief": {
+					"en": "300 ALFA calls trade at $2.10, and one contract covers 100 shares. The quote you have shows the bid at the trade price and the ask $0.10 higher. That quote is from the same moment and isn't crossed. Nothing says whether the trade opened or closed a position, or whether it was part of a multi-leg order.",
+					"zh": "300 张 ALFA 看涨以 $2.10 成交，一张合约对应 100 股。你手上的报价显示买价等于成交价，卖价高 $0.10。这个报价与成交同一时刻，且没有交叉。没有信息说明这笔成交是开仓还是平仓，也不知道它是否属于多腿订单。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "How much premium changed hands?",
+							"zh": "这笔成交交换了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["63000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$2.10 × 300 × 100 = $63,000.",
+							"zh": "$2.10 × 300 × 100 = $63,000。"
+						}
+					},
+					{
+						"id": "inference",
+						"prompt": {
+							"en": "What can you say about who started the trade?",
+							"zh": "关于谁发起了这笔成交，你能得出什么结论？"
+						},
+						"choices": [
+							{
+								"id": "unknown",
+								"label": {
+									"en": "You can't reliably say who started it",
+									"zh": "无法可靠判断是谁发起的"
+								},
+								"why": {
+									"en": "With a bid from the same moment, the print points to a seller starting it. That much you can say; it's the strategy that stays unknown.",
+									"zh": "有同一时刻的买价，这笔成交说明大概是卖方发起的。这一点可以说，仍然未知的是策略。"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer probably started it",
+									"zh": "大概是买方发起的"
+								},
+								"why": {
+									"en": "It printed at a bid from the same moment, which points to a seller starting it, not a buyer.",
+									"zh": "它成交在同一时刻的买价上，说明大概是卖方发起的，而不是买方。"
+								}
+							},
+							{
+								"id": "seller",
+								"label": {
+									"en": "A seller probably started it; the strategy is still unknown",
+									"zh": "大概是卖方发起的；策略仍然未知"
+								}
+							}
+						],
+						"accepted": ["seller"],
+						"explanation": {
+							"en": "It printed at a bid from the same moment, which points to a seller starting it. That says nothing about whether it opened a position or what strategy it served.",
+							"zh": "它成交在同一时刻的买价上，说明大概是卖方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An old quote makes the side uncertain; it doesn't flip it. Premium measures dollars exchanged, not conviction.",
+					"zh": "旧报价让方向变得不确定，但不会把它反过来。权利金衡量的是交换的金额，而不是信心。"
+				}
+			},
+			{
+				"brief": {
+					"en": "250 ALFA calls trade at $4.10, and one contract covers 100 shares. The quote you have shows the bid at the trade price and the ask $0.10 higher. That quote is 90 seconds older than the trade. Nothing says whether the trade opened or closed a position, or whether it was part of a multi-leg order.",
+					"zh": "250 张 ALFA 看涨以 $4.10 成交，一张合约对应 100 股。你手上的报价显示买价等于成交价，卖价高 $0.10。这个报价比成交早了 90 秒。没有信息说明这笔成交是开仓还是平仓，也不知道它是否属于多腿订单。"
+				},
+				"questions": [
+					{
+						"id": "premium",
+						"prompt": {
+							"en": "How much premium changed hands?",
+							"zh": "这笔成交交换了多少权利金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["102500"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$4.10 × 250 × 100 = $102,500.",
+							"zh": "$4.10 × 250 × 100 = $102,500。"
+						}
+					},
+					{
+						"id": "inference",
+						"prompt": {
+							"en": "What can you say about who started the trade?",
+							"zh": "关于谁发起了这笔成交，你能得出什么结论？"
+						},
+						"choices": [
+							{
+								"id": "seller",
+								"label": {
+									"en": "A seller probably started it; the strategy is still unknown",
+									"zh": "大概是卖方发起的；策略仍然未知"
+								},
+								"why": {
+									"en": "A bid from 90 seconds earlier can't place this print, so even a probable seller goes further than the evidence.",
+									"zh": "90 秒前的买价无法给这笔成交定位，所以连“大概是卖方”也超出了证据。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "You can't reliably say who started it",
+									"zh": "无法可靠判断是谁发起的"
+								}
+							},
+							{
+								"id": "buyer",
+								"label": {
+									"en": "A buyer probably started it",
+									"zh": "大概是买方发起的"
+								},
+								"why": {
+									"en": "The quote is 90 seconds older than the trade, so it can't say who started it, buyer or seller.",
+									"zh": "报价比成交早了 90 秒，无法说明是买方还是卖方发起的。"
+								}
+							}
+						],
+						"accepted": ["unknown"],
+						"explanation": {
+							"en": "The quote is 90 seconds older than the trade, so it can't place the print. The premium is still known; the side isn't.",
+							"zh": "报价比成交早了 90 秒，无法给这笔成交定位。权利金仍然已知，方向则不知道。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An old quote makes the side uncertain; it doesn't flip it. Premium measures dollars exchanged, not conviction.",
+					"zh": "旧报价让方向变得不确定，但不会把它反过来。权利金衡量的是交换的金额，而不是信心。"
+				}
+			}
+		]
+	},
+	{
+		"id": "put-call-parity-practice-1",
+		"lessonId": "put-call-parity",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "put-call-parity",
+				"brief": {
+					"en": "Add a long Oct 18 100 call to a short 100 put and get a line like 100 shares, price the put from the call with ALFA at $102, and check a $5.90 call print against parity at its own time.",
+					"zh": "把 10月18日 100 看涨多头加上 100 看跌空头，得到一条像 100 股一样的线；在 ALFA 为 $102 时由看涨推出看跌的价格；并按成交自身的时间，用平价关系核对一笔 $5.90 的看涨成交。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Parity links prices from the same moment, the same strike and the same expiry. A print that seems to break it is a reason to check its time and conditions, not evidence that someone knows something.",
+					"zh": "平价关系连接的是同一时刻、同一行权价、同一到期日的价格。一笔看似违反平价的成交，是去核查它的时间和条件的理由，而不是有人掌握内情的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA is $102.00. Its 100 call for one expiry has a mid of $5.25 a share. There's no interest and no dividend to account for, and one contract covers 100 shares.",
+					"zh": "ALFA 为 $102.00。它某个到期日的 100 看涨中间价为每股 $5.25。不需要考虑利息和股息，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "put",
+						"prompt": {
+							"en": "What should the 100 put's mid be, per share?",
+							"zh": "100 看跌的中间价应该是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["3.25"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "C − P = S − K, so P = C − (S − K) = $5.25 − (+$2.00) = $3.25.",
+							"zh": "C − P = S − K，所以 P = C − (S − K) = $5.25 − (+$2.00) = $3.25。"
+						}
+					},
+					{
+						"id": "synthetic",
+						"prompt": {
+							"en": "You buy one 100 call and sell one 100 put. At expiry ALFA is $92.00. Before premiums, what are the two legs worth together? Use a minus sign for a loss.",
+							"zh": "你买入一张 100 看涨，卖出一张 100 看跌。到期时 ALFA 为 $92.00。不计权利金，两条腿合计价值多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["-800"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The call is worth $0.00 a share and the short put costs $8.00: together (92 − 100) × 100 = −$800, exactly like 100 shares bought at $100.",
+							"zh": "看涨每股值 $0.00，看跌空头每股要付 $8.00：合计 (92 − 100) × 100 = −$800，和以 $100 买入的 100 股完全一样。"
+						}
+					},
+					{
+						"id": "print",
+						"prompt": {
+							"en": "A call print comes in $0.60 above where parity puts it, compared with a put that traded a minute later. What do you check first?",
+							"zh": "一笔看涨成交比平价给出的价格高 $0.60，对照的是晚一分钟成交的看跌。你首先要核查什么？"
+						},
+						"choices": [
+							{
+								"id": "time",
+								"label": {
+									"en": "The print's own execution time and ALFA's price then",
+									"zh": "这笔成交自身的成交时间，以及当时的 ALFA 价格"
+								}
+							},
+							{
+								"id": "news",
+								"label": {
+									"en": "Whether the buyer has inside news",
+									"zh": "买方是否掌握内幕消息"
+								},
+								"why": {
+									"en": "A gap from parity isn't evidence of inside news. Compare prints from the same moment first: ALFA may simply have been higher when the call traded.",
+									"zh": "偏离平价不是内幕消息的证据。先比较同一时刻的成交：看涨成交时 ALFA 可能本来就更高。"
+								}
+							},
+							{
+								"id": "put",
+								"label": {
+									"en": "Whether the put is mispriced",
+									"zh": "看跌是否定价错误"
+								},
+								"why": {
+									"en": "The put traded a minute later, so the two prints may describe different moments. Check the call's own time and ALFA's price then before blaming either price.",
+									"zh": "看跌晚一分钟成交，两笔成交可能对应不同时刻。在怪罪任何一个价格之前，先核查看涨自己的成交时间和当时 ALFA 的价格。"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "Parity holds between prices from the same moment. Check the print's own time, its condition codes and any correction before reading anything into the gap.",
+							"zh": "平价关系只在同一时刻的价格之间成立。在解读这个差额之前，先核查这笔成交自身的时间、条件代码以及是否有更正。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Parity links prices from the same moment, the same strike and the same expiry. A print that seems to break it is a reason to check its time and conditions, not evidence that someone knows something.",
+					"zh": "平价关系连接的是同一时刻、同一行权价、同一到期日的价格。一笔看似违反平价的成交，是去核查它的时间和条件的理由，而不是有人掌握内情的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA is $97.00. Its 100 call for one expiry has a mid of $1.70 a share. There's no interest and no dividend to account for, and one contract covers 100 shares.",
+					"zh": "ALFA 为 $97.00。它某个到期日的 100 看涨中间价为每股 $1.70。不需要考虑利息和股息，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "put",
+						"prompt": {
+							"en": "What should the 100 put's mid be, per share?",
+							"zh": "100 看跌的中间价应该是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["4.7"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "C − P = S − K, so P = C − (S − K) = $1.70 − (−$3.00) = $4.70.",
+							"zh": "C − P = S − K，所以 P = C − (S − K) = $1.70 − (−$3.00) = $4.70。"
+						}
+					},
+					{
+						"id": "synthetic",
+						"prompt": {
+							"en": "You buy one 100 call and sell one 100 put. At expiry ALFA is $104.00. Before premiums, what are the two legs worth together? Use a minus sign for a loss.",
+							"zh": "你买入一张 100 看涨，卖出一张 100 看跌。到期时 ALFA 为 $104.00。不计权利金，两条腿合计价值多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["400"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The call is worth $4.00 a share and the short put costs $0.00: together (104 − 100) × 100 = +$400, exactly like 100 shares bought at $100.",
+							"zh": "看涨每股值 $4.00，看跌空头每股要付 $0.00：合计 (104 − 100) × 100 = +$400，和以 $100 买入的 100 股完全一样。"
+						}
+					},
+					{
+						"id": "print",
+						"prompt": {
+							"en": "A call print comes in $0.60 above where parity puts it, compared with a put that traded a minute later. What do you check first?",
+							"zh": "一笔看涨成交比平价给出的价格高 $0.60，对照的是晚一分钟成交的看跌。你首先要核查什么？"
+						},
+						"choices": [
+							{
+								"id": "news",
+								"label": {
+									"en": "Whether the buyer has inside news",
+									"zh": "买方是否掌握内幕消息"
+								},
+								"why": {
+									"en": "A gap from parity isn't evidence of inside news. Compare prints from the same moment first: ALFA may simply have been higher when the call traded.",
+									"zh": "偏离平价不是内幕消息的证据。先比较同一时刻的成交：看涨成交时 ALFA 可能本来就更高。"
+								}
+							},
+							{
+								"id": "put",
+								"label": {
+									"en": "Whether the put is mispriced",
+									"zh": "看跌是否定价错误"
+								},
+								"why": {
+									"en": "The put traded a minute later, so the two prints may describe different moments. Check the call's own time and ALFA's price then before blaming either price.",
+									"zh": "看跌晚一分钟成交，两笔成交可能对应不同时刻。在怪罪任何一个价格之前，先核查看涨自己的成交时间和当时 ALFA 的价格。"
+								}
+							},
+							{
+								"id": "time",
+								"label": {
+									"en": "The print's own execution time and ALFA's price then",
+									"zh": "这笔成交自身的成交时间，以及当时的 ALFA 价格"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "Parity holds between prices from the same moment. Check the print's own time, its condition codes and any correction before reading anything into the gap.",
+							"zh": "平价关系只在同一时刻的价格之间成立。在解读这个差额之前，先核查这笔成交自身的时间、条件代码以及是否有更正。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Parity links prices from the same moment, the same strike and the same expiry. A print that seems to break it is a reason to check its time and conditions, not evidence that someone knows something.",
+					"zh": "平价关系连接的是同一时刻、同一行权价、同一到期日的价格。一笔看似违反平价的成交，是去核查它的时间和条件的理由，而不是有人掌握内情的证据。"
+				}
+			}
+		]
+	},
+	{
+		"id": "put-call-parity-practice-2",
+		"lessonId": "put-call-parity",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "put-call-parity",
+				"brief": {
+					"en": "Add a long Oct 18 100 call to a short 100 put and get a line like 100 shares, price the put from the call with ALFA at $102, and check a $5.90 call print against parity at its own time.",
+					"zh": "把 10月18日 100 看涨多头加上 100 看跌空头，得到一条像 100 股一样的线；在 ALFA 为 $102 时由看涨推出看跌的价格；并按成交自身的时间，用平价关系核对一笔 $5.90 的看涨成交。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Parity links prices from the same moment, the same strike and the same expiry. A print that seems to break it is a reason to check its time and conditions, not evidence that someone knows something.",
+					"zh": "平价关系连接的是同一时刻、同一行权价、同一到期日的价格。一笔看似违反平价的成交，是去核查它的时间和条件的理由，而不是有人掌握内情的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA is $102.00. Its 100 call for one expiry has a mid of $5.25 a share. There's no interest and no dividend to account for, and one contract covers 100 shares.",
+					"zh": "ALFA 为 $102.00。它某个到期日的 100 看涨中间价为每股 $5.25。不需要考虑利息和股息，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "put",
+						"prompt": {
+							"en": "What should the 100 put's mid be, per share?",
+							"zh": "100 看跌的中间价应该是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["3.25"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "C − P = S − K, so P = C − (S − K) = $5.25 − (+$2.00) = $3.25.",
+							"zh": "C − P = S − K，所以 P = C − (S − K) = $5.25 − (+$2.00) = $3.25。"
+						}
+					},
+					{
+						"id": "synthetic",
+						"prompt": {
+							"en": "You buy one 100 call and sell one 100 put. At expiry ALFA is $92.00. Before premiums, what are the two legs worth together? Use a minus sign for a loss.",
+							"zh": "你买入一张 100 看涨，卖出一张 100 看跌。到期时 ALFA 为 $92.00。不计权利金，两条腿合计价值多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["-800"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The call is worth $0.00 a share and the short put costs $8.00: together (92 − 100) × 100 = −$800, exactly like 100 shares bought at $100.",
+							"zh": "看涨每股值 $0.00，看跌空头每股要付 $8.00：合计 (92 − 100) × 100 = −$800，和以 $100 买入的 100 股完全一样。"
+						}
+					},
+					{
+						"id": "print",
+						"prompt": {
+							"en": "A call print comes in $0.60 above where parity puts it, compared with a put that traded a minute later. What do you check first?",
+							"zh": "一笔看涨成交比平价给出的价格高 $0.60，对照的是晚一分钟成交的看跌。你首先要核查什么？"
+						},
+						"choices": [
+							{
+								"id": "time",
+								"label": {
+									"en": "The print's own execution time and ALFA's price then",
+									"zh": "这笔成交自身的成交时间，以及当时的 ALFA 价格"
+								}
+							},
+							{
+								"id": "news",
+								"label": {
+									"en": "Whether the buyer has inside news",
+									"zh": "买方是否掌握内幕消息"
+								},
+								"why": {
+									"en": "A gap from parity isn't evidence of inside news. Compare prints from the same moment first: ALFA may simply have been higher when the call traded.",
+									"zh": "偏离平价不是内幕消息的证据。先比较同一时刻的成交：看涨成交时 ALFA 可能本来就更高。"
+								}
+							},
+							{
+								"id": "put",
+								"label": {
+									"en": "Whether the put is mispriced",
+									"zh": "看跌是否定价错误"
+								},
+								"why": {
+									"en": "The put traded a minute later, so the two prints may describe different moments. Check the call's own time and ALFA's price then before blaming either price.",
+									"zh": "看跌晚一分钟成交，两笔成交可能对应不同时刻。在怪罪任何一个价格之前，先核查看涨自己的成交时间和当时 ALFA 的价格。"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "Parity holds between prices from the same moment. Check the print's own time, its condition codes and any correction before reading anything into the gap.",
+							"zh": "平价关系只在同一时刻的价格之间成立。在解读这个差额之前，先核查这笔成交自身的时间、条件代码以及是否有更正。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Parity links prices from the same moment, the same strike and the same expiry. A print that seems to break it is a reason to check its time and conditions, not evidence that someone knows something.",
+					"zh": "平价关系连接的是同一时刻、同一行权价、同一到期日的价格。一笔看似违反平价的成交，是去核查它的时间和条件的理由，而不是有人掌握内情的证据。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA is $105.00. Its 100 call for one expiry has a mid of $7.60 a share. There's no interest and no dividend to account for, and one contract covers 100 shares.",
+					"zh": "ALFA 为 $105.00。它某个到期日的 100 看涨中间价为每股 $7.60。不需要考虑利息和股息，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "put",
+						"prompt": {
+							"en": "What should the 100 put's mid be, per share?",
+							"zh": "100 看跌的中间价应该是每股多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["2.5999999999999996"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "C − P = S − K, so P = C − (S − K) = $7.60 − (+$5.00) = $2.60.",
+							"zh": "C − P = S − K，所以 P = C − (S − K) = $7.60 − (+$5.00) = $2.60。"
+						}
+					},
+					{
+						"id": "synthetic",
+						"prompt": {
+							"en": "You buy one 100 call and sell one 100 put. At expiry ALFA is $110.00. Before premiums, what are the two legs worth together? Use a minus sign for a loss.",
+							"zh": "你买入一张 100 看涨，卖出一张 100 看跌。到期时 ALFA 为 $110.00。不计权利金，两条腿合计价值多少？亏损请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["1000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The call is worth $10.00 a share and the short put costs $0.00: together (110 − 100) × 100 = +$1,000, exactly like 100 shares bought at $100.",
+							"zh": "看涨每股值 $10.00，看跌空头每股要付 $0.00：合计 (110 − 100) × 100 = +$1,000，和以 $100 买入的 100 股完全一样。"
+						}
+					},
+					{
+						"id": "print",
+						"prompt": {
+							"en": "A call print comes in $0.60 above where parity puts it, compared with a put that traded a minute later. What do you check first?",
+							"zh": "一笔看涨成交比平价给出的价格高 $0.60，对照的是晚一分钟成交的看跌。你首先要核查什么？"
+						},
+						"choices": [
+							{
+								"id": "put",
+								"label": {
+									"en": "Whether the put is mispriced",
+									"zh": "看跌是否定价错误"
+								},
+								"why": {
+									"en": "The put traded a minute later, so the two prints may describe different moments. Check the call's own time and ALFA's price then before blaming either price.",
+									"zh": "看跌晚一分钟成交，两笔成交可能对应不同时刻。在怪罪任何一个价格之前，先核查看涨自己的成交时间和当时 ALFA 的价格。"
+								}
+							},
+							{
+								"id": "time",
+								"label": {
+									"en": "The print's own execution time and ALFA's price then",
+									"zh": "这笔成交自身的成交时间，以及当时的 ALFA 价格"
+								}
+							},
+							{
+								"id": "news",
+								"label": {
+									"en": "Whether the buyer has inside news",
+									"zh": "买方是否掌握内幕消息"
+								},
+								"why": {
+									"en": "A gap from parity isn't evidence of inside news. Compare prints from the same moment first: ALFA may simply have been higher when the call traded.",
+									"zh": "偏离平价不是内幕消息的证据。先比较同一时刻的成交：看涨成交时 ALFA 可能本来就更高。"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "Parity holds between prices from the same moment. Check the print's own time, its condition codes and any correction before reading anything into the gap.",
+							"zh": "平价关系只在同一时刻的价格之间成立。在解读这个差额之前，先核查这笔成交自身的时间、条件代码以及是否有更正。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Parity links prices from the same moment, the same strike and the same expiry. A print that seems to break it is a reason to check its time and conditions, not evidence that someone knows something.",
+					"zh": "平价关系连接的是同一时刻、同一行权价、同一到期日的价格。一笔看似违反平价的成交，是去核查它的时间和条件的理由，而不是有人掌握内情的证据。"
+				}
+			}
+		]
+	},
+	{
+		"id": "expiration-settlement-practice-1",
+		"lessonId": "expiration-settlement",
+		"version": 5,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "expiration-settlement",
+				"brief": {
+					"en": "Follow two different ways a long option can end, move through an exercise schedule, and compare physical delivery with cash settlement. Keep product terms and the official reference in view. Then step through four expiry-day risks.",
+					"zh": "追踪期权多头结束的两种不同路径，沿时间轴查看行权安排，再比较实物交付与现金结算。始终保留产品条款与官方参考值。最后逐一查看四种到期日风险。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise. A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You hold one cash-settled IDX call with a 4,000 strike, paying $100 per index point. The official settlement value comes out at 4,012. Ignore the premium you paid.",
+					"zh": "你持有一张行权价 4,000 的 IDX 现金结算看涨，每个指数点 $100。官方结算值公布为 4,012。不计你支付的权利金。"
+				},
+				"questions": [
+					{
+						"id": "settlement-difference",
+						"prompt": {
+							"en": "How far is the settlement value above the strike, in index points? Use a minus sign if it's below.",
+							"zh": "结算值比行权价高多少个指数点？如果更低，请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "index points", "zh": "指数点" }
+						},
+						"accepted": ["12"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "4,012 − 4,000 = +12 points. Had settlement come in below the strike, this difference would be negative and the payout zero.",
+							"zh": "4,012 − 4,000 = +12 点。如果结算值低于行权价，这个差值会是负数，支付则为零。"
+						}
+					},
+					{
+						"id": "cash",
+						"prompt": {
+							"en": "What cash does the call pay?",
+							"zh": "这张看涨支付多少现金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["1200"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "max(4,012 − 4,000, 0) × $100 = $1,200.",
+							"zh": "max(4,012 − 4,000, 0) × $100 = $1,200。"
+						}
+					},
+					{
+						"id": "delivery",
+						"prompt": { "en": "What do you receive?", "zh": "你会收到什么？" },
+						"choices": [
+							{
+								"id": "shares",
+								"label": {
+									"en": "100 shares of the index",
+									"zh": "100 股指数股票"
+								},
+								"why": {
+									"en": "An index can't be delivered as shares, so the call pays the cash amount instead.",
+									"zh": "指数无法以股票形式交付，所以这张看涨改为支付现金金额。"
+								}
+							},
+							{
+								"id": "cash",
+								"label": {
+									"en": "The cash amount; no shares",
+									"zh": "现金金额；不交付股票"
+								}
+							},
+							{
+								"id": "premium",
+								"label": {
+									"en": "A refund of the premium you paid",
+									"zh": "退还你支付的权利金"
+								},
+								"why": {
+									"en": "A premium is never refunded: it paid for the right, which here is worth $1,200 in cash.",
+									"zh": "权利金从不退还：它买的是这项权利，而这项权利此时值 $1,200 现金。"
+								}
+							}
+						],
+						"accepted": ["cash"],
+						"explanation": {
+							"en": "The terms say cash settlement: an index can't be delivered as shares, and the premium is never refunded.",
+							"zh": "条款规定现金结算：指数无法以股票形式交付，权利金也不会退还。"
+						}
+					},
+					{
+						"id": "auto-exercise",
+						"prompt": {
+							"en": "No instructions are given for this in-the-money call at expiration. What normally happens?",
+							"zh": "到期时未对这张价内看涨发出任何指示，通常会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "lapse",
+								"label": {
+									"en": "It lapses unless you actively submit an exercise notice.",
+									"zh": "除非你主动提交行权通知，否则作废。"
+								},
+								"why": {
+									"en": "It's the other way round: an option 1 cent or more in the money is exercised automatically unless you tell your broker not to.",
+									"zh": "正好相反：价内 1 美分或以上的期权会被自动行权，除非你通知券商不要行权。"
+								}
+							},
+							{
+								"id": "threshold",
+								"label": {
+									"en": "It is exercised only if it is at least 50 points in the money.",
+									"zh": "只有价内至少 50 点才会被行权。"
+								},
+								"why": {
+									"en": "There is no 50-point threshold. The normal rule exercises an option in the money by $0.01 or more.",
+									"zh": "没有 50 点的门槛。通常规则是价内 $0.01 或以上就会被行权。"
+								}
+							},
+							{
+								"id": "auto",
+								"label": {
+									"en": "It is exercised automatically and pays the cash amount.",
+									"zh": "会被自动行权并支付现金金额。"
+								}
+							}
+						],
+						"accepted": ["auto"],
+						"explanation": {
+							"en": "An option in the money by $0.01 or more at expiration is normally exercised automatically unless the holder instructs otherwise. Check your broker's cut-off time and policy.",
+							"zh": "到期时价内 $0.01 或以上的期权，除非持有人另行指示，通常会被自动行权。请查看券商的截止时间与政策。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise. A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You exercise 2 ALFA calls with a $50 strike, settled in shares, 100 per contract. You're exercising them, not selling them. Ignore the premium and fees: this is about the exchange of cash and shares.",
+					"zh": "你行使 2 张行权价 $50 的 ALFA 看涨，以股票交割，每张 100 股。你是行权，而不是卖出它们。不计权利金和费用：这里只看现金和股票的交换。"
+				},
+				"questions": [
+					{
+						"id": "shares",
+						"prompt": {
+							"en": "How many shares do you receive?",
+							"zh": "你会收到多少股？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["200"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "2 × 100 = 200 actual shares, because the calls settle in shares.",
+							"zh": "2 × 100 = 200 股真实的股票，因为这些看涨以股票交割。"
+						}
+					},
+					{
+						"id": "cash",
+						"prompt": {
+							"en": "How much cash do you pay for them?",
+							"zh": "你要为这些股票支付多少现金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["10000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$50 × 200 = $10,000 for the shares. That's a purchase at the strike, not a cash payout of the option's value.",
+							"zh": "$50 × 200 = $10,000，用来买这些股票。这是按行权价买入，而不是以现金支付期权的价值。"
+						}
+					},
+					{
+						"id": "delivery",
+						"prompt": {
+							"en": "How is this different from selling the calls to close?",
+							"zh": "这和卖出看涨平仓有什么不同？"
+						},
+						"choices": [
+							{
+								"id": "exercise",
+								"label": {
+									"en": "Exercising uses the right, and the shares change hands",
+									"zh": "行权是使用权利，股票会易手"
+								}
+							},
+							{
+								"id": "same",
+								"label": {
+									"en": "It isn't: they're the same event",
+									"zh": "没有不同：它们是同一件事"
+								},
+								"why": {
+									"en": "Selling to close passes the option to someone else for its price, and no shares move. Exercising uses the right: you pay $50 a share and receive the stock.",
+									"zh": "卖出平仓是把期权按价格转给别人，不涉及股票。行权是使用权利：你每股付 $50，收到股票。"
+								}
+							}
+						],
+						"accepted": ["exercise"],
+						"explanation": {
+							"en": "Closing sells the option itself. Exercising uses it: you buy the shares on the contract's terms.",
+							"zh": "平仓是把期权本身卖掉；行权是使用它：你按合约条款买入股票。"
+						}
+					},
+					{
+						"id": "pin-risk",
+						"prompt": {
+							"en": "Now take the writer's side of a $50 call when the stock closes at exactly $50.00. What can the writer know at the close?",
+							"zh": "换到 $50 看涨义务方的角度：股价恰好收在 $50.00。义务方在收盘时能知道什么？"
+						},
+						"choices": [
+							{
+								"id": "certain",
+								"label": {
+									"en": "That assignment is certain, because the stock reached the strike.",
+									"zh": "一定会被指派，因为股价到达了行权价。"
+								},
+								"why": {
+									"en": "Reaching the strike doesn't trigger assignment. At exactly $50.00 the call isn't exercised automatically; it depends on the holder.",
+									"zh": "到达行权价不会触发指派。恰好 $50.00 时看涨不会被自动行权，要看持有人。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "Not whether assignment will follow; the holder can still decide after the close.",
+									"zh": "无法确定是否会被指派；持有人收盘后仍可决定。"
+								}
+							},
+							{
+								"id": "safe",
+								"label": {
+									"en": "That there will be no assignment, because the call is not in the money.",
+									"zh": "不会被指派，因为看涨期权不在价内。"
+								},
+								"why": {
+									"en": "At exactly the strike the call isn't in the money, but its holder can still exercise, for example after an after-hours move. The writer can't rule it out.",
+									"zh": "恰好在行权价时看涨不在价内，但持有人仍可以行权，例如根据盘后变动。义务方无法排除被指派。"
+								}
+							}
+						],
+						"accepted": ["unknown"],
+						"explanation": {
+							"en": "An at-the-money option may or may not be exercised. The holder can act on after-hours moves, so the writer learns the result only from the assignment notice.",
+							"zh": "平值期权可能被行权，也可能不被行权。持有人可以根据盘后变动作决定，因此义务方只能从指派通知得知结果。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise. A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。"
+				}
+			}
+		]
+	},
+	{
+		"id": "expiration-settlement-practice-2",
+		"lessonId": "expiration-settlement",
+		"version": 5,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "expiration-settlement",
+				"brief": {
+					"en": "Follow two different ways a long option can end, move through an exercise schedule, and compare physical delivery with cash settlement. Keep product terms and the official reference in view. Then step through four expiry-day risks.",
+					"zh": "追踪期权多头结束的两种不同路径，沿时间轴查看行权安排，再比较实物交付与现金结算。始终保留产品条款与官方参考值。最后逐一查看四种到期日风险。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise. A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You hold one cash-settled IDX call with a 4,000 strike, paying $100 per index point. The official settlement value comes out at 4,012. Ignore the premium you paid.",
+					"zh": "你持有一张行权价 4,000 的 IDX 现金结算看涨，每个指数点 $100。官方结算值公布为 4,012。不计你支付的权利金。"
+				},
+				"questions": [
+					{
+						"id": "settlement-difference",
+						"prompt": {
+							"en": "How far is the settlement value above the strike, in index points? Use a minus sign if it's below.",
+							"zh": "结算值比行权价高多少个指数点？如果更低，请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "index points", "zh": "指数点" }
+						},
+						"accepted": ["12"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "4,012 − 4,000 = +12 points. Had settlement come in below the strike, this difference would be negative and the payout zero.",
+							"zh": "4,012 − 4,000 = +12 点。如果结算值低于行权价，这个差值会是负数，支付则为零。"
+						}
+					},
+					{
+						"id": "cash",
+						"prompt": {
+							"en": "What cash does the call pay?",
+							"zh": "这张看涨支付多少现金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["1200"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "max(4,012 − 4,000, 0) × $100 = $1,200.",
+							"zh": "max(4,012 − 4,000, 0) × $100 = $1,200。"
+						}
+					},
+					{
+						"id": "delivery",
+						"prompt": { "en": "What do you receive?", "zh": "你会收到什么？" },
+						"choices": [
+							{
+								"id": "shares",
+								"label": {
+									"en": "100 shares of the index",
+									"zh": "100 股指数股票"
+								},
+								"why": {
+									"en": "An index can't be delivered as shares, so the call pays the cash amount instead.",
+									"zh": "指数无法以股票形式交付，所以这张看涨改为支付现金金额。"
+								}
+							},
+							{
+								"id": "cash",
+								"label": {
+									"en": "The cash amount; no shares",
+									"zh": "现金金额；不交付股票"
+								}
+							},
+							{
+								"id": "premium",
+								"label": {
+									"en": "A refund of the premium you paid",
+									"zh": "退还你支付的权利金"
+								},
+								"why": {
+									"en": "A premium is never refunded: it paid for the right, which here is worth $1,200 in cash.",
+									"zh": "权利金从不退还：它买的是这项权利，而这项权利此时值 $1,200 现金。"
+								}
+							}
+						],
+						"accepted": ["cash"],
+						"explanation": {
+							"en": "The terms say cash settlement: an index can't be delivered as shares, and the premium is never refunded.",
+							"zh": "条款规定现金结算：指数无法以股票形式交付，权利金也不会退还。"
+						}
+					},
+					{
+						"id": "auto-exercise",
+						"prompt": {
+							"en": "No instructions are given for this in-the-money call at expiration. What normally happens?",
+							"zh": "到期时未对这张价内看涨发出任何指示，通常会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "lapse",
+								"label": {
+									"en": "It lapses unless you actively submit an exercise notice.",
+									"zh": "除非你主动提交行权通知，否则作废。"
+								},
+								"why": {
+									"en": "It's the other way round: an option 1 cent or more in the money is exercised automatically unless you tell your broker not to.",
+									"zh": "正好相反：价内 1 美分或以上的期权会被自动行权，除非你通知券商不要行权。"
+								}
+							},
+							{
+								"id": "threshold",
+								"label": {
+									"en": "It is exercised only if it is at least 50 points in the money.",
+									"zh": "只有价内至少 50 点才会被行权。"
+								},
+								"why": {
+									"en": "There is no 50-point threshold. The normal rule exercises an option in the money by $0.01 or more.",
+									"zh": "没有 50 点的门槛。通常规则是价内 $0.01 或以上就会被行权。"
+								}
+							},
+							{
+								"id": "auto",
+								"label": {
+									"en": "It is exercised automatically and pays the cash amount.",
+									"zh": "会被自动行权并支付现金金额。"
+								}
+							}
+						],
+						"accepted": ["auto"],
+						"explanation": {
+							"en": "An option in the money by $0.01 or more at expiration is normally exercised automatically unless the holder instructs otherwise. Check your broker's cut-off time and policy.",
+							"zh": "到期时价内 $0.01 或以上的期权，除非持有人另行指示，通常会被自动行权。请查看券商的截止时间与政策。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise. A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You hold 2 cash-settled IDX puts with a 4,000 strike, paying $50 per index point per contract. The official settlement value is 3,990, though the index last showed 3,980. Ignore the premium and fees.",
+					"zh": "你持有 2 张行权价 4,000 的 IDX 现金结算看跌，每张每个指数点 $50。官方结算值为 3,990，而指数最近显示为 3,980。不计权利金和费用。"
+				},
+				"questions": [
+					{
+						"id": "reference",
+						"prompt": {
+							"en": "Which value do you settle against?",
+							"zh": "结算用哪个数值？"
+						},
+						"choices": [
+							{
+								"id": "last",
+								"label": {
+									"en": "The last price shown, 3,980",
+									"zh": "最近显示的价格 3,980"
+								},
+								"why": {
+									"en": "3,980 is the last level shown, but the terms settle on the official value, 3,990. A more recent-looking price can't replace it.",
+									"zh": "3,980 是最近显示的点位，但条款按官方结算值 3,990 结算。看起来更新的价格也不能替代它。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The official settlement value, 3,990",
+									"zh": "官方结算值 3,990"
+								}
+							}
+						],
+						"accepted": ["official"],
+						"explanation": {
+							"en": "The terms name the official settlement value. A price that looks more recent can't replace it.",
+							"zh": "条款指定的是官方结算值。看起来更新的价格也不能替代它。"
+						}
+					},
+					{
+						"id": "cash",
+						"prompt": {
+							"en": "What cash do the two puts pay in total?",
+							"zh": "两张看跌一共支付多少现金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["1000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "max(4,000 − 3,990, 0) × $50 × 2 = $1,000. A put subtracts the other way round from a call.",
+							"zh": "max(4,000 − 3,990, 0) × $50 × 2 = $1,000。看跌的相减方向与看涨相反。"
+						}
+					},
+					{
+						"id": "delivery",
+						"prompt": { "en": "What do you receive?", "zh": "你会收到什么？" },
+						"choices": [
+							{
+								"id": "shares",
+								"label": {
+									"en": "100 shares for each contract",
+									"zh": "每张 100 股"
+								},
+								"why": {
+									"en": "The $50 a point converts index points into dollars. An index has no shares to deliver, so these puts pay cash.",
+									"zh": "每点 $50 是把指数点换算成美元。指数没有可交付的股票，所以这些看跌支付现金。"
+								}
+							},
+							{
+								"id": "cash",
+								"label": {
+									"en": "Cash; no shares of the index",
+									"zh": "现金；不交付指数的股票"
+								}
+							}
+						],
+						"accepted": ["cash"],
+						"explanation": {
+							"en": "The $50 per point turns index points into dollars; it doesn't mean shares are delivered.",
+							"zh": "每点 $50 是把指数点换算成美元，并不表示要交付股票。"
+						}
+					},
+					{
+						"id": "am-settlement",
+						"prompt": {
+							"en": "Suppose this put were AM-settled: trading stops the day before, and the settlement value comes from opening prices on expiration morning. When is its payoff fixed?",
+							"zh": "假设这张看跌为上午结算：前一天停止交易，结算值来自到期日早上的开盘价格。它的到期支付何时确定？"
+						},
+						"choices": [
+							{
+								"id": "open",
+								"label": {
+									"en": "At the opening-based settlement value, after trading in it has stopped.",
+									"zh": "在停止交易之后，按开盘价格计算的结算值确定。"
+								}
+							},
+							{
+								"id": "last",
+								"label": {
+									"en": "At the last trade you could make the day before.",
+									"zh": "在前一天你能完成的最后一笔交易时确定。"
+								},
+								"why": {
+									"en": "The last trade the day before isn't the settlement. The payoff comes from opening prices the next morning, which you can no longer trade against.",
+									"zh": "前一天的最后一笔交易不是结算值。到期支付来自第二天早上的开盘价格，而那时你已无法再交易。"
+								}
+							},
+							{
+								"id": "choice",
+								"label": {
+									"en": "Whenever the holder decides to exercise.",
+									"zh": "在持有人决定行权时确定。"
+								},
+								"why": {
+									"en": "The holder can't pick the moment: the payoff is fixed by the opening-based settlement value on expiration morning.",
+									"zh": "持有人无法选择时点：到期支付由到期日早上按开盘价格计算的结算值确定。"
+								}
+							}
+						],
+						"accepted": ["open"],
+						"explanation": {
+							"en": "An AM-settled contract's payoff depends on a value you cannot trade against: it is set after trading stops, from opening prices on expiration morning.",
+							"zh": "上午结算合约的到期支付取决于一个你无法再交易的数值：它在停止交易后，由到期日早上的开盘价格决定。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise. A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。"
+				}
+			}
+		]
+	},
+	{
+		"id": "expiration-settlement-practice-2",
+		"lessonId": "expiration-settlement",
+		"version": 4,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "expiration-settlement",
+				"brief": {
+					"en": "Follow two different ways a long option can end, move through an exercise schedule, and compare physical delivery with cash settlement. Keep product terms and the official reference in view.",
+					"zh": "追踪期权多头结束的两种不同路径，沿时间轴查看行权安排，再比较实物交付与现金结算。始终保留产品条款与官方参考值。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You hold one cash-settled IDX call with a 4,000 strike, paying $100 per index point. The official settlement value comes out at 4,012. Ignore the premium you paid.",
+					"zh": "你持有一张行权价 4,000 的 IDX 现金结算看涨，每个指数点 $100。官方结算值公布为 4,012。不计你支付的权利金。"
+				},
+				"questions": [
+					{
+						"id": "settlement-difference",
+						"prompt": {
+							"en": "How far is the settlement value above the strike, in index points? Use a minus sign if it's below.",
+							"zh": "结算值比行权价高多少个指数点？如果更低，请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "index points", "zh": "指数点" }
+						},
+						"accepted": ["12"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "4,012 − 4,000 = +12 points. Had settlement come in below the strike, this difference would be negative and the payout zero.",
+							"zh": "4,012 − 4,000 = +12 点。如果结算值低于行权价，这个差值会是负数，支付则为零。"
+						}
+					},
+					{
+						"id": "cash",
+						"prompt": {
+							"en": "What cash does the call pay?",
+							"zh": "这张看涨支付多少现金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["1200"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "max(4,012 − 4,000, 0) × $100 = $1,200.",
+							"zh": "max(4,012 − 4,000, 0) × $100 = $1,200。"
+						}
+					},
+					{
+						"id": "delivery",
+						"prompt": { "en": "What do you receive?", "zh": "你会收到什么？" },
+						"choices": [
+							{
+								"id": "shares",
+								"label": {
+									"en": "100 shares of the index",
+									"zh": "100 股指数股票"
+								},
+								"why": {
+									"en": "An index can't be delivered as shares, so the call pays the cash amount instead.",
+									"zh": "指数无法以股票形式交付，所以这张看涨改为支付现金金额。"
+								}
+							},
+							{
+								"id": "cash",
+								"label": {
+									"en": "The cash amount; no shares",
+									"zh": "现金金额；不交付股票"
+								}
+							},
+							{
+								"id": "premium",
+								"label": {
+									"en": "A refund of the premium you paid",
+									"zh": "退还你支付的权利金"
+								},
+								"why": {
+									"en": "A premium is never refunded: it paid for the right, which here is worth $1,200 in cash.",
+									"zh": "权利金从不退还：它买的是这项权利，而这项权利此时值 $1,200 现金。"
+								}
+							}
+						],
+						"accepted": ["cash"],
+						"explanation": {
+							"en": "The terms say cash settlement: an index can't be delivered as shares, and the premium is never refunded.",
+							"zh": "条款规定现金结算：指数无法以股票形式交付，权利金也不会退还。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You hold 2 cash-settled IDX puts with a 4,000 strike, paying $50 per index point per contract. The official settlement value is 3,990, though the index last showed 3,980. Ignore the premium and fees.",
+					"zh": "你持有 2 张行权价 4,000 的 IDX 现金结算看跌，每张每个指数点 $50。官方结算值为 3,990，而指数最近显示为 3,980。不计权利金和费用。"
+				},
+				"questions": [
+					{
+						"id": "reference",
+						"prompt": {
+							"en": "Which value do you settle against?",
+							"zh": "结算用哪个数值？"
+						},
+						"choices": [
+							{
+								"id": "last",
+								"label": {
+									"en": "The last price shown, 3,980",
+									"zh": "最近显示的价格 3,980"
+								},
+								"why": {
+									"en": "3,980 is the last level shown, but the terms settle on the official value, 3,990. A more recent-looking price can't replace it.",
+									"zh": "3,980 是最近显示的点位，但条款按官方结算值 3,990 结算。看起来更新的价格也不能替代它。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The official settlement value, 3,990",
+									"zh": "官方结算值 3,990"
+								}
+							}
+						],
+						"accepted": ["official"],
+						"explanation": {
+							"en": "The terms name the official settlement value. A price that looks more recent can't replace it.",
+							"zh": "条款指定的是官方结算值。看起来更新的价格也不能替代它。"
+						}
+					},
+					{
+						"id": "cash",
+						"prompt": {
+							"en": "What cash do the two puts pay in total?",
+							"zh": "两张看跌一共支付多少现金？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["1000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "max(4,000 − 3,990, 0) × $50 × 2 = $1,000. A put subtracts the other way round from a call.",
+							"zh": "max(4,000 − 3,990, 0) × $50 × 2 = $1,000。看跌的相减方向与看涨相反。"
+						}
+					},
+					{
+						"id": "delivery",
+						"prompt": { "en": "What do you receive?", "zh": "你会收到什么？" },
+						"choices": [
+							{
+								"id": "shares",
+								"label": {
+									"en": "100 shares for each contract",
+									"zh": "每张 100 股"
+								},
+								"why": {
+									"en": "The $50 a point converts index points into dollars. An index has no shares to deliver, so these puts pay cash.",
+									"zh": "每点 $50 是把指数点换算成美元。指数没有可交付的股票，所以这些看跌支付现金。"
+								}
+							},
+							{
+								"id": "cash",
+								"label": {
+									"en": "Cash; no shares of the index",
+									"zh": "现金；不交付指数的股票"
+								}
+							}
+						],
+						"accepted": ["cash"],
+						"explanation": {
+							"en": "The $50 per point turns index points into dollars; it doesn't mean shares are delivered.",
+							"zh": "每点 $50 是把指数点换算成美元，并不表示要交付股票。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Use the settlement reference named in the product terms, not an unrelated last trade. A purchase of an option is not itself exercise.",
+					"zh": "使用条款指定的结算参考，不能使用无关最新成交。买入期权本身也不是行权。"
+				}
+			}
+		]
+	}
+]

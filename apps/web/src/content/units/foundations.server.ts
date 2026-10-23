@@ -1,4 +1,5 @@
 import "@tanstack/react-start/server-only";
+import type { LearningCopy } from "@/domain/learning/types";
 import {
 	basics,
 	type ChoiceSpec,
@@ -15,6 +16,14 @@ import {
 
 import { revisedFoundationUnits } from "./foundation-revision.server";
 
+/** A choice with why it misses, or without a why where it is the case's answer. */
+const option = (
+	id: string,
+	en: string,
+	zh: string,
+	why: LearningCopy | undefined,
+): ChoiceSpec => (why ? [id, en, zh, why.en, why.zh] : [id, en, zh]);
+
 /** What each execution-side code means, for the why line of a code the learner picked. */
 const codeMeaning: Record<string, { en: string; zh: string }> = {
 	AASK: t("above the ask", "高于卖价"),
@@ -28,6 +37,7 @@ export const foundationUnits: TeachingUnit[] = [
 	...revisedFoundationUnits,
 	{
 		id: "quotes-orders-trades",
+		version: 3,
 		conceptLab: {
 			kind: "quotes-orders-trades",
 			intro: t(
@@ -51,11 +61,154 @@ export const foundationUnits: TeachingUnit[] = [
 		case: (v) => {
 			const bid = [2, 3.2, 4.1, 5.3][v];
 			const ask = bid + [0.1, 0.2, 0.4, 0.3][v];
-			return {
-				brief: t(
+			/** After the quote: an offer or a bid is cancelled, or a trade takes part of the ask or the bid. */
+			const event = (["cancelOffer", "lift", "cancelBid", "hit"] as const)[v];
+			const cancel = event === "cancelOffer" || event === "cancelBid";
+			const askSide = event === "cancelOffer" || event === "lift";
+			const shown = askSide ? 30 : 40;
+			const traded = askSide ? 10 : 15;
+			const left = shown - traded;
+			const printed = money(askSide ? ask : bid);
+			const brief = {
+				cancelOffer: t(
 					`An ALFA call is quoted ${money(bid)} bid and ${money(ask)} ask. Then a seller cancels an offer that never filled, and no trade message follows.`,
 					`某 ALFA 看涨报价为买价 ${money(bid)}、卖价 ${money(ask)}。随后一位卖方撤销了一张从未成交的卖单，之后没有任何成交消息。`,
 				),
+				lift: t(
+					`An ALFA call is quoted ${money(bid)} × 25 bid and ${money(ask)} × ${shown} ask, sizes in contracts. Then a trade message prints ${traded} contracts at ${money(ask)}. No resting order is cancelled.`,
+					`某 ALFA 看涨报价为买价 ${money(bid)} × 25、卖价 ${money(ask)} × ${shown}，数量以合约张数计。随后一条成交消息显示 ${traded} 张以 ${money(ask)} 成交。没有挂单被撤销。`,
+				),
+				cancelBid: t(
+					`An ALFA call is quoted ${money(bid)} bid and ${money(ask)} ask. Then a buyer cancels a bid that never filled, and no trade message follows.`,
+					`某 ALFA 看涨报价为买价 ${money(bid)}、卖价 ${money(ask)}。随后一位买方撤销了一张从未成交的买单，之后没有任何成交消息。`,
+				),
+				hit: t(
+					`An ALFA call is quoted ${money(bid)} × ${shown} bid and ${money(ask)} × 20 ask, sizes in contracts. Then a trade message prints ${traded} contracts at ${money(bid)}. No resting order is cancelled.`,
+					`某 ALFA 看涨报价为买价 ${money(bid)} × ${shown}、卖价 ${money(ask)} × 20，数量以合约张数计。随后一条成交消息显示 ${traded} 张以 ${money(bid)} 成交。没有挂单被撤销。`,
+				),
+			}[event];
+			const tradeChoice: ChoiceSpec = cancel
+				? [
+						"trade",
+						"The cancelled contracts traded",
+						"被撤销的合约成交了",
+						"A cancel removes an order from the book. Only a trade message means contracts changed hands, and none followed.",
+						"撤单只是把一张订单从订单簿移走。只有成交消息才表示合约换手，而之后并没有成交消息。",
+					]
+				: [
+						"trade",
+						`All ${shown} ${askSide ? "offered" : "bid"} contracts traded`,
+						`${askSide ? "卖价" : "买价"}上挂出的 ${shown} 张全部成交了`,
+						`The print is ${traded} contracts. ${shown} is the size that was ${askSide ? "offered" : "bid"}; the other ${left} are still there at ${printed}.`,
+						`成交记录是 ${traded} 张。${shown} 张是${askSide ? "卖价" : "买价"}上挂出的数量；其余 ${left} 张仍以 ${printed} 挂在那里。`,
+					];
+			const buyerWhy = {
+				cancelOffer: t(
+					"Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
+					"如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。",
+				),
+				lift: undefined,
+				cancelBid: t(
+					"Had a buyer taken an offer, a trade would have printed at the ask. No trade message followed, and the order that left was a bid, not an offer.",
+					"如果有买方吃掉卖单，就会在卖价打印出一笔成交。之后没有成交消息，而且离开的是一张买单，不是卖单。",
+				),
+				hit: t(
+					`The print is at ${money(bid)}, the bid. A seller sold to resting bids; a buyer taking the offer would have printed at ${money(ask)}.`,
+					`成交在 ${money(bid)}，也就是买价。是卖方卖给了挂着的买单；如果是买方吃掉卖单，成交会在 ${money(ask)}。`,
+				),
+			}[event];
+			const sellerWhy = {
+				cancelOffer: t(
+					"Had a seller sold to the bid, a trade would have printed at the bid. No trade message followed, and the order that left was an offer, not a bid.",
+					"如果有卖方卖给买单，就会在买价打印出一笔成交。之后没有成交消息，而且离开的是一张卖单，不是买单。",
+				),
+				lift: t(
+					`The print is at ${money(ask)}, the ask. A buyer took offered contracts; a sale to the bid would have printed at ${money(bid)}.`,
+					`成交在 ${money(ask)}，也就是卖价。是买方吃掉了挂出的卖单；如果是卖给买单，成交会在 ${money(bid)}。`,
+				),
+				cancelBid: t(
+					"Had a seller sold to the bid, a trade would have printed at the bid. The bid left without a trade, so nobody sold to it.",
+					"如果有卖方卖给买单，就会在买价打印出一笔成交。这张买单离开时没有成交，所以没有人卖给它。",
+				),
+				hit: undefined,
+			}[event];
+			const eventChoices: ChoiceSpec[] = [
+				tradeChoice,
+				[
+					"quote",
+					"An order left the book; nothing traded",
+					"一张订单离开了订单簿；没有成交",
+					`A trade message means contracts changed hands: ${traded} printed at ${printed}. Nobody cancelled an order, so the ${askSide ? "offer shrank because a buyer took part of it" : "bid shrank because a seller sold into it"}.`,
+					`成交消息表示合约换手了：${traded} 张以 ${printed} 成交。没有人撤单，所以${askSide ? "卖单变少，是因为有买方吃掉了一部分" : "买单变少，是因为有卖方卖给了它"}。`,
+				],
+				option(
+					"buyer",
+					"A buyer took the offer",
+					"有买方吃掉了这张卖单",
+					buyerWhy,
+				),
+				option(
+					"seller",
+					"A seller sold to the bid",
+					"有卖方卖给了买单",
+					sellerWhy,
+				),
+			];
+			const sideChoices: ChoiceSpec[] = [
+				[
+					"ask",
+					"The ask: fewer contracts offered",
+					"卖价一边：挂出待卖的合约变少",
+					cancel
+						? "An offer is an order to sell, shown at the ask. The buyer withdrew a bid, so only the bid changes."
+						: `The trade printed at ${money(bid)}, the bid: a seller sold to resting bids. Nothing offered at ${money(ask)} was touched.`,
+					cancel
+						? "卖单是卖出的订单，显示在卖价上。这次撤销的是买方的买单，所以只有买价一边变化。"
+						: `成交在 ${money(bid)}，也就是买价：卖方卖给了挂着的买单。${money(ask)} 上挂出的卖单没有被动过。`,
+				],
+				[
+					"bid",
+					"The bid: fewer contracts bid",
+					"买价一边：挂出待买的合约变少",
+					cancel
+						? "A bid is an order to buy. The seller withdrew an offer to sell, which sits at the ask; the bid is untouched."
+						: `The trade printed at ${money(ask)}, the ask: a buyer took offered contracts. No resting bid was touched.`,
+					cancel
+						? "买单是买入的订单。这次撤销的是卖方的卖单，它在卖价一边；买价没有变化。"
+						: `成交在 ${money(ask)}，也就是卖价：买方吃掉了挂出的卖单。挂着的买单没有被动过。`,
+				],
+				[
+					"both",
+					"Both sides: a buyer and a seller are involved",
+					"两边都变：涉及一个买方和一个卖方",
+					cancel
+						? `A cancel involves only the order's owner. One ${askSide ? "offer" : "bid"} left the book; nothing on the ${askSide ? "bid" : "ask"} changed.`
+						: `A trade has a buyer and a seller, but only the resting side of the quote shrinks. The ${askSide ? "buyer's" : "seller's"} order traded at once and never sat on the ${askSide ? "bid" : "ask"}.`,
+					cancel
+						? `撤单只涉及下单的那一方。离开订单簿的是一张${askSide ? "卖单" : "买单"}；${askSide ? "买价" : "卖价"}一边没有任何变化。`
+						: `一笔成交有买方也有卖方，但只有挂单的那一边会变少。${askSide ? "买方" : "卖方"}的订单是立即成交的，从来没有挂在${askSide ? "买价" : "卖价"}上。`,
+				],
+			];
+			const sideWhy = {
+				cancelOffer: t(
+					"An offer to sell sits at the ask. Cancelling it takes size off the ask; the bid doesn't move.",
+					"卖单挂在卖价上。撤销它会让卖价上的数量变少，买价不动。",
+				),
+				lift: t(
+					`The buyer took contracts from the ask, so the ask size falls from ${shown} to ${left}. Nothing changes on the bid.`,
+					`买方从卖价上吃掉了合约，所以卖价数量从 ${shown} 张降到 ${left} 张。买价一边没有变化。`,
+				),
+				cancelBid: t(
+					"A bid to buy sits at the bid. Cancelling it takes size off the bid; the ask doesn't move.",
+					"买单挂在买价上。撤销它会让买价上的数量变少，卖价不动。",
+				),
+				hit: t(
+					`The seller sold into the bid, so the bid size falls from ${shown} to ${left}. Nothing changes on the ask.`,
+					`卖方卖给了买单，所以买价数量从 ${shown} 张降到 ${left} 张。卖价一边没有变化。`,
+				),
+			}[event];
+			return {
+				brief,
 				questions: [
 					n(
 						"midpoint",
@@ -69,32 +222,27 @@ export const foundationUnits: TeachingUnit[] = [
 					),
 					c(
 						"event",
-						"What does the cancellation tell you?",
-						"这次撤单能说明什么？",
-						[
-							[
-								"trade",
-								"The cancelled contracts traded",
-								"被撤销的合约成交了",
-								"A cancel removes an order from the book. Only a trade message means contracts changed hands, and none followed.",
-								"撤单只是把一张订单从订单簿移走。只有成交消息才表示合约换手，而之后并没有成交消息。",
-							],
-							[
-								"quote",
-								"An order left the book; nothing traded",
-								"一张订单离开了订单簿；没有成交",
-							],
-							[
-								"buyer",
-								"A buyer took the offer",
-								"有买方吃掉了这张卖单",
-								"Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
-								"如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。",
-							],
-						],
-						"quote",
-						"A cancel is an order event. With no trade message, nothing traded.",
-						"撤单是订单事件。没有成交消息，就没有成交。",
+						cancel
+							? "What does the cancellation tell you?"
+							: "What does the trade message tell you?",
+						cancel ? "这次撤单能说明什么？" : "这条成交消息能说明什么？",
+						eventChoices,
+						cancel ? "quote" : askSide ? "buyer" : "seller",
+						cancel
+							? "A cancel is an order event. With no trade message, nothing traded."
+							: `A trade at the ${askSide ? "ask means a buyer took offered contracts" : "bid means a seller sold to resting bids"}. ${traded} traded; the quote showed ${shown}, and the other ${left} are still there.`,
+						cancel
+							? "撤单是订单事件。没有成交消息，就没有成交。"
+							: `成交在${askSide ? "卖价，说明是买方吃掉了挂出的卖单" : "买价，说明是卖方卖给了挂着的买单"}。成交了 ${traded} 张；报价上显示的是 ${shown} 张，其余 ${left} 张仍挂在那里。`,
+					),
+					c(
+						"side",
+						"Which side of the quote does this change?",
+						"这会改变报价的哪一边？",
+						sideChoices,
+						askSide ? "ask" : "bid",
+						sideWhy.en,
+						sideWhy.zh,
 					),
 				],
 			};
@@ -102,6 +250,7 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "execution-counterparties",
+		version: 3,
 		conceptLab: {
 			kind: "execution-counterparties",
 			intro: t(
@@ -126,8 +275,18 @@ export const foundationUnits: TeachingUnit[] = [
 			const available = [30, 25, 18, 35][v];
 			const requested = available + [10, 15, 12, 5][v];
 			const buyer = v < 2;
-			return {
-				brief: buyer
+			/** Case 1 is a market buy, which keeps taking offers up the book instead of waiting at a limit. */
+			const market = v === 1;
+			const price = buyer ? 2.1 : 2;
+			const rest = requested - available;
+			const next = 2.2;
+			const nextSize = 20;
+			const brief = market
+				? t(
+						`You send a market buy for ${requested} ALFA calls. The ask is ${money(price)}, with ${available} contracts offered there, and the next offer is ${nextSize} contracts at ${money(next)}. Nobody adds, cancels or sends other orders.`,
+						`你发出 ${requested} 张 ALFA 看涨的市价买单。卖价是 ${money(price)}，那里挂着 ${available} 张；再往上一档是 ${money(next)} 的 ${nextSize} 张。没有人新增、撤销或发出其他订单。`,
+					)
+				: buyer
 					? t(
 							`You send a limit buy for ${requested} ALFA calls at $2.10. The ask is $2.10, so it can trade at once, but only ${available} contracts are offered there. Nobody adds, cancels or sends other orders.`,
 							`你发出 ${requested} 张 ALFA 看涨、限价 $2.10 的买单。卖价是 $2.10，所以可以立即成交，但那里只挂着 ${available} 张。没有人新增、撤销或发出其他订单。`,
@@ -135,42 +294,88 @@ export const foundationUnits: TeachingUnit[] = [
 					: t(
 							`You send a limit sell for ${requested} ALFA calls at $2.00. The bid is $2.00, so it can trade at once, but only ${available} contracts are bid there. Nobody adds, cancels or sends other orders.`,
 							`你发出 ${requested} 张 ALFA 看涨、限价 $2.00 的卖单。买价是 $2.00，所以可以立即成交，但那里只挂着 ${available} 张买单。没有人新增、撤销或发出其他订单。`,
+						);
+			const remainderWhy = {
+				rest: market
+					? t(
+							`A market order has no limit price to wait at. Once the ${available} at ${money(price)} are gone, it takes the next offer: ${rest} more at ${money(next)}.`,
+							`市价单没有可以等待的限价。${money(price)} 的 ${available} 张成交后，它会接着吃下一档：在 ${money(next)} 再成交 ${rest} 张。`,
+						)
+					: undefined,
+				next: market
+					? undefined
+					: buyer
+						? t(
+								`A limit buy never pays more than its limit. Nothing else is offered at ${money(price)} or lower, so the other ${rest} can't trade yet.`,
+								`限价买单绝不会付高于限价的价格。${money(price)} 或更低已经没有其他卖单，所以其余 ${rest} 张暂时无法成交。`,
+							)
+						: t(
+								`A limit sell never takes less than its limit. Nothing else is bid at ${money(price)} or higher, so the other ${rest} can't trade yet.`,
+								`限价卖单绝不会接受低于限价的价格。${money(price)} 或更高已经没有其他买单，所以其余 ${rest} 张暂时无法成交。`,
+							),
+				cancel: market
+					? t(
+							`A market order isn't cancelled when the first offers run out. It keeps taking offers, so the other ${rest} fill at ${money(next)}.`,
+							`第一档卖单用完后，市价单不会被撤销。它会继续吃卖单，所以其余 ${rest} 张在 ${money(next)} 成交。`,
+						)
+					: t(
+							`A limit order isn't cancelled when the ${buyer ? "offers" : "bids"} at its price run out. The other ${rest} stay in the book at ${money(price)} until a ${buyer ? "seller" : "buyer"} trades with them or you cancel them.`,
+							`限价上的${buyer ? "卖单" : "买单"}用完了，限价单也不会因此被撤销。其余 ${rest} 张以 ${money(price)} 留在订单簿中，直到有${buyer ? "卖方" : "买方"}与它们成交，或你自己撤单。`,
 						),
+			};
+			return {
+				brief,
 				questions: [
 					n(
 						"unfilled",
 						"How many of your contracts can't fill right away?",
 						"你的订单中有多少张不能立即成交？",
-						requested - available,
+						market ? 0 : rest,
 						"contracts",
 						"张",
-						`${requested} − ${available} = ${requested - available}. They wait in the book at your limit until someone ${buyer ? "sells" : "buys"} there.`,
-						`${requested} − ${available} = ${requested - available}。它们按你的限价留在订单簿中，等有人在那里${buyer ? "卖出" : "买入"}。`,
+						market
+							? `None. A market order has no limit: after the ${available} at ${money(price)}, it takes ${rest} of the ${nextSize} offered at ${money(next)}, so all ${requested} fill.`
+							: `${requested} − ${available} = ${rest}. They wait in the book at your limit until someone ${buyer ? "sells" : "buys"} there.`,
+						market
+							? `0 张。市价单没有限价：${money(price)} 的 ${available} 张成交后，它会接着吃掉 ${money(next)} 那 ${nextSize} 张中的 ${rest} 张，所以 ${requested} 张全部成交。`
+							: `${requested} − ${available} = ${rest}。它们按你的限价留在订单簿中，等有人在那里${buyer ? "卖出" : "买入"}。`,
 					),
 					c(
 						"aggressor",
-						"Who started the trade?",
-						"这笔成交是谁发起的？",
+						market ? "Who started these trades?" : "Who started the trade?",
+						market ? "这些成交是谁发起的？" : "这笔成交是谁发起的？",
 						[
 							[
 								"seller",
-								buyer
-									? "The resting seller, who supplied the offer"
-									: "You, the incoming seller; both sides trade at the bid",
-								buyer
-									? "挂单的卖方，因为卖单是他挂的"
-									: "你，主动到来的卖方；双方都在买价成交",
-								"The resting seller only supplied the offer. Your incoming buy asked for an immediate fill, so you started the trade.",
-								"挂单的卖方只是提供了卖单。你的买单要求立即成交，所以是你发起的。",
+								market
+									? "The resting sellers, who supplied the offers"
+									: buyer
+										? "The resting seller, who supplied the offer"
+										: "You, the incoming seller; both sides trade at the bid",
+								market
+									? "挂单的卖方，因为卖单是他们挂的"
+									: buyer
+										? "挂单的卖方，因为卖单是他挂的"
+										: "你，主动到来的卖方；双方都在买价成交",
+								market
+									? "The resting sellers only supplied the offers. Your market buy asked for an immediate fill, so you started both trades."
+									: "The resting seller only supplied the offer. Your incoming buy asked for an immediate fill, so you started the trade.",
+								market
+									? "挂单的卖方只是提供了卖单。你的市价买单要求立即成交，所以两笔成交都是你发起的。"
+									: "挂单的卖方只是提供了卖单。你的买单要求立即成交，所以是你发起的。",
 							],
 							[
 								"buyer",
-								buyer
-									? "You, the incoming buyer; both sides trade at the ask"
-									: "The resting buyer, since it printed at the bid",
-								buyer
-									? "你，主动到来的买方；双方都在卖价成交"
-									: "挂单的买方，因为成交在买价",
+								market
+									? "You, the incoming buyer; each fill is at the offer you take"
+									: buyer
+										? "You, the incoming buyer; both sides trade at the ask"
+										: "The resting buyer, since it printed at the bid",
+								market
+									? "你，主动到来的买方；每笔都成交在你吃掉的卖单价格上"
+									: buyer
+										? "你，主动到来的买方；双方都在卖价成交"
+										: "挂单的买方，因为成交在买价",
 								"The resting buyer only supplied the bid. Your incoming sell asked for an immediate fill, so you started the trade.",
 								"挂单的买方只是提供了买单。你的卖单要求立即成交，所以是你发起的。",
 							],
@@ -178,13 +383,53 @@ export const foundationUnits: TeachingUnit[] = [
 								"both",
 								"Neither: count the buyer and the seller as two prints",
 								"都不是：把买方和卖方算作两笔成交",
-								"One trade has two sides but prints once. Your incoming order started it; the resting order is the other side of the same trade.",
-								"一笔成交有两方，但只记录一次。你的订单发起了它，挂单是同一笔成交的另一方。",
+								market
+									? `Each trade has two sides but prints once: ${available} at ${money(price)} and ${rest} at ${money(next)} are two prints, not four. Your market buy started both.`
+									: "One trade has two sides but prints once. Your incoming order started it; the resting order is the other side of the same trade.",
+								market
+									? `每笔成交都有两方，但只记录一次：${money(price)} 的 ${available} 张和 ${money(next)} 的 ${rest} 张是两笔成交，不是四笔。两笔都是你的市价买单发起的。`
+									: "一笔成交有两方，但只记录一次。你的订单发起了它，挂单是同一笔成交的另一方。",
 							],
 						],
 						buyer ? "buyer" : "seller",
-						"Your incoming order asked for an immediate fill, so you started it. The resting order on the other side takes part in the same single trade.",
-						"你的订单要求立即成交，所以是你发起的。对面的挂单参与的是同一笔成交。",
+						market
+							? "Your market buy asked for an immediate fill, so you started both trades. The resting sellers on the other side take part in the same trades."
+							: "Your incoming order asked for an immediate fill, so you started it. The resting order on the other side takes part in the same single trade.",
+						market
+							? "你的市价买单要求立即成交，所以两笔成交都是你发起的。对面挂单的卖方参与的是同样这两笔成交。"
+							: "你的订单要求立即成交，所以是你发起的。对面的挂单参与的是同一笔成交。",
+					),
+					c(
+						"remainder",
+						`Once the ${available} contracts at ${money(price)} have traded, what happens to the rest of your order?`,
+						`${money(price)} 的 ${available} 张成交之后，你订单的其余部分会怎样？`,
+						[
+							option(
+								"rest",
+								"It waits in the book until someone trades with it",
+								"留在订单簿中，等有人与它成交",
+								remainderWhy.rest,
+							),
+							option(
+								"next",
+								"It trades at the next, worse price",
+								"以下一个、更差的价格成交",
+								remainderWhy.next,
+							),
+							option(
+								"cancel",
+								"It's cancelled automatically",
+								"被自动撤销",
+								remainderWhy.cancel,
+							),
+						],
+						market ? "next" : "rest",
+						market
+							? `A market order takes the prices available: ${available} fill at ${money(price)} and the other ${rest} at ${money(next)}. The fill is certain; the price isn't.`
+							: `Your limit keeps the order from trading at a worse price, so the other ${rest} wait in the book at ${money(price)}. A limit order trades only at its price or better.`,
+						market
+							? `市价单接受可用的价格：${available} 张在 ${money(price)} 成交，其余 ${rest} 张在 ${money(next)} 成交。成交有保证，价格却没有。`
+							: `限价让订单不会以更差的价格成交，所以其余 ${rest} 张以 ${money(price)} 留在订单簿中。限价单只会以限价或更优价格成交。`,
 					),
 				],
 			};
@@ -495,6 +740,7 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "validate-option-print",
+		version: 3,
 		conceptLab: {
 			kind: "validate-option-print",
 			intro: t(
@@ -518,11 +764,96 @@ export const foundationUnits: TeachingUnit[] = [
 		case: (v) => {
 			const count = [300, 400, 250, 600][v];
 			const price = [2.1, 1.8, 4.1, 1.25][v];
-			const stale = v === 2;
+			/** The quote beside the print: at its bid or at its ask from the same moment, 90 seconds old, or crossed. */
+			const quote = (["bid", "ask", "stale", "crossed"] as const)[v];
+			const quoteLine = {
+				bid: t(
+					"The quote you have shows the bid at the trade price and the ask $0.10 higher. That quote is from the same moment and isn't crossed.",
+					"你手上的报价显示买价等于成交价，卖价高 $0.10。这个报价与成交同一时刻，且没有交叉。",
+				),
+				ask: t(
+					"The quote you have shows the ask at the trade price and the bid $0.10 lower. That quote is from the same moment and isn't crossed.",
+					"你手上的报价显示卖价等于成交价，买价低 $0.10。这个报价与成交同一时刻，且没有交叉。",
+				),
+				stale: t(
+					"The quote you have shows the bid at the trade price and the ask $0.10 higher. That quote is 90 seconds older than the trade.",
+					"你手上的报价显示买价等于成交价，卖价高 $0.10。这个报价比成交早了 90 秒。",
+				),
+				crossed: t(
+					`The quote you have shows the ask at the trade price and the bid $0.10 higher, at ${money(price + 0.1)}. That quote is from the same moment, but it's crossed: its bid is above its ask.`,
+					`你手上的报价显示卖价等于成交价，买价反而高 $0.10，为 ${money(price + 0.1)}。这个报价与成交同一时刻，但它是交叉的：买价高于卖价。`,
+				),
+			}[quote];
+			const crossedWhy = t(
+				`The quote is crossed: its ${money(price + 0.1)} bid is above its ${money(price)} ask, so it isn't a usable market and can't place the print.`,
+				`这个报价是交叉的：${money(price + 0.1)} 的买价高于 ${money(price)} 的卖价，所以它不是可用的市场，无法给这笔成交定位。`,
+			);
+			const why = {
+				buyer: {
+					bid: t(
+						"It printed at a bid from the same moment, which points to a seller starting it, not a buyer.",
+						"它成交在同一时刻的买价上，说明大概是卖方发起的，而不是买方。",
+					),
+					ask: undefined,
+					stale: t(
+						"The quote is 90 seconds older than the trade, so it can't say who started it, buyer or seller.",
+						"报价比成交早了 90 秒，无法说明是买方还是卖方发起的。",
+					),
+					crossed: t(
+						`The print matches the ask, but that's not enough. ${crossedWhy.en}`,
+						`成交价等于卖价，但这还不够。${crossedWhy.zh}`,
+					),
+				},
+				seller: {
+					bid: undefined,
+					ask: t(
+						"It printed at an ask from the same moment, which points to a buyer starting it, not a seller.",
+						"它成交在同一时刻的卖价上，说明大概是买方发起的，而不是卖方。",
+					),
+					stale: t(
+						"A bid from 90 seconds earlier can't place this print, so even a probable seller goes further than the evidence.",
+						"90 秒前的买价无法给这笔成交定位，所以连“大概是卖方”也超出了证据。",
+					),
+					crossed: t(
+						`The print is below the bid, but that's not enough. ${crossedWhy.en} Even a probable seller goes further than the evidence.`,
+						`成交价低于买价，但这还不够。${crossedWhy.zh}连“大概是卖方”也超出了证据。`,
+					),
+				},
+				unknown: {
+					bid: t(
+						"With a bid from the same moment, the print points to a seller starting it. That much you can say; it's the strategy that stays unknown.",
+						"有同一时刻的买价，这笔成交说明大概是卖方发起的。这一点可以说，仍然未知的是策略。",
+					),
+					ask: t(
+						"With an ask from the same moment, the print points to a buyer starting it. That much you can say; it's the strategy that stays unknown.",
+						"有同一时刻的卖价，这笔成交说明大概是买方发起的。这一点可以说，仍然未知的是策略。",
+					),
+					stale: undefined,
+					crossed: undefined,
+				},
+			};
+			const explanation = {
+				bid: t(
+					"It printed at a bid from the same moment, which points to a seller starting it. That says nothing about whether it opened a position or what strategy it served.",
+					"它成交在同一时刻的买价上，说明大概是卖方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。",
+				),
+				ask: t(
+					"It printed at an ask from the same moment, which points to a buyer starting it. That says nothing about whether it opened a position or what strategy it served.",
+					"它成交在同一时刻的卖价上，说明大概是买方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。",
+				),
+				stale: t(
+					"The quote is 90 seconds older than the trade, so it can't place the print. The premium is still known; the side isn't.",
+					"报价比成交早了 90 秒，无法给这笔成交定位。权利金仍然已知，方向则不知道。",
+				),
+				crossed: t(
+					`${crossedWhy.en} The premium is still known; the side isn't.`,
+					`${crossedWhy.zh}权利金仍然已知，方向则不知道。`,
+				),
+			}[quote];
 			return {
 				brief: t(
-					`${count} ALFA calls trade at ${money(price)}, and one contract covers 100 shares. The quote you have shows the bid at the trade price and the ask $0.10 higher. ${stale ? "That quote is 90 seconds older than the trade." : "That quote is from the same moment and isn't crossed."} Nothing says whether the trade opened or closed a position, or whether it was part of a multi-leg order.`,
-					`${count} 张 ALFA 看涨以 ${money(price)} 成交，一张合约对应 100 股。你手上的报价显示买价等于成交价，卖价高 $0.10。${stale ? "这个报价比成交早了 90 秒。" : "这个报价与成交同一时刻，且没有交叉。"}没有信息说明这笔成交是开仓还是平仓，也不知道它是否属于多腿订单。`,
+					`${count} ALFA calls trade at ${money(price)}, and one contract covers 100 shares. ${quoteLine.en} Nothing says whether the trade opened or closed a position, or whether it was part of a multi-leg order.`,
+					`${count} 张 ALFA 看涨以 ${money(price)} 成交，一张合约对应 100 股。${quoteLine.zh}没有信息说明这笔成交是开仓还是平仓，也不知道它是否属于多腿订单。`,
 				),
 				questions: [
 					n(
@@ -540,35 +871,33 @@ export const foundationUnits: TeachingUnit[] = [
 						"What can you say about who started the trade?",
 						"关于谁发起了这笔成交，你能得出什么结论？",
 						[
-							[
+							option(
 								"buyer",
 								"A buyer probably started it",
 								"大概是买方发起的",
-								`${stale ? "The quote is 90 seconds older than the trade, so it can't say who started it, buyer or seller." : "It printed at a bid from the same moment, which points to a seller starting it, not a buyer."}`,
-								`${stale ? "报价比成交早了 90 秒，无法说明是买方还是卖方发起的。" : "它成交在同一时刻的买价上，说明大概是卖方发起的，而不是买方。"}`,
-							],
-							[
+								why.buyer[quote],
+							),
+							option(
 								"seller",
 								"A seller probably started it; the strategy is still unknown",
 								"大概是卖方发起的；策略仍然未知",
-								"A bid from 90 seconds earlier can't place this print, so even a probable seller goes further than the evidence.",
-								"90 秒前的买价无法给这笔成交定位，所以连“大概是卖方”也超出了证据。",
-							],
-							[
+								why.seller[quote],
+							),
+							option(
 								"unknown",
 								"You can't reliably say who started it",
 								"无法可靠判断是谁发起的",
-								"With a bid from the same moment, the print points to a seller starting it. That much you can say; it's the strategy that stays unknown.",
-								"有同一时刻的买价，这笔成交说明大概是卖方发起的。这一点可以说，仍然未知的是策略。",
-							],
+								why.unknown[quote],
+							),
 						],
-						stale ? "unknown" : "seller",
-						stale
-							? "The quote is 90 seconds older than the trade, so it can't place the print. The premium is still known; the side isn't."
-							: "It printed at a bid from the same moment, which points to a seller starting it. That says nothing about whether it opened a position or what strategy it served.",
-						stale
-							? "报价比成交早了 90 秒，无法给这笔成交定位。权利金仍然已知，方向则不知道。"
-							: "它成交在同一时刻的买价上，说明大概是卖方发起的。但这不能说明它是否开仓，也不能说明它服务于什么策略。",
+						{
+							bid: "seller",
+							ask: "buyer",
+							stale: "unknown",
+							crossed: "unknown",
+						}[quote],
+						explanation.en,
+						explanation.zh,
 					),
 				],
 			};
@@ -576,6 +905,7 @@ export const foundationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "put-call-parity",
+		version: 3,
 		conceptLab: {
 			kind: "put-call-parity",
 			intro: t(
@@ -606,14 +936,111 @@ export const foundationUnits: TeachingUnit[] = [
 			const spot = [102, 97, 105, 100][v];
 			const strike = [100, 100, 100, 95][v];
 			const call = [5.25, 1.7, 7.6, 7.1][v];
-			const put = call - (spot - strike);
+			/** A dividend paid before expiry comes off the stock: C − P = S − D − K with no interest. */
+			const dividend = [0, 1, 0, 0.5][v];
+			/** Whether the put compared with the call print traded in the same second, which settles the time check. */
+			const sameMoment = v >= 2;
+			const put = call - (spot - dividend - strike);
 			const expiry = [92, 104, 110, 90][v];
+			const paid = dividend > 0;
+			const relationWhy = {
+				plain: paid
+					? t(
+							`ALFA pays a ${money(dividend)} dividend before expiry. The call holder doesn't receive it, and the stock should drop by about that much when it goes ex-dividend, so it comes off S first.`,
+							`ALFA 在到期前派发 ${money(dividend)} 的股息。看涨持有人拿不到它，除息时股价也应下跌约这个数，所以要先从 S 中扣除。`,
+						)
+					: undefined,
+				dividend: paid
+					? undefined
+					: t(
+							"No dividend is paid before this expiry, so there's nothing to take off S: C − P = S − K as it stands.",
+							"这个到期日之前不派息，S 中没有可扣除的：直接用 C − P = S − K。",
+						),
+				add: paid
+					? t(
+							`The ${money(dividend)} dividend goes to shareholders, not the call holder, and the stock should drop by it when it goes ex-dividend. It comes off S; adding it gets the direction wrong.`,
+							`${money(dividend)} 的股息归股东，不归看涨持有人，除息时股价也应随之下跌。它要从 S 中扣除，加上去方向就反了。`,
+						)
+					: t(
+							"No dividend is paid before this expiry. Even if one were, it would come off S, not be added: the call holder never receives it.",
+							"这个到期日之前不派息。即使派息，也应从 S 中扣除而不是加上：看涨持有人拿不到股息。",
+						),
+			};
+			const printWhy = {
+				time: sameMoment
+					? t(
+							"That's already settled: the put traded in the same second and ALFA didn't move. With the moment matched, look at how the call print was reported.",
+							"这一点已经确定：看跌在同一秒成交，ALFA 也没有变动。时刻已经对上，就该看这笔看涨成交是怎么报告的。",
+						)
+					: undefined,
+				codes: sameMoment
+					? undefined
+					: t(
+							"Condition codes are worth checking, but first the prints come from different moments: the put traded a minute later. Check the call's own time and ALFA's price then.",
+							"条件代码值得查看，但首先这两笔成交来自不同时刻：看跌晚一分钟成交。先核查看涨自己的成交时间和当时 ALFA 的价格。",
+						),
+				news: sameMoment
+					? t(
+							"A gap from parity isn't evidence of inside news. The prints already share a moment, so check how the call print was reported: a correction or a complex-order leg can explain a gap like this.",
+							"偏离平价不是内幕消息的证据。两笔成交已经处于同一时刻，所以要看这笔看涨成交是怎么报告的：更正或复杂订单的一条腿都可能造成这样的差额。",
+						)
+					: t(
+							"A gap from parity isn't evidence of inside news. Compare prints from the same moment first: ALFA may simply have been higher when the call traded.",
+							"偏离平价不是内幕消息的证据。先比较同一时刻的成交：看涨成交时 ALFA 可能本来就更高。",
+						),
+				put: sameMoment
+					? t(
+							"Parity alone can't say which leg is off, and the put traded at the same moment. The call print's condition codes can: a correction or a complex-order leg explains a gap like this.",
+							"仅凭平价无法判断哪条腿有问题，而且看跌是在同一时刻成交的。看涨成交的条件代码可以：更正或复杂订单的一条腿可以解释这样的差额。",
+						)
+					: t(
+							"The put traded a minute later, so the two prints may describe different moments. Check the call's own time and ALFA's price then before blaming either price.",
+							"看跌晚一分钟成交，两笔成交可能对应不同时刻。在怪罪任何一个价格之前，先核查看涨自己的成交时间和当时 ALFA 的价格。",
+						),
+			};
 			return {
-				brief: t(
-					`ALFA is ${money(spot)}. Its ${strike} call for one expiry has a mid of ${money(call)} a share. There's no interest and no dividend to account for, and one contract covers 100 shares.`,
-					`ALFA 为 ${money(spot)}。它某个到期日的 ${strike} 看涨中间价为每股 ${money(call)}。不需要考虑利息和股息，一张合约对应 100 股。`,
-				),
+				brief: paid
+					? t(
+							`ALFA is ${money(spot)} and pays a ${money(dividend)} dividend before one expiry. Its ${strike} call for that expiry has a mid of ${money(call)} a share. The options can't be exercised early, there's no interest to account for, and one contract covers 100 shares.`,
+							`ALFA 为 ${money(spot)}，在某个到期日之前会派发 ${money(dividend)} 的股息。它该到期日的 ${strike} 看涨中间价为每股 ${money(call)}。这些期权不能提前行权，不需要考虑利息，一张合约对应 100 股。`,
+						)
+					: t(
+							`ALFA is ${money(spot)}. Its ${strike} call for one expiry has a mid of ${money(call)} a share. There's no interest and no dividend to account for, and one contract covers 100 shares.`,
+							`ALFA 为 ${money(spot)}。它某个到期日的 ${strike} 看涨中间价为每股 ${money(call)}。不需要考虑利息和股息，一张合约对应 100 股。`,
+						),
 				questions: [
+					c(
+						"relation",
+						"Which relation gives the put's mid in this case?",
+						"在本案例中，用哪个关系求看跌的中间价？",
+						[
+							option(
+								"plain",
+								"C − P = S − K",
+								"C − P = S − K",
+								relationWhy.plain,
+							),
+							option(
+								"dividend",
+								"C − P = (S − D) − K, taking the dividend D off the stock",
+								"C − P = (S − D) − K，从股价中扣除股息 D",
+								relationWhy.dividend,
+							),
+							option(
+								"add",
+								"C − P = (S + D) − K, adding the dividend D to the stock",
+								"C − P = (S + D) − K，把股息 D 加到股价上",
+								relationWhy.add,
+							),
+						],
+						paid ? "dividend" : "plain",
+						paid
+							? `With no interest, C − P = S − PV(D) − K, and PV(D) is simply the ${money(dividend)} dividend. It comes off the stock because the call holder doesn't receive it.`
+							: "With no interest and no dividend, nothing adjusts S or K: C − P = S − K.",
+						paid
+							? `没有利息时，C − P = S − PV(D) − K，而 PV(D) 就是 ${money(dividend)} 的股息。它要从股价中扣除，因为看涨持有人拿不到它。`
+							: "没有利息和股息，S 和 K 都不需要调整：C − P = S − K。",
+					),
 					n(
 						"put",
 						`What should the ${strike} put's mid be, per share?`,
@@ -621,8 +1048,12 @@ export const foundationUnits: TeachingUnit[] = [
 						put,
 						"dollars a share",
 						"美元/股",
-						`C − P = S − K, so P = C − (S − K) = ${money(call)} − (${signedMoney(spot - strike)}) = ${money(put)}.`,
-						`C − P = S − K，所以 P = C − (S − K) = ${money(call)} − (${signedMoney(spot - strike)}) = ${money(put)}。`,
+						paid
+							? `C − P = (S − D) − K, so P = C − (S − D − K) = ${money(call)} − (${signedMoney(spot - dividend - strike)}) = ${money(put)}.`
+							: `C − P = S − K, so P = C − (S − K) = ${money(call)} − (${signedMoney(spot - strike)}) = ${money(put)}.`,
+						paid
+							? `C − P = (S − D) − K，所以 P = C − (S − D − K) = ${money(call)} − (${signedMoney(spot - dividend - strike)}) = ${money(put)}。`
+							: `C − P = S − K，所以 P = C − (S − K) = ${money(call)} − (${signedMoney(spot - strike)}) = ${money(put)}。`,
 						0.01,
 					),
 					n(
@@ -632,37 +1063,50 @@ export const foundationUnits: TeachingUnit[] = [
 						(expiry - strike) * 100,
 						"dollars",
 						"美元",
-						`The call is worth ${money(Math.max(expiry - strike, 0))} a share and the short put costs ${money(Math.max(strike - expiry, 0))}: together (${plain(expiry)} − ${strike}) × 100 = ${signedMoney((expiry - strike) * 100, 0)}, exactly like 100 shares bought at ${money(strike, 0)}.`,
-						`看涨每股值 ${money(Math.max(expiry - strike, 0))}，看跌空头每股要付 ${money(Math.max(strike - expiry, 0))}：合计 (${plain(expiry)} − ${strike}) × 100 = ${signedMoney((expiry - strike) * 100, 0)}，和以 ${money(strike, 0)} 买入的 100 股完全一样。`,
+						`The call is worth ${money(Math.max(expiry - strike, 0))} a share and the short put costs ${money(Math.max(strike - expiry, 0))}: together (${plain(expiry)} − ${strike}) × 100 = ${signedMoney((expiry - strike) * 100, 0)}, exactly like 100 shares bought at ${money(strike, 0)}.${paid ? ` Unlike shares held until then, the pair doesn't collect the ${money(dividend)} dividend.` : ""}`,
+						`看涨每股值 ${money(Math.max(expiry - strike, 0))}，看跌空头每股要付 ${money(Math.max(strike - expiry, 0))}：合计 (${plain(expiry)} − ${strike}) × 100 = ${signedMoney((expiry - strike) * 100, 0)}，和以 ${money(strike, 0)} 买入的 100 股完全一样。${paid ? `不同的是，这一组不会像一直持有的股票那样收到 ${money(dividend)} 的股息。` : ""}`,
 					),
 					c(
 						"print",
-						"A call print comes in $0.60 above where parity puts it, compared with a put that traded a minute later. What do you check first?",
-						"一笔看涨成交比平价给出的价格高 $0.60，对照的是晚一分钟成交的看跌。你首先要核查什么？",
+						sameMoment
+							? "A call print comes in $0.60 above where parity puts it, compared with a put that traded in the same second, while ALFA didn't move. What do you check first?"
+							: "A call print comes in $0.60 above where parity puts it, compared with a put that traded a minute later. What do you check first?",
+						sameMoment
+							? "一笔看涨成交比平价给出的价格高 $0.60，对照的是同一秒成交的看跌，期间 ALFA 没有变动。你首先要核查什么？"
+							: "一笔看涨成交比平价给出的价格高 $0.60，对照的是晚一分钟成交的看跌。你首先要核查什么？",
 						[
-							[
+							option(
 								"time",
 								"The print's own execution time and ALFA's price then",
 								"这笔成交自身的成交时间，以及当时的 ALFA 价格",
-							],
-							[
+								printWhy.time,
+							),
+							option(
 								"news",
 								"Whether the buyer has inside news",
 								"买方是否掌握内幕消息",
-								"A gap from parity isn't evidence of inside news. Compare prints from the same moment first: ALFA may simply have been higher when the call traded.",
-								"偏离平价不是内幕消息的证据。先比较同一时刻的成交：看涨成交时 ALFA 可能本来就更高。",
-							],
-							[
+								printWhy.news,
+							),
+							option(
 								"put",
 								"Whether the put is mispriced",
 								"看跌是否定价错误",
-								"The put traded a minute later, so the two prints may describe different moments. Check the call's own time and ALFA's price then before blaming either price.",
-								"看跌晚一分钟成交，两笔成交可能对应不同时刻。在怪罪任何一个价格之前，先核查看涨自己的成交时间和当时 ALFA 的价格。",
-							],
+								printWhy.put,
+							),
+							option(
+								"codes",
+								"The print's condition codes: a corrected report, or one leg of a complex order",
+								"这笔成交的条件代码：是否为更正后的报告，或复杂订单中的一条腿",
+								printWhy.codes,
+							),
 						],
-						"time",
-						"Parity holds between prices from the same moment. Check the print's own time, its condition codes and any correction before reading anything into the gap.",
-						"平价关系只在同一时刻的价格之间成立。在解读这个差额之前，先核查这笔成交自身的时间、条件代码以及是否有更正。",
+						sameMoment ? "codes" : "time",
+						sameMoment
+							? "With both prints from the same moment, the gap most likely comes from how the call print was reported. A corrected report, or one leg of a complex order priced as part of a package, can sit outside parity on its own; its condition codes show which."
+							: "Parity holds between prices from the same moment. Check the print's own time, its condition codes and any correction before reading anything into the gap.",
+						sameMoment
+							? "两笔成交来自同一时刻，差额最可能来自这笔看涨成交的报告方式。更正后的报告，或作为组合一部分定价的复杂订单单腿，单独看都可能偏离平价；它的条件代码会说明是哪一种。"
+							: "平价关系只在同一时刻的价格之间成立。在解读这个差额之前，先核查这笔成交自身的时间、条件代码以及是否有更正。",
 					),
 				],
 			};
