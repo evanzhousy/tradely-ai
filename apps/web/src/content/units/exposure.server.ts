@@ -213,6 +213,7 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "implied-realized-volatility",
+		version: 3,
 		conceptLab: {
 			kind: "implied-realized-volatility",
 			intro: t(
@@ -234,12 +235,18 @@ export const exposureUnits: TeachingUnit[] = [
 			"按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。",
 		),
 		case: (v) => {
-			const iv = [28, 35, 22, 31][v];
-			const rv = [20, 28, 26, 25][v];
+			const iv = [28, 24, 31, 26][v];
+			const rv = [20, 33, 25, 30][v];
+			// ALFA's nearest earnings report: days ahead when positive, sessions ago when negative.
+			const report = [12, -6, -26, 18][v];
+			const ago = -report;
+			const ahead = report > 0;
+			const window = ahead ? "iv30" : ago <= 20 ? "rv20" : "neither";
+			const more = iv > rv;
 			return {
 				brief: t(
-					`ALFA's 30-day implied volatility, IV30, is ${iv}%. Its realized volatility over the last 20 sessions, RV20, is ${rv}%. Both are annualized, but IV30 is priced from options and looks forward, while RV20 is measured from past closes.`,
-					`ALFA 的 30 天隐含波动率 IV30 为 ${iv}%，最近 20 个交易日的已实现波动率 RV20 为 ${rv}%。两者都已年化，但 IV30 来自期权价格、向前看，RV20 则由过去的收盘价测得。`,
+					`ALFA's 30-day implied volatility, IV30, is ${iv}%. Its realized volatility over the last 20 sessions, RV20, is ${rv}%. Both are annualized, but IV30 is priced from options and looks forward, while RV20 is measured from past closes. ${ahead ? `ALFA reports earnings in ${report} days; its last report was more than 20 sessions ago.` : `ALFA reported earnings ${ago} sessions ago; its next report is more than 30 days away.`}`,
+					`ALFA 的 30 天隐含波动率 IV30 为 ${iv}%，最近 20 个交易日的已实现波动率 RV20 为 ${rv}%。两者都已年化，但 IV30 来自期权价格、向前看，RV20 则由过去的收盘价测得。${ahead ? `ALFA 将在 ${report} 天后发布财报，上一次财报在 20 多个交易日之前。` : `ALFA 在 ${ago} 个交易日前发布了财报，下一次财报在 30 天以后。`}`,
 				),
 				questions: [
 					n(
@@ -258,16 +265,25 @@ export const exposureUnits: TeachingUnit[] = [
 						"这个差值说明了什么？",
 						[
 							[
+								"more",
+								"Options price more movement over the next 30 days than ALFA showed over the last 20 sessions",
+								"期权为未来 30 天定价的波动，比 ALFA 最近 20 个交易日表现出的更大",
+								`IV30 is ${iv}%, below RV20's ${rv}%: options price less movement ahead than ALFA just showed, not more.`,
+								`IV30 为 ${iv}%，低于 RV20 的 ${rv}%：期权为未来定价的波动比 ALFA 刚刚表现出的更小，而不是更大。`,
+							],
+							[
+								"less",
+								"Options price less movement over the next 30 days than ALFA showed over the last 20 sessions",
+								"期权为未来 30 天定价的波动，比 ALFA 最近 20 个交易日表现出的更小",
+								`IV30 is ${iv}%, above RV20's ${rv}%: options price more movement ahead than ALFA just showed, not less.`,
+								`IV30 为 ${iv}%，高于 RV20 的 ${rv}%：期权为未来定价的波动比 ALFA 刚刚表现出的更大，而不是更小。`,
+							],
+							[
 								"mispricing",
 								"The options are mispriced by that much",
 								"期权被错误定价了这么多",
 								"IV and RV measure different windows, one forward and one back. A gap is a reason to ask why, such as an earnings date, not a measure of mispricing.",
 								"IV 和 RV 衡量的是不同的窗口，一个向前、一个向后。差值提示你去问原因（例如财报日期），而不是衡量错误定价。",
-							],
-							[
-								"context",
-								"Options price a different amount of movement ahead than ALFA showed lately; it isn't a forecast of direction",
-								"期权对未来波动的定价与 ALFA 近期的表现不同；这不是方向预测",
 							],
 							[
 								"return",
@@ -277,9 +293,56 @@ export const exposureUnits: TeachingUnit[] = [
 								"波动率衡量的是变动幅度，而不是 ALFA 接下来去哪。差值是在比较两个窗口，不是预测。",
 							],
 						],
-						"context",
-						"IV30 looks forward from option prices and RV20 back over 20 closes. A gap is a reason to ask why, an event such as earnings, for example, not a measure of mispricing or a direction.",
-						"IV30 从期权价格向前看，RV20 回看 20 个收盘价。差值提示你去问原因（例如财报之类的事件），既不衡量错误定价，也不说明方向。",
+						more ? "more" : "less",
+						`IV30 at ${iv}% is ${more ? "above" : "below"} RV20 at ${rv}%: options price ${more ? "more" : "less"} movement ahead than ALFA showed lately. A gap is a reason to ask why, not a measure of mispricing or a direction.`,
+						`IV30 为 ${iv}%，${more ? "高于" : "低于"} RV20 的 ${rv}%：期权为未来定价的波动比 ALFA 近期表现出的${more ? "更大" : "更小"}。差值提示你去问原因，既不衡量错误定价，也不说明方向。`,
+					),
+					c(
+						"window",
+						"Which window covers an ALFA earnings report?",
+						"哪个窗口包含了 ALFA 的一次财报？",
+						[
+							[
+								"iv30",
+								"IV30's: the next 30 days",
+								"IV30 的窗口：未来 30 天",
+								`The report came out ${ago} sessions ago, and the next is more than 30 days away. IV30 prices only the 30 days ahead, so it holds neither.`,
+								`财报在 ${ago} 个交易日前已经发布，下一次在 30 天以后。IV30 只为未来 30 天定价，所以两次都不包含。`,
+							],
+							[
+								"rv20",
+								"RV20's: the last 20 sessions",
+								"RV20 的窗口：过去 20 个交易日",
+								ahead
+									? `The report is ${report} days ahead. RV20 is measured from past closes, so it can't hold a report that hasn't happened.`
+									: `The report came out ${ago} sessions ago, before RV20's last 20 sessions begin.`,
+								ahead
+									? `财报还在 ${report} 天之后。RV20 由过去的收盘价测得，不可能包含尚未发生的财报。`
+									: `财报在 ${ago} 个交易日前发布，早于 RV20 的最近 20 个交易日。`,
+							],
+							[
+								"neither",
+								"Neither window",
+								"两个窗口都不包含",
+								ahead
+									? `The report is ${report} days ahead, inside the 30 days IV30 prices.`
+									: `The report came out ${ago} sessions ago, inside RV20's last 20 sessions.`,
+								ahead
+									? `财报在 ${report} 天之后，落在 IV30 定价的未来 30 天之内。`
+									: `财报在 ${ago} 个交易日前发布，落在 RV20 的最近 20 个交易日之内。`,
+							],
+						],
+						window,
+						window === "iv30"
+							? `The report is ${report} days ahead: inside the 30 days IV30 prices, and in none of the past closes RV20 uses. ${more ? "That's one reason options can price more movement than ALFA just showed." : "Even so, IV30 sits below RV20 here: the last 20 sessions moved more than options price for the month ahead, report included."}`
+							: window === "rv20"
+								? `The report came out ${ago} sessions ago: inside RV20's last 20 sessions, and already behind the 30 days IV30 prices. A report-day move counts in RV20's closes, but options no longer price it.`
+								: `The report came out ${ago} sessions ago, before RV20's 20 sessions, and the next is more than 30 days away, beyond IV30's. Neither window holds a report, so the gap needs another explanation.`,
+						window === "iv30"
+							? `财报在 ${report} 天之后：落在 IV30 定价的未来 30 天之内，而 RV20 用到的过去收盘价都不包含它。${more ? "这是期权定价的波动可能高于 ALFA 近期表现的一个原因。" : "即便如此，这里 IV30 仍低于 RV20：最近 20 个交易日的波动，超过了期权为未来一个月（含财报）定价的波动。"}`
+							: window === "rv20"
+								? `财报在 ${ago} 个交易日前发布：落在 RV20 的最近 20 个交易日之内，而且已经在 IV30 定价的未来 30 天之外。财报日的变动计入 RV20 的收盘价，但期权已不再为它定价。`
+								: `财报在 ${ago} 个交易日前发布，早于 RV20 的 20 个交易日；下一次在 30 天以后，超出 IV30 的窗口。两个窗口都没有财报，所以差值需要别的解释。`,
 					),
 				],
 			};
@@ -491,6 +554,7 @@ export const exposureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "expected-move",
+		version: 3,
 		conceptLab: {
 			kind: "expected-move",
 			intro: t(
@@ -515,8 +579,21 @@ export const exposureUnits: TeachingUnit[] = [
 			const spot = [100, 50, 200, 80][v];
 			const iv = [35, 40, 25, 60][v];
 			const days = [32, 30, 14, 45][v];
+			const close = [91, 57.5, 176, 88.5][v];
 			const factor = Math.sqrt(days / 365);
 			const move = spot * (iv / 100) * factor;
+			const straddle = move * 0.8;
+			const distance = Math.abs(close - spot);
+			const band =
+				distance < straddle
+					? "inside"
+					: distance < move
+						? "straddle"
+						: distance < 2 * move
+							? "one"
+							: "two";
+			const from = `${money(close)} is ${money(distance)} from ${money(spot, 0)}`;
+			const fromZh = `${money(close)} 距 ${money(spot, 0)} 有 ${money(distance)}`;
 			return {
 				brief: t(
 					`A stock trades at ${money(spot, 0)}. Its options expiring in ${days} days imply ${iv}% volatility. Use calendar days over 365 and the course's model.`,
@@ -574,12 +651,71 @@ export const exposureUnits: TeachingUnit[] = [
 						`A straddle prices the average move, about 0.8 of one standard deviation under the model: roughly ${money(move * 0.8)}. The 68% is the share of outcomes inside one SD, a different number.`,
 						`跨式定价的是平均变动，按模型约为一个标准差的 0.8：大约 ${money(move * 0.8)}。68% 是落在一个标准差之内的结果所占比例，是另一个数。`,
 					),
+					c(
+						"close",
+						`Suppose the stock ends at ${money(close)} at expiry. Where does that close sit against the move the options price?`,
+						`假设股票到期时收在 ${money(close)}。相对于期权定价的变动，这个收盘价落在哪里？`,
+						[
+							[
+								"inside",
+								"Within the straddle's expected move, so within one standard deviation too",
+								"在跨式的预期变动之内，因此也在一个标准差之内",
+								`${from}, more than the straddle's ${money(straddle)}.`,
+								`${fromZh}，超过了跨式的 ${money(straddle)}。`,
+							],
+							[
+								"straddle",
+								"Beyond the straddle's expected move, but within one standard deviation",
+								"超出跨式的预期变动，但仍在一个标准差之内",
+								distance < straddle
+									? `${from}, less than the straddle's ${money(straddle)}, so the close is still inside it.`
+									: `${from}, more than one standard deviation, ${money(move)}, so the close is past one SD as well.`,
+								distance < straddle
+									? `${fromZh}，小于跨式的 ${money(straddle)}，所以收盘仍在它之内。`
+									: `${fromZh}，超过一个标准差 ${money(move)}，所以收盘也已超出一个标准差。`,
+							],
+							[
+								"one",
+								"Beyond one standard deviation, but within two",
+								"超出一个标准差，但在两个标准差之内",
+								distance < move
+									? `${from}, less than one standard deviation, ${money(move)}.`
+									: `${from}, more than two standard deviations, ${money(2 * move)}.`,
+								distance < move
+									? `${fromZh}，小于一个标准差 ${money(move)}。`
+									: `${fromZh}，超过两个标准差 ${money(2 * move)}。`,
+							],
+							[
+								"two",
+								"Beyond two standard deviations",
+								"超出两个标准差",
+								`${from}, less than two standard deviations, ${money(2 * move)}.`,
+								`${fromZh}，小于两个标准差 ${money(2 * move)}。`,
+							],
+						],
+						band,
+						band === "inside"
+							? `${from}, less than both the straddle's ${money(straddle)} and one standard deviation, ${money(move)}. A close this near is well within the size the options price.`
+							: band === "straddle"
+								? `${from}: past the straddle's ${money(straddle)} but inside one standard deviation, ${money(move)}. The straddle prices the average move, about 0.8 of one SD, so a close can beat it and still sit where about 68% of outcomes land.`
+								: band === "one"
+									? `${from}: past one standard deviation, ${money(move)}, but inside two, ${money(2 * move)}. Under the model about 32% of outcomes end beyond one SD and about 5% beyond two.`
+									: `${from}: past two standard deviations, ${money(2 * move)}. The model gives that only about 5% of the time, both sides together; real prices jump that far around news more often than the model allows.`,
+						band === "inside"
+							? `${fromZh}，既小于跨式的 ${money(straddle)}，也小于一个标准差 ${money(move)}。这么近的收盘完全在期权定价的幅度之内。`
+							: band === "straddle"
+								? `${fromZh}：超出跨式的 ${money(straddle)}，但仍在一个标准差 ${money(move)} 之内。跨式定价的是平均变动，约为一个标准差的 0.8，所以收盘可以超出它，却仍落在约 68% 结果所在的范围里。`
+								: band === "one"
+									? `${fromZh}：超出一个标准差 ${money(move)}，但在两个标准差 ${money(2 * move)} 之内。按模型，约 32% 的结果收在一个标准差之外，约 5% 收在两个标准差之外。`
+									: `${fromZh}：超出两个标准差 ${money(2 * move)}。按模型，这种情况只有约 5%（两侧合计）；真实价格在消息前后跳到这么远的次数，比模型允许的更多。`,
+					),
 				],
 			};
 		},
 	},
 	{
 		id: "zero-dte",
+		version: 3,
 		conceptLab: {
 			kind: "zero-dte",
 			intro: t(
@@ -602,7 +738,9 @@ export const exposureUnits: TeachingUnit[] = [
 		),
 		case: (v) => {
 			const strike = [100, 50, 200, 76][v];
-			const close = [100.6, 49.4, 201.25, 75][v];
+			const close = [100.6, 48.1, 205.4, 72.6][v];
+			// The stock an hour before the close.
+			const hour = [100, 47.8, 206.5, 73][v];
 			const right = v === 3 ? "put" : "call";
 			const held = [10, 5, 20, 8][v];
 			const volume = [12000, 8000, 30000, 5000][v];
@@ -611,6 +749,18 @@ export const exposureUnits: TeachingUnit[] = [
 				0,
 			);
 			const kind = right === "call" ? t("call", "看涨") : t("put", "看跌");
+			const one = right === "call" ? "1" : "−1";
+			const away = Math.abs(hour - strike);
+			const where =
+				hour === strike
+					? "gamma"
+					: (right === "call") === hour > strike
+						? "in"
+						: "out";
+			const atStrike = t(
+				`At ${money(hour)} the stock sits right at the strike: a few cents decide whether the options finish in the money, so their delta swings.`,
+				`股价 ${money(hour)} 正好在行权价上：几美分就决定这些期权最后是否实值，所以它们的 Delta 会来回摆动。`,
+			);
 			return {
 				brief: t(
 					`A stock's ${strike} ${kind.en}s expire today. You bought ${held} of them at 10:00 and hold them through the 4:00 pm close, when the stock is at ${money(close)}. Over the day, ${plain(volume)} of these contracts traded, all opened today. One contract covers 100 shares.`,
@@ -658,32 +808,57 @@ export const exposureUnits: TeachingUnit[] = [
 					),
 					c(
 						"gamma",
-						"An hour before the close the stock sits right at the strike. Why can hedging these options take a lot of stock?",
-						"收盘前一小时，股价正好在行权价上。为什么对冲这些期权可能需要交易大量股票？",
+						`An hour before the close the stock is at ${money(hour)}. As it moves a few cents, how much does a hedge of these options have to change?`,
+						`收盘前一小时，股价为 ${money(hour)}。股价变动几美分时，这些期权的对冲需要调整多少？`,
 						[
 							[
 								"gamma",
-								"Their delta swings between near 0 and near 1 within cents",
-								"它们的 Delta 会在几美分之内在接近 0 和接近 1 之间摆动",
+								`A lot: their delta swings between near 0 and near ${one} within cents`,
+								`很多：它们的 Delta 会在几美分之内在接近 0 和接近 ${one} 之间摆动`,
+								`At ${money(hour)} the stock is ${money(away)} from the ${strike} strike. With an hour left, a few cents can't change how these options finish, so their delta stays near ${where === "in" ? one : "0"} instead of swinging.`,
+								`股价 ${money(hour)}，距行权价 ${strike} 有 ${money(away)}。只剩一小时，几美分改变不了这些期权的结局，所以它们的 Delta 停在接近 ${where === "in" ? one : "0"} 的位置，不会来回摆动。`,
+							],
+							[
+								"out",
+								"Very little: out of the money, their delta stays near 0",
+								"很少：它们处于虚值，Delta 停在接近 0",
+								where === "gamma"
+									? atStrike.en
+									: `At ${money(hour)} the ${kind.en}s are ${money(away)} in the money, not out of it, so their delta stays near ${one}, not 0.`,
+								where === "gamma"
+									? atStrike.zh
+									: `股价 ${money(hour)} 时，这些${kind.zh}实值 ${money(away)}，而不是虚值，所以 Delta 停在接近 ${one}，而不是 0。`,
+							],
+							[
+								"in",
+								`Very little: in the money, their delta stays near ${one}`,
+								`很少：它们处于实值，Delta 停在接近 ${one}`,
+								where === "gamma"
+									? atStrike.en
+									: `At ${money(hour)} the ${kind.en}s are ${money(away)} out of the money, not in it, so their delta stays near 0, not ${one}.`,
+								where === "gamma"
+									? atStrike.zh
+									: `股价 ${money(hour)} 时，这些${kind.zh}虚值 ${money(away)}，而不是实值，所以 Delta 停在接近 0，而不是 ${one}。`,
 							],
 							[
 								"theta",
-								"Their time value is still large",
-								"它们的时间价值还很大",
-								"With an hour left, little time value remains. What takes stock is delta swinging between near 0 and near 1 within cents.",
-								"还剩一小时时，时间价值所剩无几。需要大量股票的原因是 Delta 在几美分之内在接近 0 和接近 1 之间摆动。",
-							],
-							[
-								"volume",
-								"Their volume is small",
-								"它们的成交量很小",
-								"Volume isn't what drives the hedge; each contract's delta is. Near the strike at the end, it swings from near 0 to near 1 within cents.",
-								"驱动对冲的不是成交量，而是每张合约的 Delta。临近到期时在行权价附近，它在几美分之内从接近 0 摆到接近 1。",
+								"A lot: their time value is still large",
+								"很多：它们的时间价值还很大",
+								where === "gamma"
+									? `With an hour left, little time value remains, and a hedge follows delta, not time value. What takes stock is delta swinging between near 0 and near ${one} within cents.`
+									: `With an hour left, little time value remains, and a hedge follows delta, not time value. Here delta stays near ${where === "in" ? one : "0"}, so the hedge barely changes.`,
+								where === "gamma"
+									? `还剩一小时时，时间价值所剩无几，而且对冲跟随的是 Delta，不是时间价值。需要大量股票的原因是 Delta 在几美分之内在接近 0 和接近 ${one} 之间摆动。`
+									: `还剩一小时时，时间价值所剩无几，而且对冲跟随的是 Delta，不是时间价值。这里 Delta 停在接近 ${where === "in" ? one : "0"}，所以对冲几乎不用调整。`,
 							],
 						],
-						"gamma",
-						"Near expiry, gamma piles up at the strike: a few cents decide whether the option ends worth something, so its delta swings, and a hedge has to follow it.",
-						"临近到期时，Gamma 在行权价附近堆积：几美分就决定期权最后是否有价值，所以它的 Delta 来回摆动，对冲也得跟着调整。",
+						where,
+						where === "gamma"
+							? "Near expiry, gamma piles up at the strike: a few cents decide whether the option ends worth something, so its delta swings, and a hedge has to follow it."
+							: `Near expiry, gamma piles up at the strike and fades away from it. ${money(away)} ${where === "in" ? "in" : "out of"} the money with an hour left, a few cents won't decide how these options finish, so their delta stays near ${where === "in" ? one : "0"} and the hedge barely changes${where === "in" ? `: it stays about ${plain(held * 100)} shares` : ""}.`,
+						where === "gamma"
+							? "临近到期时，Gamma 在行权价附近堆积：几美分就决定期权最后是否有价值，所以它的 Delta 来回摆动，对冲也得跟着调整。"
+							: `临近到期时，Gamma 堆积在行权价附近，离开行权价就迅速消退。只剩一小时、${where === "in" ? "实值" : "虚值"} ${money(away)}，几美分决定不了这些期权的结局，所以 Delta 停在接近 ${where === "in" ? one : "0"}，对冲几乎不用调整${where === "in" ? `：始终约为 ${plain(held * 100)} 股` : ""}。`,
 					),
 				],
 			};

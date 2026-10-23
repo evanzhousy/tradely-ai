@@ -15,6 +15,7 @@ import {
 export const structureUnits: TeachingUnit[] = [
 	{
 		id: "gamma-exposure",
+		version: 3,
 		conceptLab: {
 			kind: "gamma-exposure",
 			intro: t(
@@ -42,9 +43,36 @@ export const structureUnits: TeachingUnit[] = [
 				[-10, -30, 0, 70, 90, 0, 0, 0, 0],
 				[-35, -15, 0, 60, 40, 0, 0, 0, 0],
 			][v];
+			// Snapshot B; a null cell is missing.
+			const bVals = [
+				[20, 10, 0, 30, 0, 0, 0, 0, 0],
+				[20, 10, 0, -10, 0, 0, 0, 0, 0],
+				[20, 10, 0, 90, 0, 0, 0, 0, null],
+				[110, 10, 0, -70, 0, 0, 0, 0, 0],
+			][v];
 			const net = vals.reduce((a, b) => a + b, 0);
 			const gross = vals.reduce((a, b) => a + Math.abs(b), 0);
 			const nonzero = vals.filter((value) => value !== 0);
+			const bKnown = bVals.filter((value): value is number => value !== null);
+			const complete = bKnown.length === bVals.length;
+			const bNet = bKnown.reduce((a, b) => a + b, 0);
+			const bGross = bKnown.reduce((a, b) => a + Math.abs(b), 0);
+			const bSizes = bKnown
+				.filter((value) => value !== 0)
+				.map((value) => plain(Math.abs(value)))
+				.join(" + ");
+			const compare = !complete
+				? "unknown"
+				: bNet === net
+					? "equal"
+					: "different";
+			const larger = !complete
+				? "unknown"
+				: gross > bGross
+					? "a"
+					: gross < bGross
+						? "b"
+						: "same";
 			const sum = nonzero
 				.map((value, i) =>
 					i === 0
@@ -54,6 +82,14 @@ export const structureUnits: TeachingUnit[] = [
 							: `+ ${plain(value)}`,
 				)
 				.join(" ");
+			const blank = t(
+				"B has a blank cell, and a blank isn't zero, so B's gross isn't known.",
+				"B 有一格是空白，而空白不等于零，所以 B 的总幅度未知。",
+			);
+			const sizes = t(
+				`A's cells add to ${plain(gross)} in size and B's to ${plain(bGross)}.`,
+				`A 各格的大小加起来为 ${plain(gross)}，B 为 ${plain(bGross)}。`,
+			);
 			return {
 				brief: t(
 					"Two model snapshots of ALFA's option chain at one moment. Each cell is one strike and expiry's GEX, in dollars of delta per 1% move in ALFA, signed by an assumed dealer position rather than observed holdings. Snapshot A has every cell; Snapshot B may have a gap. A 0 is a real reading of zero, while a blank is missing. Count every expiry, whatever the chart filters show.",
@@ -71,10 +107,7 @@ export const structureUnits: TeachingUnit[] = [
 						"Supplied synthetic signs, not observed dealer positions. Snapshot A is complete. Snapshot B may have a gap. Explicit zeros are observations.",
 						"给定模拟符号，不是观测到的做市商持仓。快照 A 完整，B 可能有缺口，明确的零是观测。",
 					),
-					distributions: [
-						vals,
-						[20, 10, 0, net - 30, 0, 0, 0, 0, v === 2 ? null : 0],
-					].map((values, index) => ({
+					distributions: [vals, bVals].map((values, index) => ({
 						id: index === 0 ? "a" : "b",
 						label: t(
 							index === 0 ? "Snapshot A" : "Snapshot B",
@@ -120,31 +153,101 @@ export const structureUnits: TeachingUnit[] = [
 								"equal",
 								"They're equal, though the near-expiry cells differ in sign",
 								"相等，但近月的格子符号不同",
-								"B has a blank cell, and a blank isn't zero. Its known cells give only a subtotal, so you can't say the complete totals are equal.",
-								"B 有一格是空白，而空白不等于零。它已知的格子只能给出小计，所以不能说完整总和相等。",
+								complete
+									? `Add them up: A comes to ${signed(net)} and B to ${signed(bNet)}, so they aren't equal.`
+									: "B has a blank cell, and a blank isn't zero. Its known cells give only a subtotal, so you can't say the complete totals are equal.",
+								complete
+									? `加起来：A 为 ${signed(net)}，B 为 ${signed(bNet)}，所以并不相等。`
+									: "B 有一格是空白，而空白不等于零。它已知的格子只能给出小计，所以不能说完整总和相等。",
 							],
 							[
 								"different",
 								"They're different",
 								"不同",
-								`${v === 2 ? "B's complete total isn't known while a cell is blank, so you can't call them different either." : "Add up each grid: the near-expiry cells differ in sign, but the complete net totals come out equal."}`,
-								`${v === 2 ? "B 有空白格时完整总和未知，所以也不能说它们不同。" : "把每个网格加总：临近到期的格子符号不同，但完整的净总和相等。"}`,
+								complete
+									? "Add up each grid: the near-expiry cells differ in sign, but the complete net totals come out equal."
+									: "B's complete total isn't known while a cell is blank, so you can't call them different either.",
+								complete
+									? "把每个网格加总：临近到期的格子符号不同，但完整的净总和相等。"
+									: "B 有空白格时完整总和未知，所以也不能说它们不同。",
 							],
 							[
 								"unknown",
 								"B has a missing cell, so its complete total isn't known",
 								"B 有一格缺失，所以它的完整总和未知",
-								"Every cell is filled in both snapshots, so both complete totals are known. Add them up and they're equal.",
-								"两个快照的每一格都有数据，所以两个完整总和都已知。加起来是相等的。",
+								compare === "equal"
+									? "Every cell is filled in both snapshots, so both complete totals are known. Add them up and they're equal."
+									: `Every cell is filled in both snapshots, so both complete totals are known: A ${signed(net)}, B ${signed(bNet)}.`,
+								compare === "equal"
+									? "两个快照的每一格都有数据，所以两个完整总和都已知。加起来是相等的。"
+									: `两个快照的每一格都有数据，所以两个完整总和都已知：A 为 ${signed(net)}，B 为 ${signed(bNet)}。`,
 							],
 						],
-						v === 2 ? "unknown" : "equal",
-						v === 2
+						compare,
+						compare === "unknown"
 							? "One of B's cells is blank, and a blank isn't zero. B's known cells give a subtotal, but they can't confirm a complete total."
-							: "Both complete totals match, yet A's 7-day row is negative and B's is positive. A net total hides where the exposure sits.",
-						v === 2
+							: compare === "equal"
+								? "Both complete totals match, yet A's 7-day row is negative and B's is positive. A net total hides where the exposure sits."
+								: `Both grids are complete, so both totals are known: A's cells add to ${signed(net)} and B's to ${signed(bNet)}. They differ.`,
+						compare === "unknown"
 							? "B 有一格是空白，而空白不等于零。B 已知的格子能给出小计，但无法确认完整总和。"
-							: "两个完整总和相同，但 A 的 7 天那一行为负，B 的为正。净总和会掩盖敞口所在的位置。",
+							: compare === "equal"
+								? "两个完整总和相同，但 A 的 7 天那一行为负，B 的为正。净总和会掩盖敞口所在的位置。"
+								: `两个网格都完整，所以两个总和都已知：A 的格子加起来为 ${signed(net)}，B 的为 ${signed(bNet)}。两者不同。`,
+					),
+					c(
+						"compare-gross",
+						"Compare the gross GEX of Snapshots A and B: each grid's cell sizes added, ignoring signs.",
+						"比较快照 A 与快照 B 的总幅度 GEX：忽略符号，把各自网格中每一格的大小相加。",
+						[
+							[
+								"a",
+								"A's is larger",
+								"A 的更大",
+								complete
+									? `${sizes.en} B's opposite cells cancel in its net but count in full here.`
+									: blank.en,
+								complete
+									? `${sizes.zh}B 中相反的格子在净值里抵消，在这里却全部计入。`
+									: blank.zh,
+							],
+							[
+								"b",
+								"B's is larger",
+								"B 的更大",
+								complete
+									? `B's cells add to ${plain(bGross)} in size, less than A's ${plain(gross)}.`
+									: blank.en,
+								complete
+									? `B 各格的大小加起来为 ${plain(bGross)}，小于 A 的 ${plain(gross)}。`
+									: blank.zh,
+							],
+							[
+								"same",
+								"They're the same",
+								"相同",
+								complete
+									? `${sizes.en}${bNet === net ? " Equal nets don't make equal gross: opposite cells cancel in a net, not in a gross." : ""}`
+									: blank.en,
+								complete
+									? `${sizes.zh}${bNet === net ? "净值相等不代表总幅度相等：相反的格子在净值里抵消，在总幅度里不会。" : ""}`
+									: blank.zh,
+							],
+							[
+								"unknown",
+								"B's isn't known: a cell is missing",
+								"B 的未知：有一格缺失",
+								`Every cell is filled in both snapshots, so both gross totals are known: A ${plain(gross)}, B ${plain(bGross)}.`,
+								`两个快照的每一格都有数据，所以两个总幅度都已知：A 为 ${plain(gross)}，B 为 ${plain(bGross)}。`,
+							],
+						],
+						larger,
+						complete
+							? `Gross adds sizes. A: ${plain(gross)}. B: ${bSizes} = ${plain(bGross)}.${bNet === net ? ` Both nets are ${signed(net)}, yet the gross totals differ: the larger one has more opposite cells cancelling in its net.` : ""}`
+							: `B has a blank cell, and a blank isn't zero. Its known cells give a partial sum, ${plain(bGross)}, not a complete gross.`,
+						complete
+							? `总幅度把大小相加。A：${plain(gross)}。B：${bSizes} = ${plain(bGross)}。${bNet === net ? `两个净值都是 ${signed(net)}，总幅度却不同：总幅度更大的那个，有更多相反的格子在净值里抵消。` : ""}`
+							: `B 有一格是空白，而空白不等于零。已知的格子只给出部分和 ${plain(bGross)}，不是完整的总幅度。`,
 					),
 				],
 			};
@@ -152,6 +255,7 @@ export const structureUnits: TeachingUnit[] = [
 	},
 	{
 		id: "gamma-regimes",
+		version: 3,
 		conceptLab: {
 			kind: "gamma-regimes",
 			intro: t(
@@ -176,12 +280,46 @@ export const structureUnits: TeachingUnit[] = [
 			const sensitivity = [150, -240, 180, -120][v];
 			const move = [0.4, 0.5, -0.5, -0.75][v];
 			const drift = sensitivity * move;
+			const long = sensitivity > 0;
+			const rise = move > 0;
+			const product = `${signed(sensitivity)} × ${signedMoney(move)} = ${signed(drift)}`;
 			return {
 				brief: t(
 					`A model says a book's delta changes by ${signed(sensitivity)} shares for each $1 ALFA moves, so the book is ${sensitivity > 0 ? "long" : "short"} gamma. Its owner keeps it delta-neutral with ALFA stock. ALFA ${move > 0 ? "rises" : "falls"} ${money(Math.abs(move))} and nothing else changes.`,
 					`一个模型显示，ALFA 每变动 $1，某账户的 Delta 变化 ${signed(sensitivity)} 股，所以这个账户是${sensitivity > 0 ? "正" : "负"} Gamma。账户持有人用 ALFA 股票保持 Delta 中性。ALFA ${move > 0 ? "上涨" : "下跌"} ${money(Math.abs(move))}，其他条件不变。`,
 				),
 				questions: [
+					c(
+						"drift",
+						"Right after the move, before any hedge trade, where is the book's delta?",
+						"刚变动完、对冲还没交易时，账户的 Delta 在哪里？",
+						[
+							[
+								"long",
+								"Above zero: the book is now long ALFA",
+								"高于零：账户现在做多 ALFA",
+								`${product} shares: the book's delta fell below zero, so it's short ALFA, not long.`,
+								`${product} 股：账户的 Delta 降到零以下，是做空 ALFA，而不是做多。`,
+							],
+							[
+								"short",
+								"Below zero: the book is now short ALFA",
+								"低于零：账户现在做空 ALFA",
+								`${product} shares: the book's delta rose above zero, so it's long ALFA, not short.`,
+								`${product} 股：账户的 Delta 升到零以上，是做多 ALFA，而不是做空。`,
+							],
+							[
+								"zero",
+								"Still zero: the book was delta-neutral",
+								"仍为零：账户原本就是 Delta 中性",
+								`Delta-neutral describes the start. Gamma changes delta as ALFA moves: ${product} shares.`,
+								`Delta 中性只是起点。ALFA 变动时，Gamma 会改变 Delta：${product} 股。`,
+							],
+						],
+						drift > 0 ? "long" : "short",
+						`${product} shares: until the hedge trades, the book is ${drift > 0 ? "long" : "short"} ${plain(Math.abs(drift))} share-equivalents of ALFA.`,
+						`${product} 股：在对冲交易之前，账户的 Delta 为 ${signed(drift)} 股等价，即${drift > 0 ? "做多" : "做空"} ALFA。`,
+					),
 					n(
 						"hedge",
 						"How many shares must the hedge trade? Enter a purchase as positive and a sale as negative.",
@@ -191,6 +329,34 @@ export const structureUnits: TeachingUnit[] = [
 						"股",
 						`The book's delta changes by ${signed(sensitivity)} × ${signedMoney(move)} = ${signed(drift)} shares, so the hedge ${drift > 0 ? "sells" : "buys"} ${plain(Math.abs(drift))}: ${signed(-drift)}. ${sensitivity > 0 ? "Long gamma trades against the move." : "Short gamma trades with the move."}`,
 						`账户的 Delta 变化 ${signed(sensitivity)} × ${signedMoney(move)} = ${signed(drift)} 股，所以对冲要${drift > 0 ? "卖出" : "买入"} ${plain(Math.abs(drift))} 股：${signed(-drift)}。${sensitivity > 0 ? "正 Gamma 逆着变动方向交易。" : "负 Gamma 顺着变动方向交易。"}`,
+					),
+					c(
+						"direction",
+						"Compared with ALFA's move, which way does the hedge trade?",
+						"相对于 ALFA 的变动方向，对冲朝哪个方向交易？",
+						[
+							[
+								"against",
+								"Against it: selling into a rise, buying into a fall",
+								"逆着变动：上涨时卖出，下跌时买入",
+								`At ${signed(sensitivity)} shares per $1 the book is short gamma: ALFA's ${rise ? "rise" : "fall"} made it ${rise ? "shorter" : "longer"}, so the hedge ${rise ? "buys into the rise" : "sells into the fall"}, with the move.`,
+								`每 $1 变化 ${signed(sensitivity)} 股，账户是负 Gamma：ALFA ${rise ? "上涨" : "下跌"}让它${rise ? "更偏空" : "更偏多"}，所以对冲${rise ? "在上涨中买入" : "在下跌中卖出"}，顺着变动方向。`,
+							],
+							[
+								"with",
+								"With it: buying into a rise, selling into a fall",
+								"顺着变动：上涨时买入，下跌时卖出",
+								`At ${signed(sensitivity)} shares per $1 the book is long gamma: ALFA's ${rise ? "rise" : "fall"} made it ${rise ? "longer" : "shorter"}, so the hedge ${rise ? "sells into the rise" : "buys into the fall"}, against the move.`,
+								`每 $1 变化 ${signed(sensitivity)} 股，账户是正 Gamma：ALFA ${rise ? "上涨" : "下跌"}让它${rise ? "更偏多" : "更偏空"}，所以对冲${rise ? "在上涨中卖出" : "在下跌中买入"}，逆着变动方向。`,
+							],
+						],
+						long ? "against" : "with",
+						long
+							? `Long gamma: the book's delta moves the way ALFA does, so staying neutral means trading against the move, ${rise ? "selling into this rise" : "buying into this fall"}. That's this modeled book's hedge rule, not proof that anyone trades it.`
+							: `Short gamma: the book's delta moves opposite to ALFA, so staying neutral means trading with the move, ${rise ? "buying into this rise" : "selling into this fall"}. That's this modeled book's hedge rule, not proof that anyone trades it.`,
+						long
+							? `正 Gamma：账户的 Delta 随 ALFA 同向变化，所以保持中性要逆着变动交易，${rise ? "在这次上涨中卖出" : "在这次下跌中买入"}。这是这个模型账户的对冲规则，不能证明有人真的这样交易。`
+							: `负 Gamma：账户的 Delta 与 ALFA 反向变化，所以保持中性要顺着变动交易，${rise ? "在这次上涨中买入" : "在这次下跌中卖出"}。这是这个模型账户的对冲规则，不能证明有人真的这样交易。`,
 					),
 					c(
 						"certainty",

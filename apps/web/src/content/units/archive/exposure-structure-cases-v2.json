@@ -1,0 +1,2334 @@
+[
+	{
+		"id": "implied-realized-volatility-practice-1",
+		"lessonId": "implied-realized-volatility",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "implied-realized-volatility",
+				"brief": {
+					"en": "Fit the Oct 18 100 call's bid, mid and ask to three implied volatilities, measure ALFA's realized volatility from 20 daily closes, and read the gap between a backward and a forward window.",
+					"zh": "把 10月18日 100 看涨的买价、中间价和卖价拟合成三个隐含波动率，用 20 个每日收盘价测量 ALFA 的已实现波动率，并读懂向后与向前两个窗口之间的差距。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Read the gap in volatility points and keep both windows in view: one is priced forward from options, the other measured backward from closes. A gap is a reason to look closer, not a profit waiting to be taken.",
+					"zh": "按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA's 30-day implied volatility, IV30, is 28%. Its realized volatility over the last 20 sessions, RV20, is 20%. Both are annualized, but IV30 is priced from options and looks forward, while RV20 is measured from past closes.",
+					"zh": "ALFA 的 30 天隐含波动率 IV30 为 28%，最近 20 个交易日的已实现波动率 RV20 为 20%。两者都已年化，但 IV30 来自期权价格、向前看，RV20 则由过去的收盘价测得。"
+				},
+				"questions": [
+					{
+						"id": "spread",
+						"prompt": {
+							"en": "How many volatility points is IV30 above RV20? Use a minus sign if it's below.",
+							"zh": "IV30 比 RV20 高多少个波动率点？如果更低，请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "volatility points", "zh": "波动率点" }
+						},
+						"accepted": ["8"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "28% − 20% = +8 points. Two percentages subtract to points, not to a percent change.",
+							"zh": "28% − 20% = +8 个点。两个百分比相减得到的是点数，而不是百分比变化。"
+						}
+					},
+					{
+						"id": "interpretation",
+						"prompt": {
+							"en": "What does that gap tell you?",
+							"zh": "这个差值说明了什么？"
+						},
+						"choices": [
+							{
+								"id": "return",
+								"label": {
+									"en": "How far ALFA will move next",
+									"zh": "ALFA 接下来会涨跌多少"
+								},
+								"why": {
+									"en": "Volatility measures the size of movement, not where ALFA goes next. The gap compares two windows; it isn't a forecast.",
+									"zh": "波动率衡量的是变动幅度，而不是 ALFA 接下来去哪。差值是在比较两个窗口，不是预测。"
+								}
+							},
+							{
+								"id": "mispricing",
+								"label": {
+									"en": "The options are mispriced by that much",
+									"zh": "期权被错误定价了这么多"
+								},
+								"why": {
+									"en": "IV and RV measure different windows, one forward and one back. A gap is a reason to ask why, such as an earnings date, not a measure of mispricing.",
+									"zh": "IV 和 RV 衡量的是不同的窗口，一个向前、一个向后。差值提示你去问原因（例如财报日期），而不是衡量错误定价。"
+								}
+							},
+							{
+								"id": "context",
+								"label": {
+									"en": "Options price a different amount of movement ahead than ALFA showed lately; it isn't a forecast of direction",
+									"zh": "期权对未来波动的定价与 ALFA 近期的表现不同；这不是方向预测"
+								}
+							}
+						],
+						"accepted": ["context"],
+						"explanation": {
+							"en": "IV30 looks forward from option prices and RV20 back over 20 closes. A gap is a reason to ask why, an event such as earnings, for example, not a measure of mispricing or a direction.",
+							"zh": "IV30 从期权价格向前看，RV20 回看 20 个收盘价。差值提示你去问原因（例如财报之类的事件），既不衡量错误定价，也不说明方向。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Read the gap in volatility points and keep both windows in view: one is priced forward from options, the other measured backward from closes. A gap is a reason to look closer, not a profit waiting to be taken.",
+					"zh": "按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA's 30-day implied volatility, IV30, is 35%. Its realized volatility over the last 20 sessions, RV20, is 28%. Both are annualized, but IV30 is priced from options and looks forward, while RV20 is measured from past closes.",
+					"zh": "ALFA 的 30 天隐含波动率 IV30 为 35%，最近 20 个交易日的已实现波动率 RV20 为 28%。两者都已年化，但 IV30 来自期权价格、向前看，RV20 则由过去的收盘价测得。"
+				},
+				"questions": [
+					{
+						"id": "spread",
+						"prompt": {
+							"en": "How many volatility points is IV30 above RV20? Use a minus sign if it's below.",
+							"zh": "IV30 比 RV20 高多少个波动率点？如果更低，请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "volatility points", "zh": "波动率点" }
+						},
+						"accepted": ["7"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "35% − 28% = +7 points. Two percentages subtract to points, not to a percent change.",
+							"zh": "35% − 28% = +7 个点。两个百分比相减得到的是点数，而不是百分比变化。"
+						}
+					},
+					{
+						"id": "interpretation",
+						"prompt": {
+							"en": "What does that gap tell you?",
+							"zh": "这个差值说明了什么？"
+						},
+						"choices": [
+							{
+								"id": "mispricing",
+								"label": {
+									"en": "The options are mispriced by that much",
+									"zh": "期权被错误定价了这么多"
+								},
+								"why": {
+									"en": "IV and RV measure different windows, one forward and one back. A gap is a reason to ask why, such as an earnings date, not a measure of mispricing.",
+									"zh": "IV 和 RV 衡量的是不同的窗口，一个向前、一个向后。差值提示你去问原因（例如财报日期），而不是衡量错误定价。"
+								}
+							},
+							{
+								"id": "context",
+								"label": {
+									"en": "Options price a different amount of movement ahead than ALFA showed lately; it isn't a forecast of direction",
+									"zh": "期权对未来波动的定价与 ALFA 近期的表现不同；这不是方向预测"
+								}
+							},
+							{
+								"id": "return",
+								"label": {
+									"en": "How far ALFA will move next",
+									"zh": "ALFA 接下来会涨跌多少"
+								},
+								"why": {
+									"en": "Volatility measures the size of movement, not where ALFA goes next. The gap compares two windows; it isn't a forecast.",
+									"zh": "波动率衡量的是变动幅度，而不是 ALFA 接下来去哪。差值是在比较两个窗口，不是预测。"
+								}
+							}
+						],
+						"accepted": ["context"],
+						"explanation": {
+							"en": "IV30 looks forward from option prices and RV20 back over 20 closes. A gap is a reason to ask why, an event such as earnings, for example, not a measure of mispricing or a direction.",
+							"zh": "IV30 从期权价格向前看，RV20 回看 20 个收盘价。差值提示你去问原因（例如财报之类的事件），既不衡量错误定价，也不说明方向。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Read the gap in volatility points and keep both windows in view: one is priced forward from options, the other measured backward from closes. A gap is a reason to look closer, not a profit waiting to be taken.",
+					"zh": "按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。"
+				}
+			}
+		]
+	},
+	{
+		"id": "implied-realized-volatility-practice-2",
+		"lessonId": "implied-realized-volatility",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "implied-realized-volatility",
+				"brief": {
+					"en": "Fit the Oct 18 100 call's bid, mid and ask to three implied volatilities, measure ALFA's realized volatility from 20 daily closes, and read the gap between a backward and a forward window.",
+					"zh": "把 10月18日 100 看涨的买价、中间价和卖价拟合成三个隐含波动率，用 20 个每日收盘价测量 ALFA 的已实现波动率，并读懂向后与向前两个窗口之间的差距。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Read the gap in volatility points and keep both windows in view: one is priced forward from options, the other measured backward from closes. A gap is a reason to look closer, not a profit waiting to be taken.",
+					"zh": "按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA's 30-day implied volatility, IV30, is 28%. Its realized volatility over the last 20 sessions, RV20, is 20%. Both are annualized, but IV30 is priced from options and looks forward, while RV20 is measured from past closes.",
+					"zh": "ALFA 的 30 天隐含波动率 IV30 为 28%，最近 20 个交易日的已实现波动率 RV20 为 20%。两者都已年化，但 IV30 来自期权价格、向前看，RV20 则由过去的收盘价测得。"
+				},
+				"questions": [
+					{
+						"id": "spread",
+						"prompt": {
+							"en": "How many volatility points is IV30 above RV20? Use a minus sign if it's below.",
+							"zh": "IV30 比 RV20 高多少个波动率点？如果更低，请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "volatility points", "zh": "波动率点" }
+						},
+						"accepted": ["8"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "28% − 20% = +8 points. Two percentages subtract to points, not to a percent change.",
+							"zh": "28% − 20% = +8 个点。两个百分比相减得到的是点数，而不是百分比变化。"
+						}
+					},
+					{
+						"id": "interpretation",
+						"prompt": {
+							"en": "What does that gap tell you?",
+							"zh": "这个差值说明了什么？"
+						},
+						"choices": [
+							{
+								"id": "return",
+								"label": {
+									"en": "How far ALFA will move next",
+									"zh": "ALFA 接下来会涨跌多少"
+								},
+								"why": {
+									"en": "Volatility measures the size of movement, not where ALFA goes next. The gap compares two windows; it isn't a forecast.",
+									"zh": "波动率衡量的是变动幅度，而不是 ALFA 接下来去哪。差值是在比较两个窗口，不是预测。"
+								}
+							},
+							{
+								"id": "mispricing",
+								"label": {
+									"en": "The options are mispriced by that much",
+									"zh": "期权被错误定价了这么多"
+								},
+								"why": {
+									"en": "IV and RV measure different windows, one forward and one back. A gap is a reason to ask why, such as an earnings date, not a measure of mispricing.",
+									"zh": "IV 和 RV 衡量的是不同的窗口，一个向前、一个向后。差值提示你去问原因（例如财报日期），而不是衡量错误定价。"
+								}
+							},
+							{
+								"id": "context",
+								"label": {
+									"en": "Options price a different amount of movement ahead than ALFA showed lately; it isn't a forecast of direction",
+									"zh": "期权对未来波动的定价与 ALFA 近期的表现不同；这不是方向预测"
+								}
+							}
+						],
+						"accepted": ["context"],
+						"explanation": {
+							"en": "IV30 looks forward from option prices and RV20 back over 20 closes. A gap is a reason to ask why, an event such as earnings, for example, not a measure of mispricing or a direction.",
+							"zh": "IV30 从期权价格向前看，RV20 回看 20 个收盘价。差值提示你去问原因（例如财报之类的事件），既不衡量错误定价，也不说明方向。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Read the gap in volatility points and keep both windows in view: one is priced forward from options, the other measured backward from closes. A gap is a reason to look closer, not a profit waiting to be taken.",
+					"zh": "按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA's 30-day implied volatility, IV30, is 22%. Its realized volatility over the last 20 sessions, RV20, is 26%. Both are annualized, but IV30 is priced from options and looks forward, while RV20 is measured from past closes.",
+					"zh": "ALFA 的 30 天隐含波动率 IV30 为 22%，最近 20 个交易日的已实现波动率 RV20 为 26%。两者都已年化，但 IV30 来自期权价格、向前看，RV20 则由过去的收盘价测得。"
+				},
+				"questions": [
+					{
+						"id": "spread",
+						"prompt": {
+							"en": "How many volatility points is IV30 above RV20? Use a minus sign if it's below.",
+							"zh": "IV30 比 RV20 高多少个波动率点？如果更低，请用负号。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "volatility points", "zh": "波动率点" }
+						},
+						"accepted": ["-4"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "22% − 26% = −4 points. Two percentages subtract to points, not to a percent change.",
+							"zh": "22% − 26% = −4 个点。两个百分比相减得到的是点数，而不是百分比变化。"
+						}
+					},
+					{
+						"id": "interpretation",
+						"prompt": {
+							"en": "What does that gap tell you?",
+							"zh": "这个差值说明了什么？"
+						},
+						"choices": [
+							{
+								"id": "context",
+								"label": {
+									"en": "Options price a different amount of movement ahead than ALFA showed lately; it isn't a forecast of direction",
+									"zh": "期权对未来波动的定价与 ALFA 近期的表现不同；这不是方向预测"
+								}
+							},
+							{
+								"id": "return",
+								"label": {
+									"en": "How far ALFA will move next",
+									"zh": "ALFA 接下来会涨跌多少"
+								},
+								"why": {
+									"en": "Volatility measures the size of movement, not where ALFA goes next. The gap compares two windows; it isn't a forecast.",
+									"zh": "波动率衡量的是变动幅度，而不是 ALFA 接下来去哪。差值是在比较两个窗口，不是预测。"
+								}
+							},
+							{
+								"id": "mispricing",
+								"label": {
+									"en": "The options are mispriced by that much",
+									"zh": "期权被错误定价了这么多"
+								},
+								"why": {
+									"en": "IV and RV measure different windows, one forward and one back. A gap is a reason to ask why, such as an earnings date, not a measure of mispricing.",
+									"zh": "IV 和 RV 衡量的是不同的窗口，一个向前、一个向后。差值提示你去问原因（例如财报日期），而不是衡量错误定价。"
+								}
+							}
+						],
+						"accepted": ["context"],
+						"explanation": {
+							"en": "IV30 looks forward from option prices and RV20 back over 20 closes. A gap is a reason to ask why, an event such as earnings, for example, not a measure of mispricing or a direction.",
+							"zh": "IV30 从期权价格向前看，RV20 回看 20 个收盘价。差值提示你去问原因（例如财报之类的事件），既不衡量错误定价，也不说明方向。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Read the gap in volatility points and keep both windows in view: one is priced forward from options, the other measured backward from closes. A gap is a reason to look closer, not a profit waiting to be taken.",
+					"zh": "按波动率点读差值，并记住两个窗口：一个是期权向前定价的，一个是从收盘价向后测量的。差值是值得细看的理由，而不是现成的利润。"
+				}
+			}
+		]
+	},
+	{
+		"id": "expected-move-practice-1",
+		"lessonId": "expected-move",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "expected-move",
+				"brief": {
+					"en": "Turn ALFA's 35% implied volatility into a ±$10.36 move to Oct 18, set the $8.27 straddle beside it at about 0.8 of that move, and count how often twelve past expiries ended outside one and two standard deviations.",
+					"zh": "把 ALFA 35% 的隐含波动率换算成到 10月18日 ±$10.36 的变动，把 $8.27 的跨式放在旁边看它约为这个变动的 0.8，再数一数过去 12 个到期日有多少收在一个和两个标准差之外。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Scale volatility by the square root of time, not by the time itself. An expected-move range is a measure of size, not a forecast, a target or a support level.",
+					"zh": "波动率要按时间的平方根缩放，而不是按时间本身。预期变动区间衡量的是幅度，不是预测、目标价或支撑位。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock trades at $100. Its options expiring in 32 days imply 35% volatility. Use calendar days over 365 and the course's model.",
+					"zh": "一只股票现价 $100。32 天后到期的期权隐含波动率为 35%。按自然日除以 365，并使用本课的模型。"
+				},
+				"questions": [
+					{
+						"id": "move",
+						"prompt": {
+							"en": "What is the one-standard-deviation move to expiry, in dollars?",
+							"zh": "到期前一个标准差的变动是多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["10.363264942766474"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$100 × 35% = $35.00 a year, × √(32 ÷ 365) = × 0.296, so about $10.36.",
+							"zh": "$100 × 35% = 一年 $35.00，× √(32 ÷ 365) = × 0.296，约为 $10.36。"
+						}
+					},
+					{
+						"id": "low",
+						"prompt": {
+							"en": "What price marks the lower edge of that one-standard-deviation range?",
+							"zh": "这个一个标准差区间的下沿是什么价格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["89.63673505723352"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$100 − $10.36 = $89.64. Under the model about 16% of outcomes end below it, and 16% above the upper edge, $110.36.",
+							"zh": "$100 − $10.36 = $89.64。按模型，约 16% 的结果收在它下方，另有 16% 收在上沿 $110.36 之上。"
+						}
+					},
+					{
+						"id": "straddle",
+						"prompt": {
+							"en": "About what should the at-the-money straddle for that expiry cost?",
+							"zh": "同一到期日的平值跨式大约应该值多少？"
+						},
+						"choices": [
+							{
+								"id": "eight",
+								"label": {
+									"en": "About $8.29: 0.8 of the move",
+									"zh": "约 $8.29：变动的 0.8"
+								}
+							},
+							{
+								"id": "one",
+								"label": {
+									"en": "About $10.36: the whole move",
+									"zh": "约 $10.36：整个变动"
+								},
+								"why": {
+									"en": "The straddle pays ALFA's distance from the strike, so it prices the average move, about 0.8 of one standard deviation: $8.29, not $10.36.",
+									"zh": "跨式支付的是 ALFA 与行权价之间的距离，所以定价的是平均变动，约为一个标准差的 0.8：$8.29，而不是 $10.36。"
+								}
+							},
+							{
+								"id": "sixtyeight",
+								"label": {
+									"en": "About $7.05: 68% of the move",
+									"zh": "约 $7.05：变动的 68%"
+								},
+								"why": {
+									"en": "68% is the share of outcomes inside one standard deviation, not a fraction of the move to price. The average move is about 0.8 of it.",
+									"zh": "68% 是落在一个标准差之内的结果所占比例，而不是用来定价的变动比例。平均变动约为它的 0.8。"
+								}
+							}
+						],
+						"accepted": ["eight"],
+						"explanation": {
+							"en": "A straddle prices the average move, about 0.8 of one standard deviation under the model: roughly $8.29. The 68% is the share of outcomes inside one SD, a different number.",
+							"zh": "跨式定价的是平均变动，按模型约为一个标准差的 0.8：大约 $8.29。68% 是落在一个标准差之内的结果所占比例，是另一个数。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Scale volatility by the square root of time, not by the time itself. An expected-move range is a measure of size, not a forecast, a target or a support level.",
+					"zh": "波动率要按时间的平方根缩放，而不是按时间本身。预期变动区间衡量的是幅度，不是预测、目标价或支撑位。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock trades at $50. Its options expiring in 30 days imply 40% volatility. Use calendar days over 365 and the course's model.",
+					"zh": "一只股票现价 $50。30 天后到期的期权隐含波动率为 40%。按自然日除以 365，并使用本课的模型。"
+				},
+				"questions": [
+					{
+						"id": "move",
+						"prompt": {
+							"en": "What is the one-standard-deviation move to expiry, in dollars?",
+							"zh": "到期前一个标准差的变动是多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["5.733821790809959"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$50 × 40% = $20.00 a year, × √(30 ÷ 365) = × 0.287, so about $5.73.",
+							"zh": "$50 × 40% = 一年 $20.00，× √(30 ÷ 365) = × 0.287，约为 $5.73。"
+						}
+					},
+					{
+						"id": "low",
+						"prompt": {
+							"en": "What price marks the lower edge of that one-standard-deviation range?",
+							"zh": "这个一个标准差区间的下沿是什么价格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["44.266178209190045"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$50 − $5.73 = $44.27. Under the model about 16% of outcomes end below it, and 16% above the upper edge, $55.73.",
+							"zh": "$50 − $5.73 = $44.27。按模型，约 16% 的结果收在它下方，另有 16% 收在上沿 $55.73 之上。"
+						}
+					},
+					{
+						"id": "straddle",
+						"prompt": {
+							"en": "About what should the at-the-money straddle for that expiry cost?",
+							"zh": "同一到期日的平值跨式大约应该值多少？"
+						},
+						"choices": [
+							{
+								"id": "one",
+								"label": {
+									"en": "About $5.73: the whole move",
+									"zh": "约 $5.73：整个变动"
+								},
+								"why": {
+									"en": "The straddle pays ALFA's distance from the strike, so it prices the average move, about 0.8 of one standard deviation: $4.59, not $5.73.",
+									"zh": "跨式支付的是 ALFA 与行权价之间的距离，所以定价的是平均变动，约为一个标准差的 0.8：$4.59，而不是 $5.73。"
+								}
+							},
+							{
+								"id": "sixtyeight",
+								"label": {
+									"en": "About $3.90: 68% of the move",
+									"zh": "约 $3.90：变动的 68%"
+								},
+								"why": {
+									"en": "68% is the share of outcomes inside one standard deviation, not a fraction of the move to price. The average move is about 0.8 of it.",
+									"zh": "68% 是落在一个标准差之内的结果所占比例，而不是用来定价的变动比例。平均变动约为它的 0.8。"
+								}
+							},
+							{
+								"id": "eight",
+								"label": {
+									"en": "About $4.59: 0.8 of the move",
+									"zh": "约 $4.59：变动的 0.8"
+								}
+							}
+						],
+						"accepted": ["eight"],
+						"explanation": {
+							"en": "A straddle prices the average move, about 0.8 of one standard deviation under the model: roughly $4.59. The 68% is the share of outcomes inside one SD, a different number.",
+							"zh": "跨式定价的是平均变动，按模型约为一个标准差的 0.8：大约 $4.59。68% 是落在一个标准差之内的结果所占比例，是另一个数。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Scale volatility by the square root of time, not by the time itself. An expected-move range is a measure of size, not a forecast, a target or a support level.",
+					"zh": "波动率要按时间的平方根缩放，而不是按时间本身。预期变动区间衡量的是幅度，不是预测、目标价或支撑位。"
+				}
+			}
+		]
+	},
+	{
+		"id": "expected-move-practice-2",
+		"lessonId": "expected-move",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "expected-move",
+				"brief": {
+					"en": "Turn ALFA's 35% implied volatility into a ±$10.36 move to Oct 18, set the $8.27 straddle beside it at about 0.8 of that move, and count how often twelve past expiries ended outside one and two standard deviations.",
+					"zh": "把 ALFA 35% 的隐含波动率换算成到 10月18日 ±$10.36 的变动，把 $8.27 的跨式放在旁边看它约为这个变动的 0.8，再数一数过去 12 个到期日有多少收在一个和两个标准差之外。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Scale volatility by the square root of time, not by the time itself. An expected-move range is a measure of size, not a forecast, a target or a support level.",
+					"zh": "波动率要按时间的平方根缩放，而不是按时间本身。预期变动区间衡量的是幅度，不是预测、目标价或支撑位。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock trades at $100. Its options expiring in 32 days imply 35% volatility. Use calendar days over 365 and the course's model.",
+					"zh": "一只股票现价 $100。32 天后到期的期权隐含波动率为 35%。按自然日除以 365，并使用本课的模型。"
+				},
+				"questions": [
+					{
+						"id": "move",
+						"prompt": {
+							"en": "What is the one-standard-deviation move to expiry, in dollars?",
+							"zh": "到期前一个标准差的变动是多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["10.363264942766474"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$100 × 35% = $35.00 a year, × √(32 ÷ 365) = × 0.296, so about $10.36.",
+							"zh": "$100 × 35% = 一年 $35.00，× √(32 ÷ 365) = × 0.296，约为 $10.36。"
+						}
+					},
+					{
+						"id": "low",
+						"prompt": {
+							"en": "What price marks the lower edge of that one-standard-deviation range?",
+							"zh": "这个一个标准差区间的下沿是什么价格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["89.63673505723352"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$100 − $10.36 = $89.64. Under the model about 16% of outcomes end below it, and 16% above the upper edge, $110.36.",
+							"zh": "$100 − $10.36 = $89.64。按模型，约 16% 的结果收在它下方，另有 16% 收在上沿 $110.36 之上。"
+						}
+					},
+					{
+						"id": "straddle",
+						"prompt": {
+							"en": "About what should the at-the-money straddle for that expiry cost?",
+							"zh": "同一到期日的平值跨式大约应该值多少？"
+						},
+						"choices": [
+							{
+								"id": "eight",
+								"label": {
+									"en": "About $8.29: 0.8 of the move",
+									"zh": "约 $8.29：变动的 0.8"
+								}
+							},
+							{
+								"id": "one",
+								"label": {
+									"en": "About $10.36: the whole move",
+									"zh": "约 $10.36：整个变动"
+								},
+								"why": {
+									"en": "The straddle pays ALFA's distance from the strike, so it prices the average move, about 0.8 of one standard deviation: $8.29, not $10.36.",
+									"zh": "跨式支付的是 ALFA 与行权价之间的距离，所以定价的是平均变动，约为一个标准差的 0.8：$8.29，而不是 $10.36。"
+								}
+							},
+							{
+								"id": "sixtyeight",
+								"label": {
+									"en": "About $7.05: 68% of the move",
+									"zh": "约 $7.05：变动的 68%"
+								},
+								"why": {
+									"en": "68% is the share of outcomes inside one standard deviation, not a fraction of the move to price. The average move is about 0.8 of it.",
+									"zh": "68% 是落在一个标准差之内的结果所占比例，而不是用来定价的变动比例。平均变动约为它的 0.8。"
+								}
+							}
+						],
+						"accepted": ["eight"],
+						"explanation": {
+							"en": "A straddle prices the average move, about 0.8 of one standard deviation under the model: roughly $8.29. The 68% is the share of outcomes inside one SD, a different number.",
+							"zh": "跨式定价的是平均变动，按模型约为一个标准差的 0.8：大约 $8.29。68% 是落在一个标准差之内的结果所占比例，是另一个数。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Scale volatility by the square root of time, not by the time itself. An expected-move range is a measure of size, not a forecast, a target or a support level.",
+					"zh": "波动率要按时间的平方根缩放，而不是按时间本身。预期变动区间衡量的是幅度，不是预测、目标价或支撑位。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock trades at $200. Its options expiring in 14 days imply 25% volatility. Use calendar days over 365 and the course's model.",
+					"zh": "一只股票现价 $200。14 天后到期的期权隐含波动率为 25%。按自然日除以 365，并使用本课的模型。"
+				},
+				"questions": [
+					{
+						"id": "move",
+						"prompt": {
+							"en": "What is the one-standard-deviation move to expiry, in dollars?",
+							"zh": "到期前一个标准差的变动是多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["9.792364931869324"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$200 × 25% = $50.00 a year, × √(14 ÷ 365) = × 0.196, so about $9.79.",
+							"zh": "$200 × 25% = 一年 $50.00，× √(14 ÷ 365) = × 0.196，约为 $9.79。"
+						}
+					},
+					{
+						"id": "low",
+						"prompt": {
+							"en": "What price marks the lower edge of that one-standard-deviation range?",
+							"zh": "这个一个标准差区间的下沿是什么价格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["190.20763506813068"],
+						"tolerance": 0.05,
+						"explanation": {
+							"en": "$200 − $9.79 = $190.21. Under the model about 16% of outcomes end below it, and 16% above the upper edge, $209.79.",
+							"zh": "$200 − $9.79 = $190.21。按模型，约 16% 的结果收在它下方，另有 16% 收在上沿 $209.79 之上。"
+						}
+					},
+					{
+						"id": "straddle",
+						"prompt": {
+							"en": "About what should the at-the-money straddle for that expiry cost?",
+							"zh": "同一到期日的平值跨式大约应该值多少？"
+						},
+						"choices": [
+							{
+								"id": "sixtyeight",
+								"label": {
+									"en": "About $6.66: 68% of the move",
+									"zh": "约 $6.66：变动的 68%"
+								},
+								"why": {
+									"en": "68% is the share of outcomes inside one standard deviation, not a fraction of the move to price. The average move is about 0.8 of it.",
+									"zh": "68% 是落在一个标准差之内的结果所占比例，而不是用来定价的变动比例。平均变动约为它的 0.8。"
+								}
+							},
+							{
+								"id": "eight",
+								"label": {
+									"en": "About $7.83: 0.8 of the move",
+									"zh": "约 $7.83：变动的 0.8"
+								}
+							},
+							{
+								"id": "one",
+								"label": {
+									"en": "About $9.79: the whole move",
+									"zh": "约 $9.79：整个变动"
+								},
+								"why": {
+									"en": "The straddle pays ALFA's distance from the strike, so it prices the average move, about 0.8 of one standard deviation: $7.83, not $9.79.",
+									"zh": "跨式支付的是 ALFA 与行权价之间的距离，所以定价的是平均变动，约为一个标准差的 0.8：$7.83，而不是 $9.79。"
+								}
+							}
+						],
+						"accepted": ["eight"],
+						"explanation": {
+							"en": "A straddle prices the average move, about 0.8 of one standard deviation under the model: roughly $7.83. The 68% is the share of outcomes inside one SD, a different number.",
+							"zh": "跨式定价的是平均变动，按模型约为一个标准差的 0.8：大约 $7.83。68% 是落在一个标准差之内的结果所占比例，是另一个数。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Scale volatility by the square root of time, not by the time itself. An expected-move range is a measure of size, not a forecast, a target or a support level.",
+					"zh": "波动率要按时间的平方根缩放，而不是按时间本身。预期变动区间衡量的是幅度，不是预测、目标价或支撑位。"
+				}
+			}
+		]
+	},
+	{
+		"id": "zero-dte-practice-1",
+		"lessonId": "zero-dte",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "zero-dte",
+				"brief": {
+					"en": "Watch the Sep 20 100 call fall from $0.36 at the open to nothing at the close with ALFA unchanged, see its delta jump from 0.29 to 0.72 on 40 cents with an hour left, and follow 12,000 same-day contracts that never reach open interest.",
+					"zh": "看 9月20日 100 看涨在 ALFA 不变时，从开盘的 $0.36 跌到收盘一文不值；看还剩一小时时它的 Delta 如何随 40 美分从 0.29 跳到 0.72；再追踪当天成交、永远进不了未平仓量的 12,000 张合约。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A 0DTE option isn't a cheap version of a longer one: with hours left, small moves decide almost everything. Its volume says nothing about open interest, because it can't survive the night.",
+					"zh": "0DTE 期权不是更长期期权的便宜版本：只剩几个小时，小幅变动几乎决定一切。它的成交量与未平仓量无关，因为它熬不过这一夜。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock's 100 calls expire today. You bought 10 of them at 10:00 and hold them through the 4:00 pm close, when the stock is at $100.60. Over the day, 12,000 of these contracts traded, all opened today. One contract covers 100 shares.",
+					"zh": "某股票行权价 100 的看涨今天到期。你在 10:00 买入 10 张并持有到下午 4:00 收盘，收盘时股价为 $100.60。这一天里这种合约成交了 12,000 张，全部是当天开的仓。一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "close-value",
+						"prompt": {
+							"en": "What is each option worth at the close, per share?",
+							"zh": "收盘时每张期权每股值多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["0.5999999999999943"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "It finishes $0.60 in the money: $100.60 − $100 = $0.60. No time value is left.",
+							"zh": "它收盘时实值 $0.60：$100.60 − $100 = $0.60。没有任何时间价值了。"
+						}
+					},
+					{
+						"id": "shares",
+						"prompt": {
+							"en": "How many shares change hands for you when your 10 options settle?",
+							"zh": "你的 10 张期权结算时，你要交收多少股？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["1000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "In the money by $0.01 or more, they're exercised automatically: 10 × 100 = 1,000 shares bought at $100.",
+							"zh": "实值 $0.01 或以上会被自动行权：10 × 100 = 1,000 股，以 $100 买入。"
+						}
+					},
+					{
+						"id": "monday-oi",
+						"prompt": {
+							"en": "How many contracts does this series show in open interest on the next trading day?",
+							"zh": "下一个交易日，这个系列的未平仓量显示多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["0"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "None: the series expired at today's close. The 12,000 contracts traded today appear in today's volume and never in open interest.",
+							"zh": "一张也没有：这个系列在今天收盘时就到期了。今天成交的 12,000 张只出现在今天的成交量里，永远不会出现在未平仓量中。"
+						}
+					},
+					{
+						"id": "gamma",
+						"prompt": {
+							"en": "An hour before the close the stock sits right at the strike. Why can hedging these options take a lot of stock?",
+							"zh": "收盘前一小时，股价正好在行权价上。为什么对冲这些期权可能需要交易大量股票？"
+						},
+						"choices": [
+							{
+								"id": "theta",
+								"label": {
+									"en": "Their time value is still large",
+									"zh": "它们的时间价值还很大"
+								},
+								"why": {
+									"en": "With an hour left, little time value remains. What takes stock is delta swinging between near 0 and near 1 within cents.",
+									"zh": "还剩一小时时，时间价值所剩无几。需要大量股票的原因是 Delta 在几美分之内在接近 0 和接近 1 之间摆动。"
+								}
+							},
+							{
+								"id": "volume",
+								"label": {
+									"en": "Their volume is small",
+									"zh": "它们的成交量很小"
+								},
+								"why": {
+									"en": "Volume isn't what drives the hedge; each contract's delta is. Near the strike at the end, it swings from near 0 to near 1 within cents.",
+									"zh": "驱动对冲的不是成交量，而是每张合约的 Delta。临近到期时在行权价附近，它在几美分之内从接近 0 摆到接近 1。"
+								}
+							},
+							{
+								"id": "gamma",
+								"label": {
+									"en": "Their delta swings between near 0 and near 1 within cents",
+									"zh": "它们的 Delta 会在几美分之内在接近 0 和接近 1 之间摆动"
+								}
+							}
+						],
+						"accepted": ["gamma"],
+						"explanation": {
+							"en": "Near expiry, gamma piles up at the strike: a few cents decide whether the option ends worth something, so its delta swings, and a hedge has to follow it.",
+							"zh": "临近到期时，Gamma 在行权价附近堆积：几美分就决定期权最后是否有价值，所以它的 Delta 来回摆动，对冲也得跟着调整。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A 0DTE option isn't a cheap version of a longer one: with hours left, small moves decide almost everything. Its volume says nothing about open interest, because it can't survive the night.",
+					"zh": "0DTE 期权不是更长期期权的便宜版本：只剩几个小时，小幅变动几乎决定一切。它的成交量与未平仓量无关，因为它熬不过这一夜。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock's 50 calls expire today. You bought 5 of them at 10:00 and hold them through the 4:00 pm close, when the stock is at $49.40. Over the day, 8,000 of these contracts traded, all opened today. One contract covers 100 shares.",
+					"zh": "某股票行权价 50 的看涨今天到期。你在 10:00 买入 5 张并持有到下午 4:00 收盘，收盘时股价为 $49.40。这一天里这种合约成交了 8,000 张，全部是当天开的仓。一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "close-value",
+						"prompt": {
+							"en": "What is each option worth at the close, per share?",
+							"zh": "收盘时每张期权每股值多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["0"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "It finishes out of the money, so it's worth nothing: no time value is left at the close.",
+							"zh": "它收盘时是虚值，所以一文不值：收盘时已经没有时间价值。"
+						}
+					},
+					{
+						"id": "shares",
+						"prompt": {
+							"en": "How many shares change hands for you when your 5 options settle?",
+							"zh": "你的 5 张期权结算时，你要交收多少股？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["0"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "Out of the money, they expire unexercised: no shares change hands.",
+							"zh": "虚值的期权到期不会被行权：不交收任何股票。"
+						}
+					},
+					{
+						"id": "monday-oi",
+						"prompt": {
+							"en": "How many contracts does this series show in open interest on the next trading day?",
+							"zh": "下一个交易日，这个系列的未平仓量显示多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["0"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "None: the series expired at today's close. The 8,000 contracts traded today appear in today's volume and never in open interest.",
+							"zh": "一张也没有：这个系列在今天收盘时就到期了。今天成交的 8,000 张只出现在今天的成交量里，永远不会出现在未平仓量中。"
+						}
+					},
+					{
+						"id": "gamma",
+						"prompt": {
+							"en": "An hour before the close the stock sits right at the strike. Why can hedging these options take a lot of stock?",
+							"zh": "收盘前一小时，股价正好在行权价上。为什么对冲这些期权可能需要交易大量股票？"
+						},
+						"choices": [
+							{
+								"id": "volume",
+								"label": {
+									"en": "Their volume is small",
+									"zh": "它们的成交量很小"
+								},
+								"why": {
+									"en": "Volume isn't what drives the hedge; each contract's delta is. Near the strike at the end, it swings from near 0 to near 1 within cents.",
+									"zh": "驱动对冲的不是成交量，而是每张合约的 Delta。临近到期时在行权价附近，它在几美分之内从接近 0 摆到接近 1。"
+								}
+							},
+							{
+								"id": "gamma",
+								"label": {
+									"en": "Their delta swings between near 0 and near 1 within cents",
+									"zh": "它们的 Delta 会在几美分之内在接近 0 和接近 1 之间摆动"
+								}
+							},
+							{
+								"id": "theta",
+								"label": {
+									"en": "Their time value is still large",
+									"zh": "它们的时间价值还很大"
+								},
+								"why": {
+									"en": "With an hour left, little time value remains. What takes stock is delta swinging between near 0 and near 1 within cents.",
+									"zh": "还剩一小时时，时间价值所剩无几。需要大量股票的原因是 Delta 在几美分之内在接近 0 和接近 1 之间摆动。"
+								}
+							}
+						],
+						"accepted": ["gamma"],
+						"explanation": {
+							"en": "Near expiry, gamma piles up at the strike: a few cents decide whether the option ends worth something, so its delta swings, and a hedge has to follow it.",
+							"zh": "临近到期时，Gamma 在行权价附近堆积：几美分就决定期权最后是否有价值，所以它的 Delta 来回摆动，对冲也得跟着调整。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A 0DTE option isn't a cheap version of a longer one: with hours left, small moves decide almost everything. Its volume says nothing about open interest, because it can't survive the night.",
+					"zh": "0DTE 期权不是更长期期权的便宜版本：只剩几个小时，小幅变动几乎决定一切。它的成交量与未平仓量无关，因为它熬不过这一夜。"
+				}
+			}
+		]
+	},
+	{
+		"id": "zero-dte-practice-2",
+		"lessonId": "zero-dte",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "zero-dte",
+				"brief": {
+					"en": "Watch the Sep 20 100 call fall from $0.36 at the open to nothing at the close with ALFA unchanged, see its delta jump from 0.29 to 0.72 on 40 cents with an hour left, and follow 12,000 same-day contracts that never reach open interest.",
+					"zh": "看 9月20日 100 看涨在 ALFA 不变时，从开盘的 $0.36 跌到收盘一文不值；看还剩一小时时它的 Delta 如何随 40 美分从 0.29 跳到 0.72；再追踪当天成交、永远进不了未平仓量的 12,000 张合约。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A 0DTE option isn't a cheap version of a longer one: with hours left, small moves decide almost everything. Its volume says nothing about open interest, because it can't survive the night.",
+					"zh": "0DTE 期权不是更长期期权的便宜版本：只剩几个小时，小幅变动几乎决定一切。它的成交量与未平仓量无关，因为它熬不过这一夜。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock's 100 calls expire today. You bought 10 of them at 10:00 and hold them through the 4:00 pm close, when the stock is at $100.60. Over the day, 12,000 of these contracts traded, all opened today. One contract covers 100 shares.",
+					"zh": "某股票行权价 100 的看涨今天到期。你在 10:00 买入 10 张并持有到下午 4:00 收盘，收盘时股价为 $100.60。这一天里这种合约成交了 12,000 张，全部是当天开的仓。一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "close-value",
+						"prompt": {
+							"en": "What is each option worth at the close, per share?",
+							"zh": "收盘时每张期权每股值多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["0.5999999999999943"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "It finishes $0.60 in the money: $100.60 − $100 = $0.60. No time value is left.",
+							"zh": "它收盘时实值 $0.60：$100.60 − $100 = $0.60。没有任何时间价值了。"
+						}
+					},
+					{
+						"id": "shares",
+						"prompt": {
+							"en": "How many shares change hands for you when your 10 options settle?",
+							"zh": "你的 10 张期权结算时，你要交收多少股？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["1000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "In the money by $0.01 or more, they're exercised automatically: 10 × 100 = 1,000 shares bought at $100.",
+							"zh": "实值 $0.01 或以上会被自动行权：10 × 100 = 1,000 股，以 $100 买入。"
+						}
+					},
+					{
+						"id": "monday-oi",
+						"prompt": {
+							"en": "How many contracts does this series show in open interest on the next trading day?",
+							"zh": "下一个交易日，这个系列的未平仓量显示多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["0"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "None: the series expired at today's close. The 12,000 contracts traded today appear in today's volume and never in open interest.",
+							"zh": "一张也没有：这个系列在今天收盘时就到期了。今天成交的 12,000 张只出现在今天的成交量里，永远不会出现在未平仓量中。"
+						}
+					},
+					{
+						"id": "gamma",
+						"prompt": {
+							"en": "An hour before the close the stock sits right at the strike. Why can hedging these options take a lot of stock?",
+							"zh": "收盘前一小时，股价正好在行权价上。为什么对冲这些期权可能需要交易大量股票？"
+						},
+						"choices": [
+							{
+								"id": "theta",
+								"label": {
+									"en": "Their time value is still large",
+									"zh": "它们的时间价值还很大"
+								},
+								"why": {
+									"en": "With an hour left, little time value remains. What takes stock is delta swinging between near 0 and near 1 within cents.",
+									"zh": "还剩一小时时，时间价值所剩无几。需要大量股票的原因是 Delta 在几美分之内在接近 0 和接近 1 之间摆动。"
+								}
+							},
+							{
+								"id": "volume",
+								"label": {
+									"en": "Their volume is small",
+									"zh": "它们的成交量很小"
+								},
+								"why": {
+									"en": "Volume isn't what drives the hedge; each contract's delta is. Near the strike at the end, it swings from near 0 to near 1 within cents.",
+									"zh": "驱动对冲的不是成交量，而是每张合约的 Delta。临近到期时在行权价附近，它在几美分之内从接近 0 摆到接近 1。"
+								}
+							},
+							{
+								"id": "gamma",
+								"label": {
+									"en": "Their delta swings between near 0 and near 1 within cents",
+									"zh": "它们的 Delta 会在几美分之内在接近 0 和接近 1 之间摆动"
+								}
+							}
+						],
+						"accepted": ["gamma"],
+						"explanation": {
+							"en": "Near expiry, gamma piles up at the strike: a few cents decide whether the option ends worth something, so its delta swings, and a hedge has to follow it.",
+							"zh": "临近到期时，Gamma 在行权价附近堆积：几美分就决定期权最后是否有价值，所以它的 Delta 来回摆动，对冲也得跟着调整。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A 0DTE option isn't a cheap version of a longer one: with hours left, small moves decide almost everything. Its volume says nothing about open interest, because it can't survive the night.",
+					"zh": "0DTE 期权不是更长期期权的便宜版本：只剩几个小时，小幅变动几乎决定一切。它的成交量与未平仓量无关，因为它熬不过这一夜。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A stock's 200 calls expire today. You bought 20 of them at 10:00 and hold them through the 4:00 pm close, when the stock is at $201.25. Over the day, 30,000 of these contracts traded, all opened today. One contract covers 100 shares.",
+					"zh": "某股票行权价 200 的看涨今天到期。你在 10:00 买入 20 张并持有到下午 4:00 收盘，收盘时股价为 $201.25。这一天里这种合约成交了 30,000 张，全部是当天开的仓。一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "close-value",
+						"prompt": {
+							"en": "What is each option worth at the close, per share?",
+							"zh": "收盘时每张期权每股值多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars a share", "zh": "美元/股" }
+						},
+						"accepted": ["1.25"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "It finishes $1.25 in the money: $201.25 − $200 = $1.25. No time value is left.",
+							"zh": "它收盘时实值 $1.25：$201.25 − $200 = $1.25。没有任何时间价值了。"
+						}
+					},
+					{
+						"id": "shares",
+						"prompt": {
+							"en": "How many shares change hands for you when your 20 options settle?",
+							"zh": "你的 20 张期权结算时，你要交收多少股？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["2000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "In the money by $0.01 or more, they're exercised automatically: 20 × 100 = 2,000 shares bought at $200.",
+							"zh": "实值 $0.01 或以上会被自动行权：20 × 100 = 2,000 股，以 $200 买入。"
+						}
+					},
+					{
+						"id": "monday-oi",
+						"prompt": {
+							"en": "How many contracts does this series show in open interest on the next trading day?",
+							"zh": "下一个交易日，这个系列的未平仓量显示多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["0"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "None: the series expired at today's close. The 30,000 contracts traded today appear in today's volume and never in open interest.",
+							"zh": "一张也没有：这个系列在今天收盘时就到期了。今天成交的 30,000 张只出现在今天的成交量里，永远不会出现在未平仓量中。"
+						}
+					},
+					{
+						"id": "gamma",
+						"prompt": {
+							"en": "An hour before the close the stock sits right at the strike. Why can hedging these options take a lot of stock?",
+							"zh": "收盘前一小时，股价正好在行权价上。为什么对冲这些期权可能需要交易大量股票？"
+						},
+						"choices": [
+							{
+								"id": "gamma",
+								"label": {
+									"en": "Their delta swings between near 0 and near 1 within cents",
+									"zh": "它们的 Delta 会在几美分之内在接近 0 和接近 1 之间摆动"
+								}
+							},
+							{
+								"id": "theta",
+								"label": {
+									"en": "Their time value is still large",
+									"zh": "它们的时间价值还很大"
+								},
+								"why": {
+									"en": "With an hour left, little time value remains. What takes stock is delta swinging between near 0 and near 1 within cents.",
+									"zh": "还剩一小时时，时间价值所剩无几。需要大量股票的原因是 Delta 在几美分之内在接近 0 和接近 1 之间摆动。"
+								}
+							},
+							{
+								"id": "volume",
+								"label": {
+									"en": "Their volume is small",
+									"zh": "它们的成交量很小"
+								},
+								"why": {
+									"en": "Volume isn't what drives the hedge; each contract's delta is. Near the strike at the end, it swings from near 0 to near 1 within cents.",
+									"zh": "驱动对冲的不是成交量，而是每张合约的 Delta。临近到期时在行权价附近，它在几美分之内从接近 0 摆到接近 1。"
+								}
+							}
+						],
+						"accepted": ["gamma"],
+						"explanation": {
+							"en": "Near expiry, gamma piles up at the strike: a few cents decide whether the option ends worth something, so its delta swings, and a hedge has to follow it.",
+							"zh": "临近到期时，Gamma 在行权价附近堆积：几美分就决定期权最后是否有价值，所以它的 Delta 来回摆动，对冲也得跟着调整。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A 0DTE option isn't a cheap version of a longer one: with hours left, small moves decide almost everything. Its volume says nothing about open interest, because it can't survive the night.",
+					"zh": "0DTE 期权不是更长期期权的便宜版本：只剩几个小时，小幅变动几乎决定一切。它的成交量与未平仓量无关，因为它熬不过这一夜。"
+				}
+			}
+		]
+	},
+	{
+		"id": "gamma-exposure-practice-1",
+		"lessonId": "gamma-exposure",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "gamma-exposure",
+				"brief": {
+					"en": "Build the Oct 18 110 call's GEX from gamma, open interest, spot and an assumed dealer sign, read ALFA's Oct 18 profile by strike, and tell the full chain from a traded-only or incomplete subtotal.",
+					"zh": "用 Gamma、未平仓量、现价和假设的做市商符号构建 10月18日 110 看涨的 GEX，按行权价读 ALFA 10月18日 的分布，并把完整期权链与仅成交或不完整的小计区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Net adds the cells with their signs, so opposite cells cancel; gross adds their sizes. A positive net doesn't mean every cell is positive, and neither number tells you what dealers actually hold.",
+					"zh": "净值按符号把各格相加，相反的格子会抵消；总幅度把各格的大小相加。净值为正不代表每一格都为正，两个数也都不能说明做市商实际持有什么。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two model snapshots of ALFA's option chain at one moment. Each cell is one strike and expiry's GEX, in dollars of delta per 1% move in ALFA, signed by an assumed dealer position rather than observed holdings. Snapshot A has every cell; Snapshot B may have a gap. A 0 is a real reading of zero, while a blank is missing. Count every expiry, whatever the chart filters show.",
+					"zh": "ALFA 期权链同一时刻的两个模型快照。每一格是一个行权价与到期日的 GEX，单位是 ALFA 每变动 1% 对应的美元 Delta，符号来自假设的做市商持仓，而不是观测到的持仓。快照 A 每一格都有数据；快照 B 可能有缺口。0 是真实读到的零，空白才是缺失。无论图表筛选显示什么，都要计入每个到期日。"
+				},
+				"metrics": {
+					"id": "teaching-gex-0",
+					"gexOnly": true,
+					"symbol": "ALFA",
+					"sessionDate": "2026-09-03",
+					"modelDate": "2026-09-02",
+					"netDex": 0,
+					"denominators": [1000000],
+					"modelNote": {
+						"en": "Supplied synthetic signs, not observed dealer positions. Snapshot A is complete. Snapshot B may have a gap. Explicit zeros are observations.",
+						"zh": "给定模拟符号，不是观测到的做市商持仓。快照 A 完整，B 可能有缺口，明确的零是观测。"
+					},
+					"distributions": [
+						{
+							"id": "a",
+							"label": { "en": "Snapshot A", "zh": "快照 A" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": -20 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": -30 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": 40 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 70 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": 0 }
+							]
+						},
+						{
+							"id": "b",
+							"label": { "en": "Snapshot B", "zh": "快照 B" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": 20 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": 10 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": 30 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 0 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": 0 }
+							]
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is Snapshot A's net GEX: every cell added with its sign?",
+							"zh": "快照 A 的净 GEX 是多少：每一格按符号相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["60"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "−20 − 30 + 40 + 70 = +60. The zero cells add nothing.",
+							"zh": "−20 − 30 + 40 + 70 = +60。为零的格子不增加任何数值。"
+						}
+					},
+					{
+						"id": "gross",
+						"prompt": {
+							"en": "What is Snapshot A's gross GEX: every cell's size added, ignoring signs?",
+							"zh": "快照 A 的总幅度 GEX 是多少：忽略符号，把每一格的大小相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["160"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "20 + 30 + 40 + 70 = 160, much more than the net's 60: opposite cells cancel in the net but not here.",
+							"zh": "20 + 30 + 40 + 70 = 160，远大于净值的 60：相反的格子在净值里抵消，在这里不会。"
+						}
+					},
+					{
+						"id": "compare",
+						"prompt": {
+							"en": "Compare the complete net totals of Snapshots A and B.",
+							"zh": "比较快照 A 与快照 B 的完整净总和。"
+						},
+						"choices": [
+							{
+								"id": "equal",
+								"label": {
+									"en": "They're equal, though the near-expiry cells differ in sign",
+									"zh": "相等，但近月的格子符号不同"
+								}
+							},
+							{
+								"id": "different",
+								"label": { "en": "They're different", "zh": "不同" },
+								"why": {
+									"en": "Add up each grid: the near-expiry cells differ in sign, but the complete net totals come out equal.",
+									"zh": "把每个网格加总：临近到期的格子符号不同，但完整的净总和相等。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "B has a missing cell, so its complete total isn't known",
+									"zh": "B 有一格缺失，所以它的完整总和未知"
+								},
+								"why": {
+									"en": "Every cell is filled in both snapshots, so both complete totals are known. Add them up and they're equal.",
+									"zh": "两个快照的每一格都有数据，所以两个完整总和都已知。加起来是相等的。"
+								}
+							}
+						],
+						"accepted": ["equal"],
+						"explanation": {
+							"en": "Both complete totals match, yet A's 7-day row is negative and B's is positive. A net total hides where the exposure sits.",
+							"zh": "两个完整总和相同，但 A 的 7 天那一行为负，B 的为正。净总和会掩盖敞口所在的位置。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Net adds the cells with their signs, so opposite cells cancel; gross adds their sizes. A positive net doesn't mean every cell is positive, and neither number tells you what dealers actually hold.",
+					"zh": "净值按符号把各格相加，相反的格子会抵消；总幅度把各格的大小相加。净值为正不代表每一格都为正，两个数也都不能说明做市商实际持有什么。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two model snapshots of ALFA's option chain at one moment. Each cell is one strike and expiry's GEX, in dollars of delta per 1% move in ALFA, signed by an assumed dealer position rather than observed holdings. Snapshot A has every cell; Snapshot B may have a gap. A 0 is a real reading of zero, while a blank is missing. Count every expiry, whatever the chart filters show.",
+					"zh": "ALFA 期权链同一时刻的两个模型快照。每一格是一个行权价与到期日的 GEX，单位是 ALFA 每变动 1% 对应的美元 Delta，符号来自假设的做市商持仓，而不是观测到的持仓。快照 A 每一格都有数据；快照 B 可能有缺口。0 是真实读到的零，空白才是缺失。无论图表筛选显示什么，都要计入每个到期日。"
+				},
+				"metrics": {
+					"id": "teaching-gex-1",
+					"gexOnly": true,
+					"symbol": "ALFA",
+					"sessionDate": "2026-09-03",
+					"modelDate": "2026-09-02",
+					"netDex": 0,
+					"denominators": [1000000],
+					"modelNote": {
+						"en": "Supplied synthetic signs, not observed dealer positions. Snapshot A is complete. Snapshot B may have a gap. Explicit zeros are observations.",
+						"zh": "给定模拟符号，不是观测到的做市商持仓。快照 A 完整，B 可能有缺口，明确的零是观测。"
+					},
+					"distributions": [
+						{
+							"id": "a",
+							"label": { "en": "Snapshot A", "zh": "快照 A" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": -40 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": -60 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": 30 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 50 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": 0 }
+							]
+						},
+						{
+							"id": "b",
+							"label": { "en": "Snapshot B", "zh": "快照 B" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": 20 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": 10 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": -50 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 0 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": 0 }
+							]
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is Snapshot A's net GEX: every cell added with its sign?",
+							"zh": "快照 A 的净 GEX 是多少：每一格按符号相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["-20"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "−40 − 60 + 30 + 50 = −20. The zero cells add nothing.",
+							"zh": "−40 − 60 + 30 + 50 = −20。为零的格子不增加任何数值。"
+						}
+					},
+					{
+						"id": "gross",
+						"prompt": {
+							"en": "What is Snapshot A's gross GEX: every cell's size added, ignoring signs?",
+							"zh": "快照 A 的总幅度 GEX 是多少：忽略符号，把每一格的大小相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["180"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "40 + 60 + 30 + 50 = 180, much more than the net's 20: opposite cells cancel in the net but not here.",
+							"zh": "40 + 60 + 30 + 50 = 180，远大于净值的 20：相反的格子在净值里抵消，在这里不会。"
+						}
+					},
+					{
+						"id": "compare",
+						"prompt": {
+							"en": "Compare the complete net totals of Snapshots A and B.",
+							"zh": "比较快照 A 与快照 B 的完整净总和。"
+						},
+						"choices": [
+							{
+								"id": "different",
+								"label": { "en": "They're different", "zh": "不同" },
+								"why": {
+									"en": "Add up each grid: the near-expiry cells differ in sign, but the complete net totals come out equal.",
+									"zh": "把每个网格加总：临近到期的格子符号不同，但完整的净总和相等。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "B has a missing cell, so its complete total isn't known",
+									"zh": "B 有一格缺失，所以它的完整总和未知"
+								},
+								"why": {
+									"en": "Every cell is filled in both snapshots, so both complete totals are known. Add them up and they're equal.",
+									"zh": "两个快照的每一格都有数据，所以两个完整总和都已知。加起来是相等的。"
+								}
+							},
+							{
+								"id": "equal",
+								"label": {
+									"en": "They're equal, though the near-expiry cells differ in sign",
+									"zh": "相等，但近月的格子符号不同"
+								}
+							}
+						],
+						"accepted": ["equal"],
+						"explanation": {
+							"en": "Both complete totals match, yet A's 7-day row is negative and B's is positive. A net total hides where the exposure sits.",
+							"zh": "两个完整总和相同，但 A 的 7 天那一行为负，B 的为正。净总和会掩盖敞口所在的位置。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Net adds the cells with their signs, so opposite cells cancel; gross adds their sizes. A positive net doesn't mean every cell is positive, and neither number tells you what dealers actually hold.",
+					"zh": "净值按符号把各格相加，相反的格子会抵消；总幅度把各格的大小相加。净值为正不代表每一格都为正，两个数也都不能说明做市商实际持有什么。"
+				}
+			}
+		]
+	},
+	{
+		"id": "gamma-exposure-practice-2",
+		"lessonId": "gamma-exposure",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "gamma-exposure",
+				"brief": {
+					"en": "Build the Oct 18 110 call's GEX from gamma, open interest, spot and an assumed dealer sign, read ALFA's Oct 18 profile by strike, and tell the full chain from a traded-only or incomplete subtotal.",
+					"zh": "用 Gamma、未平仓量、现价和假设的做市商符号构建 10月18日 110 看涨的 GEX，按行权价读 ALFA 10月18日 的分布，并把完整期权链与仅成交或不完整的小计区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Net adds the cells with their signs, so opposite cells cancel; gross adds their sizes. A positive net doesn't mean every cell is positive, and neither number tells you what dealers actually hold.",
+					"zh": "净值按符号把各格相加，相反的格子会抵消；总幅度把各格的大小相加。净值为正不代表每一格都为正，两个数也都不能说明做市商实际持有什么。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two model snapshots of ALFA's option chain at one moment. Each cell is one strike and expiry's GEX, in dollars of delta per 1% move in ALFA, signed by an assumed dealer position rather than observed holdings. Snapshot A has every cell; Snapshot B may have a gap. A 0 is a real reading of zero, while a blank is missing. Count every expiry, whatever the chart filters show.",
+					"zh": "ALFA 期权链同一时刻的两个模型快照。每一格是一个行权价与到期日的 GEX，单位是 ALFA 每变动 1% 对应的美元 Delta，符号来自假设的做市商持仓，而不是观测到的持仓。快照 A 每一格都有数据；快照 B 可能有缺口。0 是真实读到的零，空白才是缺失。无论图表筛选显示什么，都要计入每个到期日。"
+				},
+				"metrics": {
+					"id": "teaching-gex-0",
+					"gexOnly": true,
+					"symbol": "ALFA",
+					"sessionDate": "2026-09-03",
+					"modelDate": "2026-09-02",
+					"netDex": 0,
+					"denominators": [1000000],
+					"modelNote": {
+						"en": "Supplied synthetic signs, not observed dealer positions. Snapshot A is complete. Snapshot B may have a gap. Explicit zeros are observations.",
+						"zh": "给定模拟符号，不是观测到的做市商持仓。快照 A 完整，B 可能有缺口，明确的零是观测。"
+					},
+					"distributions": [
+						{
+							"id": "a",
+							"label": { "en": "Snapshot A", "zh": "快照 A" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": -20 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": -30 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": 40 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 70 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": 0 }
+							]
+						},
+						{
+							"id": "b",
+							"label": { "en": "Snapshot B", "zh": "快照 B" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": 20 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": 10 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": 30 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 0 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": 0 }
+							]
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is Snapshot A's net GEX: every cell added with its sign?",
+							"zh": "快照 A 的净 GEX 是多少：每一格按符号相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["60"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "−20 − 30 + 40 + 70 = +60. The zero cells add nothing.",
+							"zh": "−20 − 30 + 40 + 70 = +60。为零的格子不增加任何数值。"
+						}
+					},
+					{
+						"id": "gross",
+						"prompt": {
+							"en": "What is Snapshot A's gross GEX: every cell's size added, ignoring signs?",
+							"zh": "快照 A 的总幅度 GEX 是多少：忽略符号，把每一格的大小相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["160"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "20 + 30 + 40 + 70 = 160, much more than the net's 60: opposite cells cancel in the net but not here.",
+							"zh": "20 + 30 + 40 + 70 = 160，远大于净值的 60：相反的格子在净值里抵消，在这里不会。"
+						}
+					},
+					{
+						"id": "compare",
+						"prompt": {
+							"en": "Compare the complete net totals of Snapshots A and B.",
+							"zh": "比较快照 A 与快照 B 的完整净总和。"
+						},
+						"choices": [
+							{
+								"id": "equal",
+								"label": {
+									"en": "They're equal, though the near-expiry cells differ in sign",
+									"zh": "相等，但近月的格子符号不同"
+								}
+							},
+							{
+								"id": "different",
+								"label": { "en": "They're different", "zh": "不同" },
+								"why": {
+									"en": "Add up each grid: the near-expiry cells differ in sign, but the complete net totals come out equal.",
+									"zh": "把每个网格加总：临近到期的格子符号不同，但完整的净总和相等。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "B has a missing cell, so its complete total isn't known",
+									"zh": "B 有一格缺失，所以它的完整总和未知"
+								},
+								"why": {
+									"en": "Every cell is filled in both snapshots, so both complete totals are known. Add them up and they're equal.",
+									"zh": "两个快照的每一格都有数据，所以两个完整总和都已知。加起来是相等的。"
+								}
+							}
+						],
+						"accepted": ["equal"],
+						"explanation": {
+							"en": "Both complete totals match, yet A's 7-day row is negative and B's is positive. A net total hides where the exposure sits.",
+							"zh": "两个完整总和相同，但 A 的 7 天那一行为负，B 的为正。净总和会掩盖敞口所在的位置。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Net adds the cells with their signs, so opposite cells cancel; gross adds their sizes. A positive net doesn't mean every cell is positive, and neither number tells you what dealers actually hold.",
+					"zh": "净值按符号把各格相加，相反的格子会抵消；总幅度把各格的大小相加。净值为正不代表每一格都为正，两个数也都不能说明做市商实际持有什么。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two model snapshots of ALFA's option chain at one moment. Each cell is one strike and expiry's GEX, in dollars of delta per 1% move in ALFA, signed by an assumed dealer position rather than observed holdings. Snapshot A has every cell; Snapshot B may have a gap. A 0 is a real reading of zero, while a blank is missing. Count every expiry, whatever the chart filters show.",
+					"zh": "ALFA 期权链同一时刻的两个模型快照。每一格是一个行权价与到期日的 GEX，单位是 ALFA 每变动 1% 对应的美元 Delta，符号来自假设的做市商持仓，而不是观测到的持仓。快照 A 每一格都有数据；快照 B 可能有缺口。0 是真实读到的零，空白才是缺失。无论图表筛选显示什么，都要计入每个到期日。"
+				},
+				"metrics": {
+					"id": "teaching-gex-2",
+					"gexOnly": true,
+					"symbol": "ALFA",
+					"sessionDate": "2026-09-03",
+					"modelDate": "2026-09-02",
+					"netDex": 0,
+					"denominators": [1000000],
+					"modelNote": {
+						"en": "Supplied synthetic signs, not observed dealer positions. Snapshot A is complete. Snapshot B may have a gap. Explicit zeros are observations.",
+						"zh": "给定模拟符号，不是观测到的做市商持仓。快照 A 完整，B 可能有缺口，明确的零是观测。"
+					},
+					"distributions": [
+						{
+							"id": "a",
+							"label": { "en": "Snapshot A", "zh": "快照 A" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": -10 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": -30 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": 70 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 90 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": 0 }
+							]
+						},
+						{
+							"id": "b",
+							"label": { "en": "Snapshot B", "zh": "快照 B" },
+							"cells": [
+								{ "id": "g-95-7", "strike": 95, "days": 7, "value": 20 },
+								{ "id": "g-100-7", "strike": 100, "days": 7, "value": 10 },
+								{ "id": "g-105-7", "strike": 105, "days": 7, "value": 0 },
+								{ "id": "g-95-30", "strike": 95, "days": 30, "value": 90 },
+								{ "id": "g-100-30", "strike": 100, "days": 30, "value": 0 },
+								{ "id": "g-105-30", "strike": 105, "days": 30, "value": 0 },
+								{ "id": "g-95-60", "strike": 95, "days": 60, "value": 0 },
+								{ "id": "g-100-60", "strike": 100, "days": 60, "value": 0 },
+								{ "id": "g-105-60", "strike": 105, "days": 60, "value": null }
+							]
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is Snapshot A's net GEX: every cell added with its sign?",
+							"zh": "快照 A 的净 GEX 是多少：每一格按符号相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["120"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "−10 − 30 + 70 + 90 = +120. The zero cells add nothing.",
+							"zh": "−10 − 30 + 70 + 90 = +120。为零的格子不增加任何数值。"
+						}
+					},
+					{
+						"id": "gross",
+						"prompt": {
+							"en": "What is Snapshot A's gross GEX: every cell's size added, ignoring signs?",
+							"zh": "快照 A 的总幅度 GEX 是多少：忽略符号，把每一格的大小相加？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars per 1% move", "zh": "美元/每 1% 变动" }
+						},
+						"accepted": ["200"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "10 + 30 + 70 + 90 = 200, much more than the net's 120: opposite cells cancel in the net but not here.",
+							"zh": "10 + 30 + 70 + 90 = 200，远大于净值的 120：相反的格子在净值里抵消，在这里不会。"
+						}
+					},
+					{
+						"id": "compare",
+						"prompt": {
+							"en": "Compare the complete net totals of Snapshots A and B.",
+							"zh": "比较快照 A 与快照 B 的完整净总和。"
+						},
+						"choices": [
+							{
+								"id": "unknown",
+								"label": {
+									"en": "B has a missing cell, so its complete total isn't known",
+									"zh": "B 有一格缺失，所以它的完整总和未知"
+								}
+							},
+							{
+								"id": "equal",
+								"label": {
+									"en": "They're equal, though the near-expiry cells differ in sign",
+									"zh": "相等，但近月的格子符号不同"
+								},
+								"why": {
+									"en": "B has a blank cell, and a blank isn't zero. Its known cells give only a subtotal, so you can't say the complete totals are equal.",
+									"zh": "B 有一格是空白，而空白不等于零。它已知的格子只能给出小计，所以不能说完整总和相等。"
+								}
+							},
+							{
+								"id": "different",
+								"label": { "en": "They're different", "zh": "不同" },
+								"why": {
+									"en": "B's complete total isn't known while a cell is blank, so you can't call them different either.",
+									"zh": "B 有空白格时完整总和未知，所以也不能说它们不同。"
+								}
+							}
+						],
+						"accepted": ["unknown"],
+						"explanation": {
+							"en": "One of B's cells is blank, and a blank isn't zero. B's known cells give a subtotal, but they can't confirm a complete total.",
+							"zh": "B 有一格是空白，而空白不等于零。B 已知的格子能给出小计，但无法确认完整总和。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Net adds the cells with their signs, so opposite cells cancel; gross adds their sizes. A positive net doesn't mean every cell is positive, and neither number tells you what dealers actually hold.",
+					"zh": "净值按符号把各格相加，相反的格子会抵消；总幅度把各格的大小相加。净值为正不代表每一格都为正，两个数也都不能说明做市商实际持有什么。"
+				}
+			}
+		]
+	},
+	{
+		"id": "gamma-regimes-practice-1",
+		"lessonId": "gamma-regimes",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "gamma-regimes",
+				"brief": {
+					"en": "Follow the modeled Oct 18 book's hedge as ALFA moves either side of its flip, find the flip by repricing across spot rather than summing strikes, and keep a hedge target apart from the tape and the order book.",
+					"zh": "跟随模型化的 10月18日 账户在 ALFA 于转折点两侧变动时的对冲，用沿现价重新定价而不是累加行权价来找到转折点，并把对冲目标与成交记录和挂单簿区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A modeled flip isn't a promised support or resistance line. Change the assumed positions and the model changes, without a single new trade.",
+					"zh": "模型的转折点不是保证的支撑或阻力。改变假设的持仓，模型就会变，哪怕没有一笔新成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A model says a book's delta changes by +150 shares for each $1 ALFA moves, so the book is long gamma. Its owner keeps it delta-neutral with ALFA stock. ALFA rises $0.40 and nothing else changes.",
+					"zh": "一个模型显示，ALFA 每变动 $1，某账户的 Delta 变化 +150 股，所以这个账户是正 Gamma。账户持有人用 ALFA 股票保持 Delta 中性。ALFA 上涨 $0.40，其他条件不变。"
+				},
+				"questions": [
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares must the hedge trade? Enter a purchase as positive and a sale as negative.",
+							"zh": "对冲需要交易多少股？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["-60"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The book's delta changes by +150 × +$0.40 = +60 shares, so the hedge sells 60: −60. Long gamma trades against the move.",
+							"zh": "账户的 Delta 变化 +150 × +$0.40 = +60 股，所以对冲要卖出 60 股：−60。正 Gamma 逆着变动方向交易。"
+						}
+					},
+					{
+						"id": "certainty",
+						"prompt": {
+							"en": "Does this show that ALFA will keep moving that way?",
+							"zh": "这能说明 ALFA 会继续朝那个方向变动吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the model's hedge demand is real buying or selling",
+									"zh": "能：模型的对冲需求就是真实的买卖"
+								},
+								"why": {
+									"en": "The hedge demand comes from a model with assumed positions. Real positions, trades and liquidity aren't known, so it can't show where ALFA goes.",
+									"zh": "对冲需求来自一个假设了持仓的模型。真实的持仓、成交和流动性都不知道，所以它显示不了 ALFA 会往哪走。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the real positions, trades and liquidity aren't known",
+									"zh": "不能：真实的持仓、成交和流动性都未知"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The calculation holds for the book and hedge rule you were given. Whether anyone holds that book, actually trades the hedge, or moves the price with it are separate questions the model can't answer.",
+							"zh": "这个计算只对给定的账户和对冲规则成立。是否真有人持有这样的账户、是否真的执行了对冲、是否因此推动了价格，都是模型回答不了的问题。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A modeled flip isn't a promised support or resistance line. Change the assumed positions and the model changes, without a single new trade.",
+					"zh": "模型的转折点不是保证的支撑或阻力。改变假设的持仓，模型就会变，哪怕没有一笔新成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A model says a book's delta changes by −240 shares for each $1 ALFA moves, so the book is short gamma. Its owner keeps it delta-neutral with ALFA stock. ALFA rises $0.50 and nothing else changes.",
+					"zh": "一个模型显示，ALFA 每变动 $1，某账户的 Delta 变化 −240 股，所以这个账户是负 Gamma。账户持有人用 ALFA 股票保持 Delta 中性。ALFA 上涨 $0.50，其他条件不变。"
+				},
+				"questions": [
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares must the hedge trade? Enter a purchase as positive and a sale as negative.",
+							"zh": "对冲需要交易多少股？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["120"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The book's delta changes by −240 × +$0.50 = −120 shares, so the hedge buys 120: +120. Short gamma trades with the move.",
+							"zh": "账户的 Delta 变化 −240 × +$0.50 = −120 股，所以对冲要买入 120 股：+120。负 Gamma 顺着变动方向交易。"
+						}
+					},
+					{
+						"id": "certainty",
+						"prompt": {
+							"en": "Does this show that ALFA will keep moving that way?",
+							"zh": "这能说明 ALFA 会继续朝那个方向变动吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the real positions, trades and liquidity aren't known",
+									"zh": "不能：真实的持仓、成交和流动性都未知"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the model's hedge demand is real buying or selling",
+									"zh": "能：模型的对冲需求就是真实的买卖"
+								},
+								"why": {
+									"en": "The hedge demand comes from a model with assumed positions. Real positions, trades and liquidity aren't known, so it can't show where ALFA goes.",
+									"zh": "对冲需求来自一个假设了持仓的模型。真实的持仓、成交和流动性都不知道，所以它显示不了 ALFA 会往哪走。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The calculation holds for the book and hedge rule you were given. Whether anyone holds that book, actually trades the hedge, or moves the price with it are separate questions the model can't answer.",
+							"zh": "这个计算只对给定的账户和对冲规则成立。是否真有人持有这样的账户、是否真的执行了对冲、是否因此推动了价格，都是模型回答不了的问题。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A modeled flip isn't a promised support or resistance line. Change the assumed positions and the model changes, without a single new trade.",
+					"zh": "模型的转折点不是保证的支撑或阻力。改变假设的持仓，模型就会变，哪怕没有一笔新成交。"
+				}
+			}
+		]
+	},
+	{
+		"id": "gamma-regimes-practice-2",
+		"lessonId": "gamma-regimes",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "gamma-regimes",
+				"brief": {
+					"en": "Follow the modeled Oct 18 book's hedge as ALFA moves either side of its flip, find the flip by repricing across spot rather than summing strikes, and keep a hedge target apart from the tape and the order book.",
+					"zh": "跟随模型化的 10月18日 账户在 ALFA 于转折点两侧变动时的对冲，用沿现价重新定价而不是累加行权价来找到转折点，并把对冲目标与成交记录和挂单簿区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A modeled flip isn't a promised support or resistance line. Change the assumed positions and the model changes, without a single new trade.",
+					"zh": "模型的转折点不是保证的支撑或阻力。改变假设的持仓，模型就会变，哪怕没有一笔新成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A model says a book's delta changes by +150 shares for each $1 ALFA moves, so the book is long gamma. Its owner keeps it delta-neutral with ALFA stock. ALFA rises $0.40 and nothing else changes.",
+					"zh": "一个模型显示，ALFA 每变动 $1，某账户的 Delta 变化 +150 股，所以这个账户是正 Gamma。账户持有人用 ALFA 股票保持 Delta 中性。ALFA 上涨 $0.40，其他条件不变。"
+				},
+				"questions": [
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares must the hedge trade? Enter a purchase as positive and a sale as negative.",
+							"zh": "对冲需要交易多少股？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["-60"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The book's delta changes by +150 × +$0.40 = +60 shares, so the hedge sells 60: −60. Long gamma trades against the move.",
+							"zh": "账户的 Delta 变化 +150 × +$0.40 = +60 股，所以对冲要卖出 60 股：−60。正 Gamma 逆着变动方向交易。"
+						}
+					},
+					{
+						"id": "certainty",
+						"prompt": {
+							"en": "Does this show that ALFA will keep moving that way?",
+							"zh": "这能说明 ALFA 会继续朝那个方向变动吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the model's hedge demand is real buying or selling",
+									"zh": "能：模型的对冲需求就是真实的买卖"
+								},
+								"why": {
+									"en": "The hedge demand comes from a model with assumed positions. Real positions, trades and liquidity aren't known, so it can't show where ALFA goes.",
+									"zh": "对冲需求来自一个假设了持仓的模型。真实的持仓、成交和流动性都不知道，所以它显示不了 ALFA 会往哪走。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the real positions, trades and liquidity aren't known",
+									"zh": "不能：真实的持仓、成交和流动性都未知"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The calculation holds for the book and hedge rule you were given. Whether anyone holds that book, actually trades the hedge, or moves the price with it are separate questions the model can't answer.",
+							"zh": "这个计算只对给定的账户和对冲规则成立。是否真有人持有这样的账户、是否真的执行了对冲、是否因此推动了价格，都是模型回答不了的问题。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A modeled flip isn't a promised support or resistance line. Change the assumed positions and the model changes, without a single new trade.",
+					"zh": "模型的转折点不是保证的支撑或阻力。改变假设的持仓，模型就会变，哪怕没有一笔新成交。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A model says a book's delta changes by +180 shares for each $1 ALFA moves, so the book is long gamma. Its owner keeps it delta-neutral with ALFA stock. ALFA falls $0.50 and nothing else changes.",
+					"zh": "一个模型显示，ALFA 每变动 $1，某账户的 Delta 变化 +180 股，所以这个账户是正 Gamma。账户持有人用 ALFA 股票保持 Delta 中性。ALFA 下跌 $0.50，其他条件不变。"
+				},
+				"questions": [
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares must the hedge trade? Enter a purchase as positive and a sale as negative.",
+							"zh": "对冲需要交易多少股？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["90"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "The book's delta changes by +180 × −$0.50 = −90 shares, so the hedge buys 90: +90. Long gamma trades against the move.",
+							"zh": "账户的 Delta 变化 +180 × −$0.50 = −90 股，所以对冲要买入 90 股：+90。正 Gamma 逆着变动方向交易。"
+						}
+					},
+					{
+						"id": "certainty",
+						"prompt": {
+							"en": "Does this show that ALFA will keep moving that way?",
+							"zh": "这能说明 ALFA 会继续朝那个方向变动吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the model's hedge demand is real buying or selling",
+									"zh": "能：模型的对冲需求就是真实的买卖"
+								},
+								"why": {
+									"en": "The hedge demand comes from a model with assumed positions. Real positions, trades and liquidity aren't known, so it can't show where ALFA goes.",
+									"zh": "对冲需求来自一个假设了持仓的模型。真实的持仓、成交和流动性都不知道，所以它显示不了 ALFA 会往哪走。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the real positions, trades and liquidity aren't known",
+									"zh": "不能：真实的持仓、成交和流动性都未知"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The calculation holds for the book and hedge rule you were given. Whether anyone holds that book, actually trades the hedge, or moves the price with it are separate questions the model can't answer.",
+							"zh": "这个计算只对给定的账户和对冲规则成立。是否真有人持有这样的账户、是否真的执行了对冲、是否因此推动了价格，都是模型回答不了的问题。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A modeled flip isn't a promised support or resistance line. Change the assumed positions and the model changes, without a single new trade.",
+					"zh": "模型的转折点不是保证的支撑或阻力。改变假设的持仓，模型就会变，哪怕没有一笔新成交。"
+				}
+			}
+		]
+	}
+]
