@@ -2,8 +2,10 @@ import "@tanstack/react-start/server-only";
 import {
 	basics,
 	choose as c,
+	money,
 	numberQuestion as n,
 	orders,
+	signedMoney,
 	type TeachingUnit,
 	t,
 } from "./authoring.server";
@@ -34,6 +36,7 @@ const signedUsd = (value: number) =>
 export const orientationUnits: TeachingUnit[] = [
 	{
 		id: "stocks-and-prices",
+		version: 3,
 		conceptLab: {
 			kind: "stocks-and-prices",
 			intro: t(
@@ -58,7 +61,7 @@ export const orientationUnits: TeachingUnit[] = [
 			const [bid, ask, last, qty, side] = (
 				[
 					[4000, 4005, 4002, 10, "buy"],
-					[2510, 2514, 2512, 20, "buy"],
+					[2510, 2514, 2512, 20, "sell"],
 					[6100, 6108, 6105, 15, "sell"],
 					[1240, 1243, 1241, 50, "buy"],
 				] as const
@@ -66,10 +69,12 @@ export const orientationUnits: TeachingUnit[] = [
 			const buy = side === "buy";
 			const price = buy ? ask : bid;
 			const total = (price * qty) / 100;
+			/** Case 3 asks how to follow the index, not which product can't be bought. */
+			const track = v === 3;
 			return {
 				brief: t(
-					`ALFA quote: last $${dollars(last)}, bid $${dollars(bid)}, ask $${dollars(ask)}. You want to ${buy ? "buy" : "sell"} ${qty} shares right away.`,
-					`ALFA 报价：最新价 $${dollars(last)}，买价 $${dollars(bid)}，卖价 $${dollars(ask)}。你想立即${buy ? "买入" : "卖出"} ${qty} 股。`,
+					`ALFA quote: last $${dollars(last)}, bid $${dollars(bid)}, ask $${dollars(ask)}. You want to ${buy ? "buy" : "sell"} ${qty} shares right away.${track ? " Separately, BRDX holds all 500 stocks in the IDX 500." : ""}`,
+					`ALFA 报价：最新价 $${dollars(last)}，买价 $${dollars(bid)}，卖价 $${dollars(ask)}。你想立即${buy ? "买入" : "卖出"} ${qty} 股。${track ? "另外，BRDX 持有 IDX 500 的全部 500 只股票。" : ""}`,
 				),
 				questions: [
 					n(
@@ -120,15 +125,23 @@ export const orientationUnits: TeachingUnit[] = [
 					),
 					c(
 						"direct",
-						"Which of these can you not buy directly?",
-						"以下哪一项不能直接买入？",
+						track
+							? "You want one purchase whose value rises and falls with the IDX 500. Which of these can you buy to do that?"
+							: "Which of these can you not buy directly?",
+						track
+							? "你想用一笔买入，让持仓价值随 IDX 500 涨跌。以下哪一项可以买来做到这一点？"
+							: "以下哪一项不能直接买入？",
 						[
 							[
 								"stock",
 								"ALFA, a company's stock",
 								"ALFA，一家公司的股票",
-								"ALFA is a company's shares, which trade on an exchange, so you can buy them directly.",
-								"ALFA 是一家公司的股票，在交易所交易，可以直接买入。",
+								track
+									? "ALFA is one company, so its price follows ALFA alone, not the 500 stocks in the index."
+									: "ALFA is a company's shares, which trade on an exchange, so you can buy them directly.",
+								track
+									? "ALFA 只是一家公司，它的价格只跟随 ALFA 自己，而不是指数里的 500 只股票。"
+									: "ALFA 是一家公司的股票，在交易所交易，可以直接买入。",
 							],
 							[
 								"etf",
@@ -137,11 +150,21 @@ export const orientationUnits: TeachingUnit[] = [
 								"An ETF holds many stocks but trades on an exchange like one share, so you can buy BRDX directly.",
 								"ETF 持有多只股票，但像一只股票一样在交易所交易，所以 BRDX 可以直接买入。",
 							],
-							["index", "IDX 500, a stock index", "IDX 500，一个股票指数"],
+							[
+								"index",
+								"IDX 500, a stock index",
+								"IDX 500，一个股票指数",
+								"IDX 500 is a calculated number, so there is nothing to buy. BRDX holds its 500 stocks and trades like one share.",
+								"IDX 500 是计算出来的数值，没有可买的东西。BRDX 持有它的 500 只股票，并像一只股票一样交易。",
+							],
 						],
-						"index",
-						"An index is a calculated number. You can trade funds that track it, or options on it that settle in cash, but not the index itself.",
-						"指数是计算出来的数值。你可以交易跟踪它的基金，或以现金结算的指数期权，但不能买入指数本身。",
+						track ? "etf" : "index",
+						track
+							? "You can't buy an index, but you can buy a fund that holds its stocks. BRDX trades like one share and moves with the IDX 500."
+							: "An index is a calculated number. You can trade funds that track it, or options on it that settle in cash, but not the index itself.",
+						track
+							? "指数不能直接买入，但可以买入持有其成分股的基金。BRDX 像一只股票一样交易，并随 IDX 500 涨跌。"
+							: "指数是计算出来的数值。你可以交易跟踪它的基金，或以现金结算的指数期权，但不能买入指数本身。",
 					),
 				],
 			};
@@ -149,6 +172,7 @@ export const orientationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "what-options-are",
+		version: 3,
 		conceptLab: {
 			kind: "what-options-are",
 			intro: t(
@@ -171,11 +195,17 @@ export const orientationUnits: TeachingUnit[] = [
 		),
 		case: (v) => {
 			const quote = [250, 180, 320, 95][v];
-			const below = [95, 92, 98, 90][v];
+			/** Cases 2 and 3 quote a put; cases 1 and 3 protect shares you plan to buy. */
+			const put = v >= 2;
+			const planBuy = v === 1 || v === 3;
+			const kind = put ? "put" : "call";
+			const kindZh = put ? "看跌" : "看涨";
+			/** ALFA at expiry: below a call's strike, above a put's, so the option ends worthless. */
+			const end = [95, 92, 104, 107][v];
 			return {
 				brief: t(
-					`A call on ALFA has a $100 strike and is quoted at $${dollars(quote)} per share. One contract covers 100 shares.`,
-					`ALFA 行权价 $100 的看涨期权报价为每股 $${dollars(quote)}，一张合约对应 100 股。`,
+					`A ${kind} on ALFA has a $100 strike and is quoted at $${dollars(quote)} per share. One contract covers 100 shares.`,
+					`ALFA 行权价 $100 的${kindZh}期权报价为每股 $${dollars(quote)}，一张合约对应 100 股。`,
 				),
 				questions: [
 					n(
@@ -191,10 +221,20 @@ export const orientationUnits: TeachingUnit[] = [
 					),
 					c(
 						"protect",
-						"You own 100 ALFA shares and worry the price will fall. Which option gives you the right to sell at a set price?",
-						"你持有 100 股 ALFA，担心股价下跌。哪种期权赋予你按约定价格卖出的权利？",
+						planBuy
+							? "You plan to buy 100 ALFA shares next month and worry the price will rise first. Which option lets you lock in the price you will pay?"
+							: "You own 100 ALFA shares and worry the price will fall. Which option gives you the right to sell at a set price?",
+						planBuy
+							? "你打算下个月买入 100 股 ALFA，担心股价先涨上去。哪种期权能让你锁定将来的买入价格？"
+							: "你持有 100 股 ALFA，担心股价下跌。哪种期权赋予你按约定价格卖出的权利？",
 						[
-							["put", "A put", "看跌期权"],
+							[
+								"put",
+								"A put",
+								"看跌期权",
+								"A put is the right to sell, which gains when ALFA falls. It pays nothing if ALFA rises before you buy.",
+								"看跌期权是卖出的权利，ALFA 下跌时获利。如果 ALFA 在你买入前上涨，它什么也不赔。",
+							],
 							[
 								"call",
 								"A call",
@@ -204,25 +244,43 @@ export const orientationUnits: TeachingUnit[] = [
 							],
 							[
 								"none",
-								"Neither; options can't protect shares",
-								"都不行，期权无法保护股票",
-								"Options can protect shares: a put's right to sell at the strike limits what a fall can cost you.",
-								"期权可以保护股票：看跌期权按行权价卖出的权利，限制了下跌能让你亏多少。",
+								planBuy
+									? "Neither; options can't lock in a price"
+									: "Neither; options can't protect shares",
+								planBuy
+									? "都不行，期权无法锁定价格"
+									: "都不行，期权无法保护股票",
+								planBuy
+									? "Options can lock in a price: a call's right to buy at the strike caps what a rise can cost you."
+									: "Options can protect shares: a put's right to sell at the strike limits what a fall can cost you.",
+								planBuy
+									? "期权可以锁定价格：看涨期权按行权价买入的权利，限制了上涨让你多付的钱。"
+									: "期权可以保护股票：看跌期权按行权价卖出的权利，限制了下跌能让你亏多少。",
 							],
 						],
-						"put",
-						"A put is the right to sell at the strike, so it can act like insurance on shares you own.",
-						"看跌期权是按行权价卖出的权利，因此可以像保险一样保护你持有的股票。",
+						planBuy ? "call" : "put",
+						planBuy
+							? "A call is the right to buy at the strike, so it caps what you will pay for shares you plan to buy."
+							: "A put is the right to sell at the strike, so it can act like insurance on shares you own.",
+						planBuy
+							? "看涨期权是按行权价买入的权利，因此能为你打算买入的股票锁定价格上限。"
+							: "看跌期权是按行权价卖出的权利，因此可以像保险一样保护你持有的股票。",
 					),
 					c(
 						"obligation",
-						"If the call holder uses the right to buy, who must deliver the shares?",
-						"若看涨期权持有人行使买入权利，由谁交付股票？",
+						put
+							? "If the put holder uses the right to sell, who must deliver the shares?"
+							: "If the call holder uses the right to buy, who must deliver the shares?",
+						put
+							? "若看跌期权持有人行使卖出权利，由谁交付股票？"
+							: "若看涨期权持有人行使买入权利，由谁交付股票？",
 						[
 							[
 								"writer",
-								"The writer, who sold the call",
-								"义务方，即卖出这张看涨的人",
+								`The writer, who sold the ${kind}`,
+								`义务方，即卖出这张${kindZh}的人`,
+								"The put writer's obligation is to buy at the strike. They pay $100 a share and receive the shares; they don't deliver them.",
+								"看跌期权义务方的义务是按行权价买入。他们每股支付 $100 并收下股票，而不是交付股票。",
 							],
 							[
 								"holder",
@@ -235,18 +293,30 @@ export const orientationUnits: TeachingUnit[] = [
 								"exchange",
 								"The stock exchange",
 								"证券交易所",
-								"The exchange is where the trade happens; it doesn't deliver shares. An exercise is assigned to a writer, who must deliver.",
-								"交易所只是成交的场所，不交付股票。行权会被指派给一位义务方，由他交付。",
+								put
+									? "The exchange is where the trade happens; it doesn't deliver shares. The put holder sells by exercising, so they hand the shares to the assigned writer."
+									: "The exchange is where the trade happens; it doesn't deliver shares. An exercise is assigned to a writer, who must deliver.",
+								put
+									? "交易所只是成交的场所，不交付股票。看跌期权持有人通过行权卖出，所以由他把股票交给被指派的义务方。"
+									: "交易所只是成交的场所，不交付股票。行权会被指派给一位义务方，由他交付。",
 							],
 						],
-						"writer",
-						"The writer received the premium in exchange for the obligation to sell at the strike.",
-						"义务方收取了权利金，作为交换承担按行权价卖出的义务。",
+						put ? "holder" : "writer",
+						put
+							? "A put is the right to sell. The holder who exercises delivers the shares, and the assigned writer must buy them at the strike."
+							: "The writer received the premium in exchange for the obligation to sell at the strike.",
+						put
+							? "看跌期权是卖出的权利。行权的持有人交付股票，被指派的义务方必须按行权价买下。"
+							: "义务方收取了权利金，作为交换承担按行权价卖出的义务。",
 					),
 					c(
 						"expire",
-						`ALFA ends at $${below} at expiry, below the call's $100 strike. What is the call worth?`,
-						`ALFA 到期时为 $${below}，低于看涨期权的 $100 行权价。看涨期权值多少？`,
+						put
+							? `ALFA ends at $${end} at expiry, above the put's $100 strike. What is the put worth?`
+							: `ALFA ends at $${end} at expiry, below the call's $100 strike. What is the call worth?`,
+						put
+							? `ALFA 到期时为 $${end}，高于看跌期权的 $100 行权价。看跌期权值多少？`
+							: `ALFA 到期时为 $${end}，低于看涨期权的 $100 行权价。看涨期权值多少？`,
 						[
 							[
 								"zero",
@@ -264,13 +334,21 @@ export const orientationUnits: TeachingUnit[] = [
 								"strike",
 								"$100 per share",
 								"每股 $100",
-								`$100 is the price the call lets you buy at, not what it pays. With ALFA at $${below}, buying at $100 costs more than the market, so the call is worth nothing.`,
-								`$100 是看涨期权允许你买入的价格，不是它支付的金额。ALFA 为 $${below} 时，按 $100 买入比市价还贵，所以看涨期权一文不值。`,
+								put
+									? `$100 is the price the put lets you sell at, not what it pays. With ALFA at $${end}, selling at $100 brings less than the market, so the put is worth nothing.`
+									: `$100 is the price the call lets you buy at, not what it pays. With ALFA at $${end}, buying at $100 costs more than the market, so the call is worth nothing.`,
+								put
+									? `$100 是看跌期权允许你卖出的价格，不是它支付的金额。ALFA 为 $${end} 时，按 $100 卖出比市价还少，所以看跌期权一文不值。`
+									: `$100 是看涨期权允许你买入的价格，不是它支付的金额。ALFA 为 $${end} 时，按 $100 买入比市价还贵，所以看涨期权一文不值。`,
 							],
 						],
 						"zero",
-						"Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
-						"没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。",
+						put
+							? "Nobody would sell at $100 shares worth more, so the put expires worthless. Premiums are not refunded."
+							: "Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
+						put
+							? "没人会以 $100 卖出价值更高的股票，因此看跌期权作废。权利金不会退还。"
+							: "没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。",
 					),
 				],
 			};
@@ -278,6 +356,7 @@ export const orientationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "trading-options",
+		version: 3,
 		conceptLab: {
 			kind: "trading-options",
 			intro: t(
@@ -306,7 +385,14 @@ export const orientationUnits: TeachingUnit[] = [
 				[85, 5],
 			][v];
 			const bid = ask - 40;
-			const limit = ask - 20;
+			/** A limit below the ask waits for a seller; at or above it, the order trades at once. */
+			const limit = ask + [-20, 10, -20, 0][v];
+			const marketable = limit >= ask;
+			const relation =
+				limit > ask ? "above" : limit === ask ? "equal to" : "below";
+			const relationZh = limit > ask ? "高于" : limit === ask ? "等于" : "低于";
+			/** Case 2's trader wants the shares, not out of the position. */
+			const ownShares = v === 2;
 			const [bought, sold] = [
 				[200, 250],
 				[120, 90],
@@ -333,13 +419,15 @@ export const orientationUnits: TeachingUnit[] = [
 					),
 					c(
 						"limit",
-						`You send a limit buy at $${dollars(limit)}, below the $${dollars(ask)} ask. What happens?`,
-						`你以 $${dollars(limit)} 发出限价买单，低于 $${dollars(ask)} 的卖价。会发生什么？`,
+						`You send a limit buy at $${dollars(limit)}, ${relation} the $${dollars(ask)} ask. What happens?`,
+						`你以 $${dollars(limit)} 发出限价买单，${relationZh} $${dollars(ask)} 的卖价。会发生什么？`,
 						[
 							[
 								"waits",
 								`It fills only if a seller accepts $${dollars(limit)} or less, and may not fill at all.`,
 								`只有卖方接受 $${dollars(limit)} 或更低价格时才成交，也可能完全不成交。`,
+								`An order waits only when no seller offers a price within its limit. A seller already offers $${dollars(ask)}, within your $${dollars(limit)} limit, so it fills right away.`,
+								`只有没有卖方报出限价以内的价格时，订单才会等待。已有卖方报出 $${dollars(ask)}，在你 $${dollars(limit)} 的限价以内，所以会立即成交。`,
 							],
 							[
 								"ask",
@@ -352,20 +440,38 @@ export const orientationUnits: TeachingUnit[] = [
 								"mid",
 								"The exchange fills it at the midpoint.",
 								"交易所会按中间价成交。",
-								"The exchange doesn't split the difference. A trade happens only when a buyer's price meets a seller's, and no seller is offering your limit yet.",
-								"交易所不会替双方折中。只有买方的价格碰上卖方的价格才会成交，而目前没有卖方报出你的限价。",
+								marketable
+									? `The exchange doesn't split the difference. A seller already offers $${dollars(ask)}, within your limit, so the order fills at that ask.`
+									: "The exchange doesn't split the difference. A trade happens only when a buyer's price meets a seller's, and no seller is offering your limit yet.",
+								marketable
+									? `交易所不会替双方折中。已有卖方报出 $${dollars(ask)}，在你的限价以内，所以订单按这个卖价成交。`
+									: "交易所不会替双方折中。只有买方的价格碰上卖方的价格才会成交，而目前没有卖方报出你的限价。",
 							],
 						],
-						"waits",
-						"A limit order never pays more than its limit. Below the ask, it waits for a seller.",
-						"限价单绝不会付出高于限价的价格。低于卖价时，它会等待卖方。",
+						marketable ? "ask" : "waits",
+						marketable
+							? `A limit buy at or above the ask can trade at once. It fills at the $${dollars(ask)} ask and never pays more than your $${dollars(limit)} limit.`
+							: "A limit order never pays more than its limit. Below the ask, it waits for a seller.",
+						marketable
+							? `限价买单等于或高于卖价时可以立即成交：按 $${dollars(ask)} 的卖价成交，绝不会付出高于你 $${dollars(limit)} 限价的价格。`
+							: "限价单绝不会付出高于限价的价格。低于卖价时，它会等待卖方。",
 					),
 					c(
 						"exit",
-						"You own a call and want out before expiry. What do you usually do?",
-						"你持有一张看涨期权，想在到期前退出。通常怎么做？",
+						ownShares
+							? "You own a call and want to end up owning the 100 ALFA shares it covers, not just the option. What do you do?"
+							: "You own a call and want out before expiry. What do you usually do?",
+						ownShares
+							? "你持有一张看涨期权，想最终拿到它对应的 100 股 ALFA，而不只是持有期权。怎么做？"
+							: "你持有一张看涨期权，想在到期前退出。通常怎么做？",
 						[
-							["sell", "Sell the same contract to close", "卖出同一份合约平仓"],
+							[
+								"sell",
+								"Sell the same contract to close",
+								"卖出同一份合约平仓",
+								"Selling to close ends the position and pays you the call's price, but leaves you with no ALFA shares.",
+								"卖出平仓会结束持仓、收回看涨期权的价格，但你手里不会有 ALFA 股票。",
+							],
 							[
 								"exercise",
 								"Exercise it",
@@ -377,13 +483,21 @@ export const orientationUnits: TeachingUnit[] = [
 								"wait",
 								"Wait for the broker to close it",
 								"等券商替你平仓",
-								"Waiting leaves the outcome to expiry rules and your broker's policies, and time value drains while you wait. Selling the call is how you exit on your own terms.",
-								"等待会把结果交给到期规则和券商的政策，而且等待期间时间价值不断流失。卖出看涨，才能按你自己的方式退出。",
+								ownShares
+									? "If the broker closes the call, you get its sale price, not the shares. Exercising is what buys 100 shares at the strike."
+									: "Waiting leaves the outcome to expiry rules and your broker's policies, and time value drains while you wait. Selling the call is how you exit on your own terms.",
+								ownShares
+									? "如果券商替你平仓，你拿到的是卖出所得，不是股票。行权才会按行权价买入 100 股。"
+									: "等待会把结果交给到期规则和券商的政策，而且等待期间时间价值不断流失。卖出看涨，才能按你自己的方式退出。",
 							],
 						],
-						"sell",
-						"Selling to close ends the position and keeps any remaining time value. Exercise buys the shares instead.",
-						"卖出平仓即可结束持仓，并保留剩余的时间价值。行权则是买入股票。",
+						ownShares ? "exercise" : "sell",
+						ownShares
+							? "Exercising a call buys 100 shares at the strike. Before expiry it gives up any time value left, so traders who only want out sell instead."
+							: "Selling to close ends the position and keeps any remaining time value. Exercise buys the shares instead.",
+						ownShares
+							? "行权会按行权价买入 100 股。到期前行权会放弃剩余的时间价值，所以只想退出的交易者会选择卖出。"
+							: "卖出平仓即可结束持仓，并保留剩余的时间价值。行权则是买入股票。",
 					),
 					n(
 						"result",
@@ -402,6 +516,7 @@ export const orientationUnits: TeachingUnit[] = [
 	},
 	{
 		id: "options-risks",
+		version: 3,
 		conceptLab: {
 			kind: "options-risks",
 			intro: t(
@@ -435,6 +550,47 @@ export const orientationUnits: TeachingUnit[] = [
 				[140, 155, 4],
 			][v];
 			const roundTrip = ((ask - bid) * 100 * contracts) / 100;
+			/**
+			 * Case 0 asks which position has no fixed maximum loss. The other cases price three
+			 * $100-strike positions at one expiry price and ask which loses the most.
+			 */
+			const scenario = v > 0;
+			const strike = 100;
+			const premium = 4;
+			const finish = [120, 60, 130, 103][v];
+			const callValue = Math.max(0, finish - strike);
+			const putValue = Math.max(0, strike - finish);
+			const outcomes = {
+				"short-call": (premium - callValue) * 100,
+				"long-call": (callValue - premium) * 100,
+				"long-put": (putValue - premium) * 100,
+			};
+			const positions = ["short-call", "long-call", "long-put"] as const;
+			const worst = positions.reduce((a, b) =>
+				outcomes[b] < outcomes[a] ? b : a,
+			);
+			const holders = {
+				"short-call": t("the call writer", "看涨义务方"),
+				"long-call": t("the call buyer", "看涨买方"),
+				"long-put": t("the put buyer", "看跌买方"),
+			};
+			const lessThanWorst = t(
+				`less than ${holders[worst].en}'s ${money(-outcomes[worst])}`,
+				`少于${holders[worst].zh}的 ${money(-outcomes[worst])}`,
+			);
+			/** A wrong position's result at `finish`, against the worst one's loss. */
+			const net = (position: (typeof positions)[number]) =>
+				outcomes[position] >= 0
+					? t(
+							`a gain of ${money(outcomes[position])}`,
+							`盈利 ${money(outcomes[position])}`,
+						)
+					: t(
+							`a loss of ${money(-outcomes[position])}, ${lessThanWorst.en}`,
+							`亏损 ${money(-outcomes[position])}，${lessThanWorst.zh}`,
+						);
+			/** Case 2's call gains while ALFA dips. */
+			const gained = v === 2;
 			return {
 				brief: t(
 					`You bought an ALFA call for $${dollars(paid)} per share. A different ALFA call is quoted $${dollars(bid)} bid and $${dollars(ask)} ask.`,
@@ -454,32 +610,62 @@ export const orientationUnits: TeachingUnit[] = [
 					),
 					c(
 						"no-limit",
-						"Which position has no fixed maximum loss?",
-						"哪种持仓没有固定的最大亏损？",
+						scenario
+							? `Each position below uses an ALFA $${strike} strike, and each option's premium is ${money(premium)} per share. ALFA ends at $${finish} at expiry. Which position loses the most?`
+							: "Which position has no fixed maximum loss?",
+						scenario
+							? `下面每种持仓都使用行权价 $${strike} 的 ALFA 期权，每份期权的权利金都是每股 ${money(premium)}。ALFA 到期时为 $${finish}。哪种持仓亏得最多？`
+							: "哪种持仓没有固定的最大亏损？",
 						[
 							[
 								"short-call",
 								"Writing a call without owning the shares",
 								"不持有股票而卖出看涨",
+								callValue === 0
+									? `Nobody uses a right to buy at $${strike} with ALFA at $${finish}, so the writer keeps the ${money(premium * 100)} premium: ${net("short-call").en}.`
+									: `The writer must sell at $${strike} shares worth $${finish}, paying out ${money(callValue * 100)} against the ${money(premium * 100)} premium: ${net("short-call").en}.`,
+								callValue === 0
+									? `ALFA 为 $${finish} 时，没人会用按 $${strike} 买入的权利，所以义务方保留 ${money(premium * 100)} 权利金：${net("short-call").zh}。`
+									: `义务方必须以 $${strike} 卖出价值 $${finish} 的股票，赔出 ${money(callValue * 100)}，收取的权利金为 ${money(premium * 100)}：${net("short-call").zh}。`,
 							],
 							[
 								"long-call",
 								"Buying a call",
 								"买入看涨",
-								"A call buyer can lose at most the premium paid. The loss stops there however far ALFA falls.",
-								"看涨买方最多损失已付的权利金。无论 ALFA 跌多少，亏损都止于此。",
+								!scenario
+									? "A call buyer can lose at most the premium paid. The loss stops there however far ALFA falls."
+									: callValue === 0
+										? `The call is worth nothing at $${finish}, so the buyer loses just the ${money(premium * 100)} premium, ${lessThanWorst.en}.`
+										: `The call is worth ${money(callValue)} a share against ${money(premium)} paid: ${net("long-call").en}.`,
+								!scenario
+									? "看涨买方最多损失已付的权利金。无论 ALFA 跌多少，亏损都止于此。"
+									: callValue === 0
+										? `ALFA 为 $${finish} 时看涨期权一文不值，买方只损失 ${money(premium * 100)} 权利金，${lessThanWorst.zh}。`
+										: `看涨期权每股值 ${money(callValue)}，买入时付了 ${money(premium)}：${net("long-call").zh}。`,
 							],
 							[
 								"long-put",
 								"Buying a put",
 								"买入看跌",
-								"A put buyer can lose at most the premium paid, which happens if ALFA ends at or above the strike.",
-								"看跌买方最多损失已付的权利金，即 ALFA 收在行权价或以上时。",
+								!scenario
+									? "A put buyer can lose at most the premium paid, which happens if ALFA ends at or above the strike."
+									: putValue === 0
+										? `The put is worth nothing at $${finish}, so the buyer loses just the ${money(premium * 100)} premium, ${lessThanWorst.en}.`
+										: `The put is worth ${money(putValue)} a share against ${money(premium)} paid: ${net("long-put").en}.`,
+								!scenario
+									? "看跌买方最多损失已付的权利金，即 ALFA 收在行权价或以上时。"
+									: putValue === 0
+										? `ALFA 为 $${finish} 时看跌期权一文不值，买方只损失 ${money(premium * 100)} 权利金，${lessThanWorst.zh}。`
+										: `看跌期权每股值 ${money(putValue)}，买入时付了 ${money(premium)}：${net("long-put").zh}。`,
 							],
 						],
-						"short-call",
-						"An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
-						"未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。",
+						scenario ? worst : "short-call",
+						scenario
+							? `At $${finish}, per contract, writing the call ends ${signedMoney(outcomes["short-call"])}, buying the call ${signedMoney(outcomes["long-call"])} and buying the put ${signedMoney(outcomes["long-put"])}. A buyer can lose at most the premium; the uncovered writer's loss grows the higher ALFA goes.`
+							: "An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
+						scenario
+							? `ALFA 为 $${finish} 时，每张合约：卖出看涨 ${signedMoney(outcomes["short-call"])}，买入看涨 ${signedMoney(outcomes["long-call"])}，买入看跌 ${signedMoney(outcomes["long-put"])}。买方最多损失权利金；未备兑看涨义务方的亏损随 ALFA 上涨而扩大。`
+							: "未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。",
 					),
 					n(
 						"round-trip",
@@ -494,32 +680,57 @@ export const orientationUnits: TeachingUnit[] = [
 					),
 					c(
 						"why",
-						"ALFA rose a little, but your call lost value. Which could explain it?",
-						"ALFA 小幅上涨，但你的看涨期权贬值了。哪种原因可能解释？",
+						gained
+							? "ALFA dipped a little, but your call gained value. Which could explain it?"
+							: "ALFA rose a little, but your call lost value. Which could explain it?",
+						gained
+							? "ALFA 小幅下跌，但你的看涨期权升值了。哪种原因可能解释？"
+							: "ALFA 小幅上涨，但你的看涨期权贬值了。哪种原因可能解释？",
 						[
 							[
 								"time",
 								"Time passed and implied volatility fell",
 								"时间流逝且隐含波动率下降",
+								"Passing time and falling implied volatility both shrink a call's price, so they can't explain a gain.",
+								"时间流逝和隐含波动率下降都会压低看涨期权的价格，解释不了升值。",
+							],
+							[
+								"iv",
+								"Implied volatility rose",
+								"隐含波动率上升",
+								"Rising implied volatility makes an option worth more, so it can't explain a loss.",
+								"隐含波动率上升会让期权更值钱，所以解释不了贬值。",
 							],
 							[
 								"strike",
 								"The broker moved the strike",
 								"券商改了行权价",
-								"A broker can't change a contract's strike, so that can't explain the drop.",
-								"券商不能更改合约的行权价，所以这解释不了贬值。",
+								gained
+									? "A broker can't change a contract's strike, so that can't explain the gain."
+									: "A broker can't change a contract's strike, so that can't explain the drop.",
+								gained
+									? "券商不能更改合约的行权价，所以这解释不了升值。"
+									: "券商不能更改合约的行权价，所以这解释不了贬值。",
 							],
 							[
 								"shares",
 								"The call turned into shares",
 								"看涨期权变成了股票",
-								"A call becomes shares only if you exercise it. Until then it is still an option, and its price includes time value.",
-								"只有行权，看涨期权才会变成股票。在那之前它仍是期权，价格里包含时间价值。",
+								gained
+									? "A call becomes shares only if you exercise it. It is still an option, and its price includes time value, which rises with implied volatility."
+									: "A call becomes shares only if you exercise it. Until then it is still an option, and its price includes time value.",
+								gained
+									? "只有行权，看涨期权才会变成股票。它仍是期权，价格里包含时间价值，而时间价值会随隐含波动率上升。"
+									: "只有行权，看涨期权才会变成股票。在那之前它仍是期权，价格里包含时间价值。",
 							],
 						],
-						"time",
-						"An option's price includes time value, which shrinks each day and falls when implied volatility drops.",
-						"期权价格包含时间价值，它每天都在缩水，隐含波动率下降时也会下跌。",
+						gained ? "iv" : "time",
+						gained
+							? "An option's price includes time value, and higher implied volatility raises it. That can outweigh a small move against you."
+							: "An option's price includes time value, which shrinks each day and falls when implied volatility drops.",
+						gained
+							? "期权价格包含时间价值，隐含波动率上升会抬高它，足以抵消一小段不利的走势。"
+							: "期权价格包含时间价值，它每天都在缩水，隐含波动率下降时也会下跌。",
 					),
 				],
 			};

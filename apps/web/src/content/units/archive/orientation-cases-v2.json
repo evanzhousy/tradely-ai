@@ -1,0 +1,2422 @@
+[
+	{
+		"id": "stocks-and-prices-practice-1",
+		"lessonId": "stocks-and-prices",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "stocks-and-prices",
+				"brief": {
+					"en": "Own a slice of a company, read a live quote, and tell a stock from an ETF and an index. No trading knowledge needed.",
+					"zh": "拥有公司的一小部分，读懂实时报价，并分清股票、ETF 与指数。无需任何交易知识。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "The last price is history, not an offer. What you can trade at right now is the bid or the ask.",
+					"zh": "最新价是历史，不是报价。此刻能成交的价格是买价或卖价。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA quote: last $40.02, bid $40.00, ask $40.05. You want to buy 10 shares right away.",
+					"zh": "ALFA 报价：最新价 $40.02，买价 $40.00，卖价 $40.05。你想立即买入 10 股。"
+				},
+				"questions": [
+					{
+						"id": "total",
+						"prompt": {
+							"en": "Total cost to buy 10 shares right away, before fees?",
+							"zh": "立即买入 10 股的总成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["400.5"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "10 × $40.05 = $400.50. An immediate buy uses the ask, not the last price.",
+							"zh": "10 × $40.05 = $400.50。立即买入按卖价成交，而不是按最新价。"
+						}
+					},
+					{
+						"id": "price",
+						"prompt": {
+							"en": "What will an immediate buy most likely pay per share?",
+							"zh": "立即买入最可能支付的每股价格是多少？"
+						},
+						"choices": [
+							{
+								"id": "bid",
+								"label": { "en": "The bid, $40.00", "zh": "买价 $40.00" },
+								"why": {
+									"en": "The bid is what buyers offer. You are buying, so you pay what sellers ask.",
+									"zh": "买价是买方的出价。你是买方，所以要付卖方的要价。"
+								}
+							},
+							{
+								"id": "ask",
+								"label": { "en": "The ask, $40.05", "zh": "卖价 $40.05" }
+							},
+							{
+								"id": "last",
+								"label": {
+									"en": "The last price, $40.02",
+									"zh": "最新价 $40.02"
+								},
+								"why": {
+									"en": "$40.02 is where the last trade happened, not a price anyone is offering now.",
+									"zh": "$40.02 是上一笔成交的价格，不是现在有人提供的价格。"
+								}
+							}
+						],
+						"accepted": ["ask"],
+						"explanation": {
+							"en": "The last price is a past trade. Right now you can buy at the ask or sell at the bid.",
+							"zh": "最新价是过去的成交。此刻你只能按卖价买入，或按买价卖出。"
+						}
+					},
+					{
+						"id": "direct",
+						"prompt": {
+							"en": "Which of these can you not buy directly?",
+							"zh": "以下哪一项不能直接买入？"
+						},
+						"choices": [
+							{
+								"id": "stock",
+								"label": {
+									"en": "ALFA, a company's stock",
+									"zh": "ALFA，一家公司的股票"
+								},
+								"why": {
+									"en": "ALFA is a company's shares, which trade on an exchange, so you can buy them directly.",
+									"zh": "ALFA 是一家公司的股票，在交易所交易，可以直接买入。"
+								}
+							},
+							{
+								"id": "etf",
+								"label": {
+									"en": "BRDX, an ETF that holds many stocks",
+									"zh": "BRDX，持有多只股票的 ETF"
+								},
+								"why": {
+									"en": "An ETF holds many stocks but trades on an exchange like one share, so you can buy BRDX directly.",
+									"zh": "ETF 持有多只股票，但像一只股票一样在交易所交易，所以 BRDX 可以直接买入。"
+								}
+							},
+							{
+								"id": "index",
+								"label": {
+									"en": "IDX 500, a stock index",
+									"zh": "IDX 500，一个股票指数"
+								}
+							}
+						],
+						"accepted": ["index"],
+						"explanation": {
+							"en": "An index is a calculated number. You can trade funds that track it, or options on it that settle in cash, but not the index itself.",
+							"zh": "指数是计算出来的数值。你可以交易跟踪它的基金，或以现金结算的指数期权，但不能买入指数本身。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The last price is history, not an offer. What you can trade at right now is the bid or the ask.",
+					"zh": "最新价是历史，不是报价。此刻能成交的价格是买价或卖价。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA quote: last $25.12, bid $25.10, ask $25.14. You want to buy 20 shares right away.",
+					"zh": "ALFA 报价：最新价 $25.12，买价 $25.10，卖价 $25.14。你想立即买入 20 股。"
+				},
+				"questions": [
+					{
+						"id": "total",
+						"prompt": {
+							"en": "Total cost to buy 20 shares right away, before fees?",
+							"zh": "立即买入 20 股的总成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["502.8"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "20 × $25.14 = $502.80. An immediate buy uses the ask, not the last price.",
+							"zh": "20 × $25.14 = $502.80。立即买入按卖价成交，而不是按最新价。"
+						}
+					},
+					{
+						"id": "price",
+						"prompt": {
+							"en": "What will an immediate buy most likely pay per share?",
+							"zh": "立即买入最可能支付的每股价格是多少？"
+						},
+						"choices": [
+							{
+								"id": "ask",
+								"label": { "en": "The ask, $25.14", "zh": "卖价 $25.14" }
+							},
+							{
+								"id": "last",
+								"label": {
+									"en": "The last price, $25.12",
+									"zh": "最新价 $25.12"
+								},
+								"why": {
+									"en": "$25.12 is where the last trade happened, not a price anyone is offering now.",
+									"zh": "$25.12 是上一笔成交的价格，不是现在有人提供的价格。"
+								}
+							},
+							{
+								"id": "bid",
+								"label": { "en": "The bid, $25.10", "zh": "买价 $25.10" },
+								"why": {
+									"en": "The bid is what buyers offer. You are buying, so you pay what sellers ask.",
+									"zh": "买价是买方的出价。你是买方，所以要付卖方的要价。"
+								}
+							}
+						],
+						"accepted": ["ask"],
+						"explanation": {
+							"en": "The last price is a past trade. Right now you can buy at the ask or sell at the bid.",
+							"zh": "最新价是过去的成交。此刻你只能按卖价买入，或按买价卖出。"
+						}
+					},
+					{
+						"id": "direct",
+						"prompt": {
+							"en": "Which of these can you not buy directly?",
+							"zh": "以下哪一项不能直接买入？"
+						},
+						"choices": [
+							{
+								"id": "etf",
+								"label": {
+									"en": "BRDX, an ETF that holds many stocks",
+									"zh": "BRDX，持有多只股票的 ETF"
+								},
+								"why": {
+									"en": "An ETF holds many stocks but trades on an exchange like one share, so you can buy BRDX directly.",
+									"zh": "ETF 持有多只股票，但像一只股票一样在交易所交易，所以 BRDX 可以直接买入。"
+								}
+							},
+							{
+								"id": "index",
+								"label": {
+									"en": "IDX 500, a stock index",
+									"zh": "IDX 500，一个股票指数"
+								}
+							},
+							{
+								"id": "stock",
+								"label": {
+									"en": "ALFA, a company's stock",
+									"zh": "ALFA，一家公司的股票"
+								},
+								"why": {
+									"en": "ALFA is a company's shares, which trade on an exchange, so you can buy them directly.",
+									"zh": "ALFA 是一家公司的股票，在交易所交易，可以直接买入。"
+								}
+							}
+						],
+						"accepted": ["index"],
+						"explanation": {
+							"en": "An index is a calculated number. You can trade funds that track it, or options on it that settle in cash, but not the index itself.",
+							"zh": "指数是计算出来的数值。你可以交易跟踪它的基金，或以现金结算的指数期权，但不能买入指数本身。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The last price is history, not an offer. What you can trade at right now is the bid or the ask.",
+					"zh": "最新价是历史，不是报价。此刻能成交的价格是买价或卖价。"
+				}
+			}
+		]
+	},
+	{
+		"id": "stocks-and-prices-practice-2",
+		"lessonId": "stocks-and-prices",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "stocks-and-prices",
+				"brief": {
+					"en": "Own a slice of a company, read a live quote, and tell a stock from an ETF and an index. No trading knowledge needed.",
+					"zh": "拥有公司的一小部分，读懂实时报价，并分清股票、ETF 与指数。无需任何交易知识。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "The last price is history, not an offer. What you can trade at right now is the bid or the ask.",
+					"zh": "最新价是历史，不是报价。此刻能成交的价格是买价或卖价。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA quote: last $40.02, bid $40.00, ask $40.05. You want to buy 10 shares right away.",
+					"zh": "ALFA 报价：最新价 $40.02，买价 $40.00，卖价 $40.05。你想立即买入 10 股。"
+				},
+				"questions": [
+					{
+						"id": "total",
+						"prompt": {
+							"en": "Total cost to buy 10 shares right away, before fees?",
+							"zh": "立即买入 10 股的总成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["400.5"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "10 × $40.05 = $400.50. An immediate buy uses the ask, not the last price.",
+							"zh": "10 × $40.05 = $400.50。立即买入按卖价成交，而不是按最新价。"
+						}
+					},
+					{
+						"id": "price",
+						"prompt": {
+							"en": "What will an immediate buy most likely pay per share?",
+							"zh": "立即买入最可能支付的每股价格是多少？"
+						},
+						"choices": [
+							{
+								"id": "bid",
+								"label": { "en": "The bid, $40.00", "zh": "买价 $40.00" },
+								"why": {
+									"en": "The bid is what buyers offer. You are buying, so you pay what sellers ask.",
+									"zh": "买价是买方的出价。你是买方，所以要付卖方的要价。"
+								}
+							},
+							{
+								"id": "ask",
+								"label": { "en": "The ask, $40.05", "zh": "卖价 $40.05" }
+							},
+							{
+								"id": "last",
+								"label": {
+									"en": "The last price, $40.02",
+									"zh": "最新价 $40.02"
+								},
+								"why": {
+									"en": "$40.02 is where the last trade happened, not a price anyone is offering now.",
+									"zh": "$40.02 是上一笔成交的价格，不是现在有人提供的价格。"
+								}
+							}
+						],
+						"accepted": ["ask"],
+						"explanation": {
+							"en": "The last price is a past trade. Right now you can buy at the ask or sell at the bid.",
+							"zh": "最新价是过去的成交。此刻你只能按卖价买入，或按买价卖出。"
+						}
+					},
+					{
+						"id": "direct",
+						"prompt": {
+							"en": "Which of these can you not buy directly?",
+							"zh": "以下哪一项不能直接买入？"
+						},
+						"choices": [
+							{
+								"id": "stock",
+								"label": {
+									"en": "ALFA, a company's stock",
+									"zh": "ALFA，一家公司的股票"
+								},
+								"why": {
+									"en": "ALFA is a company's shares, which trade on an exchange, so you can buy them directly.",
+									"zh": "ALFA 是一家公司的股票，在交易所交易，可以直接买入。"
+								}
+							},
+							{
+								"id": "etf",
+								"label": {
+									"en": "BRDX, an ETF that holds many stocks",
+									"zh": "BRDX，持有多只股票的 ETF"
+								},
+								"why": {
+									"en": "An ETF holds many stocks but trades on an exchange like one share, so you can buy BRDX directly.",
+									"zh": "ETF 持有多只股票，但像一只股票一样在交易所交易，所以 BRDX 可以直接买入。"
+								}
+							},
+							{
+								"id": "index",
+								"label": {
+									"en": "IDX 500, a stock index",
+									"zh": "IDX 500，一个股票指数"
+								}
+							}
+						],
+						"accepted": ["index"],
+						"explanation": {
+							"en": "An index is a calculated number. You can trade funds that track it, or options on it that settle in cash, but not the index itself.",
+							"zh": "指数是计算出来的数值。你可以交易跟踪它的基金，或以现金结算的指数期权，但不能买入指数本身。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The last price is history, not an offer. What you can trade at right now is the bid or the ask.",
+					"zh": "最新价是历史，不是报价。此刻能成交的价格是买价或卖价。"
+				}
+			},
+			{
+				"brief": {
+					"en": "ALFA quote: last $61.05, bid $61.00, ask $61.08. You want to sell 15 shares right away.",
+					"zh": "ALFA 报价：最新价 $61.05，买价 $61.00，卖价 $61.08。你想立即卖出 15 股。"
+				},
+				"questions": [
+					{
+						"id": "total",
+						"prompt": {
+							"en": "Total received for selling 15 shares right away, before fees?",
+							"zh": "立即卖出 15 股收回的总额（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["915"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "15 × $61.00 = $915.00. An immediate sale uses the bid, not the last price.",
+							"zh": "15 × $61.00 = $915.00。立即卖出按买价成交，而不是按最新价。"
+						}
+					},
+					{
+						"id": "price",
+						"prompt": {
+							"en": "What will an immediate sale most likely receive per share?",
+							"zh": "立即卖出最可能收回的每股价格是多少？"
+						},
+						"choices": [
+							{
+								"id": "last",
+								"label": {
+									"en": "The last price, $61.05",
+									"zh": "最新价 $61.05"
+								},
+								"why": {
+									"en": "$61.05 is where the last trade happened, not a price anyone is offering now.",
+									"zh": "$61.05 是上一笔成交的价格，不是现在有人提供的价格。"
+								}
+							},
+							{
+								"id": "bid",
+								"label": { "en": "The bid, $61.00", "zh": "买价 $61.00" }
+							},
+							{
+								"id": "ask",
+								"label": { "en": "The ask, $61.08", "zh": "卖价 $61.08" },
+								"why": {
+									"en": "The ask is what sellers want. You are selling, so you get what buyers bid.",
+									"zh": "卖价是卖方的要价。你是卖方，所以只能拿到买方的出价。"
+								}
+							}
+						],
+						"accepted": ["bid"],
+						"explanation": {
+							"en": "The last price is a past trade. Right now you can buy at the ask or sell at the bid.",
+							"zh": "最新价是过去的成交。此刻你只能按卖价买入，或按买价卖出。"
+						}
+					},
+					{
+						"id": "direct",
+						"prompt": {
+							"en": "Which of these can you not buy directly?",
+							"zh": "以下哪一项不能直接买入？"
+						},
+						"choices": [
+							{
+								"id": "index",
+								"label": {
+									"en": "IDX 500, a stock index",
+									"zh": "IDX 500，一个股票指数"
+								}
+							},
+							{
+								"id": "stock",
+								"label": {
+									"en": "ALFA, a company's stock",
+									"zh": "ALFA，一家公司的股票"
+								},
+								"why": {
+									"en": "ALFA is a company's shares, which trade on an exchange, so you can buy them directly.",
+									"zh": "ALFA 是一家公司的股票，在交易所交易，可以直接买入。"
+								}
+							},
+							{
+								"id": "etf",
+								"label": {
+									"en": "BRDX, an ETF that holds many stocks",
+									"zh": "BRDX，持有多只股票的 ETF"
+								},
+								"why": {
+									"en": "An ETF holds many stocks but trades on an exchange like one share, so you can buy BRDX directly.",
+									"zh": "ETF 持有多只股票，但像一只股票一样在交易所交易，所以 BRDX 可以直接买入。"
+								}
+							}
+						],
+						"accepted": ["index"],
+						"explanation": {
+							"en": "An index is a calculated number. You can trade funds that track it, or options on it that settle in cash, but not the index itself.",
+							"zh": "指数是计算出来的数值。你可以交易跟踪它的基金，或以现金结算的指数期权，但不能买入指数本身。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "The last price is history, not an offer. What you can trade at right now is the bid or the ask.",
+					"zh": "最新价是历史，不是报价。此刻能成交的价格是买价或卖价。"
+				}
+			}
+		]
+	},
+	{
+		"id": "what-options-are-practice-1",
+		"lessonId": "what-options-are",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "what-options-are",
+				"brief": {
+					"en": "Move the stock at expiry to see when a call or put is worth using, compare three reasons people use options, and meet the other side of every option.",
+					"zh": "移动到期时的股价，看看看涨或看跌期权何时值得行使；比较人们使用期权的三种原因，并认识每份期权的另一方。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",
+					"zh": "期权不是更便宜的股票，而是有期限的权利。如果行情没有及时到来，你可能损失全部权利金。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A call on ALFA has a $100 strike and is quoted at $2.50 per share. One contract covers 100 shares.",
+					"zh": "ALFA 行权价 $100 的看涨期权报价为每股 $2.50，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost of one contract, before fees?",
+							"zh": "一张合约的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["250"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$2.50 per share × 100 shares = $250.00.",
+							"zh": "每股 $2.50 × 100 股 = $250.00。"
+						}
+					},
+					{
+						"id": "protect",
+						"prompt": {
+							"en": "You own 100 ALFA shares and worry the price will fall. Which option gives you the right to sell at a set price?",
+							"zh": "你持有 100 股 ALFA，担心股价下跌。哪种期权赋予你按约定价格卖出的权利？"
+						},
+						"choices": [
+							{
+								"id": "none",
+								"label": {
+									"en": "Neither; options can't protect shares",
+									"zh": "都不行，期权无法保护股票"
+								},
+								"why": {
+									"en": "Options can protect shares: a put's right to sell at the strike limits what a fall can cost you.",
+									"zh": "期权可以保护股票：看跌期权按行权价卖出的权利，限制了下跌能让你亏多少。"
+								}
+							},
+							{ "id": "put", "label": { "en": "A put", "zh": "看跌期权" } },
+							{
+								"id": "call",
+								"label": { "en": "A call", "zh": "看涨期权" },
+								"why": {
+									"en": "A call is the right to buy, which gains when ALFA rises. It pays nothing when your shares fall.",
+									"zh": "看涨期权是买入的权利，ALFA 上涨时获利。你的股票下跌时它什么也不赔。"
+								}
+							}
+						],
+						"accepted": ["put"],
+						"explanation": {
+							"en": "A put is the right to sell at the strike, so it can act like insurance on shares you own.",
+							"zh": "看跌期权是按行权价卖出的权利，因此可以像保险一样保护你持有的股票。"
+						}
+					},
+					{
+						"id": "obligation",
+						"prompt": {
+							"en": "If the call holder uses the right to buy, who must deliver the shares?",
+							"zh": "若看涨期权持有人行使买入权利，由谁交付股票？"
+						},
+						"choices": [
+							{
+								"id": "writer",
+								"label": {
+									"en": "The writer, who sold the call",
+									"zh": "义务方，即卖出这张看涨的人"
+								}
+							},
+							{
+								"id": "holder",
+								"label": { "en": "The holder", "zh": "持有人" },
+								"why": {
+									"en": "The holder owns the right to buy. They receive the shares; they don't deliver them.",
+									"zh": "持有人拥有买入的权利。他们是收股票的一方，不是交付的一方。"
+								}
+							},
+							{
+								"id": "exchange",
+								"label": { "en": "The stock exchange", "zh": "证券交易所" },
+								"why": {
+									"en": "The exchange is where the trade happens; it doesn't deliver shares. An exercise is assigned to a writer, who must deliver.",
+									"zh": "交易所只是成交的场所，不交付股票。行权会被指派给一位义务方，由他交付。"
+								}
+							}
+						],
+						"accepted": ["writer"],
+						"explanation": {
+							"en": "The writer received the premium in exchange for the obligation to sell at the strike.",
+							"zh": "义务方收取了权利金，作为交换承担按行权价卖出的义务。"
+						}
+					},
+					{
+						"id": "expire",
+						"prompt": {
+							"en": "ALFA ends at $95 at expiry, below the call's $100 strike. What is the call worth?",
+							"zh": "ALFA 到期时为 $95，低于看涨期权的 $100 行权价。看涨期权值多少？"
+						},
+						"choices": [
+							{
+								"id": "refund",
+								"label": {
+									"en": "The premium is refunded",
+									"zh": "权利金会被退还"
+								},
+								"why": {
+									"en": "A premium pays for the right, used or not. Nobody refunds it when the right turns out to be worthless.",
+									"zh": "权利金买的是这项权利，不论是否使用。权利一文不值时也没人退还。"
+								}
+							},
+							{
+								"id": "strike",
+								"label": { "en": "$100 per share", "zh": "每股 $100" },
+								"why": {
+									"en": "$100 is the price the call lets you buy at, not what it pays. With ALFA at $95, buying at $100 costs more than the market, so the call is worth nothing.",
+									"zh": "$100 是看涨期权允许你买入的价格，不是它支付的金额。ALFA 为 $95 时，按 $100 买入比市价还贵，所以看涨期权一文不值。"
+								}
+							},
+							{
+								"id": "zero",
+								"label": {
+									"en": "Nothing; the premium paid is gone",
+									"zh": "一文不值，已付权利金全部损失"
+								}
+							}
+						],
+						"accepted": ["zero"],
+						"explanation": {
+							"en": "Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
+							"zh": "没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",
+					"zh": "期权不是更便宜的股票，而是有期限的权利。如果行情没有及时到来，你可能损失全部权利金。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A call on ALFA has a $100 strike and is quoted at $1.80 per share. One contract covers 100 shares.",
+					"zh": "ALFA 行权价 $100 的看涨期权报价为每股 $1.80，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost of one contract, before fees?",
+							"zh": "一张合约的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["180"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$1.80 per share × 100 shares = $180.00.",
+							"zh": "每股 $1.80 × 100 股 = $180.00。"
+						}
+					},
+					{
+						"id": "protect",
+						"prompt": {
+							"en": "You own 100 ALFA shares and worry the price will fall. Which option gives you the right to sell at a set price?",
+							"zh": "你持有 100 股 ALFA，担心股价下跌。哪种期权赋予你按约定价格卖出的权利？"
+						},
+						"choices": [
+							{ "id": "put", "label": { "en": "A put", "zh": "看跌期权" } },
+							{
+								"id": "call",
+								"label": { "en": "A call", "zh": "看涨期权" },
+								"why": {
+									"en": "A call is the right to buy, which gains when ALFA rises. It pays nothing when your shares fall.",
+									"zh": "看涨期权是买入的权利，ALFA 上涨时获利。你的股票下跌时它什么也不赔。"
+								}
+							},
+							{
+								"id": "none",
+								"label": {
+									"en": "Neither; options can't protect shares",
+									"zh": "都不行，期权无法保护股票"
+								},
+								"why": {
+									"en": "Options can protect shares: a put's right to sell at the strike limits what a fall can cost you.",
+									"zh": "期权可以保护股票：看跌期权按行权价卖出的权利，限制了下跌能让你亏多少。"
+								}
+							}
+						],
+						"accepted": ["put"],
+						"explanation": {
+							"en": "A put is the right to sell at the strike, so it can act like insurance on shares you own.",
+							"zh": "看跌期权是按行权价卖出的权利，因此可以像保险一样保护你持有的股票。"
+						}
+					},
+					{
+						"id": "obligation",
+						"prompt": {
+							"en": "If the call holder uses the right to buy, who must deliver the shares?",
+							"zh": "若看涨期权持有人行使买入权利，由谁交付股票？"
+						},
+						"choices": [
+							{
+								"id": "holder",
+								"label": { "en": "The holder", "zh": "持有人" },
+								"why": {
+									"en": "The holder owns the right to buy. They receive the shares; they don't deliver them.",
+									"zh": "持有人拥有买入的权利。他们是收股票的一方，不是交付的一方。"
+								}
+							},
+							{
+								"id": "exchange",
+								"label": { "en": "The stock exchange", "zh": "证券交易所" },
+								"why": {
+									"en": "The exchange is where the trade happens; it doesn't deliver shares. An exercise is assigned to a writer, who must deliver.",
+									"zh": "交易所只是成交的场所，不交付股票。行权会被指派给一位义务方，由他交付。"
+								}
+							},
+							{
+								"id": "writer",
+								"label": {
+									"en": "The writer, who sold the call",
+									"zh": "义务方，即卖出这张看涨的人"
+								}
+							}
+						],
+						"accepted": ["writer"],
+						"explanation": {
+							"en": "The writer received the premium in exchange for the obligation to sell at the strike.",
+							"zh": "义务方收取了权利金，作为交换承担按行权价卖出的义务。"
+						}
+					},
+					{
+						"id": "expire",
+						"prompt": {
+							"en": "ALFA ends at $92 at expiry, below the call's $100 strike. What is the call worth?",
+							"zh": "ALFA 到期时为 $92，低于看涨期权的 $100 行权价。看涨期权值多少？"
+						},
+						"choices": [
+							{
+								"id": "strike",
+								"label": { "en": "$100 per share", "zh": "每股 $100" },
+								"why": {
+									"en": "$100 is the price the call lets you buy at, not what it pays. With ALFA at $92, buying at $100 costs more than the market, so the call is worth nothing.",
+									"zh": "$100 是看涨期权允许你买入的价格，不是它支付的金额。ALFA 为 $92 时，按 $100 买入比市价还贵，所以看涨期权一文不值。"
+								}
+							},
+							{
+								"id": "zero",
+								"label": {
+									"en": "Nothing; the premium paid is gone",
+									"zh": "一文不值，已付权利金全部损失"
+								}
+							},
+							{
+								"id": "refund",
+								"label": {
+									"en": "The premium is refunded",
+									"zh": "权利金会被退还"
+								},
+								"why": {
+									"en": "A premium pays for the right, used or not. Nobody refunds it when the right turns out to be worthless.",
+									"zh": "权利金买的是这项权利，不论是否使用。权利一文不值时也没人退还。"
+								}
+							}
+						],
+						"accepted": ["zero"],
+						"explanation": {
+							"en": "Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
+							"zh": "没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",
+					"zh": "期权不是更便宜的股票，而是有期限的权利。如果行情没有及时到来，你可能损失全部权利金。"
+				}
+			}
+		]
+	},
+	{
+		"id": "what-options-are-practice-2",
+		"lessonId": "what-options-are",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "what-options-are",
+				"brief": {
+					"en": "Move the stock at expiry to see when a call or put is worth using, compare three reasons people use options, and meet the other side of every option.",
+					"zh": "移动到期时的股价，看看看涨或看跌期权何时值得行使；比较人们使用期权的三种原因，并认识每份期权的另一方。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",
+					"zh": "期权不是更便宜的股票，而是有期限的权利。如果行情没有及时到来，你可能损失全部权利金。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A call on ALFA has a $100 strike and is quoted at $2.50 per share. One contract covers 100 shares.",
+					"zh": "ALFA 行权价 $100 的看涨期权报价为每股 $2.50，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost of one contract, before fees?",
+							"zh": "一张合约的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["250"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$2.50 per share × 100 shares = $250.00.",
+							"zh": "每股 $2.50 × 100 股 = $250.00。"
+						}
+					},
+					{
+						"id": "protect",
+						"prompt": {
+							"en": "You own 100 ALFA shares and worry the price will fall. Which option gives you the right to sell at a set price?",
+							"zh": "你持有 100 股 ALFA，担心股价下跌。哪种期权赋予你按约定价格卖出的权利？"
+						},
+						"choices": [
+							{
+								"id": "none",
+								"label": {
+									"en": "Neither; options can't protect shares",
+									"zh": "都不行，期权无法保护股票"
+								},
+								"why": {
+									"en": "Options can protect shares: a put's right to sell at the strike limits what a fall can cost you.",
+									"zh": "期权可以保护股票：看跌期权按行权价卖出的权利，限制了下跌能让你亏多少。"
+								}
+							},
+							{ "id": "put", "label": { "en": "A put", "zh": "看跌期权" } },
+							{
+								"id": "call",
+								"label": { "en": "A call", "zh": "看涨期权" },
+								"why": {
+									"en": "A call is the right to buy, which gains when ALFA rises. It pays nothing when your shares fall.",
+									"zh": "看涨期权是买入的权利，ALFA 上涨时获利。你的股票下跌时它什么也不赔。"
+								}
+							}
+						],
+						"accepted": ["put"],
+						"explanation": {
+							"en": "A put is the right to sell at the strike, so it can act like insurance on shares you own.",
+							"zh": "看跌期权是按行权价卖出的权利，因此可以像保险一样保护你持有的股票。"
+						}
+					},
+					{
+						"id": "obligation",
+						"prompt": {
+							"en": "If the call holder uses the right to buy, who must deliver the shares?",
+							"zh": "若看涨期权持有人行使买入权利，由谁交付股票？"
+						},
+						"choices": [
+							{
+								"id": "writer",
+								"label": {
+									"en": "The writer, who sold the call",
+									"zh": "义务方，即卖出这张看涨的人"
+								}
+							},
+							{
+								"id": "holder",
+								"label": { "en": "The holder", "zh": "持有人" },
+								"why": {
+									"en": "The holder owns the right to buy. They receive the shares; they don't deliver them.",
+									"zh": "持有人拥有买入的权利。他们是收股票的一方，不是交付的一方。"
+								}
+							},
+							{
+								"id": "exchange",
+								"label": { "en": "The stock exchange", "zh": "证券交易所" },
+								"why": {
+									"en": "The exchange is where the trade happens; it doesn't deliver shares. An exercise is assigned to a writer, who must deliver.",
+									"zh": "交易所只是成交的场所，不交付股票。行权会被指派给一位义务方，由他交付。"
+								}
+							}
+						],
+						"accepted": ["writer"],
+						"explanation": {
+							"en": "The writer received the premium in exchange for the obligation to sell at the strike.",
+							"zh": "义务方收取了权利金，作为交换承担按行权价卖出的义务。"
+						}
+					},
+					{
+						"id": "expire",
+						"prompt": {
+							"en": "ALFA ends at $95 at expiry, below the call's $100 strike. What is the call worth?",
+							"zh": "ALFA 到期时为 $95，低于看涨期权的 $100 行权价。看涨期权值多少？"
+						},
+						"choices": [
+							{
+								"id": "refund",
+								"label": {
+									"en": "The premium is refunded",
+									"zh": "权利金会被退还"
+								},
+								"why": {
+									"en": "A premium pays for the right, used or not. Nobody refunds it when the right turns out to be worthless.",
+									"zh": "权利金买的是这项权利，不论是否使用。权利一文不值时也没人退还。"
+								}
+							},
+							{
+								"id": "strike",
+								"label": { "en": "$100 per share", "zh": "每股 $100" },
+								"why": {
+									"en": "$100 is the price the call lets you buy at, not what it pays. With ALFA at $95, buying at $100 costs more than the market, so the call is worth nothing.",
+									"zh": "$100 是看涨期权允许你买入的价格，不是它支付的金额。ALFA 为 $95 时，按 $100 买入比市价还贵，所以看涨期权一文不值。"
+								}
+							},
+							{
+								"id": "zero",
+								"label": {
+									"en": "Nothing; the premium paid is gone",
+									"zh": "一文不值，已付权利金全部损失"
+								}
+							}
+						],
+						"accepted": ["zero"],
+						"explanation": {
+							"en": "Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
+							"zh": "没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",
+					"zh": "期权不是更便宜的股票，而是有期限的权利。如果行情没有及时到来，你可能损失全部权利金。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A call on ALFA has a $100 strike and is quoted at $3.20 per share. One contract covers 100 shares.",
+					"zh": "ALFA 行权价 $100 的看涨期权报价为每股 $3.20，一张合约对应 100 股。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost of one contract, before fees?",
+							"zh": "一张合约的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["320"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$3.20 per share × 100 shares = $320.00.",
+							"zh": "每股 $3.20 × 100 股 = $320.00。"
+						}
+					},
+					{
+						"id": "protect",
+						"prompt": {
+							"en": "You own 100 ALFA shares and worry the price will fall. Which option gives you the right to sell at a set price?",
+							"zh": "你持有 100 股 ALFA，担心股价下跌。哪种期权赋予你按约定价格卖出的权利？"
+						},
+						"choices": [
+							{
+								"id": "call",
+								"label": { "en": "A call", "zh": "看涨期权" },
+								"why": {
+									"en": "A call is the right to buy, which gains when ALFA rises. It pays nothing when your shares fall.",
+									"zh": "看涨期权是买入的权利，ALFA 上涨时获利。你的股票下跌时它什么也不赔。"
+								}
+							},
+							{
+								"id": "none",
+								"label": {
+									"en": "Neither; options can't protect shares",
+									"zh": "都不行，期权无法保护股票"
+								},
+								"why": {
+									"en": "Options can protect shares: a put's right to sell at the strike limits what a fall can cost you.",
+									"zh": "期权可以保护股票：看跌期权按行权价卖出的权利，限制了下跌能让你亏多少。"
+								}
+							},
+							{ "id": "put", "label": { "en": "A put", "zh": "看跌期权" } }
+						],
+						"accepted": ["put"],
+						"explanation": {
+							"en": "A put is the right to sell at the strike, so it can act like insurance on shares you own.",
+							"zh": "看跌期权是按行权价卖出的权利，因此可以像保险一样保护你持有的股票。"
+						}
+					},
+					{
+						"id": "obligation",
+						"prompt": {
+							"en": "If the call holder uses the right to buy, who must deliver the shares?",
+							"zh": "若看涨期权持有人行使买入权利，由谁交付股票？"
+						},
+						"choices": [
+							{
+								"id": "exchange",
+								"label": { "en": "The stock exchange", "zh": "证券交易所" },
+								"why": {
+									"en": "The exchange is where the trade happens; it doesn't deliver shares. An exercise is assigned to a writer, who must deliver.",
+									"zh": "交易所只是成交的场所，不交付股票。行权会被指派给一位义务方，由他交付。"
+								}
+							},
+							{
+								"id": "writer",
+								"label": {
+									"en": "The writer, who sold the call",
+									"zh": "义务方，即卖出这张看涨的人"
+								}
+							},
+							{
+								"id": "holder",
+								"label": { "en": "The holder", "zh": "持有人" },
+								"why": {
+									"en": "The holder owns the right to buy. They receive the shares; they don't deliver them.",
+									"zh": "持有人拥有买入的权利。他们是收股票的一方，不是交付的一方。"
+								}
+							}
+						],
+						"accepted": ["writer"],
+						"explanation": {
+							"en": "The writer received the premium in exchange for the obligation to sell at the strike.",
+							"zh": "义务方收取了权利金，作为交换承担按行权价卖出的义务。"
+						}
+					},
+					{
+						"id": "expire",
+						"prompt": {
+							"en": "ALFA ends at $98 at expiry, below the call's $100 strike. What is the call worth?",
+							"zh": "ALFA 到期时为 $98，低于看涨期权的 $100 行权价。看涨期权值多少？"
+						},
+						"choices": [
+							{
+								"id": "zero",
+								"label": {
+									"en": "Nothing; the premium paid is gone",
+									"zh": "一文不值，已付权利金全部损失"
+								}
+							},
+							{
+								"id": "refund",
+								"label": {
+									"en": "The premium is refunded",
+									"zh": "权利金会被退还"
+								},
+								"why": {
+									"en": "A premium pays for the right, used or not. Nobody refunds it when the right turns out to be worthless.",
+									"zh": "权利金买的是这项权利，不论是否使用。权利一文不值时也没人退还。"
+								}
+							},
+							{
+								"id": "strike",
+								"label": { "en": "$100 per share", "zh": "每股 $100" },
+								"why": {
+									"en": "$100 is the price the call lets you buy at, not what it pays. With ALFA at $98, buying at $100 costs more than the market, so the call is worth nothing.",
+									"zh": "$100 是看涨期权允许你买入的价格，不是它支付的金额。ALFA 为 $98 时，按 $100 买入比市价还贵，所以看涨期权一文不值。"
+								}
+							}
+						],
+						"accepted": ["zero"],
+						"explanation": {
+							"en": "Nobody would pay $100 for shares worth less, so the call expires worthless. Premiums are not refunded.",
+							"zh": "没人会花 $100 买价值更低的股票，因此看涨期权作废。权利金不会退还。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "An option is not cheaper stock. It is a right with a deadline, and if the move doesn't come in time you can lose the whole premium.",
+					"zh": "期权不是更便宜的股票，而是有期限的权利。如果行情没有及时到来，你可能损失全部权利金。"
+				}
+			}
+		]
+	},
+	{
+		"id": "trading-options-practice-1",
+		"lessonId": "trading-options",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "trading-options",
+				"brief": {
+					"en": "Find one contract in an option chain, compare a market order with a limit order in a wide spread, and follow a position from purchase to its end.",
+					"zh": "在期权链中找到一份合约，比较价差很宽时的市价单与限价单，并追踪一笔持仓从买入到结束的全过程。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
+					"zh": "要从期权获利，并不需要行权。卖出平仓通常更简单，而且在到期前还能保留行权会放弃的时间价值。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call shows bid $1.80 and ask $2.20. Fees are $0.65 per contract on each trade.",
+					"zh": "某 ALFA 看涨显示买价 $1.80、卖价 $2.20。每笔交易每张合约收费 $0.65。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost to buy 3 contracts at the ask, before fees?",
+							"zh": "按卖价买入 3 张的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["660"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$2.20 × 100 × 3 = $660.00.",
+							"zh": "$2.20 × 100 × 3 = $660.00。"
+						}
+					},
+					{
+						"id": "limit",
+						"prompt": {
+							"en": "You send a limit buy at $2.00, below the $2.20 ask. What happens?",
+							"zh": "你以 $2.00 发出限价买单，低于 $2.20 的卖价。会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "mid",
+								"label": {
+									"en": "The exchange fills it at the midpoint.",
+									"zh": "交易所会按中间价成交。"
+								},
+								"why": {
+									"en": "The exchange doesn't split the difference. A trade happens only when a buyer's price meets a seller's, and no seller is offering your limit yet.",
+									"zh": "交易所不会替双方折中。只有买方的价格碰上卖方的价格才会成交，而目前没有卖方报出你的限价。"
+								}
+							},
+							{
+								"id": "waits",
+								"label": {
+									"en": "It fills only if a seller accepts $2.00 or less, and may not fill at all.",
+									"zh": "只有卖方接受 $2.00 或更低价格时才成交，也可能完全不成交。"
+								}
+							},
+							{
+								"id": "ask",
+								"label": {
+									"en": "It fills immediately at the ask.",
+									"zh": "会立即按卖价成交。"
+								},
+								"why": {
+									"en": "A limit buy never pays more than its limit, and the $2.20 ask is above your $2.00.",
+									"zh": "限价买单绝不会付出高于限价的价格，而 $2.20 的卖价高于你的 $2.00。"
+								}
+							}
+						],
+						"accepted": ["waits"],
+						"explanation": {
+							"en": "A limit order never pays more than its limit. Below the ask, it waits for a seller.",
+							"zh": "限价单绝不会付出高于限价的价格。低于卖价时，它会等待卖方。"
+						}
+					},
+					{
+						"id": "exit",
+						"prompt": {
+							"en": "You own a call and want out before expiry. What do you usually do?",
+							"zh": "你持有一张看涨期权，想在到期前退出。通常怎么做？"
+						},
+						"choices": [
+							{
+								"id": "sell",
+								"label": {
+									"en": "Sell the same contract to close",
+									"zh": "卖出同一份合约平仓"
+								}
+							},
+							{
+								"id": "exercise",
+								"label": { "en": "Exercise it", "zh": "行权" },
+								"why": {
+									"en": "Exercising buys 100 shares at the strike and gives up the option's remaining time value. It doesn't take you out of ALFA.",
+									"zh": "行权会按行权价买入 100 股，并放弃期权剩余的时间价值。它不会让你退出 ALFA。"
+								}
+							},
+							{
+								"id": "wait",
+								"label": {
+									"en": "Wait for the broker to close it",
+									"zh": "等券商替你平仓"
+								},
+								"why": {
+									"en": "Waiting leaves the outcome to expiry rules and your broker's policies, and time value drains while you wait. Selling the call is how you exit on your own terms.",
+									"zh": "等待会把结果交给到期规则和券商的政策，而且等待期间时间价值不断流失。卖出看涨，才能按你自己的方式退出。"
+								}
+							}
+						],
+						"accepted": ["sell"],
+						"explanation": {
+							"en": "Selling to close ends the position and keeps any remaining time value. Exercise buys the shares instead.",
+							"zh": "卖出平仓即可结束持仓，并保留剩余的时间价值。行权则是买入股票。"
+						}
+					},
+					{
+						"id": "result",
+						"prompt": {
+							"en": "You bought 2 calls at $2.00 and later sold both at $2.50. Result after fees?",
+							"zh": "你以 $2.00 买入 2 张看涨，之后以 $2.50 全部卖出。扣除费用后的结果？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": {
+								"en": "USD; negative for a loss",
+								"zh": "美元，亏损填负数"
+							}
+						},
+						"accepted": ["97.4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($2.50 − $2.00) × 100 × 2 − $0.65 × 2 contracts × 2 trades = $97.40.",
+							"zh": "（$2.50 − $2.00）× 100 × 2 − $0.65 × 2 张 × 2 笔 = $97.40。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
+					"zh": "要从期权获利，并不需要行权。卖出平仓通常更简单，而且在到期前还能保留行权会放弃的时间价值。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call shows bid $1.05 and ask $1.45. Fees are $0.65 per contract on each trade.",
+					"zh": "某 ALFA 看涨显示买价 $1.05、卖价 $1.45。每笔交易每张合约收费 $0.65。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost to buy 2 contracts at the ask, before fees?",
+							"zh": "按卖价买入 2 张的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["290"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$1.45 × 100 × 2 = $290.00.",
+							"zh": "$1.45 × 100 × 2 = $290.00。"
+						}
+					},
+					{
+						"id": "limit",
+						"prompt": {
+							"en": "You send a limit buy at $1.25, below the $1.45 ask. What happens?",
+							"zh": "你以 $1.25 发出限价买单，低于 $1.45 的卖价。会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "waits",
+								"label": {
+									"en": "It fills only if a seller accepts $1.25 or less, and may not fill at all.",
+									"zh": "只有卖方接受 $1.25 或更低价格时才成交，也可能完全不成交。"
+								}
+							},
+							{
+								"id": "ask",
+								"label": {
+									"en": "It fills immediately at the ask.",
+									"zh": "会立即按卖价成交。"
+								},
+								"why": {
+									"en": "A limit buy never pays more than its limit, and the $1.45 ask is above your $1.25.",
+									"zh": "限价买单绝不会付出高于限价的价格，而 $1.45 的卖价高于你的 $1.25。"
+								}
+							},
+							{
+								"id": "mid",
+								"label": {
+									"en": "The exchange fills it at the midpoint.",
+									"zh": "交易所会按中间价成交。"
+								},
+								"why": {
+									"en": "The exchange doesn't split the difference. A trade happens only when a buyer's price meets a seller's, and no seller is offering your limit yet.",
+									"zh": "交易所不会替双方折中。只有买方的价格碰上卖方的价格才会成交，而目前没有卖方报出你的限价。"
+								}
+							}
+						],
+						"accepted": ["waits"],
+						"explanation": {
+							"en": "A limit order never pays more than its limit. Below the ask, it waits for a seller.",
+							"zh": "限价单绝不会付出高于限价的价格。低于卖价时，它会等待卖方。"
+						}
+					},
+					{
+						"id": "exit",
+						"prompt": {
+							"en": "You own a call and want out before expiry. What do you usually do?",
+							"zh": "你持有一张看涨期权，想在到期前退出。通常怎么做？"
+						},
+						"choices": [
+							{
+								"id": "exercise",
+								"label": { "en": "Exercise it", "zh": "行权" },
+								"why": {
+									"en": "Exercising buys 100 shares at the strike and gives up the option's remaining time value. It doesn't take you out of ALFA.",
+									"zh": "行权会按行权价买入 100 股，并放弃期权剩余的时间价值。它不会让你退出 ALFA。"
+								}
+							},
+							{
+								"id": "wait",
+								"label": {
+									"en": "Wait for the broker to close it",
+									"zh": "等券商替你平仓"
+								},
+								"why": {
+									"en": "Waiting leaves the outcome to expiry rules and your broker's policies, and time value drains while you wait. Selling the call is how you exit on your own terms.",
+									"zh": "等待会把结果交给到期规则和券商的政策，而且等待期间时间价值不断流失。卖出看涨，才能按你自己的方式退出。"
+								}
+							},
+							{
+								"id": "sell",
+								"label": {
+									"en": "Sell the same contract to close",
+									"zh": "卖出同一份合约平仓"
+								}
+							}
+						],
+						"accepted": ["sell"],
+						"explanation": {
+							"en": "Selling to close ends the position and keeps any remaining time value. Exercise buys the shares instead.",
+							"zh": "卖出平仓即可结束持仓，并保留剩余的时间价值。行权则是买入股票。"
+						}
+					},
+					{
+						"id": "result",
+						"prompt": {
+							"en": "You bought 2 calls at $1.20 and later sold both at $0.90. Result after fees?",
+							"zh": "你以 $1.20 买入 2 张看涨，之后以 $0.90 全部卖出。扣除费用后的结果？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": {
+								"en": "USD; negative for a loss",
+								"zh": "美元，亏损填负数"
+							}
+						},
+						"accepted": ["-62.6"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($0.90 − $1.20) × 100 × 2 − $0.65 × 2 contracts × 2 trades = −$62.60.",
+							"zh": "（$0.90 − $1.20）× 100 × 2 − $0.65 × 2 张 × 2 笔 = −$62.60。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
+					"zh": "要从期权获利，并不需要行权。卖出平仓通常更简单，而且在到期前还能保留行权会放弃的时间价值。"
+				}
+			}
+		]
+	},
+	{
+		"id": "trading-options-practice-2",
+		"lessonId": "trading-options",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "trading-options",
+				"brief": {
+					"en": "Find one contract in an option chain, compare a market order with a limit order in a wide spread, and follow a position from purchase to its end.",
+					"zh": "在期权链中找到一份合约，比较价差很宽时的市价单与限价单，并追踪一笔持仓从买入到结束的全过程。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
+					"zh": "要从期权获利，并不需要行权。卖出平仓通常更简单，而且在到期前还能保留行权会放弃的时间价值。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call shows bid $1.80 and ask $2.20. Fees are $0.65 per contract on each trade.",
+					"zh": "某 ALFA 看涨显示买价 $1.80、卖价 $2.20。每笔交易每张合约收费 $0.65。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost to buy 3 contracts at the ask, before fees?",
+							"zh": "按卖价买入 3 张的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["660"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$2.20 × 100 × 3 = $660.00.",
+							"zh": "$2.20 × 100 × 3 = $660.00。"
+						}
+					},
+					{
+						"id": "limit",
+						"prompt": {
+							"en": "You send a limit buy at $2.00, below the $2.20 ask. What happens?",
+							"zh": "你以 $2.00 发出限价买单，低于 $2.20 的卖价。会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "mid",
+								"label": {
+									"en": "The exchange fills it at the midpoint.",
+									"zh": "交易所会按中间价成交。"
+								},
+								"why": {
+									"en": "The exchange doesn't split the difference. A trade happens only when a buyer's price meets a seller's, and no seller is offering your limit yet.",
+									"zh": "交易所不会替双方折中。只有买方的价格碰上卖方的价格才会成交，而目前没有卖方报出你的限价。"
+								}
+							},
+							{
+								"id": "waits",
+								"label": {
+									"en": "It fills only if a seller accepts $2.00 or less, and may not fill at all.",
+									"zh": "只有卖方接受 $2.00 或更低价格时才成交，也可能完全不成交。"
+								}
+							},
+							{
+								"id": "ask",
+								"label": {
+									"en": "It fills immediately at the ask.",
+									"zh": "会立即按卖价成交。"
+								},
+								"why": {
+									"en": "A limit buy never pays more than its limit, and the $2.20 ask is above your $2.00.",
+									"zh": "限价买单绝不会付出高于限价的价格，而 $2.20 的卖价高于你的 $2.00。"
+								}
+							}
+						],
+						"accepted": ["waits"],
+						"explanation": {
+							"en": "A limit order never pays more than its limit. Below the ask, it waits for a seller.",
+							"zh": "限价单绝不会付出高于限价的价格。低于卖价时，它会等待卖方。"
+						}
+					},
+					{
+						"id": "exit",
+						"prompt": {
+							"en": "You own a call and want out before expiry. What do you usually do?",
+							"zh": "你持有一张看涨期权，想在到期前退出。通常怎么做？"
+						},
+						"choices": [
+							{
+								"id": "sell",
+								"label": {
+									"en": "Sell the same contract to close",
+									"zh": "卖出同一份合约平仓"
+								}
+							},
+							{
+								"id": "exercise",
+								"label": { "en": "Exercise it", "zh": "行权" },
+								"why": {
+									"en": "Exercising buys 100 shares at the strike and gives up the option's remaining time value. It doesn't take you out of ALFA.",
+									"zh": "行权会按行权价买入 100 股，并放弃期权剩余的时间价值。它不会让你退出 ALFA。"
+								}
+							},
+							{
+								"id": "wait",
+								"label": {
+									"en": "Wait for the broker to close it",
+									"zh": "等券商替你平仓"
+								},
+								"why": {
+									"en": "Waiting leaves the outcome to expiry rules and your broker's policies, and time value drains while you wait. Selling the call is how you exit on your own terms.",
+									"zh": "等待会把结果交给到期规则和券商的政策，而且等待期间时间价值不断流失。卖出看涨，才能按你自己的方式退出。"
+								}
+							}
+						],
+						"accepted": ["sell"],
+						"explanation": {
+							"en": "Selling to close ends the position and keeps any remaining time value. Exercise buys the shares instead.",
+							"zh": "卖出平仓即可结束持仓，并保留剩余的时间价值。行权则是买入股票。"
+						}
+					},
+					{
+						"id": "result",
+						"prompt": {
+							"en": "You bought 2 calls at $2.00 and later sold both at $2.50. Result after fees?",
+							"zh": "你以 $2.00 买入 2 张看涨，之后以 $2.50 全部卖出。扣除费用后的结果？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": {
+								"en": "USD; negative for a loss",
+								"zh": "美元，亏损填负数"
+							}
+						},
+						"accepted": ["97.4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($2.50 − $2.00) × 100 × 2 − $0.65 × 2 contracts × 2 trades = $97.40.",
+							"zh": "（$2.50 − $2.00）× 100 × 2 − $0.65 × 2 张 × 2 笔 = $97.40。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
+					"zh": "要从期权获利，并不需要行权。卖出平仓通常更简单，而且在到期前还能保留行权会放弃的时间价值。"
+				}
+			},
+			{
+				"brief": {
+					"en": "An ALFA call shows bid $2.70 and ask $3.10. Fees are $0.65 per contract on each trade.",
+					"zh": "某 ALFA 看涨显示买价 $2.70、卖价 $3.10。每笔交易每张合约收费 $0.65。"
+				},
+				"questions": [
+					{
+						"id": "cost",
+						"prompt": {
+							"en": "Cost to buy 4 contracts at the ask, before fees?",
+							"zh": "按卖价买入 4 张的成本（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["1240"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "$3.10 × 100 × 4 = $1240.00.",
+							"zh": "$3.10 × 100 × 4 = $1240.00。"
+						}
+					},
+					{
+						"id": "limit",
+						"prompt": {
+							"en": "You send a limit buy at $2.90, below the $3.10 ask. What happens?",
+							"zh": "你以 $2.90 发出限价买单，低于 $3.10 的卖价。会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "ask",
+								"label": {
+									"en": "It fills immediately at the ask.",
+									"zh": "会立即按卖价成交。"
+								},
+								"why": {
+									"en": "A limit buy never pays more than its limit, and the $3.10 ask is above your $2.90.",
+									"zh": "限价买单绝不会付出高于限价的价格，而 $3.10 的卖价高于你的 $2.90。"
+								}
+							},
+							{
+								"id": "mid",
+								"label": {
+									"en": "The exchange fills it at the midpoint.",
+									"zh": "交易所会按中间价成交。"
+								},
+								"why": {
+									"en": "The exchange doesn't split the difference. A trade happens only when a buyer's price meets a seller's, and no seller is offering your limit yet.",
+									"zh": "交易所不会替双方折中。只有买方的价格碰上卖方的价格才会成交，而目前没有卖方报出你的限价。"
+								}
+							},
+							{
+								"id": "waits",
+								"label": {
+									"en": "It fills only if a seller accepts $2.90 or less, and may not fill at all.",
+									"zh": "只有卖方接受 $2.90 或更低价格时才成交，也可能完全不成交。"
+								}
+							}
+						],
+						"accepted": ["waits"],
+						"explanation": {
+							"en": "A limit order never pays more than its limit. Below the ask, it waits for a seller.",
+							"zh": "限价单绝不会付出高于限价的价格。低于卖价时，它会等待卖方。"
+						}
+					},
+					{
+						"id": "exit",
+						"prompt": {
+							"en": "You own a call and want out before expiry. What do you usually do?",
+							"zh": "你持有一张看涨期权，想在到期前退出。通常怎么做？"
+						},
+						"choices": [
+							{
+								"id": "wait",
+								"label": {
+									"en": "Wait for the broker to close it",
+									"zh": "等券商替你平仓"
+								},
+								"why": {
+									"en": "Waiting leaves the outcome to expiry rules and your broker's policies, and time value drains while you wait. Selling the call is how you exit on your own terms.",
+									"zh": "等待会把结果交给到期规则和券商的政策，而且等待期间时间价值不断流失。卖出看涨，才能按你自己的方式退出。"
+								}
+							},
+							{
+								"id": "sell",
+								"label": {
+									"en": "Sell the same contract to close",
+									"zh": "卖出同一份合约平仓"
+								}
+							},
+							{
+								"id": "exercise",
+								"label": { "en": "Exercise it", "zh": "行权" },
+								"why": {
+									"en": "Exercising buys 100 shares at the strike and gives up the option's remaining time value. It doesn't take you out of ALFA.",
+									"zh": "行权会按行权价买入 100 股，并放弃期权剩余的时间价值。它不会让你退出 ALFA。"
+								}
+							}
+						],
+						"accepted": ["sell"],
+						"explanation": {
+							"en": "Selling to close ends the position and keeps any remaining time value. Exercise buys the shares instead.",
+							"zh": "卖出平仓即可结束持仓，并保留剩余的时间价值。行权则是买入股票。"
+						}
+					},
+					{
+						"id": "result",
+						"prompt": {
+							"en": "You bought 2 calls at $3.40 and later sold both at $4.10. Result after fees?",
+							"zh": "你以 $3.40 买入 2 张看涨，之后以 $4.10 全部卖出。扣除费用后的结果？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": {
+								"en": "USD; negative for a loss",
+								"zh": "美元，亏损填负数"
+							}
+						},
+						"accepted": ["137.4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($4.10 − $3.40) × 100 × 2 − $0.65 × 2 contracts × 2 trades = $137.40.",
+							"zh": "（$4.10 − $3.40）× 100 × 2 − $0.65 × 2 张 × 2 笔 = $137.40。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "You do not need to exercise an option to profit from it. Selling it back is usually simpler, and before expiry it keeps the time value that exercising would give up.",
+					"zh": "要从期权获利，并不需要行权。卖出平仓通常更简单，而且在到期前还能保留行权会放弃的时间价值。"
+				}
+			}
+		]
+	},
+	{
+		"id": "options-risks-practice-1",
+		"lessonId": "options-risks",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "options-risks",
+				"brief": {
+					"en": "Watch a call lose value while the stock rises, compare the buyer's and writer's worst cases, and price a round trip through a wide spread.",
+					"zh": "观察股价上涨时看涨期权如何贬值，比较买方与义务方的最坏情况，并计算在宽价差中一买一卖的成本。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",
+					"zh": "“最多只亏投入的钱”只适用于期权买方，不适用于义务方。而且方向判断正确还不够，时间或波动率也可能对你不利。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA call for $4.00 per share. A different ALFA call is quoted $1.90 bid and $2.10 ask.",
+					"zh": "你以每股 $4.00 买入了一张 ALFA 看涨。另一张 ALFA 看涨的报价为买价 $1.90、卖价 $2.10。"
+				},
+				"questions": [
+					{
+						"id": "max-loss",
+						"prompt": {
+							"en": "On the call you bought for $4.00, what is the most you can lose, before fees?",
+							"zh": "你以 $4.00 买入的那张看涨，最多可能亏多少（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["400"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "A buyer can lose the whole premium: $4.00 × 100 = $400.00.",
+							"zh": "买方最多损失全部权利金：$4.00 × 100 = $400.00。"
+						}
+					},
+					{
+						"id": "no-limit",
+						"prompt": {
+							"en": "Which position has no fixed maximum loss?",
+							"zh": "哪种持仓没有固定的最大亏损？"
+						},
+						"choices": [
+							{
+								"id": "long-put",
+								"label": { "en": "Buying a put", "zh": "买入看跌" },
+								"why": {
+									"en": "A put buyer can lose at most the premium paid, which happens if ALFA ends at or above the strike.",
+									"zh": "看跌买方最多损失已付的权利金，即 ALFA 收在行权价或以上时。"
+								}
+							},
+							{
+								"id": "short-call",
+								"label": {
+									"en": "Writing a call without owning the shares",
+									"zh": "不持有股票而卖出看涨"
+								}
+							},
+							{
+								"id": "long-call",
+								"label": { "en": "Buying a call", "zh": "买入看涨" },
+								"why": {
+									"en": "A call buyer can lose at most the premium paid. The loss stops there however far ALFA falls.",
+									"zh": "看涨买方最多损失已付的权利金。无论 ALFA 跌多少，亏损都止于此。"
+								}
+							}
+						],
+						"accepted": ["short-call"],
+						"explanation": {
+							"en": "An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
+							"zh": "未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。"
+						}
+					},
+					{
+						"id": "round-trip",
+						"prompt": {
+							"en": "On the quoted call, you buy 5 contracts at the ask and immediately sell them at the bid. Loss before fees?",
+							"zh": "对于有报价的那张看涨，你按卖价买入 5 张，随即按买价全部卖出。不含费用的亏损是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["100"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($2.10 − $1.90) × 100 × 5 = $100.00, lost before the price has moved at all.",
+							"zh": "（$2.10 − $1.90）× 100 × 5 = $100.00，价格还没动就已亏损。"
+						}
+					},
+					{
+						"id": "why",
+						"prompt": {
+							"en": "ALFA rose a little, but your call lost value. Which could explain it?",
+							"zh": "ALFA 小幅上涨，但你的看涨期权贬值了。哪种原因可能解释？"
+						},
+						"choices": [
+							{
+								"id": "strike",
+								"label": {
+									"en": "The broker moved the strike",
+									"zh": "券商改了行权价"
+								},
+								"why": {
+									"en": "A broker can't change a contract's strike, so that can't explain the drop.",
+									"zh": "券商不能更改合约的行权价，所以这解释不了贬值。"
+								}
+							},
+							{
+								"id": "shares",
+								"label": {
+									"en": "The call turned into shares",
+									"zh": "看涨期权变成了股票"
+								},
+								"why": {
+									"en": "A call becomes shares only if you exercise it. Until then it is still an option, and its price includes time value.",
+									"zh": "只有行权，看涨期权才会变成股票。在那之前它仍是期权，价格里包含时间价值。"
+								}
+							},
+							{
+								"id": "time",
+								"label": {
+									"en": "Time passed and implied volatility fell",
+									"zh": "时间流逝且隐含波动率下降"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "An option's price includes time value, which shrinks each day and falls when implied volatility drops.",
+							"zh": "期权价格包含时间价值，它每天都在缩水，隐含波动率下降时也会下跌。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",
+					"zh": "“最多只亏投入的钱”只适用于期权买方，不适用于义务方。而且方向判断正确还不够，时间或波动率也可能对你不利。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA call for $2.50 per share. A different ALFA call is quoted $0.95 bid and $1.05 ask.",
+					"zh": "你以每股 $2.50 买入了一张 ALFA 看涨。另一张 ALFA 看涨的报价为买价 $0.95、卖价 $1.05。"
+				},
+				"questions": [
+					{
+						"id": "max-loss",
+						"prompt": {
+							"en": "On the call you bought for $2.50, what is the most you can lose, before fees?",
+							"zh": "你以 $2.50 买入的那张看涨，最多可能亏多少（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["250"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "A buyer can lose the whole premium: $2.50 × 100 = $250.00.",
+							"zh": "买方最多损失全部权利金：$2.50 × 100 = $250.00。"
+						}
+					},
+					{
+						"id": "no-limit",
+						"prompt": {
+							"en": "Which position has no fixed maximum loss?",
+							"zh": "哪种持仓没有固定的最大亏损？"
+						},
+						"choices": [
+							{
+								"id": "short-call",
+								"label": {
+									"en": "Writing a call without owning the shares",
+									"zh": "不持有股票而卖出看涨"
+								}
+							},
+							{
+								"id": "long-call",
+								"label": { "en": "Buying a call", "zh": "买入看涨" },
+								"why": {
+									"en": "A call buyer can lose at most the premium paid. The loss stops there however far ALFA falls.",
+									"zh": "看涨买方最多损失已付的权利金。无论 ALFA 跌多少，亏损都止于此。"
+								}
+							},
+							{
+								"id": "long-put",
+								"label": { "en": "Buying a put", "zh": "买入看跌" },
+								"why": {
+									"en": "A put buyer can lose at most the premium paid, which happens if ALFA ends at or above the strike.",
+									"zh": "看跌买方最多损失已付的权利金，即 ALFA 收在行权价或以上时。"
+								}
+							}
+						],
+						"accepted": ["short-call"],
+						"explanation": {
+							"en": "An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
+							"zh": "未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。"
+						}
+					},
+					{
+						"id": "round-trip",
+						"prompt": {
+							"en": "On the quoted call, you buy 3 contracts at the ask and immediately sell them at the bid. Loss before fees?",
+							"zh": "对于有报价的那张看涨，你按卖价买入 3 张，随即按买价全部卖出。不含费用的亏损是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["30"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($1.05 − $0.95) × 100 × 3 = $30.00, lost before the price has moved at all.",
+							"zh": "（$1.05 − $0.95）× 100 × 3 = $30.00，价格还没动就已亏损。"
+						}
+					},
+					{
+						"id": "why",
+						"prompt": {
+							"en": "ALFA rose a little, but your call lost value. Which could explain it?",
+							"zh": "ALFA 小幅上涨，但你的看涨期权贬值了。哪种原因可能解释？"
+						},
+						"choices": [
+							{
+								"id": "shares",
+								"label": {
+									"en": "The call turned into shares",
+									"zh": "看涨期权变成了股票"
+								},
+								"why": {
+									"en": "A call becomes shares only if you exercise it. Until then it is still an option, and its price includes time value.",
+									"zh": "只有行权，看涨期权才会变成股票。在那之前它仍是期权，价格里包含时间价值。"
+								}
+							},
+							{
+								"id": "time",
+								"label": {
+									"en": "Time passed and implied volatility fell",
+									"zh": "时间流逝且隐含波动率下降"
+								}
+							},
+							{
+								"id": "strike",
+								"label": {
+									"en": "The broker moved the strike",
+									"zh": "券商改了行权价"
+								},
+								"why": {
+									"en": "A broker can't change a contract's strike, so that can't explain the drop.",
+									"zh": "券商不能更改合约的行权价，所以这解释不了贬值。"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "An option's price includes time value, which shrinks each day and falls when implied volatility drops.",
+							"zh": "期权价格包含时间价值，它每天都在缩水，隐含波动率下降时也会下跌。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",
+					"zh": "“最多只亏投入的钱”只适用于期权买方，不适用于义务方。而且方向判断正确还不够，时间或波动率也可能对你不利。"
+				}
+			}
+		]
+	},
+	{
+		"id": "options-risks-practice-2",
+		"lessonId": "options-risks",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "options-risks",
+				"brief": {
+					"en": "Watch a call lose value while the stock rises, compare the buyer's and writer's worst cases, and price a round trip through a wide spread.",
+					"zh": "观察股价上涨时看涨期权如何贬值，比较买方与义务方的最坏情况，并计算在宽价差中一买一卖的成本。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",
+					"zh": "“最多只亏投入的钱”只适用于期权买方，不适用于义务方。而且方向判断正确还不够，时间或波动率也可能对你不利。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA call for $4.00 per share. A different ALFA call is quoted $1.90 bid and $2.10 ask.",
+					"zh": "你以每股 $4.00 买入了一张 ALFA 看涨。另一张 ALFA 看涨的报价为买价 $1.90、卖价 $2.10。"
+				},
+				"questions": [
+					{
+						"id": "max-loss",
+						"prompt": {
+							"en": "On the call you bought for $4.00, what is the most you can lose, before fees?",
+							"zh": "你以 $4.00 买入的那张看涨，最多可能亏多少（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["400"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "A buyer can lose the whole premium: $4.00 × 100 = $400.00.",
+							"zh": "买方最多损失全部权利金：$4.00 × 100 = $400.00。"
+						}
+					},
+					{
+						"id": "no-limit",
+						"prompt": {
+							"en": "Which position has no fixed maximum loss?",
+							"zh": "哪种持仓没有固定的最大亏损？"
+						},
+						"choices": [
+							{
+								"id": "long-put",
+								"label": { "en": "Buying a put", "zh": "买入看跌" },
+								"why": {
+									"en": "A put buyer can lose at most the premium paid, which happens if ALFA ends at or above the strike.",
+									"zh": "看跌买方最多损失已付的权利金，即 ALFA 收在行权价或以上时。"
+								}
+							},
+							{
+								"id": "short-call",
+								"label": {
+									"en": "Writing a call without owning the shares",
+									"zh": "不持有股票而卖出看涨"
+								}
+							},
+							{
+								"id": "long-call",
+								"label": { "en": "Buying a call", "zh": "买入看涨" },
+								"why": {
+									"en": "A call buyer can lose at most the premium paid. The loss stops there however far ALFA falls.",
+									"zh": "看涨买方最多损失已付的权利金。无论 ALFA 跌多少，亏损都止于此。"
+								}
+							}
+						],
+						"accepted": ["short-call"],
+						"explanation": {
+							"en": "An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
+							"zh": "未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。"
+						}
+					},
+					{
+						"id": "round-trip",
+						"prompt": {
+							"en": "On the quoted call, you buy 5 contracts at the ask and immediately sell them at the bid. Loss before fees?",
+							"zh": "对于有报价的那张看涨，你按卖价买入 5 张，随即按买价全部卖出。不含费用的亏损是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["100"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($2.10 − $1.90) × 100 × 5 = $100.00, lost before the price has moved at all.",
+							"zh": "（$2.10 − $1.90）× 100 × 5 = $100.00，价格还没动就已亏损。"
+						}
+					},
+					{
+						"id": "why",
+						"prompt": {
+							"en": "ALFA rose a little, but your call lost value. Which could explain it?",
+							"zh": "ALFA 小幅上涨，但你的看涨期权贬值了。哪种原因可能解释？"
+						},
+						"choices": [
+							{
+								"id": "strike",
+								"label": {
+									"en": "The broker moved the strike",
+									"zh": "券商改了行权价"
+								},
+								"why": {
+									"en": "A broker can't change a contract's strike, so that can't explain the drop.",
+									"zh": "券商不能更改合约的行权价，所以这解释不了贬值。"
+								}
+							},
+							{
+								"id": "shares",
+								"label": {
+									"en": "The call turned into shares",
+									"zh": "看涨期权变成了股票"
+								},
+								"why": {
+									"en": "A call becomes shares only if you exercise it. Until then it is still an option, and its price includes time value.",
+									"zh": "只有行权，看涨期权才会变成股票。在那之前它仍是期权，价格里包含时间价值。"
+								}
+							},
+							{
+								"id": "time",
+								"label": {
+									"en": "Time passed and implied volatility fell",
+									"zh": "时间流逝且隐含波动率下降"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "An option's price includes time value, which shrinks each day and falls when implied volatility drops.",
+							"zh": "期权价格包含时间价值，它每天都在缩水，隐含波动率下降时也会下跌。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",
+					"zh": "“最多只亏投入的钱”只适用于期权买方，不适用于义务方。而且方向判断正确还不够，时间或波动率也可能对你不利。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You bought an ALFA call for $6.20 per share. A different ALFA call is quoted $3.20 bid and $3.60 ask.",
+					"zh": "你以每股 $6.20 买入了一张 ALFA 看涨。另一张 ALFA 看涨的报价为买价 $3.20、卖价 $3.60。"
+				},
+				"questions": [
+					{
+						"id": "max-loss",
+						"prompt": {
+							"en": "On the call you bought for $6.20, what is the most you can lose, before fees?",
+							"zh": "你以 $6.20 买入的那张看涨，最多可能亏多少（不含费用）？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["620"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "A buyer can lose the whole premium: $6.20 × 100 = $620.00.",
+							"zh": "买方最多损失全部权利金：$6.20 × 100 = $620.00。"
+						}
+					},
+					{
+						"id": "no-limit",
+						"prompt": {
+							"en": "Which position has no fixed maximum loss?",
+							"zh": "哪种持仓没有固定的最大亏损？"
+						},
+						"choices": [
+							{
+								"id": "long-call",
+								"label": { "en": "Buying a call", "zh": "买入看涨" },
+								"why": {
+									"en": "A call buyer can lose at most the premium paid. The loss stops there however far ALFA falls.",
+									"zh": "看涨买方最多损失已付的权利金。无论 ALFA 跌多少，亏损都止于此。"
+								}
+							},
+							{
+								"id": "long-put",
+								"label": { "en": "Buying a put", "zh": "买入看跌" },
+								"why": {
+									"en": "A put buyer can lose at most the premium paid, which happens if ALFA ends at or above the strike.",
+									"zh": "看跌买方最多损失已付的权利金，即 ALFA 收在行权价或以上时。"
+								}
+							},
+							{
+								"id": "short-call",
+								"label": {
+									"en": "Writing a call without owning the shares",
+									"zh": "不持有股票而卖出看涨"
+								}
+							}
+						],
+						"accepted": ["short-call"],
+						"explanation": {
+							"en": "An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
+							"zh": "未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。"
+						}
+					},
+					{
+						"id": "round-trip",
+						"prompt": {
+							"en": "On the quoted call, you buy 2 contracts at the ask and immediately sell them at the bid. Loss before fees?",
+							"zh": "对于有报价的那张看涨，你按卖价买入 2 张，随即按买价全部卖出。不含费用的亏损是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "USD", "zh": "美元" }
+						},
+						"accepted": ["80"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "($3.60 − $3.20) × 100 × 2 = $80.00, lost before the price has moved at all.",
+							"zh": "（$3.60 − $3.20）× 100 × 2 = $80.00，价格还没动就已亏损。"
+						}
+					},
+					{
+						"id": "why",
+						"prompt": {
+							"en": "ALFA rose a little, but your call lost value. Which could explain it?",
+							"zh": "ALFA 小幅上涨，但你的看涨期权贬值了。哪种原因可能解释？"
+						},
+						"choices": [
+							{
+								"id": "time",
+								"label": {
+									"en": "Time passed and implied volatility fell",
+									"zh": "时间流逝且隐含波动率下降"
+								}
+							},
+							{
+								"id": "strike",
+								"label": {
+									"en": "The broker moved the strike",
+									"zh": "券商改了行权价"
+								},
+								"why": {
+									"en": "A broker can't change a contract's strike, so that can't explain the drop.",
+									"zh": "券商不能更改合约的行权价，所以这解释不了贬值。"
+								}
+							},
+							{
+								"id": "shares",
+								"label": {
+									"en": "The call turned into shares",
+									"zh": "看涨期权变成了股票"
+								},
+								"why": {
+									"en": "A call becomes shares only if you exercise it. Until then it is still an option, and its price includes time value.",
+									"zh": "只有行权，看涨期权才会变成股票。在那之前它仍是期权，价格里包含时间价值。"
+								}
+							}
+						],
+						"accepted": ["time"],
+						"explanation": {
+							"en": "An option's price includes time value, which shrinks each day and falls when implied volatility drops.",
+							"zh": "期权价格包含时间价值，它每天都在缩水，隐含波动率下降时也会下跌。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "'I can only lose what I put in' is true for option buyers, not for writers. And being right about direction is not enough if time or volatility works against you.",
+					"zh": "“最多只亏投入的钱”只适用于期权买方，不适用于义务方。而且方向判断正确还不够，时间或波动率也可能对你不利。"
+				}
+			}
+		]
+	}
+]
