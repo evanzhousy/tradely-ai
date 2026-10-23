@@ -473,12 +473,23 @@ const scenes = [
 			],
 			choices: [
 				{ id: "twr", label: [`About ${pct(TWR, 1)}`, `约 ${pct(TWR, 1)}`] },
-				{ id: "growth", label: [pct(GROWTH, 1), pct(GROWTH, 1)] },
+				{
+					id: "growth",
+					label: [pct(GROWTH, 1), pct(GROWTH, 1)],
+					why: [
+						`${pct(GROWTH, 1)} is balance growth, and it includes your own ${dollars(yourAccount.deposit)} deposit. Time-weighted return cuts at the deposit and chains the two periods.`,
+						`${pct(GROWTH, 1)} 是余额增长，其中包括你自己存入的 ${dollars(yourAccount.deposit)}。时间加权收益要在存入处切开，再把两段连乘。`,
+					],
+				},
 				{
 					id: "deposit",
 					label: [
 						`${pct(yourAccount.deposit / OPEN, 1)}: the deposit`,
 						`${pct(yourAccount.deposit / OPEN, 1)}：存入部分`,
+					],
+					why: [
+						"That's the deposit as a share of the starting balance: your money, not a return. The return comes from the two periods either side of it.",
+						"这是存入金额占期初余额的比例：是你自己的钱，而不是收益。收益来自存入前后的两段。",
 					],
 				},
 			],
@@ -578,8 +589,19 @@ const scenes = [
 						`Yes: ${Math.round(WIN_RATE * 100)}% won`,
 						`是：${Math.round(WIN_RATE * 100)}% 盈利`,
 					],
+					why: [
+						`A win rate counts trades, not dollars. Here ${WINS.length} wins add ${signed(GROSS_WIN)} and one loss takes ${signed(-GROSS_LOSS)}.`,
+						`胜率统计的是笔数，而不是金额。这里 ${WINS.length} 笔盈利合计 ${signed(GROSS_WIN)}，一笔亏损 ${signed(-GROSS_LOSS)}。`,
+					],
 				},
-				{ id: "most", label: ["Yes, most of the time", "是，大多数情况下"] },
+				{
+					id: "most",
+					label: ["Yes, most of the time", "是，大多数情况下"],
+					why: [
+						"Winning most trades says nothing about the total: one large loss can outweigh many small wins. Add up the dollars.",
+						"大多数交易盈利，并不能说明合计：一笔大亏可能抵过许多小赢。要把金额加起来。",
+					],
+				},
 			],
 			answer: "depends",
 			revealAt: 2,
@@ -657,8 +679,22 @@ const scenes = [
 					id: "no",
 					label: ["Not necessarily: check the path", "不一定：要看路径"],
 				},
-				{ id: "yes", label: ["Yes: both made 10%", "是：都赚了 10%"] },
-				{ id: "later", label: ["Only the later one", "只有后面的那个"] },
+				{
+					id: "yes",
+					label: ["Yes: both made 10%", "是：都赚了 10%"],
+					why: [
+						`Same start and end, different paths: B fell ${pct(deepWorst.fall, 0)} on the way, A only ${pct(maxDrawdown(steady).fall, 1)}. The return hides the drawdown.`,
+						`起点和终点相同，路径不同：B 中途跌了 ${pct(deepWorst.fall, 0)}，A 只跌了 ${pct(maxDrawdown(steady).fall, 1)}。收益掩盖了回撤。`,
+					],
+				},
+				{
+					id: "later",
+					label: ["Only the later one", "只有后面的那个"],
+					why: [
+						"Both covered the same months and ended at the same value. What differs is the path: how far each fell along the way.",
+						"两者覆盖相同的月份，终值也相同。不同的是路径：各自中途跌了多少。",
+					],
+				},
 			],
 			answer: "no",
 			revealAt: 2,

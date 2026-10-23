@@ -743,12 +743,20 @@ const scenes = [
 						`${signedCount(SUBTOTAL)}: missing counts as zero`,
 						`${signedCount(SUBTOTAL)}：缺失按零计`,
 					],
+					why: [
+						"Missing isn't zero. Protective puts carry negative delta, so counting them as zero overstates the total.",
+						"缺失不是零。保护性看跌带负 Delta，按零计会高估合计。",
+					],
 				},
 				{
 					id: "more",
 					label: [
 						`More than ${signedCount(SUBTOTAL)}: puts add delta`,
 						`大于 ${signedCount(SUBTOTAL)}：看跌会增加 Delta`,
+					],
+					why: [
+						"Long puts carry negative delta, so they lower the total, not raise it. Until they report, the total is unknown.",
+						"看跌多头带负 Delta，所以会降低合计，而不是增加。在它们报送之前，合计是未知的。",
 					],
 				},
 			],
@@ -842,6 +850,10 @@ const scenes = [
 				{
 					id: "zero",
 					label: ["$0: delta is zero", "$0：Delta 为零"],
+					why: [
+						`Zero delta means a small move costs nothing, not that time stops. Theta still drains about ${wholeUsd(THETA)} a day.`,
+						`Delta 为零表示小幅变动没有影响，并不表示时间停止。Theta 仍然每天流失约 ${wholeUsd(THETA)}。`,
+					],
 				},
 				{
 					id: "theta",
@@ -855,6 +867,10 @@ const scenes = [
 					label: [
 						`About ${wholeUsd(-WEEK_PNL)}: gamma pays`,
 						`约 ${wholeUsd(-WEEK_PNL)}：Gamma 赚钱`,
+					],
+					why: [
+						"Gamma pays only when ALFA moves. In a quiet week there's nothing for it to earn, and theta still costs.",
+						"Gamma 只有在 ALFA 变动时才赚钱。平静的一周里它无钱可赚，而 Theta 照样有成本。",
 					],
 				},
 			],
@@ -940,6 +956,10 @@ const scenes = [
 						`${PUT_VEGA_PER_UNIT.toFixed(2)}: it's already comparable`,
 						`${PUT_VEGA_PER_UNIT.toFixed(2)}：已经可以比较`,
 					],
+					why: [
+						"Per 1.00 of volatility and per vol point are different units: one unit is 100 points. Divide by 100 before adding.",
+						"每 1.00 波动率和每个波动率点是不同的单位：一个单位是 100 个点。相加之前要除以 100。",
+					],
 				},
 				{
 					id: "convert",
@@ -950,6 +970,10 @@ const scenes = [
 					label: [
 						`${(PUT_VEGA_PER_UNIT * 100).toFixed(0)}: 100 points to a unit`,
 						`${(PUT_VEGA_PER_UNIT * 100).toFixed(0)}：一个单位是 100 点`,
+					],
+					why: [
+						`That multiplies by 100 instead of dividing. A unit of volatility is 100 points, so per point is ${PUT_VEGA_PER_UNIT.toFixed(2)} ÷ 100.`,
+						`这是乘以 100，而不是除以 100。一个波动率单位是 100 个点，所以每点是 ${PUT_VEGA_PER_UNIT.toFixed(2)} ÷ 100。`,
 					],
 				},
 			],

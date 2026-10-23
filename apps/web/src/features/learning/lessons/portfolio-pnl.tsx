@@ -702,12 +702,20 @@ const scenes = [
 						`${signed(average.realized)}: at your average cost`,
 						`${signed(average.realized)}：按平均成本`,
 					],
+					why: [
+						`Average cost is a different lot-matching rule. First in, first out matches the sale to the oldest lot, the ${lots[0].time} buy at ${price(lots[0].price)}.`,
+						`平均成本是另一种匹配规则。先进先出把卖出对应到最早的一批，即 ${lots[0].time} 以 ${price(lots[0].price)} 买入的那批。`,
+					],
 				},
 				{
 					id: "all",
 					label: [
 						`${signed(fifo.realized + fifo.unrealized)}: everything`,
 						`${signed(fifo.realized + fifo.unrealized)}：全部`,
+					],
+					why: [
+						`That adds the ${HELD - SOLD} calls you still hold. Only the ${SOLD} you sold are realized; the rest stay unrealized at ${signed(fifo.unrealized)}.`,
+						`这把你仍持有的 ${HELD - SOLD} 张也加了进去。只有卖出的 ${SOLD} 张才算已实现；其余仍是未实现的 ${signed(fifo.unrealized)}。`,
 					],
 				},
 			],
@@ -791,8 +799,19 @@ const scenes = [
 						signed(PNL + yourAccount.deposit),
 						signed(PNL + yourAccount.deposit),
 					],
+					why: [
+						"A deposit is your own money moving in, not something your positions earned. It raises account value, not P&L.",
+						"存入是你自己的钱转进来，不是持仓赚的。它增加的是账户价值，而不是盈亏。",
+					],
 				},
-				{ id: "zero", label: ["$0", "$0"] },
+				{
+					id: "zero",
+					label: ["$0", "$0"],
+					why: [
+						`A deposit doesn't reset P&L. Your positions are still ${signed(PNL)}; only the account value changed.`,
+						`存入不会让盈亏归零。你的持仓仍是 ${signed(PNL)}；变的只是账户价值。`,
+					],
+				},
 			],
 			answer: "same",
 			entry: { answer: PNL / 100, tolerance: 0.5, prefix: "$" },
@@ -880,8 +899,22 @@ const scenes = [
 						"没有固定上限：随 ALFA 上涨而增加",
 					],
 				},
-				{ id: "premium", label: [dollars(RECEIVED), dollars(RECEIVED)] },
-				{ id: "none", label: ["Nothing: he was paid", "不会亏：他已收钱"] },
+				{
+					id: "premium",
+					label: [dollars(RECEIVED), dollars(RECEIVED)],
+					why: [
+						`The premium is the most Ben can make, not lose. Each dollar ALFA ends above $100 costs him ${dollars(BEN * 100 * 100)}, with no cap.`,
+						`权利金是 Ben 最多能赚的，而不是最多会亏的。ALFA 到期时每高于 $100 一美元，他就要付出 ${dollars(BEN * 100 * 100)}，没有上限。`,
+					],
+				},
+				{
+					id: "none",
+					label: ["Nothing: he was paid", "不会亏：他已收钱"],
+					why: [
+						`Being paid up front doesn't cap the obligation. If ALFA ends at $120 he's ${signed(benAtExpiry(120))}.`,
+						`预先收钱并不会限制义务。如果 ALFA 收在 $120，他是 ${signed(benAtExpiry(120))}。`,
+					],
+				},
 			],
 			answer: "unlimited",
 			revealAt: 2,

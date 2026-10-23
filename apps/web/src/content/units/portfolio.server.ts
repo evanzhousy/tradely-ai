@@ -293,7 +293,13 @@ export const portfolioUnits: TeachingUnit[] = [
 						"Does that make the whole portfolio neutral?",
 						"这样整个组合就中性了吗？",
 						[
-							["yes", "Yes: the subtotal is offset", "是：小计已被抵消"],
+							[
+								"yes",
+								"Yes: the subtotal is offset",
+								"是：小计已被抵消",
+								"A zero subtotal covers only the holdings that reported. The missing holding, and risks like gamma and vega, remain.",
+								"小计为零只覆盖已报送的持仓。缺失的持仓，以及 Gamma、Vega 等风险，仍然存在。",
+							],
 							[
 								"no",
 								"No: the unreported holding and other risks remain",

@@ -628,12 +628,20 @@ const scenes = [
 						signedDollars(realized("average")),
 						signedDollars(realized("average")),
 					],
+					why: [
+						`Average cost is a different rule. First in, first out sells the oldest contracts first: the ${SOLD} from Monday's $2.10 lot.`,
+						`平均成本是另一种规则。先进先出先卖最早的合约：周一 $2.10 那批中的 ${SOLD} 张。`,
+					],
 				},
 				{
 					id: "lifo",
 					label: [
 						signedDollars(realized("lifo")),
 						signedDollars(realized("lifo")),
+					],
+					why: [
+						"That starts with the newest contracts, Tuesday's $2.60 lot. First in, first out sells Monday's $2.10 contracts first.",
+						"这是从最新的合约开始卖，即周二 $2.60 那批。先进先出先卖周一 $2.10 的合约。",
 					],
 				},
 			],
@@ -736,12 +744,20 @@ const scenes = [
 						`+${(((fridayFor(DEPOSIT) - DEPOSIT - OPEN) / OPEN) * 100).toFixed(1)}%`,
 						`+${(((fridayFor(DEPOSIT) - DEPOSIT - OPEN) / OPEN) * 100).toFixed(1)}%`,
 					],
+					why: [
+						`That divides the dollar gain by the starting balance, but the second half of the week ran on ${dollars(DEPOSIT)} more. Chain the two periods instead.`,
+						`这是用美元收益除以期初余额，但后半周多用了 ${dollars(DEPOSIT)}。应该把两段连乘。`,
+					],
 				},
 				{
 					id: "growth",
 					label: [
 						`+${(((fridayFor(DEPOSIT) - OPEN) / OPEN) * 100).toFixed(1)}%`,
 						`+${(((fridayFor(DEPOSIT) - OPEN) / OPEN) * 100).toFixed(1)}%`,
+					],
+					why: [
+						`That's balance growth, which counts your own ${dollars(DEPOSIT)} deposit as a return. Split at the deposit and chain the two periods.`,
+						`这是余额增长，把你自己存入的 ${dollars(DEPOSIT)} 也算成了收益。要在存入处切开，把两段连乘。`,
 					],
 				},
 			],
@@ -827,8 +843,22 @@ const scenes = [
 					id: "pf",
 					label: [PROFIT_FACTOR.toFixed(2), PROFIT_FACTOR.toFixed(2)],
 				},
-				{ id: "count", label: ["4.00", "4.00"] },
-				{ id: "rate", label: ["0.80", "0.80"] },
+				{
+					id: "count",
+					label: ["4.00", "4.00"],
+					why: [
+						"4.00 counts wins against losses, 4 to 1. Profit factor divides dollars: gross wins over gross losses.",
+						"4.00 是按笔数算的比例，4 比 1。盈亏比要用金额相除：总盈利除以总亏损。",
+					],
+				},
+				{
+					id: "rate",
+					label: ["0.80", "0.80"],
+					why: [
+						"0.80 is the win rate, 4 of 5. Profit factor weighs dollars: gross wins over gross losses.",
+						"0.80 是胜率，5 笔中赢 4 笔。盈亏比衡量的是金额：总盈利除以总亏损。",
+					],
+				},
 			],
 			answer: "pf",
 			entry: { answer: PROFIT_FACTOR, tolerance: 0.01 },
@@ -926,12 +956,20 @@ const scenes = [
 						signedCount(TOTAL - 2 * PUT_SHARES),
 						signedCount(TOTAL - 2 * PUT_SHARES),
 					],
+					why: [
+						"A short put adds to delta: being short a negative delta is positive. Counting it as negative subtracts what it should add.",
+						"做空看跌会增加 Delta：负 Delta 的空头是正的。把它算成负数，就减掉了本该加上的部分。",
+					],
 				},
 				{
 					id: "puts",
 					label: [
 						signedCount(TOTAL - PUT_SHARES),
 						signedCount(TOTAL - PUT_SHARES),
+					],
+					why: [
+						`That leaves out the ${-PUTS} short puts. They add ${signedCount(PUT_SHARES)} share-equivalents to the total.`,
+						`这漏掉了 ${-PUTS} 张看跌空头。它们给合计增加 ${signedCount(PUT_SHARES)} 股等价。`,
 					],
 				},
 			],
