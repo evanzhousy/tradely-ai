@@ -815,10 +815,18 @@ const scenes = [
 						`${usd(CORRECTED)}: the corrected price`,
 						`${usd(CORRECTED)}：更正后的价格`,
 					],
+					why: [
+						`The correction arrived at ${CORRECTED_AT}, after 10:50:01. Using it there lets the backtest see the future.`,
+						`更正在 ${CORRECTED_AT} 才到，晚于 10:50:01。在那一刻使用它，等于让回测看到了未来。`,
+					],
 				},
 				{
 					id: "none",
 					label: ["Neither: the block is too new", "都不能：大单太新"],
+					why: [
+						`The block had printed and its first report had arrived by 10:50:01, so a replay can use it at ${usd(REPORTED)}.`,
+						`到 10:50:01 时大单已经成交，首报也已到达，所以重放可以按 ${usd(REPORTED)} 使用它。`,
+					],
 				},
 			],
 			answer: "first",
@@ -897,8 +905,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "twice", label: ["125: halved twice", "125：减半两次"] },
-				{ id: "once", label: ["250: halved once", "250：减半一次"] },
-				{ id: "same", label: ["500: nothing traded", "500：没有成交"] },
+				{
+					id: "once",
+					label: ["250: halved once", "250：减半一次"],
+					why: [
+						"250 is one half-life, 30 minutes. From 10:50 to 11:50 is an hour, two half-lives: 500 → 250 → 125.",
+						"250 是一个半衰期，即 30 分钟。从 10:50 到 11:50 是一小时，两个半衰期：500 → 250 → 125。",
+					],
+				},
+				{
+					id: "same",
+					label: ["500: nothing traded", "500：没有成交"],
+					why: [
+						"The contracts didn't change, but the score weights old trades less as time passes. After an hour the weight is a quarter.",
+						"合约数没有变，但分数会随时间降低旧成交的权重。一小时后权重只剩四分之一。",
+					],
+				},
 			],
 			answer: "twice",
 			entry: { answer: 125 },
@@ -981,12 +1003,20 @@ const scenes = [
 						`A ${PERCENTILE}% chance ALFA rises`,
 						`ALFA 有 ${PERCENTILE}% 的概率上涨`,
 					],
+					why: [
+						"A percentile ranks today's volume among past sessions. It isn't a probability, and says nothing about ALFA's next move.",
+						"百分位是在历史交易日中给今天的成交量排名。它不是概率，也不说明 ALFA 的下一步。",
+					],
 				},
 				{
 					id: "traders",
 					label: [
 						`${PERCENTILE}% of traders are bullish`,
 						`${PERCENTILE}% 的交易者看涨`,
+					],
+					why: [
+						"Volume counts contracts, not people or their views. The percentile ranks today's volume against recent sessions.",
+						"成交量统计的是合约，而不是人或他们的看法。百分位是把今天的成交量与近期交易日比较。",
 					],
 				},
 			],
@@ -1077,8 +1107,22 @@ const scenes = [
 						`更低：${best.rose}% 是看过结果后挑的`,
 					],
 				},
-				{ id: "same", label: [`About ${best.rose}%`, `大约 ${best.rose}%`] },
-				{ id: "higher", label: ["Higher", "更高"] },
+				{
+					id: "same",
+					label: [`About ${best.rose}%`, `大约 ${best.rose}%`],
+					why: [
+						`${best.rose}% is the best of ${tried.length} tries on data you had already seen, so part of it is luck. Expect it to shrink on sealed data.`,
+						`${best.rose}% 是在已看过的数据上 ${tried.length} 次尝试中最好的一次，部分来自运气。在封存数据上应预期它会缩水。`,
+					],
+				},
+				{
+					id: "higher",
+					label: ["Higher", "更高"],
+					why: [
+						`Picking the best of ${tried.length} tries makes the in-sample figure too high, not too low. New data can't be expected to beat it.`,
+						`从 ${tried.length} 次尝试中挑最好的，会让样本内结果偏高，而不是偏低。不能指望新数据超过它。`,
+					],
+				},
 			],
 			answer: "lower",
 			revealAt: 2,

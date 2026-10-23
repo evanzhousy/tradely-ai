@@ -513,10 +513,18 @@ const scenes = [
 				{
 					id: "vague",
 					label: ["Where's the action in ALFA?", "ALFA 哪里最活跃？"],
+					why: [
+						"Action isn't defined: by volume, premium, price change? Without a measure, a universe and a session, nobody can check the answer.",
+						"“活跃”没有定义：按成交量、权利金还是价格变化？没有测量量、范围和时段，没人能核查答案。",
+					],
 				},
 				{
 					id: "forecast",
 					label: ["Which ALFA option will rally?", "哪个 ALFA 期权会大涨？"],
+					why: [
+						"A rally can be tested only with a defined outcome, a horizon and dates held out from the analysis. As asked, no data can check it.",
+						"大涨只有在明确结果、期限和样本外日期后才能检验。按现在的问法，没有数据能核查它。",
+					],
 				},
 			],
 			answer: "specific",
@@ -613,10 +621,21 @@ const scenes = [
 					id: "not-yet",
 					label: ["Not for the full chain yet", "暂时不能说是全链"],
 				},
-				{ id: "yes", label: ["Yes: it has the most", "能：它最多"] },
+				{
+					id: "yes",
+					label: ["Yes: it has the most", "能：它最多"],
+					why: [
+						"It has the most among the covered series, but the 120 call's figure is missing. The full-chain claim has to wait for it.",
+						"它在已覆盖的序列中最多，但 120 看涨的数据缺失。全链结论要等它到了再说。",
+					],
+				},
 				{
 					id: "favor",
 					label: ["Yes, and traders favor it", "能，而且交易者偏好它"],
+					why: [
+						"Two steps too far: the 120 call is still missing, and 500 of the 540 contracts are one spread leg. Neither supports a story about preference.",
+						"跨了两步：120 看涨的数据仍缺失，而且 540 张中有 500 张是一条价差腿。两者都不支持“偏好”的说法。",
+					],
 				},
 			],
 			answer: "not-yet",
@@ -722,8 +741,22 @@ const scenes = [
 					id: "keep",
 					label: ["Keep it; puts get a new record", "保留它；看跌另建记录"],
 				},
-				{ id: "edit", label: ["Edit it to cover puts", "改写它来涵盖看跌"] },
-				{ id: "delete", label: ["Delete it", "删除它"] },
+				{
+					id: "edit",
+					label: ["Edit it to cover puts", "改写它来涵盖看跌"],
+					why: [
+						"Rewriting the call record after seeing results hides what you first asked. Puts are a new population, so they get a new question and record.",
+						"看到结果后改写看涨记录，会掩盖你最初问的问题。看跌是新的范围，应另立问题和记录。",
+					],
+				},
+				{
+					id: "delete",
+					label: ["Delete it", "删除它"],
+					why: [
+						"Deleting it erases a result someone could check. The call record stands; the put question starts its own.",
+						"删除它会抹掉一个别人可以核查的结果。看涨记录保留；看跌问题另起一份。",
+					],
+				},
 			],
 			answer: "keep",
 			revealAt: 2,

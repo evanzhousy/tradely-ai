@@ -413,8 +413,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "dune", label: ["DUNE: 3× its normal", "DUNE：平常的 3 倍"] },
-				{ id: "crux", label: ["CRUX: the most contracts", "CRUX：张数最多"] },
-				{ id: "alfa", label: ["ALFA", "ALFA"] },
+				{
+					id: "crux",
+					label: ["CRUX: the most contracts", "CRUX：张数最多"],
+					why: [
+						"Most contracts answers a different question. Against its own normal 6,000, CRUX's 5,600 is slightly quiet.",
+						"张数最多回答的是另一个问题。对照它平常的 6,000 张，CRUX 的 5,600 张略显清淡。",
+					],
+				},
+				{
+					id: "alfa",
+					label: ["ALFA", "ALFA"],
+					why: [
+						"Against each name's own normal, DUNE stands out most: 900 contracts is 3× its usual 300.",
+						"对照各自的平常水平，DUNE 最突出：900 张是它平常 300 张的 3 倍。",
+					],
+				},
 			],
 			answer: "dune",
 			revealAt: 1,
@@ -489,10 +503,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "fell", label: ["No: it fell by 900", "没有：它减少了 900"] },
-				{ id: "grew", label: ["Yes: it's ranked first", "是的：它排第一"] },
+				{
+					id: "grew",
+					label: ["Yes: it's ranked first", "是的：它排第一"],
+					why: [
+						"Ranking by size ignores the sign, so first place says the move was biggest, not upward. CRUX fell by 900.",
+						"按幅度排序忽略符号，排第一只说明变动最大，并不说明是上升。CRUX 减少了 900 张。",
+					],
+				},
 				{
 					id: "unknown",
 					label: ["Can't tell from a ranking", "从排名看不出来"],
+					why: [
+						"The ranking alone can't tell you, but the figure behind it can: CRUX's change is −900.",
+						"仅凭排名确实看不出，但排名背后的数字可以：CRUX 的变化是 −900。",
+					],
 				},
 			],
 			answer: "fell",
@@ -568,8 +593,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "peers", label: ["A peer traded less", "同组有股票成交减少"] },
-				{ id: "alfa", label: ["ALFA became more active", "ALFA 变得更活跃"] },
-				{ id: "broken", label: ["The ranking is broken", "排名出错了"] },
+				{
+					id: "alfa",
+					label: ["ALFA became more active", "ALFA 变得更活跃"],
+					why: [
+						"ALFA traded 2,400 on both days, so it did nothing new. Its rank rose because CRUX fell from 5,600 to 1,900.",
+						"ALFA 两天都成交 2,400 张，并没有新动作。它的排名上升，是因为 CRUX 从 5,600 降到 1,900。",
+					],
+				},
+				{
+					id: "broken",
+					label: ["The ranking is broken", "排名出错了"],
+					why: [
+						"The ranking is working as designed: ranks are relative, so a peer trading less moves everyone below it up.",
+						"排名运作正常：排名是相对的，同组股票成交减少，排在它后面的都会上移。",
+					],
+				},
 			],
 			answer: "peers",
 			revealAt: 1,

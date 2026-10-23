@@ -376,8 +376,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "two", label: ["2", "2"] },
-				{ id: "three", label: ["3: BRDX traded the most", "3：BRDX 成交最多"] },
-				{ id: "four", label: ["4: count FJOR as zero", "4：把 FJOR 算作零"] },
+				{
+					id: "three",
+					label: ["3: BRDX traded the most", "3：BRDX 成交最多"],
+					why: [
+						"Trading the most doesn't override the rule: BRDX is an ETF, and the rule asks for stock options. That leaves ALFA and CRUX.",
+						"成交最多也不能凌驾于规则之上：BRDX 是 ETF，而规则要求股票期权。只剩 ALFA 和 CRUX。",
+					],
+				},
+				{
+					id: "four",
+					label: ["4: count FJOR as zero", "4：把 FJOR 算作零"],
+					why: [
+						"FJOR's data is missing, so it fails the completeness check; counting it as zero doesn't make it qualify. Only ALFA and CRUX meet every rule.",
+						"FJOR 的数据缺失，没有通过完整性检查；把它算作零也不会让它合格。只有 ALFA 和 CRUX 满足全部规则。",
+					],
+				},
 			],
 			answer: "two",
 			entry: { answer: QUALIFIED, unit: [" names", " 个"] },
@@ -446,8 +460,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "two", label: ["2×", "2×"] },
-				{ id: "eight", label: ["0.8×", "0.8×"] },
-				{ id: "half", label: ["0.5×", "0.5×"] },
+				{
+					id: "eight",
+					label: ["0.8×", "0.8×"],
+					why: [
+						"0.8× is ALFA's figure, 2,400 ÷ 3,000. CRUX's is 1,900 ÷ 950.",
+						"0.8× 是 ALFA 的数字，2,400 ÷ 3,000。CRUX 的是 1,900 ÷ 950。",
+					],
+				},
+				{
+					id: "half",
+					label: ["0.5×", "0.5×"],
+					why: [
+						"0.5× divides the other way, 950 ÷ 1,900. Relative volume is today over typical: 1,900 ÷ 950.",
+						"0.5× 是反过来除的，950 ÷ 1,900。相对成交量是今天除以典型量：1,900 ÷ 950。",
+					],
+				},
 			],
 			answer: "two",
 			entry: { answer: 2, tolerance: 0.05, unit: ["×", "×"] },
@@ -527,10 +555,18 @@ const scenes = [
 						"30: a quarter gone each half hour",
 						"30：每半小时少四分之一",
 					],
+					why: [
+						`Halving takes half of what's left, not a fixed slice. 90 minutes is three halvings: ${START_SCORE} → 60 → 30 → ${score(90)}.`,
+						`减半是取剩余的一半，而不是每次减去固定的量。90 分钟是三次减半：${START_SCORE} → 60 → 30 → ${score(90)}。`,
+					],
 				},
 				{
 					id: "same",
 					label: [`${START_SCORE}: nothing traded`, `${START_SCORE}：没有成交`],
+					why: [
+						`The score fades with time even without trades: it weights each trade by how long ago it happened. At 12:30 it's ${score(90)}.`,
+						`即使没有成交，分数也会随时间衰减：它按每笔成交距今多久来加权。12:30 时为 ${score(90)}。`,
+					],
 				},
 			],
 			answer: "right",

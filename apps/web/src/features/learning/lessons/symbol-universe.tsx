@@ -573,10 +573,21 @@ const scenes = [
 						"无法判定：不能排名，也限制结论",
 					],
 				},
-				{ id: "zero", label: ["Out: treat it as zero", "排除：当作零"] },
+				{
+					id: "zero",
+					label: ["Out: treat it as zero", "排除：当作零"],
+					why: [
+						"A missing figure isn't zero. Dropping FJOR as if it traded nothing would make the comparison look complete when it isn't.",
+						"缺失的数字不是零。把 FJOR 当作没有成交而排除，会让比较看起来完整，其实并不完整。",
+					],
+				},
 				{
 					id: "average",
 					label: ["In: assume a typical volume", "纳入：假设一个典型成交量"],
+					why: [
+						"Assuming a typical volume invents data. FJOR stays in the group as an unknown that no ranking can place.",
+						"假设一个典型成交量就是编造数据。FJOR 留在组内，作为任何排名都无法放置的未知项。",
+					],
 				},
 			],
 			answer: "unknown",
@@ -676,8 +687,22 @@ const scenes = [
 					id: "unknown",
 					label: ["Unknown while FJOR is missing", "FJOR 缺失时无法确定"],
 				},
-				{ id: "yes", label: ["Yes", "是"] },
-				{ id: "clearly", label: ["Yes, by a wide margin", "是，而且遥遥领先"] },
+				{
+					id: "yes",
+					label: ["Yes", "是"],
+					why: [
+						"CRUX leads the three names you observed. FJOR is eligible but missing, and it could be larger.",
+						"CRUX 在你观测到的三只中领先。FJOR 合格但缺失，它可能更大。",
+					],
+				},
+				{
+					id: "clearly",
+					label: ["Yes, by a wide margin", "是，而且遥遥领先"],
+					why: [
+						"A wide margin among the observed names still says nothing about FJOR, which is eligible but unobserved.",
+						"在已观测的名字中遥遥领先，仍然说明不了 FJOR，它合格但未被观测到。",
+					],
+				},
 			],
 			answer: "unknown",
 			revealAt: 1,
@@ -764,8 +789,19 @@ const scenes = [
 				{
 					id: "nothing",
 					label: ["Nothing: names don't change", "没问题：名单不会变"],
+					why: [
+						"Names do change: stocks list and delist. HALO was trading on Sep 2 and is gone from today's list.",
+						"名单会变：股票会上市，也会退市。HALO 在 9月2日 还在交易，如今已不在名单上。",
+					],
 				},
-				{ id: "volume", label: ["The volumes come out wrong", "成交量会算错"] },
+				{
+					id: "volume",
+					label: ["The volumes come out wrong", "成交量会算错"],
+					why: [
+						"The volumes you do count are fine. The problem is the names you can't count: today's list leaves out HALO, which led on Sep 2.",
+						"你统计到的成交量没有问题。问题在于统计不到的名字：今天的名单漏掉了 9月2日 领先的 HALO。",
+					],
+				},
 			],
 			answer: "survivors",
 			revealAt: 1,

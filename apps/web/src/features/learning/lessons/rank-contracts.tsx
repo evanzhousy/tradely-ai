@@ -445,10 +445,21 @@ const scenes = [
 						"可能是同一笔交易：查成交记录",
 					],
 				},
-				{ id: "two", label: ["Yes: two bullish crowds", "是的：两群看涨的人"] },
+				{
+					id: "two",
+					label: ["Yes: two bullish crowds", "是的：两群看涨的人"],
+					why: [
+						"Two busy strikes can be one trader: the 10:50 block bought the 105 and sold the 110, 500 each. That's one spread, not two crowds.",
+						"两个活跃的行权价可能是同一个交易者：10:50 的大单买入 105、卖出 110，各 500 张。这是一笔价差，不是两群人。",
+					],
+				},
 				{
 					id: "more",
 					label: ["Yes, and more will follow", "是的，而且还会有更多"],
+					why: [
+						"Activity today doesn't predict more tomorrow, and here most of it was one spread printed as two legs.",
+						"今天的活跃并不预示明天会更多，而且这里大部分是一笔价差打印成的两条腿。",
+					],
 				},
 			],
 			answer: "one",
@@ -533,10 +544,18 @@ const scenes = [
 				{
 					id: "yes",
 					label: ["Yes: same total and peak", "一样：合计与峰值相同"],
+					why: [
+						"Equal totals and peaks can hide different breadth: Sep 20 traded in 2 strikes, Nov 15 in 5.",
+						"合计和峰值相同，可能掩盖不同的广度：9月20日 只在 2 个行权价有成交，11月15日 在 5 个。",
+					],
 				},
 				{
 					id: "cant",
 					label: ["Can't compare different expiries", "不同到期日无法比较"],
+					why: [
+						"You can compare them as long as each keeps its own scope; breadth is what differs here.",
+						"只要各自保持自己的范围，就可以比较；这里不同的是广度。",
+					],
 				},
 			],
 			answer: "no",
@@ -621,10 +640,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "no", label: ["No: it's the wrong session", "不能：时段不对"] },
-				{ id: "yes", label: ["Yes: it's the biggest", "能：它最大"] },
+				{
+					id: "yes",
+					label: ["Yes: it's the biggest", "能：它最大"],
+					why: [
+						"Biggest doesn't count when the figure is from another session. Monday's figure for that contract is 55.",
+						"数字来自另一个时段时，最大并不算数。那张合约周一的数字是 55。",
+					],
+				},
 				{
 					id: "average",
 					label: ["Only if averaged with Monday", "与周一平均后才行"],
+					why: [
+						"Mixing sessions gives a number that belongs to neither day. Use Monday's own figure, 55.",
+						"混合两个时段得到的数字不属于任何一天。应使用周一自己的数字 55。",
+					],
 				},
 			],
 			answer: "no",
