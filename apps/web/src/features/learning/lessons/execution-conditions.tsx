@@ -669,8 +669,22 @@ const scenes = [
 					id: "three",
 					label: ["3: one per venue it took", "3 笔：每个场所一笔"],
 				},
-				{ id: "one", label: ["1: it was one order", "1 笔：它是一张订单"] },
-				{ id: "forty", label: ["40: one per contract", "40 笔：每张一笔"] },
+				{
+					id: "one",
+					label: ["1: it was one order", "1 笔：它是一张订单"],
+					why: [
+						"One order, but each venue fills its own part and reports it separately, so the tape shows three prints.",
+						"一张订单，但每个场所分别成交自己的部分并单独报告，所以逐笔成交显示三笔。",
+					],
+				},
+				{
+					id: "forty",
+					label: ["40: one per contract", "40 笔：每张一笔"],
+					why: [
+						"Prints are reported per execution, not per contract. Each venue's fill is one print, whatever its size.",
+						"成交按每次执行报告，而不是按每张合约。每个场所的成交是一笔，不论数量多少。",
+					],
+				},
 			],
 			answer: "three",
 			entry: { answer: 3, unit: [" prints", " 笔"] },
@@ -750,10 +764,21 @@ const scenes = [
 						"先在屏幕外撮合，再打印成交",
 					],
 				},
-				{ id: "error", label: ["The feed must be wrong", "数据一定错了"] },
+				{
+					id: "error",
+					label: ["The feed must be wrong", "数据一定错了"],
+					why: [
+						"A block bigger than the displayed size isn't an error. Large trades are often negotiated off the screen and then printed.",
+						"大于展示数量的大宗交易并不是错误。大额交易常在屏幕外协商，然后再打印成交。",
+					],
+				},
 				{
 					id: "forced",
 					label: ["Market makers had to fill it", "做市商必须成交"],
+					why: [
+						"A quote only commits its displayed size. The 500 came from a negotiated block, not from anyone being forced to fill it.",
+						"报价只对展示的数量有约束。这 500 张来自协商的大宗交易，而不是有人被迫成交。",
+					],
 				},
 			],
 			answer: "arranged",
@@ -844,8 +869,19 @@ const scenes = [
 						"500 calls bought: very bullish",
 						"买入 500 张看涨：非常看涨",
 					],
+					why: [
+						"Read alone the leg looks bullish, but the multi-leg code and the matching 110 call sale make it a call spread, with gains capped at $5.00 a share.",
+						"单看这条腿像看涨，但多腿代码和同时卖出的 110 看涨说明它是看涨价差，收益上限为每股 $5.00。",
+					],
 				},
-				{ id: "unrelated", label: ["Two unrelated trades", "两笔无关的交易"] },
+				{
+					id: "unrelated",
+					label: ["Two unrelated trades", "两笔无关的交易"],
+					why: [
+						"Same time, same size, a multi-leg code: those tie the two legs into one package, not two separate trades.",
+						"相同时间、相同数量、带多腿代码：这些把两条腿连成一个整体，而不是两笔无关的交易。",
+					],
+				},
 			],
 			answer: "spread",
 			revealAt: 2,

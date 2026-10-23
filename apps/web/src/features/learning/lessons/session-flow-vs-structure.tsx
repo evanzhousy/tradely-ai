@@ -654,8 +654,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "ten", label: ["+10", "+10"] },
-				{ id: "twenty", label: ["+20: one per side", "+20：每方各算一次"] },
-				{ id: "same", label: ["0: it stays at 100", "0：保持 100"] },
+				{
+					id: "twenty",
+					label: ["+20: one per side", "+20：每方各算一次"],
+					why: [
+						"Open interest counts contracts, not sides. One contract has a holder and a writer, and it is counted once: +10.",
+						"未平仓量按合约计，而不是按双方计。一张合约有持有人和义务方，只计一次：+10。",
+					],
+				},
+				{
+					id: "same",
+					label: ["0: it stays at 100", "0：保持 100"],
+					why: [
+						"It would stay at 100 only if one side closed while the other opened. Here both opened, so 10 new contracts exist.",
+						"只有一方平仓、另一方开仓时才会保持 100。这里双方都开仓，所以新增了 10 张合约。",
+					],
+				},
 			],
 			answer: "ten",
 			entry: { answer: 10, unit: [" contracts", " 张"] },
@@ -738,8 +752,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "friday", label: ["100, Friday's count", "100，周五的统计"] },
-				{ id: "net", label: ["106", "106"] },
-				{ id: "sum", label: ["120", "120"] },
+				{
+					id: "net",
+					label: ["106", "106"],
+					why: [
+						"106 is Monday's count, but open interest is tallied after the close. It won't reach your screen until Tuesday morning.",
+						"106 是周一的统计，但未平仓量要收盘后才统计。它要到周二早晨才会出现在屏幕上。",
+					],
+				},
+				{
+					id: "sum",
+					label: ["120", "120"],
+					why: [
+						"Adding the day's volume to open interest mixes two measures: trades that close positions lower it. And the figure only updates after the close.",
+						"把当天成交量加到未平仓量上，是把两个指标混在一起：平仓的成交会降低它。而且这个数字只在收盘后更新。",
+					],
+				},
 			],
 			answer: "friday",
 			entry: { answer: 100, unit: [" contracts", " 张"] },
@@ -821,7 +849,14 @@ const scenes = [
 				"一周后，14–30 天到期桶的未平仓量从 420 升到 650。交易者新开了 230 张合约吗？",
 			],
 			choices: [
-				{ id: "yes", label: ["Yes, 230 new contracts", "是，新开 230 张"] },
+				{
+					id: "yes",
+					label: ["Yes, 230 new contracts", "是，新开 230 张"],
+					why: [
+						"The bucket covers days to expiry, so as a week passes its expiries change. Some of the 230 came in with an expiry that moved into the window.",
+						"到期桶按距到期天数划分，一周过去，里面的到期日就变了。230 张中有一部分是随着到期日移入区间而进来的。",
+					],
+				},
 				{
 					id: "members",
 					label: [
@@ -832,6 +867,10 @@ const scenes = [
 				{
 					id: "fell",
 					label: ["No, open interest fell", "没有，未平仓量下降了"],
+					why: [
+						"The bucket's total rose, from 420 to 650. The question is why it rose, not whether.",
+						"到期桶的总数是上升的，从 420 升到 650。问题在于它为什么上升，而不是是否上升。",
+					],
 				},
 			],
 			answer: "members",

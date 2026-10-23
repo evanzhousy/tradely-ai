@@ -486,8 +486,19 @@ const scenes = [
 				{
 					id: "simple",
 					label: ["$2.075, halfway between", "$2.075，两者中间"],
+					why: [
+						"Halfway between the prices treats 5 contracts like 500. Weighting by size gives $108,500 ÷ 505 = $2.1485.",
+						"取两个价格的中点，是把 5 张和 500 张看得一样重。按数量加权是 $108,500 ÷ 505 = $2.1485。",
+					],
 				},
-				{ id: "last", label: ["$2.00", "$2.00"] },
+				{
+					id: "last",
+					label: ["$2.00", "$2.00"],
+					why: [
+						"$2.00 is the price of the 5-contract print only. Almost all of the 505 contracts traded at $2.15.",
+						"$2.00 只是那 5 张成交的价格。505 张中几乎全部成交在 $2.15。",
+					],
+				},
 			],
 			answer: "weighted",
 			entry: { answer: 2.1485, prefix: "$", tolerance: 0.005 },
@@ -590,8 +601,22 @@ const scenes = [
 					id: "five",
 					label: ["5: the repeat is a duplicate", "5 张：重复的是同一条"],
 				},
-				{ id: "ten", label: ["10: two reports", "10 张：两条报告"] },
-				{ id: "zero", label: ["0 until it's confirmed", "确认前为 0"] },
+				{
+					id: "ten",
+					label: ["10: two reports", "10 张：两条报告"],
+					why: [
+						"Two messages with the same trade ID describe one execution. Counting messages would double the volume.",
+						"两条消息带同一个成交编号，描述的是同一笔成交。按消息计数会让成交量翻倍。",
+					],
+				},
+				{
+					id: "zero",
+					label: ["0 until it's confirmed", "确认前为 0"],
+					why: [
+						"A reported trade has already executed; nobody confirms it later. The repeat is the only thing to discard.",
+						"已报告的成交已经完成，事后不需要谁来确认。需要剔除的只有那条重复消息。",
+					],
+				},
 			],
 			answer: "five",
 			entry: { answer: 5, unit: [" contracts", " 张"] },

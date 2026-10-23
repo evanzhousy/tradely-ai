@@ -602,8 +602,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "friday", label: ["At Friday's close", "周五收盘时"] },
-				{ id: "now", label: ["Right now, at 10:30", "就是现在，10:30"] },
-				{ id: "open", label: ["At Monday's open", "周一开盘时"] },
+				{
+					id: "now",
+					label: ["Right now, at 10:30", "就是现在，10:30"],
+					why: [
+						"Open interest isn't live. It is counted at each close, so at 10:30 Monday the newest count is from Friday.",
+						"未平仓量不是实时的。它在每次收盘时统计，所以周一 10:30 最新的统计来自周五。",
+					],
+				},
+				{
+					id: "open",
+					label: ["At Monday's open", "周一开盘时"],
+					why: [
+						"Nothing is counted at the open. The figure published before Monday's open is Friday's closing count.",
+						"开盘时不做统计。周一开盘前发布的数字是周五收盘时的统计。",
+					],
+				},
 			],
 			answer: "friday",
 			revealAt: 2,
@@ -684,10 +698,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "no", label: ["No: it's the wrong session", "不能：时段不对"] },
-				{ id: "yes", label: ["Yes: it's complete", "能：它是完整的"] },
+				{
+					id: "yes",
+					label: ["Yes: it's complete", "能：它是完整的"],
+					why: [
+						"Complete isn't the test; the session is. Friday's tape, however complete, can't tell you what traded today.",
+						"要看的不是完整，而是时段。周五的成交记录再完整，也不能告诉你今天成交了什么。",
+					],
+				},
 				{
 					id: "newer",
 					label: ["Yes: it's newer than the OI", "能：它比未平仓量更新"],
+					why: [
+						"Being newer than the open interest doesn't make it today's. You need Monday's trades, even from a delayed feed.",
+						"比未平仓量新，并不等于是今天的。你需要周一的成交，即使来自延迟的数据。",
+					],
 				},
 			],
 			answer: "no",
@@ -784,10 +809,21 @@ const scenes = [
 						"至少 1,065，覆盖 5 个中的 4 个",
 					],
 				},
-				{ id: "sum", label: ["1,065", "1,065"] },
+				{
+					id: "sum",
+					label: ["1,065", "1,065"],
+					why: [
+						"1,065 adds only the four covered series. Stated as the total, it hides that one series is missing.",
+						"1,065 只是已覆盖的四个序列之和。把它说成总数，就掩盖了缺失的那一个序列。",
+					],
+				},
 				{
 					id: "zero",
 					label: ["Unknown, so treat it as zero", "未知，所以当作零"],
+					why: [
+						"A blank isn't zero: the missing series may well have traded. Give the covered total as a lower bound and say what's missing.",
+						"空白不是零：缺失的序列很可能也有成交。把已覆盖的合计作为下限，并说明缺了什么。",
+					],
 				},
 			],
 			answer: "bound",

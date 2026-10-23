@@ -620,12 +620,23 @@ const scenes = [
 			],
 			choices: [
 				{ id: "thin", label: ["4×", "4×"] },
-				{ id: "inverted", label: ["0.25×", "0.25×"] },
+				{
+					id: "inverted",
+					label: ["0.25×", "0.25×"],
+					why: [
+						"0.25× divides the other way, 3 ÷ 12. The ratio is volume over open interest: 12 ÷ 3.",
+						"0.25× 是反过来除的，3 ÷ 12。比率是成交量除以未平仓量：12 ÷ 3。",
+					],
+				},
 				{
 					id: "busy",
 					label: [
 						"Below 0.42×: it traded far less",
 						"低于 0.42×：它成交少得多",
+					],
+					why: [
+						"Fewer contracts traded, but the ratio divides by open interest, and 3 is tiny. 12 ÷ 3 = 4×, higher than 0.42×.",
+						"成交的张数确实少，但比率要除以未平仓量，而 3 张极小。12 ÷ 3 = 4×，高于 0.42×。",
 					],
 				},
 			],
@@ -715,8 +726,22 @@ const scenes = [
 					id: "morning",
 					label: ["14×, against a typical morning", "14×，对比典型的上午"],
 				},
-				{ id: "day", label: ["4.2×, against a full day", "4.2×，对比整天"] },
-				{ id: "either", label: ["Either works", "两者都可以"] },
+				{
+					id: "day",
+					label: ["4.2×, against a full day", "4.2×，对比整天"],
+					why: [
+						"Dividing 505 by a full day's 120 compares a morning with a whole day. Compare like windows: 36 by 11:00.",
+						"拿 505 除以全天的 120，是拿上午比全天。应比较相同窗口：截至 11:00 的 36 张。",
+					],
+				},
+				{
+					id: "either",
+					label: ["Either works", "两者都可以"],
+					why: [
+						"The two answers differ by more than three times, so they can't both be right. Only the matching window, 36 by 11:00, gives a fair comparison.",
+						"两个答案相差三倍多，不可能都对。只有相同窗口，即截至 11:00 的 36 张，才是公平的比较。",
+					],
+				},
 			],
 			answer: "morning",
 			entry: { answer: 14, unit: ["×", "×"], tolerance: 0.5 },
@@ -796,8 +821,19 @@ const scenes = [
 				{
 					id: "inside",
 					label: ["Someone has inside information", "有人掌握内幕信息"],
+					why: [
+						"A volume spike can come from a spread leg or a few contracts in a thin series. A flag shows unusual activity, not who knows what.",
+						"成交量激增可能来自一条价差腿，或冷门合约里的几张。标记显示的是异常活跃，而不是谁知道了什么。",
+					],
 				},
-				{ id: "open", label: ["New positions were opened", "开立了新持仓"] },
+				{
+					id: "open",
+					label: ["New positions were opened", "开立了新持仓"],
+					why: [
+						"Volume doesn't say whether trades opened or closed positions. That takes the next open-interest report.",
+						"成交量不说明交易是开仓还是平仓。这需要下一次的未平仓量报告。",
+					],
+				},
 			],
 			answer: "look",
 			revealAt: 2,

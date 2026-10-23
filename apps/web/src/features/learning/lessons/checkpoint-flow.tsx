@@ -544,10 +544,18 @@ const scenes = [
 						count(START_OI + OPENED + CLOSED + TRANSFERRED),
 						count(START_OI + OPENED + CLOSED + TRANSFERRED),
 					],
+					why: [
+						`That adds all ${count(OPENED + CLOSED + TRANSFERRED)} contracts traded. Only trades where both sides opened add to open interest; closes subtract and transfers leave it unchanged.`,
+						`这是把成交的 ${count(OPENED + CLOSED + TRANSFERRED)} 张全加了进去。只有双方都开仓的成交增加未平仓量；平仓减少它，换手不改变它。`,
+					],
 				},
 				{
 					id: "transfer",
 					label: [count(END_OI + TRANSFERRED), count(END_OI + TRANSFERRED)],
+					why: [
+						`That counts the ${TRANSFERRED} transfers as new contracts. When one side opens and the other closes, the contract changes hands and the count stays the same.`,
+						`这把换手的 ${TRANSFERRED} 张算成了新合约。一方开仓、一方平仓时，合约只是换手，数量不变。`,
+					],
 				},
 			],
 			answer: "right",
@@ -626,8 +634,22 @@ const scenes = [
 					id: "weighted",
 					label: [`$${average(5).toFixed(2)}`, `$${average(5).toFixed(2)}`],
 				},
-				{ id: "simple", label: ["$4.35", "$4.35"] },
-				{ id: "first", label: ["$4.30", "$4.30"] },
+				{
+					id: "simple",
+					label: ["$4.35", "$4.35"],
+					why: [
+						"$4.35 averages the three prices as if each filled the same size. Half the contracts filled at $4.30, which pulls the average down.",
+						"$4.35 是把三个价格当作成交数量相同来平均。一半的合约成交在 $4.30，把平均价拉低了。",
+					],
+				},
+				{
+					id: "first",
+					label: ["$4.30", "$4.30"],
+					why: [
+						"$4.30 is the first venue's price only. The sweep also paid $4.35 and $4.40 for the rest, which lifts the average.",
+						"$4.30 只是第一个场所的价格。这次扫单其余部分还付了 $4.35 和 $4.40，抬高了平均价。",
+					],
+				},
 			],
 			answer: "weighted",
 			entry: { answer: average(5), tolerance: 0.005, prefix: "$" },
@@ -696,8 +718,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "relative", label: ["3×", "3×"] },
-				{ id: "oi", label: ["0.2×", "0.2×"] },
-				{ id: "raw", label: ["1,800", "1,800"] },
+				{
+					id: "oi",
+					label: ["0.2×", "0.2×"],
+					why: [
+						`0.2× divides by open interest, ${count(OPEN_INTEREST)}. Relative volume compares with typical volume: ${count(VOLUME)} ÷ ${count(TYPICAL)}.`,
+						`0.2× 是除以未平仓量 ${count(OPEN_INTEREST)}。相对成交量要对比典型成交量：${count(VOLUME)} ÷ ${count(TYPICAL)}。`,
+					],
+				},
+				{
+					id: "raw",
+					label: ["1,800", "1,800"],
+					why: [
+						`${count(VOLUME)} is the raw volume. Relative volume divides it by what the contract typically trades, ${count(TYPICAL)}.`,
+						`${count(VOLUME)} 是原始成交量。相对成交量要除以这张合约的典型成交量 ${count(TYPICAL)}。`,
+					],
+				},
 			],
 			answer: "relative",
 			entry: { answer: VOLUME / TYPICAL, tolerance: 0.05, unit: ["×", "×"] },
@@ -789,8 +825,19 @@ const scenes = [
 				{
 					id: "yes",
 					label: ["Yes: it matches the OI's date", "符合：与未平仓量日期一致"],
+					why: [
+						"Matching the open interest's date isn't the requirement. The flow had to be Wednesday's; the earlier open interest was allowed on its own terms.",
+						"与未平仓量日期一致并不是要求。成交流必须是周三的；更早的未平仓量是按它自己的要求允许的。",
+					],
 				},
-				{ id: "oi", label: ["No: the OI is too old", "不符合：未平仓量太旧"] },
+				{
+					id: "oi",
+					label: ["No: the OI is too old", "不符合：未平仓量太旧"],
+					why: [
+						"Earlier dated open interest was allowed, so Tuesday's report is fine. It's the flow record that fails: it's Tuesday's, not Wednesday's.",
+						"允许使用更早、带日期的未平仓量，所以周二的报告没问题。不符合的是成交记录：它是周二的，而不是周三的。",
+					],
+				},
 			],
 			answer: "no",
 			revealAt: 2,
