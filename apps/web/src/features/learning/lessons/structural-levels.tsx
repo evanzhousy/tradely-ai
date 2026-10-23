@@ -608,10 +608,18 @@ const scenes = [
 						`${stock(putWallOi)}: the most puts`,
 						`${stock(putWallOi)}：看跌最多`,
 					],
+					why: [
+						`${stock(putWallOi)} has the most put open interest, but weighted by gamma the wall is ${stock(putWallGex)}. Which strike is the wall depends on the rule.`,
+						`${stock(putWallOi)} 的看跌未平仓量最多，但按 Gamma 加权，墙在 ${stock(putWallGex)}。哪个行权价是墙，取决于规则。`,
+					],
 				},
 				{
 					id: "atm",
 					label: [`${stock(SPOT)}: at the money`, `${stock(SPOT)}：平值`],
+					why: [
+						"At the money is where ALFA trades, not a wall. A wall is the strike where a stated rule finds the most puts or put gamma.",
+						"平值是 ALFA 现在的价格，而不是墙。墙是按既定规则看跌数量或看跌 Gamma 最多的行权价。",
+					],
 				},
 			],
 			answer: "depends",
@@ -693,12 +701,23 @@ const scenes = [
 						"未知：这是支付最小值，不是预测",
 					],
 				},
-				{ id: "pain", label: [stock(MAX_PAIN), stock(MAX_PAIN)] },
+				{
+					id: "pain",
+					label: [stock(MAX_PAIN), stock(MAX_PAIN)],
+					why: [
+						`${stock(MAX_PAIN)} is where today's open interest would pay least, not a forecast. ALFA can settle anywhere, and the model's one-standard-deviation range alone runs from about ${stock(Math.round(SPOT - ONE_SD))} to ${stock(Math.round(SPOT + ONE_SD))}.`,
+						`${stock(MAX_PAIN)} 是今天的未平仓量支付最少的位置，不是预测。ALFA 可能结算在任何位置，单是模型的 ±1 个标准差范围就从约 ${stock(Math.round(SPOT - ONE_SD))} 到 ${stock(Math.round(SPOT + ONE_SD))}。`,
+					],
+				},
 				{
 					id: "wall",
 					label: [
 						`${stock(CALL_WALL)}: the call wall`,
 						`${stock(CALL_WALL)}：看涨墙`,
+					],
+					why: [
+						"A call wall is a reference level, not a target. Nothing in open interest makes ALFA settle there.",
+						"看涨墙是参考位置，不是目标。未平仓量中没有任何东西会让 ALFA 结算在那里。",
 					],
 				},
 			],
@@ -790,12 +809,20 @@ const scenes = [
 				{
 					id: "five",
 					label: [`${SPOT - PUT_WALL} ATRs`, `${SPOT - PUT_WALL} 个 ATR`],
+					why: [
+						`$${SPOT - PUT_WALL} is the distance in dollars. In ATRs, divide it by the $${ALFA_ATR_14.toFixed(2)} typical daily range.`,
+						`$${SPOT - PUT_WALL} 是以美元计的距离。换算成 ATR，要除以 $${ALFA_ATR_14.toFixed(2)} 的典型日波幅。`,
+					],
 				},
 				{
 					id: "percent",
 					label: [
 						`${SPOT - PUT_WALL}%: the same thing`,
 						`${SPOT - PUT_WALL}%：是同一回事`,
+					],
+					why: [
+						`On a $${SPOT} stock $${SPOT - PUT_WALL} is ${SPOT - PUT_WALL}%, but that's a different measure. In ATRs it's $${SPOT - PUT_WALL} ÷ $${ALFA_ATR_14.toFixed(2)}.`,
+						`对 $${SPOT} 的股票来说，$${SPOT - PUT_WALL} 是 ${SPOT - PUT_WALL}%，但那是另一种衡量。换算成 ATR 是 $${SPOT - PUT_WALL} ÷ $${ALFA_ATR_14.toFixed(2)}。`,
 					],
 				},
 			],

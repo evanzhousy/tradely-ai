@@ -622,8 +622,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: [money(GEX), money(GEX)] },
-				{ id: "shares", label: [money(SHARES), money(SHARES)] },
-				{ id: "sign", label: [money(-GEX), money(-GEX)] },
+				{
+					id: "shares",
+					label: [money(SHARES), money(SHARES)],
+					why: [
+						`That stops at gamma × open interest × 100, a number of shares per $1. Dollars per 1% also multiply by ${usd(CHECKPOINT_ALFA)}² × 1%.`,
+						`这只算到 Gamma × 未平仓量 × 100，是每 $1 的股数。每 1% 的美元数还要乘以 ${usd(CHECKPOINT_ALFA)}² × 1%。`,
+					],
+				},
+				{
+					id: "sign",
+					label: [money(-GEX), money(-GEX)],
+					why: [
+						`${money(-GEX)} is what the same inputs give if dealers were short. The question assumes they're long, so it's positive.`,
+						`${money(-GEX)} 是假设做市商做空时同样输入得出的数。题目假设他们做多，所以是正的。`,
+					],
+				},
 			],
 			answer: "right",
 			entry: {
@@ -710,12 +724,23 @@ const scenes = [
 					id: "sell",
 					label: [`Sell ${count(-HEDGE)}`, `卖出 ${count(-HEDGE)}`],
 				},
-				{ id: "buy", label: [`Buy ${count(-HEDGE)}`, `买入 ${count(-HEDGE)}`] },
+				{
+					id: "buy",
+					label: [`Buy ${count(-HEDGE)}`, `买入 ${count(-HEDGE)}`],
+					why: [
+						`At ${usd(CHECKPOINT_ALFA)}, above the ${usd(ZERO)} zero-gamma level, the modeled book is long gamma. Its delta rises with ALFA, so the hedge sells, not buys.`,
+						`在 ${usd(CHECKPOINT_ALFA)}，高于 ${usd(ZERO)} 的零 Gamma 位置，模型账户是正 Gamma。它的 Delta 随 ALFA 上升，所以对冲要卖出，而不是买入。`,
+					],
+				},
 				{
 					id: "gamma",
 					label: [
 						`Sell ${count(bookGamma(CHECKPOINT_ALFA))}`,
 						`卖出 ${count(bookGamma(CHECKPOINT_ALFA))}`,
+					],
+					why: [
+						`${count(bookGamma(CHECKPOINT_ALFA))} is the change per $1. The move is $1.50, so multiply: ${signedCount(bookGamma(CHECKPOINT_ALFA))} × 1.5.`,
+						`${count(bookGamma(CHECKPOINT_ALFA))} 是每 $1 的变化。变动是 $1.50，所以要相乘：${signedCount(bookGamma(CHECKPOINT_ALFA))} × 1.5。`,
 					],
 				},
 			],
@@ -798,12 +823,20 @@ const scenes = [
 						`About ${GAP.toFixed(1)} ATRs`,
 						`约 ${GAP.toFixed(1)} 个 ATR`,
 					],
+					why: [
+						`${GAP.toFixed(1)} is the gap in dollars, not ATRs. Divide it by the $${ATR.toFixed(2)} ATR.`,
+						`${GAP.toFixed(1)} 是以美元计的距离，不是 ATR。要除以 $${ATR.toFixed(2)} 的 ATR。`,
+					],
 				},
 				{
 					id: "percent",
 					label: [
 						`About ${((GAP / SPOT) * 100).toFixed(1)} ATRs`,
 						`约 ${((GAP / SPOT) * 100).toFixed(1)} 个 ATR`,
+					],
+					why: [
+						`${((GAP / SPOT) * 100).toFixed(1)} is the gap as a percent of ALFA. In ATRs, divide the dollar gap by $${ATR.toFixed(2)}.`,
+						`${((GAP / SPOT) * 100).toFixed(1)} 是距离占 ALFA 的百分比。换算成 ATR，要用美元距离除以 $${ATR.toFixed(2)}。`,
 					],
 				},
 			],
@@ -898,12 +931,23 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: [signed(DAY_CHANGE, 0), signed(DAY_CHANGE, 0)] },
-				{ id: "flip", label: [signed(-DAY_CHANGE, 0), signed(-DAY_CHANGE, 0)] },
+				{
+					id: "flip",
+					label: [signed(-DAY_CHANGE, 0), signed(-DAY_CHANGE, 0)],
+					why: [
+						`The screen's charm is per year of time left. A day passing removes time, so the sign flips: ${signed(-CHARM, 2)} ÷ 365 a share.`,
+						`屏幕上的 Charm 是按剩余期限给的。经过一天会减少剩余期限，所以符号相反：每股 ${signed(-CHARM, 2)} ÷ 365。`,
+					],
+				},
 				{
 					id: "year",
 					label: [
 						signedCount(-Math.round(CHARM * 100 * HELD)),
 						signedCount(-Math.round(CHARM * 100 * HELD)),
+					],
+					why: [
+						`That applies a full year's charm to one day. Divide by 365 first: ${signed(perShareDay(CHARM), 4)} a share, then × 100 × ${HELD}.`,
+						`这是把一整年的 Charm 用在了一天上。先除以 365：每股 ${signed(perShareDay(CHARM), 4)}，再 × 100 × ${HELD}。`,
 					],
 				},
 			],

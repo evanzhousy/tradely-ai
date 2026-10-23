@@ -589,8 +589,19 @@ const scenes = [
 						`Sells about ${count(-BOOK)} shares`,
 						`卖出约 ${count(-BOOK)} 股`,
 					],
+					why: [
+						`Selling into a rise is the long-gamma response. This book is short gamma: its delta falls ${count(-BOOK)} shares per $1 up, so the hedge buys.`,
+						`上涨时卖出是正 Gamma 的响应。这个账户是负 Gamma：每上涨 $1，它的 Delta 减少 ${count(-BOOK)} 股，所以对冲要买入。`,
+					],
 				},
-				{ id: "none", label: ["Does nothing", "什么都不做"] },
+				{
+					id: "none",
+					label: ["Does nothing", "什么都不做"],
+					why: [
+						`The book's delta moved by ${count(-BOOK)} shares on the $1 rise. Staying neutral means trading that back, here by buying.`,
+						`上涨 $1 时，账户的 Delta 变动了 ${count(-BOOK)} 股。要保持中性，就得把它交易回来，这里是买入。`,
+					],
+				},
 			],
 			answer: "buy",
 			revealAt: 1,
@@ -676,10 +687,18 @@ const scenes = [
 						`Near ${stock(Math.round(SHORTCUT ?? 92))}: where the strike sum crosses zero`,
 						`约 ${stock(Math.round(SHORTCUT ?? 92))}：行权价累加穿零处`,
 					],
+					why: [
+						`Summing today's per-strike values holds each strike's gamma fixed. As spot moves every option's gamma changes, so the flip comes from repricing the whole book: near ${stock(Math.round(FLIP))}.`,
+						`按今天的各行权价数值累加，是把每个行权价的 Gamma 固定不变。现价变动时每个期权的 Gamma 都会变，所以转折点要靠整体重新定价得出：约 ${stock(Math.round(FLIP))}。`,
+					],
 				},
 				{
 					id: "wall",
 					label: ["At $110: the biggest call strike", "$110：最大的看涨行权价"],
+					why: [
+						"The biggest call strike is where exposure concentrates, not where net gamma changes sign. Reprice the book at each spot to find the flip.",
+						"最大的看涨行权价是敞口集中的地方，而不是净 Gamma 改变符号的地方。要在每个现价重新定价账户，才能找到转折点。",
+					],
 				},
 			],
 			answer: "repriced",
@@ -761,12 +780,20 @@ const scenes = [
 				{
 					id: "squeeze",
 					label: ["ALFA will squeeze higher", "ALFA 会被挤压上涨"],
+					why: [
+						"A conditional hedging target isn't a forecast. It assumes dealers hold this book and hedge continuously, and neither is observed.",
+						"有条件的对冲目标不是预测。它假设做市商持有这个账户并连续对冲，而这两点都没有被观测到。",
+					],
 				},
 				{
 					id: "bought",
 					label: [
 						`Dealers bought ${count(TARGET)} shares today`,
 						`做市商今天买了 ${count(TARGET)} 股`,
+					],
+					why: [
+						"It's what the model says hedgers would buy if ALFA rose $1, not a record of trades. The tape can't show who traded.",
+						"这是模型认为 ALFA 上涨 $1 时对冲者会买入的数量，而不是成交记录。成交记录显示不出是谁交易的。",
 					],
 				},
 			],

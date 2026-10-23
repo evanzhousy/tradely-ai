@@ -709,8 +709,22 @@ const scenes = [
 						`下降，到约 ${plain3(AFTER_WEEK)}`,
 					],
 				},
-				{ id: "same", label: ["Unchanged: nothing traded", "不变：没有成交"] },
-				{ id: "rises", label: ["It rises", "上升"] },
+				{
+					id: "same",
+					label: ["Unchanged: nothing traded", "不变：没有成交"],
+					why: [
+						`Delta changes without any trade. With a week less for ALFA to reach $${STRIKE}, the model's delta falls to about ${plain3(AFTER_WEEK)}.`,
+						`Delta 不需要成交也会变。ALFA 到达 $${STRIKE} 的时间少了一周，模型的 Delta 下降到约 ${plain3(AFTER_WEEK)}。`,
+					],
+				},
+				{
+					id: "rises",
+					label: ["It rises", "上升"],
+					why: [
+						`For an out-of-the-money call, less time means less chance to reach $${STRIKE}, so delta falls: about ${fixed3(CHARM_DAY)} a day.`,
+						`对虚值看涨来说，时间越少，到达 $${STRIKE} 的机会越小，所以 Delta 下降：大约每天 ${fixed3(CHARM_DAY)}。`,
+					],
+				},
 			],
 			answer: "falls",
 			revealAt: 1,
@@ -797,12 +811,20 @@ const scenes = [
 						`Rises by ${unitRows[1].value.slice(1)}`,
 						`上升 ${unitRows[1].value.slice(1)}`,
 					],
+					why: [
+						`${unitRows[1].value} is quoted per year of remaining time. One day is 1/365 of that, and a passing day shortens the time left, so delta falls by about ${Math.abs(CHARM_DAY).toFixed(3)}.`,
+						`${unitRows[1].value} 是按每一年剩余期限报价的。一天只是它的 1/365，而经过一天会缩短剩余期限，所以 Delta 下降约 ${Math.abs(CHARM_DAY).toFixed(3)}。`,
+					],
 				},
 				{
 					id: "rises",
 					label: [
 						`Rises by about ${Math.abs(CHARM_DAY).toFixed(3)}`,
 						`上升约 ${Math.abs(CHARM_DAY).toFixed(3)}`,
+					],
+					why: [
+						`The vendor's sign is per year of time remaining. A day passing removes time, so the sign flips: delta falls by about ${Math.abs(CHARM_DAY).toFixed(3)}.`,
+						`供应商的符号是按剩余期限给的。经过一天会减少剩余期限，所以符号相反：Delta 下降约 ${Math.abs(CHARM_DAY).toFixed(3)}。`,
 					],
 				},
 			],
@@ -894,8 +916,19 @@ const scenes = [
 				{
 					id: "falls",
 					label: ["Falls: both deltas decay", "下降：两个 Delta 都在衰减"],
+					why: [
+						`Both deltas fall, but the short 110 leg's falls faster, and for a short position a falling delta adds to yours. Net, the position gains ${signedCount(week.net - today.net)} shares.`,
+						`两个 Delta 都在下降，但空头 110 那条腿下降得更快，而对空头来说，Delta 下降会增加你的持仓 Delta。净额增加 ${signedCount(week.net - today.net)} 股。`,
+					],
 				},
-				{ id: "same", label: ["Unchanged: no trades", "不变：没有成交"] },
+				{
+					id: "same",
+					label: ["Unchanged: no trades", "不变：没有成交"],
+					why: [
+						"Delta changes with time even without trades. Over a week the two legs decay at different speeds, so the spread's net delta moves.",
+						"即使没有成交，Delta 也会随时间变化。一周里两条腿衰减的速度不同，所以价差的净 Delta 会变动。",
+					],
+				},
 			],
 			answer: "rises",
 			revealAt: 1,

@@ -602,12 +602,23 @@ const scenes = [
 						`${money(-LONG)}：只有符号翻转`,
 					],
 				},
-				{ id: "zero", label: ["$0", "$0"] },
+				{
+					id: "zero",
+					label: ["$0", "$0"],
+					why: [
+						"Changing the assumed sign doesn't remove the exposure: the same gamma, open interest and spot give the same size with the opposite sign.",
+						"改变假设的符号并不会让敞口消失：同样的 Gamma、未平仓量和现价，给出同样大小、相反符号的数。",
+					],
+				},
 				{
 					id: "same",
 					label: [
 						`${money(LONG)}: open interest didn't change`,
 						`${money(LONG)}：未平仓量没变`,
+					],
+					why: [
+						`Open interest didn't change, but the assumed sign did. Long becomes short, so ${money(LONG)} becomes ${money(-LONG)}.`,
+						`未平仓量没变，但假设的符号变了。多头变空头，所以 ${money(LONG)} 变成 ${money(-LONG)}。`,
 					],
 				},
 			],
@@ -695,8 +706,22 @@ const scenes = [
 						`不是：${money(GROSS, false)} 在相互抵消`,
 					],
 				},
-				{ id: "yes", label: ["Yes: the net is small", "是：净值很小"] },
-				{ id: "positive", label: ["It's positive", "它是正的"] },
+				{
+					id: "yes",
+					label: ["Yes: the net is small", "是：净值很小"],
+					why: [
+						`A small net can hide large sides: ${money(GROSS, false)} gross, puts below $${SPOT} and calls above, netting to ${money(NET)}.`,
+						`小的净值可能掩盖很大的两部分：总幅度 ${money(GROSS, false)}，看跌在 $${SPOT} 下方、看涨在上方，相抵后为 ${money(NET)}。`,
+					],
+				},
+				{
+					id: "positive",
+					label: ["It's positive", "它是正的"],
+					why: [
+						`Positive tells you the sign, not the size. The ${money(NET)} net is what's left of two sides totalling ${money(GROSS, false)}.`,
+						`正号只说明符号，不说明大小。${money(NET)} 的净值是两部分合计 ${money(GROSS, false)} 相抵后剩下的。`,
+					],
+				},
 			],
 			answer: "no",
 			revealAt: 2,
@@ -780,10 +805,18 @@ const scenes = [
 				{
 					id: "yes",
 					label: ["Yes: those are the active contracts", "能：它们是活跃合约"],
+					why: [
+						`Exposure comes from open interest, traded today or not. Those three calls give ${money(tradedOnly)}; the full chain is ${money(NET)}.`,
+						`敞口来自未平仓量，不论今天是否有成交。这三个看涨给出 ${money(tradedOnly)}；完整期权链是 ${money(NET)}。`,
+					],
 				},
 				{
 					id: "scaled",
 					label: ["Yes, scaled up by volume", "能，按成交量放大即可"],
+					why: [
+						"Volume doesn't measure exposure; open interest does. Scaling up the traded calls can't add the puts that didn't trade.",
+						"成交量不衡量敞口，未平仓量才衡量。放大成交过的看涨，也加不进没有成交的看跌。",
+					],
 				},
 			],
 			answer: "no",
