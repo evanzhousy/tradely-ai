@@ -291,8 +291,15 @@ if (repeatsGuided.length > 0)
 	);
 
 // --- Predict blocks with a why give one to every wrong choice (read from the lesson source) ---
-let predictions = 0;
-let predictionsWithWhy = 0;
+/** Predictions render only where a lesson plays its scenes through `Walkthrough` (the module
+ * checkpoints). Lessons play a film and explore tasks through `Player`, which never reads them. */
+const predictionCount = {
+	shown: 0,
+	shownWithWhy: 0,
+	hidden: 0,
+	hiddenWithWhy: 0,
+};
+const hiddenFiles = new Set<string>();
 const isText = (node: ts.Node) =>
 	ts.isStringLiteral(node) ||
 	ts.isNoSubstitutionTemplateLiteral(node) ||
@@ -315,9 +322,11 @@ const property = (object: ts.ObjectLiteralExpression, name: string) =>
 for (const name of readdirSync(lessonsDir)) {
 	if (!name.endsWith(".tsx")) continue;
 	const path = `${lessonsDir}${name}`;
+	const text = readFileSync(path, "utf8");
+	const shown = text.includes("<Walkthrough");
 	const source = ts.createSourceFile(
 		path,
-		readFileSync(path, "utf8"),
+		text,
 		ts.ScriptTarget.Latest,
 		true,
 		ts.ScriptKind.TSX,
@@ -329,7 +338,11 @@ for (const name of readdirSync(lessonsDir)) {
 			node.name.text === "predict" &&
 			ts.isObjectLiteralExpression(node.initializer)
 		) {
-			predictions++;
+			if (shown) predictionCount.shown++;
+			else {
+				predictionCount.hidden++;
+				hiddenFiles.add(name);
+			}
 			const line =
 				source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
 			const label = `${name}:${line}`;
@@ -352,7 +365,8 @@ for (const name of readdirSync(lessonsDir)) {
 				if (read.some((choice) => choice === null))
 					notes.push(`${label}: a predict choice is not a literal`);
 				else if (read.some((choice) => choice?.why)) {
-					predictionsWithWhy++;
+					if (shown) predictionCount.shownWithWhy++;
+					else predictionCount.hiddenWithWhy++;
 					for (const choice of read) {
 						if (!choice) continue;
 						const right = choice.id === answer.text;
@@ -379,6 +393,11 @@ for (const name of readdirSync(lessonsDir)) {
 	visit(source);
 }
 
+if (predictionCount.hidden > 0)
+	notes.push(
+		`${predictionCount.hidden} predictions in ${hiddenFiles.size} lesson files are never shown: those lessons play a film and explore tasks through Player, which doesn't read a scene's predict block`,
+	);
+
 // --- Report -----------------------------------------------------------------------------------
 for (const note of notes) console.log(`note: ${note}`);
 if (failures.length > 0) {
@@ -389,5 +408,5 @@ if (failures.length > 0) {
 const edges = conceptList.flatMap((concept) => concept.prerequisites);
 const hard = edges.filter((edge) => edge.strength === "hard").length;
 console.log(
-	`concepts ok: ${conceptIds.length} concepts, ${edges.length} prerequisite edges (${hard} hard, ${edges.length - hard} soft), ${lessons.length} lessons, ${checkpoints.length} checkpoints, ${teachingUnits.length} units; why on ${caseQuestionsWithWhy.size} of ${caseQuestions.size} case questions and ${predictionsWithWhy} of ${predictions} predictions`,
+	`concepts ok: ${conceptIds.length} concepts, ${edges.length} prerequisite edges (${hard} hard, ${edges.length - hard} soft), ${lessons.length} lessons, ${checkpoints.length} checkpoints, ${teachingUnits.length} units; why on ${caseQuestionsWithWhy.size} of ${caseQuestions.size} case questions, ${predictionCount.shownWithWhy} of ${predictionCount.shown} shown predictions and ${predictionCount.hiddenWithWhy} of ${predictionCount.hidden} unshown ones`,
 );
