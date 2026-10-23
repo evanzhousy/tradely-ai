@@ -705,12 +705,20 @@ const scenes = [
 				{
 					id: "added",
 					label: [fixed2(DELTA + MOVE), fixed2(DELTA + MOVE)],
+					why: [
+						`That adds the $${MOVE} move itself to delta. Gamma is the change per $1, so add ${fixed2(GAMMA)} × ${MOVE}.`,
+						`这是把 $${MOVE} 的变动本身加到了 Delta 上。Gamma 是每 $1 的变化，应加上 ${fixed2(GAMMA)} × ${MOVE}。`,
+					],
 				},
 				{
 					id: "fixed",
 					label: [
 						`${fixed2(DELTA)}: delta is fixed`,
 						`${fixed2(DELTA)}：Delta 不变`,
+					],
+					why: [
+						`Delta isn't fixed: gamma is how fast it changes. After a $${MOVE} rise it is about ${fixed2(NEW_DELTA)}.`,
+						`Delta 不是固定的：Gamma 就是它变化的速度。上涨 $${MOVE} 后，它约为 ${fixed2(NEW_DELTA)}。`,
 					],
 				},
 			],
@@ -797,10 +805,18 @@ const scenes = [
 						`Buy ${count(-youTrade)} shares`,
 						`买入 ${count(-youTrade)} 股`,
 					],
+					why: [
+						`The calls gained delta, so the net is now ${signedCount(youDrift)}. Buying shares would add to it; you sell to get back to 0.`,
+						`看涨的 Delta 增加了，所以净额现在是 ${signedCount(youDrift)}。买入股票会让它更大；要回到 0 得卖出。`,
+					],
 				},
 				{
 					id: "none",
 					label: ["Nothing: the hedge was set", "什么都不做：对冲已经设好"],
+					why: [
+						`The hedge was set for the old delta. After the rise the calls carry more, so the net is ${signedCount(youDrift)} until you trade.`,
+						`对冲是按原来的 Delta 设定的。上涨后看涨的 Delta 更大了，在你交易之前净额是 ${signedCount(youDrift)}。`,
+					],
 				},
 			],
 			answer: "sell",
@@ -901,8 +917,19 @@ const scenes = [
 						"Oct 18: more time, more sensitivity",
 						"10月18日：时间越多越敏感",
 					],
+					why: [
+						`More time spreads the change out. Near expiry an at-the-money delta must settle at 0 or 1 soon, so the Sep 20 call's gamma is higher: ${greek(sepAtStrike)} against ${greek(octAtStrike)}.`,
+						`时间越多，变化越分散。临近到期时，平值的 Delta 很快要归于 0 或 1，所以 9月20日 看涨的 Gamma 更高：${greek(sepAtStrike)} 对 ${greek(octAtStrike)}。`,
+					],
 				},
-				{ id: "same", label: ["The same: same strike", "一样：行权价相同"] },
+				{
+					id: "same",
+					label: ["The same: same strike", "一样：行权价相同"],
+					why: [
+						`Same strike, different time. With ${SEP_DAYS} days left, the Sep 20 call's delta changes much faster than the Oct 18 call's.`,
+						`行权价相同，时间不同。只剩 ${SEP_DAYS} 天，9月20日 看涨的 Delta 比 10月18日 变化得快得多。`,
+					],
+				},
 			],
 			answer: "near",
 			revealAt: 1,

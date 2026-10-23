@@ -695,12 +695,23 @@ const scenes = [
 						`更高：约 ${percent(fitted.mid, 0)}`,
 					],
 				},
-				{ id: "lower", label: ["Lower: about 25%", "更低：约 25%"] },
+				{
+					id: "lower",
+					label: ["Lower: about 25%", "更低：约 25%"],
+					why: [
+						`The model at ${percent(GUESS, 0)} is already below the mid, and a lower volatility lowers the price further. The fit needs a higher volatility.`,
+						`${percent(GUESS, 0)} 时模型价格已经低于中间价，更低的波动率只会让价格更低。拟合需要更高的波动率。`,
+					],
+				},
 				{
 					id: "observed",
 					label: [
 						`${percent(GUESS, 0)}: IV is observed`,
 						`${percent(GUESS, 0)}：IV 是观测到的`,
+					],
+					why: [
+						`IV isn't observed: it's the volatility that makes the model match the market price. Here that takes more than ${percent(GUESS, 0)}.`,
+						`IV 不是直接观测到的：它是让模型与市场价格吻合的波动率。这里需要高于 ${percent(GUESS, 0)}。`,
 					],
 				},
 			],
@@ -784,12 +795,20 @@ const scenes = [
 						`${percent(DAILY_SD * 252, 0)}: × 252`,
 						`${percent(DAILY_SD * 252, 0)}：× 252`,
 					],
+					why: [
+						"Multiplying by 252 assumes daily moves add up in a line. It's variance that adds up, so the standard deviation grows with √252, not 252.",
+						"乘以 252 是假设每日变动线性累加。累加的是方差，所以标准差按 √252 增长，而不是 252。",
+					],
 				},
 				{
 					id: "daily",
 					label: [
 						`${percent(DAILY_SD, 2)}: it's already volatility`,
 						`${percent(DAILY_SD, 2)}：这已经是波动率`,
+					],
+					why: [
+						`${percent(DAILY_SD, 2)} is a one-day standard deviation. Volatility is quoted per year, so it has to be annualized: × √252.`,
+						`${percent(DAILY_SD, 2)} 是一天的标准差。波动率按年报价，所以要年化：× √252。`,
 					],
 				},
 			],
@@ -878,12 +897,20 @@ const scenes = [
 				{
 					id: "rise",
 					label: [`ALFA will rise ${GAP}%`, `ALFA 将上涨 ${GAP}%`],
+					why: [
+						"The gap is in volatility points, a size of movement, not a direction. It says nothing about ALFA rising.",
+						"这个差距以波动率点计，衡量的是变动幅度，而不是方向。它不能说明 ALFA 会上涨。",
+					],
 				},
 				{
 					id: "overpriced",
 					label: [
 						`Options are ${Math.round((GAP / RV_POINTS) * 100)}% overpriced`,
 						`期权被高估了 ${Math.round((GAP / RV_POINTS) * 100)}%`,
+					],
+					why: [
+						"IV and RV cover different windows: RV looked back at calm sessions, IV prices a month with earnings in it. A gap isn't a verdict that options are overpriced.",
+						"IV 和 RV 覆盖不同的窗口：RV 回看的是较平静的交易日，IV 定价的是包含财报的一个月。差距并不是期权被高估的裁决。",
 					],
 				},
 			],

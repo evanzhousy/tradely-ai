@@ -646,10 +646,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "scaled", label: ["About $10.36", "约 $10.36"] },
-				{ id: "annual", label: ["$35: 35% of $100", "$35：$100 的 35%"] },
+				{
+					id: "annual",
+					label: ["$35: 35% of $100", "$35：$100 的 35%"],
+					why: [
+						"$35 is a full year's one-standard-deviation move. Over 32 days, scale it by √(32 ÷ 365).",
+						"$35 是整整一年的一个标准差变动。32 天要乘以 √(32 ÷ 365)。",
+					],
+				},
 				{
 					id: "linear",
 					label: ["About $3.07: 32/365 of $35", "约 $3.07：$35 的 32/365"],
+					why: [
+						"Scaling by 32/365 treats volatility as growing in a line with time. It grows with the square root of time: √(32 ÷ 365) ≈ 0.296.",
+						"乘以 32/365 是把波动率当作随时间线性增长。它是随时间的平方根增长：√(32 ÷ 365) ≈ 0.296。",
+					],
 				},
 			],
 			answer: "scaled",
@@ -737,10 +748,18 @@ const scenes = [
 						"The same: both are the expected move",
 						"一样：两者都是预期变动",
 					],
+					why: [
+						"The straddle prices the average move, which is smaller than one standard deviation: about 0.8 of it under the model.",
+						"跨式定价的是平均变动，它比一个标准差小：按模型约为 0.8。",
+					],
 				},
 				{
 					id: "bigger",
 					label: ["Bigger: it adds time value", "更大：它还包含时间价值"],
+					why: [
+						"An at-the-money straddle is all time value already. It prices the average move, about 0.8 of a standard deviation, so it's smaller.",
+						"平值跨式本身就全是时间价值。它定价的是平均变动，约为一个标准差的 0.8，所以更小。",
+					],
 				},
 			],
 			answer: "smaller",
@@ -819,8 +838,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "third", label: ["About 32%", "约 32%"] },
-				{ id: "five", label: ["About 5%", "约 5%"] },
-				{ id: "never", label: ["Almost never", "几乎从不"] },
+				{
+					id: "five",
+					label: ["About 5%", "约 5%"],
+					why: [
+						"5% is the share outside two standard deviations. One standard deviation holds about 68%, leaving about 32% outside.",
+						"5% 是落在两个标准差之外的比例。一个标准差内约占 68%，之外约 32%。",
+					],
+				},
+				{
+					id: "never",
+					label: ["Almost never", "几乎从不"],
+					why: [
+						"One standard deviation is a common move, not an extreme one: about a third of outcomes land outside it.",
+						"一个标准差是常见的变动，而不是极端的：约三分之一的结果落在它之外。",
+					],
+				},
 			],
 			answer: "third",
 			entry: { answer: 32, tolerance: 2, unit: ["%", "%"] },

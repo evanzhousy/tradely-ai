@@ -483,8 +483,19 @@ const scenes = [
 						"Longer expiries always carry more IV",
 						"到期越长 IV 总是越高",
 					],
+					why: [
+						"Longer expiries don't always carry more IV: here Nov 15 and Dec 20 sit lower. The October ones span ALFA's Oct 3 earnings.",
+						"到期越长并不总是 IV 越高：这里 11月15日 和 12月20日 反而更低。十月的几个到期日跨越了 ALFA 10月3日 的财报。",
+					],
 				},
-				{ id: "error", label: ["A quote error", "报价错误"] },
+				{
+					id: "error",
+					label: ["A quote error", "报价错误"],
+					why: [
+						"Several expiries rising together isn't one bad quote. They share an event: earnings on Oct 3 fall inside each of them.",
+						"几个到期日一起走高，不是一个错误报价造成的。它们共享一个事件：10月3日 的财报落在每一个之内。",
+					],
+				},
 			],
 			answer: "earnings",
 			revealAt: 2,
@@ -565,12 +576,20 @@ const scenes = [
 				{
 					id: "positive",
 					label: [`${signedPoints(SKEW)} points`, `${signedPoints(SKEW)} 点`],
+					why: [
+						`${signedPoints(SKEW)} is skew read as put minus call. The dashboard quotes call minus put: ${CALL_IV} − ${PUT_IV}.`,
+						`${signedPoints(SKEW)} 是按看跌减看涨读的偏斜。面板报的是看涨减看跌：${CALL_IV} − ${PUT_IV}。`,
+					],
 				},
 				{
 					id: "ratio",
 					label: [
 						`${Math.round((PUT_IV / CALL_IV - 1) * 100)}%`,
 						`${Math.round((PUT_IV / CALL_IV - 1) * 100)}%`,
+					],
+					why: [
+						`A risk reversal is a difference in vol points, not a ratio. Call minus put is ${CALL_IV} − ${PUT_IV}.`,
+						`风险逆转是以波动率点计的差，而不是比率。看涨减看跌是 ${CALL_IV} − ${PUT_IV}。`,
 					],
 				},
 			],
@@ -666,8 +685,19 @@ const scenes = [
 				{
 					id: "quote",
 					label: ["The average, shown like a quote", "平均值，像报价一样显示"],
+					why: [
+						"An interpolated value drawn like a quote passes for evidence. Mark it as an estimate, so nobody reads a trade into it.",
+						"插值如果像报价一样画出来，就会被当成证据。要标为估计值，免得有人把它当成有成交。",
+					],
 				},
-				{ id: "zero", label: ["0%", "0%"] },
+				{
+					id: "zero",
+					label: ["0%", "0%"],
+					why: [
+						`No quote isn't 0% volatility. With ${ivPoints("dec20", 100)}% and ${ivPoints("dec20", 110)}% on either side, an estimate near ${INTERPOLATED}% is reasonable, marked as such.`,
+						`没有报价不等于 0% 波动率。两侧分别是 ${ivPoints("dec20", 100)}% 和 ${ivPoints("dec20", 110)}%，约 ${INTERPOLATED}% 的估计是合理的，但要标明。`,
+					],
+				},
 			],
 			answer: "estimate",
 			revealAt: 1,

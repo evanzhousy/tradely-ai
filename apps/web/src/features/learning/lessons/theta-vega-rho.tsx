@@ -580,12 +580,20 @@ const scenes = [
 				{
 					id: "flat",
 					label: ["Stays the same: nothing moved", "不变：什么都没动"],
+					why: [
+						`Time moved. Even with ALFA and IV unchanged, a week of time value drains: about ${price(TODAY.price - afterWeek.price)}.`,
+						`时间在走。即使 ALFA 和 IV 不变，一周的时间价值也会流失：约 ${price(TODAY.price - afterWeek.price)}。`,
+					],
 				},
 				{
 					id: "linear",
 					label: [
 						`Falls ${price((TODAY.price * WEEK) / DAYS)}: an even share per day`,
 						`下跌 ${price((TODAY.price * WEEK) / DAYS)}：每天平均分摊`,
+					],
+					why: [
+						`Time value doesn't drain evenly. It goes slowly at first and fast in the last days, so this week costs about ${price(TODAY.price - afterWeek.price)}, not an even share.`,
+						`时间价值不是均匀流失的。开始时慢，最后几天快，所以这一周约损失 ${price(TODAY.price - afterWeek.price)}，而不是平均的一份。`,
 					],
 				},
 			],
@@ -671,8 +679,19 @@ const scenes = [
 						`About ${price(ivRelative)}: 3% of ${points(IV)}`,
 						`约 ${price(ivRelative)}：${points(IV)} 的 3%`,
 					],
+					why: [
+						`${points(IV)} → ${points(IV_UP)} is three vol points, not a 3% relative rise. Vega is quoted per point: about ${price(VEGA * 3)}.`,
+						`${points(IV)} → ${points(IV_UP)} 是三个波动率点，而不是相对上涨 3%。Vega 按每个点报价：约 ${price(VEGA * 3)}。`,
+					],
 				},
-				{ id: "dollars", label: ["About $3: $1 a point", "约 $3：每点 $1"] },
+				{
+					id: "dollars",
+					label: ["About $3: $1 a point", "约 $3：每点 $1"],
+					why: [
+						`Vega isn't $1 a point: for this call it's ${price(VEGA, 3)} per vol point, so three points add about ${price(VEGA * 3)}.`,
+						`Vega 不是每点 $1：这张看涨是每个波动率点 ${price(VEGA, 3)}，所以三个点约增加 ${price(VEGA * 3)}。`,
+					],
+				},
 			],
 			answer: "points",
 			entry: {
@@ -768,8 +787,19 @@ const scenes = [
 						`${signedPrice(DELTA * SCENARIO.move)}: the delta from the rise`,
 						`${signedPrice(DELTA * SCENARIO.move)}：上涨带来的 Delta`,
 					],
+					why: [
+						`${signedPrice(DELTA * SCENARIO.move)} counts only the rise. Over ${SCENARIO.days} days theta takes ${signedPrice(scenario.theta)} and the IV drop ${signedPrice(scenario.vega)}.`,
+						`${signedPrice(DELTA * SCENARIO.move)} 只算了上涨。${SCENARIO.days} 天里 Theta 带走 ${signedPrice(scenario.theta)}，IV 下降带走 ${signedPrice(scenario.vega)}。`,
+					],
 				},
-				{ id: "same", label: ["$0: the effects cancel", "$0：各项相互抵消"] },
+				{
+					id: "same",
+					label: ["$0: the effects cancel", "$0：各项相互抵消"],
+					why: [
+						`They don't cancel: added up, the move, ${SCENARIO.days} days and the IV drop come to ${signedPrice(scenario.total)}.`,
+						`它们并没有相互抵消：把变动、${SCENARIO.days} 天和 IV 下降加起来，合计 ${signedPrice(scenario.total)}。`,
+					],
+				},
 			],
 			answer: "less",
 			entry: { answer: scenario.total, tolerance: 0.03, prefix: "$" },

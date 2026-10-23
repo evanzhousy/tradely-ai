@@ -755,10 +755,18 @@ const scenes = [
 						`About ${Math.round(you.contracts * CALL_DELTA)}`,
 						`约 ${Math.round(you.contracts * CALL_DELTA)} 股`,
 					],
+					why: [
+						`That multiplies delta by ${you.contracts} contracts but leaves out the 100 shares each contract covers.`,
+						`这是用 Delta 乘以 ${you.contracts} 张，却漏掉了每张合约对应的 100 股。`,
+					],
 				},
 				{
 					id: "contracts",
 					label: [`${you.contracts}`, `${you.contracts} 股`],
+					why: [
+						`${you.contracts} counts contracts, not share-equivalents. Multiply by the 100 shares each covers and by the delta, ${fixed2(CALL_DELTA)}.`,
+						`${you.contracts} 是合约张数，不是股等价。要乘以每张对应的 100 股，再乘以 Delta ${fixed2(CALL_DELTA)}。`,
+					],
 				},
 			],
 			answer: "right",
@@ -872,8 +880,19 @@ const scenes = [
 						`Exactly ${price(CALL_DELTA * 10)}`,
 						`正好 ${price(CALL_DELTA * 10)}`,
 					],
+					why: [
+						`Delta is the slope right here, and the slope steepens as ALFA rises. Over a $10 move the curve pulls above the straight line, to about ${price(up10)}.`,
+						`Delta 是当前位置的斜率，而 ALFA 上涨时斜率会变陡。在 $10 的变动中，曲线升到直线上方，约为 ${price(up10)}。`,
+					],
 				},
-				{ id: "less", label: ["Less", "更少"] },
+				{
+					id: "less",
+					label: ["Less", "更少"],
+					why: [
+						`A long call's curve bends upward, so a rise adds more than the straight line predicts, not less: about ${price(up10)}.`,
+						`看涨多头的曲线向上弯，所以上涨带来的比直线预测的更多，而不是更少：约 ${price(up10)}。`,
+					],
+				},
 			],
 			answer: "more",
 			revealAt: 1,

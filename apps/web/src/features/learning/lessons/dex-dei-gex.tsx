@@ -633,12 +633,20 @@ const scenes = [
 						`${signedCount(printwise.gross)}: everything traded`,
 						`${signedCount(printwise.gross)}：全部成交`,
 					],
+					why: [
+						`${signedCount(printwise.gross)} adds every print with the same sign. Net DEX signs each by side and subtracts bearish from bullish, leaving neutral prints out.`,
+						`${signedCount(printwise.gross)} 是把每笔成交按同一符号相加。净 DEX 要按方向给每笔赋号，用看涨减看跌，中性成交不计入。`,
+					],
 				},
 				{
 					id: "zero",
 					label: [
 						"0: every trade has a buyer and a seller",
 						"0：每笔成交都有买方和卖方",
+					],
+					why: [
+						"Buyers and sellers always match, but DEX signs each print by who crossed the spread. Bullish and bearish flow needn't balance.",
+						"买方和卖方总是相等，但 DEX 按谁跨过了价差给每笔成交赋号。看涨和看跌成交流不必相等。",
 					],
 				},
 			],
@@ -739,12 +747,20 @@ const scenes = [
 						`${dei(d20.shares).toFixed(2)}%: the flow didn't change`,
 						`${dei(d20.shares).toFixed(2)}%：成交流没有变`,
 					],
+					why: [
+						`The flow didn't change, but the yardstick did. Dividing by ${count(noon.shares)} instead of ${count(d20.shares)} doubles the percentage.`,
+						`成交流没变，但量尺变了。除以 ${count(noon.shares)} 而不是 ${count(d20.shares)}，百分比就翻倍。`,
+					],
 				},
 				{
 					id: "half",
 					label: [
 						`${(dei(d20.shares) / 2).toFixed(2)}%: a smaller day`,
 						`${(dei(d20.shares) / 2).toFixed(2)}%：成交更少的一天`,
+					],
+					why: [
+						`A smaller denominator makes the ratio bigger, not smaller: ${count(Math.abs(NET))} ÷ ${count(noon.shares)} = ${dei(noon.shares).toFixed(2)}%.`,
+						`分母变小，比率变大，而不是变小：${count(Math.abs(NET))} ÷ ${count(noon.shares)} = ${dei(noon.shares).toFixed(2)}%。`,
 					],
 				},
 			],
@@ -824,10 +840,21 @@ const scenes = [
 						"都没错：它们衡量不同的东西",
 					],
 				},
-				{ id: "mine", label: ["Mine: theirs is bigger", "我的：他们的更大"] },
+				{
+					id: "mine",
+					label: ["Mine: theirs is bigger", "我的：他们的更大"],
+					why: [
+						"Bigger isn't a test of right. Their DEX models dealer positions from open interest; yours signs Monday's trades. Different numbers for different questions.",
+						"大不等于对。他们的 DEX 是用未平仓量模拟做市商持仓；你的是给周一的成交赋号。不同的问题，不同的数字。",
+					],
+				},
 				{
 					id: "theirs",
 					label: ["Theirs: the sign is wrong", "他们的：符号错了"],
+					why: [
+						"Their sign follows an assumption that dealers are short every call; it isn't a mistake. It measures a modeled position, not today's flow.",
+						"他们的符号来自“做市商做空每一张看涨”的假设，并不是错误。它衡量的是模型化的持仓，而不是今天的成交流。",
+					],
 				},
 			],
 			answer: "neither",

@@ -461,8 +461,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "zero", label: ["$0: no time is left", "$0：没有时间了"] },
-				{ id: "half", label: ["About $0.18: half", "约 $0.18：一半"] },
-				{ id: "same", label: ["$0.36: nothing moved", "$0.36：什么都没动"] },
+				{
+					id: "half",
+					label: ["About $0.18: half", "约 $0.18：一半"],
+					why: [
+						"Time value doesn't fall evenly through the day: it falls faster as the close nears, and at 4:00 pm none is left. An at-the-money call is then worth $0.",
+						"时间价值不是在一天里均匀减少的：越接近收盘减得越快，到下午 4:00 一点不剩。平值看涨届时值 $0。",
+					],
+				},
+				{
+					id: "same",
+					label: ["$0.36: nothing moved", "$0.36：什么都没动"],
+					why: [
+						"Something did move: time. The $0.36 was all time value, and it's gone at the close.",
+						"确实有东西在动：时间。$0.36 全是时间价值，收盘时就没了。",
+					],
+				},
 			],
 			answer: "zero",
 			entry: { answer: 0, prefix: "$" },
@@ -557,8 +571,19 @@ const scenes = [
 						"It barely moves, like a month-out option",
 						"几乎不动，就像一个月后到期的期权",
 					],
+					why: [
+						"A month-out option's delta barely moves, but this one has an hour left. Near the strike it swings from about 0.29 to 0.72 on 40 cents.",
+						"一个月后到期的期权 Delta 几乎不动，但这张只剩一小时。在行权价附近，40 美分就让它从约 0.29 摆到 0.72。",
+					],
 				},
-				{ id: "one", label: ["It goes straight to 1", "直接变成 1"] },
+				{
+					id: "one",
+					label: ["It goes straight to 1", "直接变成 1"],
+					why: [
+						"With an hour left, $100.20 isn't safely in the money yet, so delta rises to about 0.72, not 1. It reaches 1 only when finishing in the money is nearly certain.",
+						"还剩一小时时，$100.20 还不算稳稳的实值，所以 Delta 升到约 0.72，而不是 1。只有几乎肯定收在实值时，它才会到 1。",
+					],
+				},
 			],
 			answer: "jump",
 			revealAt: 1,
@@ -634,10 +659,21 @@ const scenes = [
 					id: "zero",
 					label: ["0: the series expired Friday", "0：这个系列周五就到期了"],
 				},
-				{ id: "all", label: ["12,000", "12,000"] },
+				{
+					id: "all",
+					label: ["12,000", "12,000"],
+					why: [
+						"Those contracts opened and expired the same day. Open interest is counted overnight, and by Monday the Sep 20 series no longer exists.",
+						"这些合约在同一天开仓并到期。未平仓量在夜间统计，到了周一，9月20日 系列已经不存在了。",
+					],
+				},
 				{
 					id: "sum",
 					label: ["15,400, with Thursday's 3,400", "15,400，加上周四的 3,400"],
+					why: [
+						"Neither number carries over: the whole Sep 20 series expired on Friday, so nothing from it reaches Monday's open interest.",
+						"两个数字都不会延续：9月20日 系列周五就全部到期了，所以它的任何部分都不会进入周一的未平仓量。",
+					],
 				},
 			],
 			answer: "zero",

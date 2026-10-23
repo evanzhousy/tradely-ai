@@ -410,10 +410,18 @@ const scenes = [
 						`${ALFA_IV30_TODAY}%: the IV itself`,
 						`${ALFA_IV30_TODAY}%：就是 IV 本身`,
 					],
+					why: [
+						`${ALFA_IV30_TODAY}% is the IV itself. Rank places it within the year's range: (${ALFA_IV30_TODAY} − ${year.low}) ÷ (${year.high} − ${year.low}).`,
+						`${ALFA_IV30_TODAY}% 是 IV 本身。Rank 是把它放在一年的区间里定位：(${ALFA_IV30_TODAY} − ${year.low}) ÷ (${year.high} − ${year.low})。`,
+					],
 				},
 				{
 					id: "percentile",
 					label: [pct(year.percentile), pct(year.percentile)],
+					why: [
+						`${pct(year.percentile)} is the percentile, the share of weeks below today. Rank uses only the low and the high: (${ALFA_IV30_TODAY} − ${year.low}) ÷ (${year.high} − ${year.low}).`,
+						`${pct(year.percentile)} 是百分位，即低于今天的周数占比。Rank 只用最低和最高：(${ALFA_IV30_TODAY} − ${year.low}) ÷ (${year.high} − ${year.low})。`,
+					],
 				},
 			],
 			answer: "rank",
@@ -500,8 +508,22 @@ const scenes = [
 						`大约翻倍，到 ${pct(noShock.rank)}`,
 					],
 				},
-				{ id: "same", label: ["It barely moves", "几乎不变"] },
-				{ id: "down", label: ["It falls", "下降"] },
+				{
+					id: "same",
+					label: ["It barely moves", "几乎不变"],
+					why: [
+						`Rank depends on the high, and the ${year.high}% week set it. Without that week the high drops to ${noShock.high}%, so today's rank roughly doubles.`,
+						`Rank 取决于最高值，而 ${year.high}% 那一周决定了它。去掉那一周，最高值降到 ${noShock.high}%，今天的 Rank 大约翻倍。`,
+					],
+				},
+				{
+					id: "down",
+					label: ["It falls", "下降"],
+					why: [
+						`Removing the highest week shrinks the range from above, so today sits higher within it, not lower: ${pct(noShock.rank)}.`,
+						`去掉最高的一周，区间从上方缩小，所以今天在区间里的位置更高，而不是更低：${pct(noShock.rank)}。`,
+					],
+				},
 			],
 			answer: "jump",
 			revealAt: 1,
@@ -571,8 +593,19 @@ const scenes = [
 						`${pct(year.percentile)}: same as the year`,
 						`${pct(year.percentile)}：和全年一样`,
 					],
+					why: [
+						`Percentile depends on the window. Over the last ${RECENT} weeks every week was below ${ALFA_IV30_TODAY}%, so it's 100%.`,
+						`百分位取决于窗口。最近 ${RECENT} 周每一周都低于 ${ALFA_IV30_TODAY}%，所以是 100%。`,
+					],
 				},
-				{ id: "rank", label: [pct(year.rank), pct(year.rank)] },
+				{
+					id: "rank",
+					label: [pct(year.rank), pct(year.rank)],
+					why: [
+						`${pct(year.rank)} is the year's rank, a different statistic over a different window. Over ${RECENT} weeks, every week sat below today.`,
+						`${pct(year.rank)} 是全年的 Rank，是另一个窗口上的另一种统计。在最近 ${RECENT} 周里，每一周都低于今天。`,
+					],
+				},
 			],
 			answer: "all",
 			entry: { answer: 100, unit: ["%", "%"] },

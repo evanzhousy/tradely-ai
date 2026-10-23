@@ -563,12 +563,20 @@ const scenes = [
 				{
 					id: "year",
 					label: [usd(Math.round(SPOT * IV)), usd(Math.round(SPOT * IV))],
+					why: [
+						`${usd(Math.round(SPOT * IV))} is a full year's move: ${IV}% of ${usd(CHECKPOINT_ALFA)}. With ${DAYS} days left, scale it by √(${DAYS} ÷ 365).`,
+						`${usd(Math.round(SPOT * IV))} 是一整年的变动：${usd(CHECKPOINT_ALFA)} 的 ${IV}%。还剩 ${DAYS} 天，要乘以 √(${DAYS} ÷ 365)。`,
+					],
 				},
 				{
 					id: "linear",
 					label: [
 						usd(Math.round(SPOT * IV * (DAYS / 365))),
 						usd(Math.round(SPOT * IV * (DAYS / 365))),
+					],
+					why: [
+						`Scaling by ${DAYS}/365 treats volatility as growing in a line with time. It grows with the square root of time: √(${DAYS} ÷ 365).`,
+						`乘以 ${DAYS}/365 是把波动率当作随时间线性增长。它是随时间的平方根增长：√(${DAYS} ÷ 365)。`,
 					],
 				},
 			],
@@ -658,8 +666,19 @@ const scenes = [
 						`${measures(false).percentile.toFixed(0)}%`,
 						`${measures(false).percentile.toFixed(0)}%`,
 					],
+					why: [
+						`${measures(false).percentile.toFixed(0)}% is the percentile: 5 of 7 readings sit below today. Rank uses only the low and the high: (${TODAY} − 22) ÷ (52 − 22).`,
+						`${measures(false).percentile.toFixed(0)}% 是百分位：7 个读数中有 5 个低于今天。Rank 只用最低和最高：(${TODAY} − 22) ÷ (52 − 22)。`,
+					],
 				},
-				{ id: "iv", label: [`${TODAY}%`, `${TODAY}%`] },
+				{
+					id: "iv",
+					label: [`${TODAY}%`, `${TODAY}%`],
+					why: [
+						`${TODAY}% is the IV itself. Rank places it between the lowest and highest readings: (${TODAY} − 22) ÷ (52 − 22).`,
+						`${TODAY}% 是 IV 本身。Rank 是把它放在最低和最高读数之间定位：(${TODAY} − 22) ÷ (52 − 22)。`,
+					],
+				},
 			],
 			answer: "rank",
 			entry: { answer: measures(false).rank, tolerance: 0.5, unit: ["%", "%"] },
@@ -736,10 +755,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: [usd(valueAt(CLOSE)), usd(valueAt(CLOSE))] },
-				{ id: "zero", label: ["$0: it was at the money", "$0：它是平值"] },
+				{
+					id: "zero",
+					label: ["$0: it was at the money", "$0：它是平值"],
+					why: [
+						"It was at the money with an hour left, but ALFA closed at $104.30, 30 cents above the strike. At the close it's worth that $0.30.",
+						"还剩一小时时它是平值，但 ALFA 收在 $104.30，比行权价高 30 美分。收盘时它就值这 $0.30。",
+					],
+				},
 				{
 					id: "more",
 					label: ["More: it still has time value", "更多：它还有时间价值"],
+					why: [
+						"At the close no time is left, so no time value remains. The call is worth exactly ALFA minus $104.",
+						"收盘时没有时间了，也就没有时间价值。看涨正好值 ALFA 减 $104。",
+					],
 				},
 			],
 			answer: "right",
