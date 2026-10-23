@@ -1,0 +1,4198 @@
+[
+	{
+		"id": "audited-boundary-practice-1",
+		"lessonId": "audited-boundary",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "audited-boundary",
+				"brief": {
+					"en": "Turn 'where's the action in ALFA?' into a question someone else can check, sort the evidence behind its answer, and keep the record when new data or a new question arrives.",
+					"zh": "把“ALFA 哪里最活跃？”变成别人可以核查的问题，区分答案背后的证据，并在新数据或新问题出现时保留记录。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A good question can be answered with evidence and says what would revise the answer. Caution alone isn't an answer: write the actual scope and what you measure.",
+					"zh": "好的问题可以用证据回答，并说明什么情况会让答案需要修订。光表示谨慎不算答案：要写出实际范围和测量的内容。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your research record asks about BETA calls expiring October 16, from tape-B, for the September 3 session. A colleague proposes a rerun that adds one corrected call trade from the same session and keeps the method.",
+					"zh": "你的研究记录问的是 10 月 16 日到期的 BETA 看涨，来源 tape-B，9 月 3 日交易时段。一位同事建议重跑：加入同一时段的一笔更正后的看涨成交，方法不变。"
+				},
+				"questions": [
+					{
+						"id": "change",
+						"prompt": {
+							"en": "Does the proposal change your research question?",
+							"zh": "这个建议会改变你的研究问题吗？"
+						},
+						"choices": [
+							{
+								"id": "same",
+								"label": {
+									"en": "No: corrected evidence tests the same question",
+									"zh": "不会：更正后的证据检验的是同一个问题"
+								}
+							},
+							{
+								"id": "new",
+								"label": {
+									"en": "Yes: write it as a new question and keep the original record",
+									"zh": "会：把它写成新问题，并保留原来的记录"
+								},
+								"why": {
+									"en": "A corrected trade from the same session and population is new evidence for the same question. Rerun it under the existing record.",
+									"zh": "同一时段、同一范围内的一笔更正成交，是同一问题的新证据。在原记录下重跑即可。"
+								}
+							}
+						],
+						"accepted": ["same"],
+						"explanation": {
+							"en": "A corrected trade from the same session and population is new evidence for the same question, so rerun it under the existing record.",
+							"zh": "同一时段、同一范围内的一笔更正成交，是同一问题的新证据，所以在原记录下重跑即可。"
+						}
+					},
+					{
+						"id": "question",
+						"prompt": {
+							"en": "Write the question you're actually answering: what you measure, the source, the cutoff, and one thing that would make you revise the answer.",
+							"zh": "写出你实际要回答的问题：测量什么、来源、截止时间，以及一件会让你修订答案的事。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Among BETA calls expiring October 16, which strike had the most volume in the September 3 session, from tape-B with a complete-session cutoff? Revise if a required strike's data is still missing at the cutoff.\" Check that your wording has each of those parts; it isn't graded by a machine.",
+							"zh": "例如：“在 10 月 16 日到期的 BETA 看涨中，哪个行权价在 9 月 3 日交易时段成交最多？来源 tape-B，以完整交易时段为截止。如果截止时仍缺少必要行权价的数据，则修订。”检查你的写法是否包含这些部分；这一题不由机器评分。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A good question can be answered with evidence and says what would revise the answer. Caution alone isn't an answer: write the actual scope and what you measure.",
+					"zh": "好的问题可以用证据回答，并说明什么情况会让答案需要修订。光表示谨慎不算答案：要写出实际范围和测量的内容。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your research record asks about BETA calls expiring October 16, from tape-B, for the September 4 session. A colleague proposes a rerun that switches to puts after seeing which call had the most volume.",
+					"zh": "你的研究记录问的是 10 月 16 日到期的 BETA 看涨，来源 tape-B，9 月 4 日交易时段。一位同事建议重跑：在看到哪张看涨成交最多之后，改为研究看跌。"
+				},
+				"questions": [
+					{
+						"id": "change",
+						"prompt": {
+							"en": "Does the proposal change your research question?",
+							"zh": "这个建议会改变你的研究问题吗？"
+						},
+						"choices": [
+							{
+								"id": "new",
+								"label": {
+									"en": "Yes: write it as a new question and keep the original record",
+									"zh": "会：把它写成新问题，并保留原来的记录"
+								}
+							},
+							{
+								"id": "same",
+								"label": {
+									"en": "No: corrected evidence tests the same question",
+									"zh": "不会：更正后的证据检验的是同一个问题"
+								},
+								"why": {
+									"en": "Switching to puts after seeing the call results changes what's studied. That's a new question, and the original record stays as it was.",
+									"zh": "看到看涨结果后改研究看跌，改变了研究对象。这是新问题，原记录保持不变。"
+								}
+							}
+						],
+						"accepted": ["new"],
+						"explanation": {
+							"en": "Switching to puts after seeing the results changes what's being studied, so it's a new question. The original record stays as it was.",
+							"zh": "看到结果后改研究看跌，改变了研究对象，所以这是一个新问题。原来的记录保持不变。"
+						}
+					},
+					{
+						"id": "question",
+						"prompt": {
+							"en": "Write the question you're actually answering: what you measure, the source, the cutoff, and one thing that would make you revise the answer.",
+							"zh": "写出你实际要回答的问题：测量什么、来源、截止时间，以及一件会让你修订答案的事。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Among BETA calls expiring October 16, which strike had the most volume in the September 4 session, from tape-B with a complete-session cutoff? Revise if a required strike's data is still missing at the cutoff.\" Check that your wording has each of those parts; it isn't graded by a machine.",
+							"zh": "例如：“在 10 月 16 日到期的 BETA 看涨中，哪个行权价在 9 月 4 日交易时段成交最多？来源 tape-B，以完整交易时段为截止。如果截止时仍缺少必要行权价的数据，则修订。”检查你的写法是否包含这些部分；这一题不由机器评分。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A good question can be answered with evidence and says what would revise the answer. Caution alone isn't an answer: write the actual scope and what you measure.",
+					"zh": "好的问题可以用证据回答，并说明什么情况会让答案需要修订。光表示谨慎不算答案：要写出实际范围和测量的内容。"
+				}
+			}
+		]
+	},
+	{
+		"id": "audited-boundary-practice-2",
+		"lessonId": "audited-boundary",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "audited-boundary",
+				"brief": {
+					"en": "Turn 'where's the action in ALFA?' into a question someone else can check, sort the evidence behind its answer, and keep the record when new data or a new question arrives.",
+					"zh": "把“ALFA 哪里最活跃？”变成别人可以核查的问题，区分答案背后的证据，并在新数据或新问题出现时保留记录。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A good question can be answered with evidence and says what would revise the answer. Caution alone isn't an answer: write the actual scope and what you measure.",
+					"zh": "好的问题可以用证据回答，并说明什么情况会让答案需要修订。光表示谨慎不算答案：要写出实际范围和测量的内容。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your research record asks about BETA calls expiring October 16, from tape-B, for the September 3 session. A colleague proposes a rerun that adds one corrected call trade from the same session and keeps the method.",
+					"zh": "你的研究记录问的是 10 月 16 日到期的 BETA 看涨，来源 tape-B，9 月 3 日交易时段。一位同事建议重跑：加入同一时段的一笔更正后的看涨成交，方法不变。"
+				},
+				"questions": [
+					{
+						"id": "change",
+						"prompt": {
+							"en": "Does the proposal change your research question?",
+							"zh": "这个建议会改变你的研究问题吗？"
+						},
+						"choices": [
+							{
+								"id": "same",
+								"label": {
+									"en": "No: corrected evidence tests the same question",
+									"zh": "不会：更正后的证据检验的是同一个问题"
+								}
+							},
+							{
+								"id": "new",
+								"label": {
+									"en": "Yes: write it as a new question and keep the original record",
+									"zh": "会：把它写成新问题，并保留原来的记录"
+								},
+								"why": {
+									"en": "A corrected trade from the same session and population is new evidence for the same question. Rerun it under the existing record.",
+									"zh": "同一时段、同一范围内的一笔更正成交，是同一问题的新证据。在原记录下重跑即可。"
+								}
+							}
+						],
+						"accepted": ["same"],
+						"explanation": {
+							"en": "A corrected trade from the same session and population is new evidence for the same question, so rerun it under the existing record.",
+							"zh": "同一时段、同一范围内的一笔更正成交，是同一问题的新证据，所以在原记录下重跑即可。"
+						}
+					},
+					{
+						"id": "question",
+						"prompt": {
+							"en": "Write the question you're actually answering: what you measure, the source, the cutoff, and one thing that would make you revise the answer.",
+							"zh": "写出你实际要回答的问题：测量什么、来源、截止时间，以及一件会让你修订答案的事。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Among BETA calls expiring October 16, which strike had the most volume in the September 3 session, from tape-B with a complete-session cutoff? Revise if a required strike's data is still missing at the cutoff.\" Check that your wording has each of those parts; it isn't graded by a machine.",
+							"zh": "例如：“在 10 月 16 日到期的 BETA 看涨中，哪个行权价在 9 月 3 日交易时段成交最多？来源 tape-B，以完整交易时段为截止。如果截止时仍缺少必要行权价的数据，则修订。”检查你的写法是否包含这些部分；这一题不由机器评分。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A good question can be answered with evidence and says what would revise the answer. Caution alone isn't an answer: write the actual scope and what you measure.",
+					"zh": "好的问题可以用证据回答，并说明什么情况会让答案需要修订。光表示谨慎不算答案：要写出实际范围和测量的内容。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your research record asks about BETA calls expiring October 16, from tape-B, for the September 8 session. A colleague proposes a rerun that adds one corrected call trade from the same session and keeps the method.",
+					"zh": "你的研究记录问的是 10 月 16 日到期的 BETA 看涨，来源 tape-B，9 月 8 日交易时段。一位同事建议重跑：加入同一时段的一笔更正后的看涨成交，方法不变。"
+				},
+				"questions": [
+					{
+						"id": "change",
+						"prompt": {
+							"en": "Does the proposal change your research question?",
+							"zh": "这个建议会改变你的研究问题吗？"
+						},
+						"choices": [
+							{
+								"id": "same",
+								"label": {
+									"en": "No: corrected evidence tests the same question",
+									"zh": "不会：更正后的证据检验的是同一个问题"
+								}
+							},
+							{
+								"id": "new",
+								"label": {
+									"en": "Yes: write it as a new question and keep the original record",
+									"zh": "会：把它写成新问题，并保留原来的记录"
+								},
+								"why": {
+									"en": "A corrected trade from the same session and population is new evidence for the same question. Rerun it under the existing record.",
+									"zh": "同一时段、同一范围内的一笔更正成交，是同一问题的新证据。在原记录下重跑即可。"
+								}
+							}
+						],
+						"accepted": ["same"],
+						"explanation": {
+							"en": "A corrected trade from the same session and population is new evidence for the same question, so rerun it under the existing record.",
+							"zh": "同一时段、同一范围内的一笔更正成交，是同一问题的新证据，所以在原记录下重跑即可。"
+						}
+					},
+					{
+						"id": "question",
+						"prompt": {
+							"en": "Write the question you're actually answering: what you measure, the source, the cutoff, and one thing that would make you revise the answer.",
+							"zh": "写出你实际要回答的问题：测量什么、来源、截止时间，以及一件会让你修订答案的事。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Among BETA calls expiring October 16, which strike had the most volume in the September 8 session, from tape-B with a complete-session cutoff? Revise if a required strike's data is still missing at the cutoff.\" Check that your wording has each of those parts; it isn't graded by a machine.",
+							"zh": "例如：“在 10 月 16 日到期的 BETA 看涨中，哪个行权价在 9 月 8 日交易时段成交最多？来源 tape-B，以完整交易时段为截止。如果截止时仍缺少必要行权价的数据，则修订。”检查你的写法是否包含这些部分；这一题不由机器评分。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A good question can be answered with evidence and says what would revise the answer. Caution alone isn't an answer: write the actual scope and what you measure.",
+					"zh": "好的问题可以用证据回答，并说明什么情况会让答案需要修订。光表示谨慎不算答案：要写出实际范围和测量的内容。"
+				}
+			}
+		]
+	},
+	{
+		"id": "symbol-universe-practice-1",
+		"lessonId": "symbol-universe",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "symbol-universe",
+				"brief": {
+					"en": "Check eight symbols against a declared rule, keep an unobserved stock apart from the ones you measured, and use the list of names that existed on the date you compare.",
+					"zh": "按声明的规则检查八个标的，把未观测的股票与已测量的分开，并使用比较日期当时存在的名单。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Settle who qualifies before you rank. Changing the exclusions after seeing the winner changes the question.",
+					"zh": "先确定谁有资格，再排名。看到领先者之后再改排除规则，就改变了问题。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your comparison covers stock options on ALFA, BETA and IOTA in one stated session. A name counts only if its observation is complete and its volume is at least 500 contracts. No other names belong.",
+					"zh": "你的比较范围是 ALFA、BETA 和 IOTA 在同一给定时段的股票期权。只有观测完整、成交量至少 500 张的标的才计入。没有其他标的属于这个范围。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Row", "zh": "行" },
+						{ "en": "Volume", "zh": "成交量" },
+						{ "en": "Coverage", "zh": "覆盖" }
+					],
+					"rows": [
+						["ALFA", "800", "complete / 完整"],
+						["BETA", "400", "complete / 完整"],
+						["IOTA", "—", "missing / 缺失"]
+					],
+					"caption": {
+						"en": "Synthetic fixed-session source · volume in contracts; dash is missing",
+						"zh": "模拟固定时段来源 · 成交量单位为张；横线为缺失"
+					}
+				},
+				"questions": [
+					{
+						"id": "admitted",
+						"prompt": {
+							"en": "How many names qualify for the comparison of observed volume?",
+							"zh": "有多少个标的有资格进入已观测成交量的比较？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "names", "zh": "个" }
+						},
+						"accepted": ["1"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "ALFA's 800 qualifies, and BETA's 400 falls short of 500. IOTA's volume is missing, so it can't be measured: 1 name.",
+							"zh": "ALFA 的 800 合格，BETA 的 400 不足 500。IOTA 的成交量缺失，无法测量：共 1 个。"
+						}
+					},
+					{
+						"id": "eligible-volume",
+						"prompt": {
+							"en": "What volume do the qualifying names add up to?",
+							"zh": "有资格的标的成交量合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["800"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "ALFA alone: 800 contracts. That's the observed subtotal, not the total for all three names: IOTA is missing.",
+							"zh": "只有 ALFA：800 张。这是已观测的小计，而不是三个标的的总量：IOTA 缺失。"
+						}
+					},
+					{
+						"id": "claim",
+						"prompt": {
+							"en": "Can you call the observed leader the most active of all three names?",
+							"zh": "你能把已观测的领先者称为三个标的中最活跃的吗？"
+						},
+						"choices": [
+							{
+								"id": "limited",
+								"label": {
+									"en": "No: say it leads the names you observed, and that IOTA is missing",
+									"zh": "不能：要说它在已观测的标的中领先，并注明 IOTA 缺失"
+								}
+							},
+							{
+								"id": "full",
+								"label": {
+									"en": "Yes: count the missing name as zero",
+									"zh": "能：把缺失的标的当作零"
+								},
+								"why": {
+									"en": "A missing name isn't zero. Counting IOTA as zero would let the observed leader claim a title it may not hold.",
+									"zh": "缺失的名字不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。"
+								}
+							}
+						],
+						"accepted": ["limited"],
+						"explanation": {
+							"en": "IOTA's volume is unknown and could be larger than either. Report the leader among the names you observed.",
+							"zh": "IOTA 的成交量未知，可能比两者都大。只能报告已观测标的中的领先者。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Settle who qualifies before you rank. Changing the exclusions after seeing the winner changes the question.",
+					"zh": "先确定谁有资格，再排名。看到领先者之后再改排除规则，就改变了问题。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your comparison covers stock options on ALFA, BETA and IOTA in one stated session. A name counts only if its observation is complete and its volume is at least 500 contracts. No other names belong.",
+					"zh": "你的比较范围是 ALFA、BETA 和 IOTA 在同一给定时段的股票期权。只有观测完整、成交量至少 500 张的标的才计入。没有其他标的属于这个范围。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Row", "zh": "行" },
+						{ "en": "Volume", "zh": "成交量" },
+						{ "en": "Coverage", "zh": "覆盖" }
+					],
+					"rows": [
+						["ALFA", "900", "complete / 完整"],
+						["BETA", "700", "complete / 完整"],
+						["IOTA", "—", "missing / 缺失"]
+					],
+					"caption": {
+						"en": "Synthetic fixed-session source · volume in contracts; dash is missing",
+						"zh": "模拟固定时段来源 · 成交量单位为张；横线为缺失"
+					}
+				},
+				"questions": [
+					{
+						"id": "admitted",
+						"prompt": {
+							"en": "How many names qualify for the comparison of observed volume?",
+							"zh": "有多少个标的有资格进入已观测成交量的比较？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "names", "zh": "个" }
+						},
+						"accepted": ["2"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "ALFA's 900 qualifies, and BETA's 700 clears 500 too. IOTA's volume is missing, so it can't be measured: 2 names.",
+							"zh": "ALFA 的 900 合格，BETA 的 700 也超过 500。IOTA 的成交量缺失，无法测量：共 2 个。"
+						}
+					},
+					{
+						"id": "eligible-volume",
+						"prompt": {
+							"en": "What volume do the qualifying names add up to?",
+							"zh": "有资格的标的成交量合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["1600"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "900 + 700 = 1,600 contracts. That's the observed subtotal, not the total for all three names: IOTA is missing.",
+							"zh": "900 + 700 = 1,600 张。这是已观测的小计，而不是三个标的的总量：IOTA 缺失。"
+						}
+					},
+					{
+						"id": "claim",
+						"prompt": {
+							"en": "Can you call the observed leader the most active of all three names?",
+							"zh": "你能把已观测的领先者称为三个标的中最活跃的吗？"
+						},
+						"choices": [
+							{
+								"id": "full",
+								"label": {
+									"en": "Yes: count the missing name as zero",
+									"zh": "能：把缺失的标的当作零"
+								},
+								"why": {
+									"en": "A missing name isn't zero. Counting IOTA as zero would let the observed leader claim a title it may not hold.",
+									"zh": "缺失的名字不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。"
+								}
+							},
+							{
+								"id": "limited",
+								"label": {
+									"en": "No: say it leads the names you observed, and that IOTA is missing",
+									"zh": "不能：要说它在已观测的标的中领先，并注明 IOTA 缺失"
+								}
+							}
+						],
+						"accepted": ["limited"],
+						"explanation": {
+							"en": "IOTA's volume is unknown and could be larger than either. Report the leader among the names you observed.",
+							"zh": "IOTA 的成交量未知，可能比两者都大。只能报告已观测标的中的领先者。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Settle who qualifies before you rank. Changing the exclusions after seeing the winner changes the question.",
+					"zh": "先确定谁有资格，再排名。看到领先者之后再改排除规则，就改变了问题。"
+				}
+			}
+		]
+	},
+	{
+		"id": "symbol-universe-practice-2",
+		"lessonId": "symbol-universe",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "symbol-universe",
+				"brief": {
+					"en": "Check eight symbols against a declared rule, keep an unobserved stock apart from the ones you measured, and use the list of names that existed on the date you compare.",
+					"zh": "按声明的规则检查八个标的，把未观测的股票与已测量的分开，并使用比较日期当时存在的名单。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Settle who qualifies before you rank. Changing the exclusions after seeing the winner changes the question.",
+					"zh": "先确定谁有资格，再排名。看到领先者之后再改排除规则，就改变了问题。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your comparison covers stock options on ALFA, BETA and IOTA in one stated session. A name counts only if its observation is complete and its volume is at least 500 contracts. No other names belong.",
+					"zh": "你的比较范围是 ALFA、BETA 和 IOTA 在同一给定时段的股票期权。只有观测完整、成交量至少 500 张的标的才计入。没有其他标的属于这个范围。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Row", "zh": "行" },
+						{ "en": "Volume", "zh": "成交量" },
+						{ "en": "Coverage", "zh": "覆盖" }
+					],
+					"rows": [
+						["ALFA", "800", "complete / 完整"],
+						["BETA", "400", "complete / 完整"],
+						["IOTA", "—", "missing / 缺失"]
+					],
+					"caption": {
+						"en": "Synthetic fixed-session source · volume in contracts; dash is missing",
+						"zh": "模拟固定时段来源 · 成交量单位为张；横线为缺失"
+					}
+				},
+				"questions": [
+					{
+						"id": "admitted",
+						"prompt": {
+							"en": "How many names qualify for the comparison of observed volume?",
+							"zh": "有多少个标的有资格进入已观测成交量的比较？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "names", "zh": "个" }
+						},
+						"accepted": ["1"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "ALFA's 800 qualifies, and BETA's 400 falls short of 500. IOTA's volume is missing, so it can't be measured: 1 name.",
+							"zh": "ALFA 的 800 合格，BETA 的 400 不足 500。IOTA 的成交量缺失，无法测量：共 1 个。"
+						}
+					},
+					{
+						"id": "eligible-volume",
+						"prompt": {
+							"en": "What volume do the qualifying names add up to?",
+							"zh": "有资格的标的成交量合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["800"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "ALFA alone: 800 contracts. That's the observed subtotal, not the total for all three names: IOTA is missing.",
+							"zh": "只有 ALFA：800 张。这是已观测的小计，而不是三个标的的总量：IOTA 缺失。"
+						}
+					},
+					{
+						"id": "claim",
+						"prompt": {
+							"en": "Can you call the observed leader the most active of all three names?",
+							"zh": "你能把已观测的领先者称为三个标的中最活跃的吗？"
+						},
+						"choices": [
+							{
+								"id": "limited",
+								"label": {
+									"en": "No: say it leads the names you observed, and that IOTA is missing",
+									"zh": "不能：要说它在已观测的标的中领先，并注明 IOTA 缺失"
+								}
+							},
+							{
+								"id": "full",
+								"label": {
+									"en": "Yes: count the missing name as zero",
+									"zh": "能：把缺失的标的当作零"
+								},
+								"why": {
+									"en": "A missing name isn't zero. Counting IOTA as zero would let the observed leader claim a title it may not hold.",
+									"zh": "缺失的名字不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。"
+								}
+							}
+						],
+						"accepted": ["limited"],
+						"explanation": {
+							"en": "IOTA's volume is unknown and could be larger than either. Report the leader among the names you observed.",
+							"zh": "IOTA 的成交量未知，可能比两者都大。只能报告已观测标的中的领先者。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Settle who qualifies before you rank. Changing the exclusions after seeing the winner changes the question.",
+					"zh": "先确定谁有资格，再排名。看到领先者之后再改排除规则，就改变了问题。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Your comparison covers stock options on ALFA, BETA and IOTA in one stated session. A name counts only if its observation is complete and its volume is at least 500 contracts. No other names belong.",
+					"zh": "你的比较范围是 ALFA、BETA 和 IOTA 在同一给定时段的股票期权。只有观测完整、成交量至少 500 张的标的才计入。没有其他标的属于这个范围。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Row", "zh": "行" },
+						{ "en": "Volume", "zh": "成交量" },
+						{ "en": "Coverage", "zh": "覆盖" }
+					],
+					"rows": [
+						["ALFA", "650", "complete / 完整"],
+						["BETA", "450", "complete / 完整"],
+						["IOTA", "—", "missing / 缺失"]
+					],
+					"caption": {
+						"en": "Synthetic fixed-session source · volume in contracts; dash is missing",
+						"zh": "模拟固定时段来源 · 成交量单位为张；横线为缺失"
+					}
+				},
+				"questions": [
+					{
+						"id": "admitted",
+						"prompt": {
+							"en": "How many names qualify for the comparison of observed volume?",
+							"zh": "有多少个标的有资格进入已观测成交量的比较？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "names", "zh": "个" }
+						},
+						"accepted": ["1"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "ALFA's 650 qualifies, and BETA's 450 falls short of 500. IOTA's volume is missing, so it can't be measured: 1 name.",
+							"zh": "ALFA 的 650 合格，BETA 的 450 不足 500。IOTA 的成交量缺失，无法测量：共 1 个。"
+						}
+					},
+					{
+						"id": "eligible-volume",
+						"prompt": {
+							"en": "What volume do the qualifying names add up to?",
+							"zh": "有资格的标的成交量合计多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["650"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "ALFA alone: 650 contracts. That's the observed subtotal, not the total for all three names: IOTA is missing.",
+							"zh": "只有 ALFA：650 张。这是已观测的小计，而不是三个标的的总量：IOTA 缺失。"
+						}
+					},
+					{
+						"id": "claim",
+						"prompt": {
+							"en": "Can you call the observed leader the most active of all three names?",
+							"zh": "你能把已观测的领先者称为三个标的中最活跃的吗？"
+						},
+						"choices": [
+							{
+								"id": "limited",
+								"label": {
+									"en": "No: say it leads the names you observed, and that IOTA is missing",
+									"zh": "不能：要说它在已观测的标的中领先，并注明 IOTA 缺失"
+								}
+							},
+							{
+								"id": "full",
+								"label": {
+									"en": "Yes: count the missing name as zero",
+									"zh": "能：把缺失的标的当作零"
+								},
+								"why": {
+									"en": "A missing name isn't zero. Counting IOTA as zero would let the observed leader claim a title it may not hold.",
+									"zh": "缺失的名字不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。"
+								}
+							}
+						],
+						"accepted": ["limited"],
+						"explanation": {
+							"en": "IOTA's volume is unknown and could be larger than either. Report the leader among the names you observed.",
+							"zh": "IOTA 的成交量未知，可能比两者都大。只能报告已观测标的中的领先者。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Settle who qualifies before you rank. Changing the exclusions after seeing the winner changes the question.",
+					"zh": "先确定谁有资格，再排名。看到领先者之后再改排除规则，就改变了问题。"
+				}
+			}
+		]
+	},
+	{
+		"id": "rank-symbols-practice-1",
+		"lessonId": "rank-symbols",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "rank-symbols",
+				"brief": {
+					"en": "Rank ALFA's peers by raw and relative activity, keep the sign on a ranked change, and pass a candidate on with the context its rank depends on.",
+					"zh": "按原始与相对活跃度给 ALFA 的同组股票排名，在按幅度排序时保留符号，并附上排名所依赖的背景交接候选。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A rank can rise because peers fell or were excluded. A change in rank alone isn't a change in the name's own activity, or a signal of direction.",
+					"zh": "排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two fully covered names are eligible. Your question: which one is more active relative to its own usual full-session volume?",
+					"zh": "两个数据完整的标的都有资格。你的问题是：相对于各自平常的完整交易日成交量，哪一个更活跃？"
+				},
+				"universe": {
+					"id": "peer-lab-0",
+					"note": {
+						"en": "Independent questions use ORIGINAL worksheet values. This separate comparison changes BETA while holding ALFA fixed; it demonstrates relative rank, not a new market observation.",
+						"zh": "独立题目使用原始表格数值。本对比仅改变 BETA、固定 ALFA，演示相对排名，并非新增市场观测。"
+					},
+					"rows": [
+						{
+							"symbol": "ALFA",
+							"volume": 1200,
+							"peerVolume": 1200,
+							"fresh": true,
+							"eligible": true
+						},
+						{
+							"symbol": "BETA",
+							"volume": 900,
+							"peerVolume": 1500,
+							"fresh": true,
+							"eligible": true
+						}
+					]
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Symbol", "zh": "标的" },
+						{ "en": "Volume", "zh": "量" },
+						{ "en": "Typical volume", "zh": "典型量" }
+					],
+					"rows": [["ALFA", "1200", "2400"], ["BETA", "900", "300"]],
+					"caption": {
+						"en": "Synthetic complete sessions · contracts",
+						"zh": "模拟完整时段 · 张"
+					}
+				},
+				"questions": [
+					{
+						"id": "ratio-a",
+						"prompt": {
+							"en": "What is ALFA's relative volume: today's volume against its typical session?",
+							"zh": "ALFA 的相对成交量是多少：今天的成交量对比它的典型交易日？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "times", "zh": "倍" }
+						},
+						"accepted": ["0.5"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "1,200 ÷ 2,400 = 0.5×.",
+							"zh": "1,200 ÷ 2,400 = 0.5×。"
+						}
+					},
+					{
+						"id": "leader",
+						"prompt": {
+							"en": "Which name answers your question?",
+							"zh": "哪个标的回答了你的问题？"
+						},
+						"choices": [
+							{
+								"id": "a",
+								"label": { "en": "ALFA", "zh": "ALFA" },
+								"why": {
+									"en": "ALFA trades more contracts, but sits at 0.5× its typical session, below BETA's 3×. The question compares each name with its own normal.",
+									"zh": "ALFA 成交的张数更多，但只有其典型交易日的 0.5×，低于 BETA 的 3×。问题比较的是各自与平常水平的对比。"
+								}
+							},
+							{ "id": "b", "label": { "en": "BETA", "zh": "BETA" } }
+						],
+						"accepted": ["b"],
+						"explanation": {
+							"en": "ALFA: 0.5×. BETA: 900 ÷ 300 = 3×. BETA is further above its own normal, even though ALFA traded more contracts.",
+							"zh": "ALFA：0.5×。BETA：900 ÷ 300 = 3×。BETA 超出自身平常水平更多，尽管 ALFA 成交的张数更多。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rank can rise because peers fell or were excluded. A change in rank alone isn't a change in the name's own activity, or a signal of direction.",
+					"zh": "排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two fully covered names are eligible. Your question: which one is more active relative to its own usual full-session volume?",
+					"zh": "两个数据完整的标的都有资格。你的问题是：相对于各自平常的完整交易日成交量，哪一个更活跃？"
+				},
+				"universe": {
+					"id": "peer-lab-1",
+					"note": {
+						"en": "Independent questions use ORIGINAL worksheet values. This separate comparison changes BETA while holding ALFA fixed; it demonstrates relative rank, not a new market observation.",
+						"zh": "独立题目使用原始表格数值。本对比仅改变 BETA、固定 ALFA，演示相对排名，并非新增市场观测。"
+					},
+					"rows": [
+						{
+							"symbol": "ALFA",
+							"volume": 1800,
+							"peerVolume": 1800,
+							"fresh": true,
+							"eligible": true
+						},
+						{
+							"symbol": "BETA",
+							"volume": 1200,
+							"peerVolume": 2100,
+							"fresh": true,
+							"eligible": true
+						}
+					]
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Symbol", "zh": "标的" },
+						{ "en": "Volume", "zh": "量" },
+						{ "en": "Typical volume", "zh": "典型量" }
+					],
+					"rows": [["ALFA", "1800", "600"], ["BETA", "1200", "1200"]],
+					"caption": {
+						"en": "Synthetic complete sessions · contracts",
+						"zh": "模拟完整时段 · 张"
+					}
+				},
+				"questions": [
+					{
+						"id": "ratio-a",
+						"prompt": {
+							"en": "What is ALFA's relative volume: today's volume against its typical session?",
+							"zh": "ALFA 的相对成交量是多少：今天的成交量对比它的典型交易日？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "times", "zh": "倍" }
+						},
+						"accepted": ["3"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "1,800 ÷ 600 = 3×.",
+							"zh": "1,800 ÷ 600 = 3×。"
+						}
+					},
+					{
+						"id": "leader",
+						"prompt": {
+							"en": "Which name answers your question?",
+							"zh": "哪个标的回答了你的问题？"
+						},
+						"choices": [
+							{
+								"id": "b",
+								"label": { "en": "BETA", "zh": "BETA" },
+								"why": {
+									"en": "BETA sits at 1× its typical session, below ALFA's 3×. The question compares each name with its own normal.",
+									"zh": "BETA 只有其典型交易日的 1×，低于 ALFA 的 3×。问题比较的是各自与平常水平的对比。"
+								}
+							},
+							{ "id": "a", "label": { "en": "ALFA", "zh": "ALFA" } }
+						],
+						"accepted": ["a"],
+						"explanation": {
+							"en": "ALFA: 3×. BETA: 1,200 ÷ 1,200 = 1×. ALFA is further above its own normal.",
+							"zh": "ALFA：3×。BETA：1,200 ÷ 1,200 = 1×。ALFA 超出自身平常水平更多。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rank can rise because peers fell or were excluded. A change in rank alone isn't a change in the name's own activity, or a signal of direction.",
+					"zh": "排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。"
+				}
+			}
+		]
+	},
+	{
+		"id": "rank-symbols-practice-2",
+		"lessonId": "rank-symbols",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "rank-symbols",
+				"brief": {
+					"en": "Rank ALFA's peers by raw and relative activity, keep the sign on a ranked change, and pass a candidate on with the context its rank depends on.",
+					"zh": "按原始与相对活跃度给 ALFA 的同组股票排名，在按幅度排序时保留符号，并附上排名所依赖的背景交接候选。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A rank can rise because peers fell or were excluded. A change in rank alone isn't a change in the name's own activity, or a signal of direction.",
+					"zh": "排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two fully covered names are eligible. Your question: which one is more active relative to its own usual full-session volume?",
+					"zh": "两个数据完整的标的都有资格。你的问题是：相对于各自平常的完整交易日成交量，哪一个更活跃？"
+				},
+				"universe": {
+					"id": "peer-lab-0",
+					"note": {
+						"en": "Independent questions use ORIGINAL worksheet values. This separate comparison changes BETA while holding ALFA fixed; it demonstrates relative rank, not a new market observation.",
+						"zh": "独立题目使用原始表格数值。本对比仅改变 BETA、固定 ALFA，演示相对排名，并非新增市场观测。"
+					},
+					"rows": [
+						{
+							"symbol": "ALFA",
+							"volume": 1200,
+							"peerVolume": 1200,
+							"fresh": true,
+							"eligible": true
+						},
+						{
+							"symbol": "BETA",
+							"volume": 900,
+							"peerVolume": 1500,
+							"fresh": true,
+							"eligible": true
+						}
+					]
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Symbol", "zh": "标的" },
+						{ "en": "Volume", "zh": "量" },
+						{ "en": "Typical volume", "zh": "典型量" }
+					],
+					"rows": [["ALFA", "1200", "2400"], ["BETA", "900", "300"]],
+					"caption": {
+						"en": "Synthetic complete sessions · contracts",
+						"zh": "模拟完整时段 · 张"
+					}
+				},
+				"questions": [
+					{
+						"id": "ratio-a",
+						"prompt": {
+							"en": "What is ALFA's relative volume: today's volume against its typical session?",
+							"zh": "ALFA 的相对成交量是多少：今天的成交量对比它的典型交易日？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "times", "zh": "倍" }
+						},
+						"accepted": ["0.5"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "1,200 ÷ 2,400 = 0.5×.",
+							"zh": "1,200 ÷ 2,400 = 0.5×。"
+						}
+					},
+					{
+						"id": "leader",
+						"prompt": {
+							"en": "Which name answers your question?",
+							"zh": "哪个标的回答了你的问题？"
+						},
+						"choices": [
+							{
+								"id": "a",
+								"label": { "en": "ALFA", "zh": "ALFA" },
+								"why": {
+									"en": "ALFA trades more contracts, but sits at 0.5× its typical session, below BETA's 3×. The question compares each name with its own normal.",
+									"zh": "ALFA 成交的张数更多，但只有其典型交易日的 0.5×，低于 BETA 的 3×。问题比较的是各自与平常水平的对比。"
+								}
+							},
+							{ "id": "b", "label": { "en": "BETA", "zh": "BETA" } }
+						],
+						"accepted": ["b"],
+						"explanation": {
+							"en": "ALFA: 0.5×. BETA: 900 ÷ 300 = 3×. BETA is further above its own normal, even though ALFA traded more contracts.",
+							"zh": "ALFA：0.5×。BETA：900 ÷ 300 = 3×。BETA 超出自身平常水平更多，尽管 ALFA 成交的张数更多。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rank can rise because peers fell or were excluded. A change in rank alone isn't a change in the name's own activity, or a signal of direction.",
+					"zh": "排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Two fully covered names are eligible. Your question: which one is more active relative to its own usual full-session volume?",
+					"zh": "两个数据完整的标的都有资格。你的问题是：相对于各自平常的完整交易日成交量，哪一个更活跃？"
+				},
+				"universe": {
+					"id": "peer-lab-2",
+					"note": {
+						"en": "Independent questions use ORIGINAL worksheet values. This separate comparison changes BETA while holding ALFA fixed; it demonstrates relative rank, not a new market observation.",
+						"zh": "独立题目使用原始表格数值。本对比仅改变 BETA、固定 ALFA，演示相对排名，并非新增市场观测。"
+					},
+					"rows": [
+						{
+							"symbol": "ALFA",
+							"volume": 1600,
+							"peerVolume": 1600,
+							"fresh": true,
+							"eligible": true
+						},
+						{
+							"symbol": "BETA",
+							"volume": 1000,
+							"peerVolume": 1900,
+							"fresh": true,
+							"eligible": true
+						}
+					]
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Symbol", "zh": "标的" },
+						{ "en": "Volume", "zh": "量" },
+						{ "en": "Typical volume", "zh": "典型量" }
+					],
+					"rows": [["ALFA", "1600", "2000"], ["BETA", "1000", "500"]],
+					"caption": {
+						"en": "Synthetic complete sessions · contracts",
+						"zh": "模拟完整时段 · 张"
+					}
+				},
+				"questions": [
+					{
+						"id": "ratio-a",
+						"prompt": {
+							"en": "What is ALFA's relative volume: today's volume against its typical session?",
+							"zh": "ALFA 的相对成交量是多少：今天的成交量对比它的典型交易日？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "times", "zh": "倍" }
+						},
+						"accepted": ["0.8"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "1,600 ÷ 2,000 = 0.8×.",
+							"zh": "1,600 ÷ 2,000 = 0.8×。"
+						}
+					},
+					{
+						"id": "leader",
+						"prompt": {
+							"en": "Which name answers your question?",
+							"zh": "哪个标的回答了你的问题？"
+						},
+						"choices": [
+							{
+								"id": "a",
+								"label": { "en": "ALFA", "zh": "ALFA" },
+								"why": {
+									"en": "ALFA trades more contracts, but sits at 0.8× its typical session, below BETA's 2×. The question compares each name with its own normal.",
+									"zh": "ALFA 成交的张数更多，但只有其典型交易日的 0.8×，低于 BETA 的 2×。问题比较的是各自与平常水平的对比。"
+								}
+							},
+							{ "id": "b", "label": { "en": "BETA", "zh": "BETA" } }
+						],
+						"accepted": ["b"],
+						"explanation": {
+							"en": "ALFA: 0.8×. BETA: 1,000 ÷ 500 = 2×. BETA is further above its own normal, even though ALFA traded more contracts.",
+							"zh": "ALFA：0.8×。BETA：1,000 ÷ 500 = 2×。BETA 超出自身平常水平更多，尽管 ALFA 成交的张数更多。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A rank can rise because peers fell or were excluded. A change in rank alone isn't a change in the name's own activity, or a signal of direction.",
+					"zh": "排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。"
+				}
+			}
+		]
+	},
+	{
+		"id": "rank-contracts-practice-1",
+		"lessonId": "rank-contracts",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "rank-contracts",
+				"brief": {
+					"en": "Read ALFA's Monday call volume across strikes and expiries, compare two expiries with the same total but different breadth, and audit a screen's top values before picking a candidate.",
+					"zh": "按行权价与到期日阅读 ALFA 周一看涨成交量，比较两个合计相同但广度不同的到期日，并在选出候选前审计筛选器的最高值。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Count only cells that were observed with volume; a missing cell isn't a zero. Display controls change what you see, not the data or what qualifies.",
+					"zh": "只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。"
+				}
+			},
+			{
+				"brief": {
+					"en": "At the 16:00 close, two ALFA call neighborhoods each total 8,000 contracts, with a 3,000 peak in one cell. ALFA is at $100. Every zero in the grids was actually observed, not missing; the replay between checkpoints is only an illustration.",
+					"zh": "16:00 收盘时，两个 ALFA 看涨邻域的总量都是 8,000 张，其中一格峰值为 3,000。ALFA 现价 $100。网格中的每个零都是实际观测到的，不是缺失；检查点之间的回放只是示意。"
+				},
+				"neighborhoodPair": {
+					"id": "breadth-v2-0",
+					"cases": [
+						{
+							"label": { "en": "Case A", "zh": "案例 A" },
+							"data": {
+								"id": "breadth-v2-0-0",
+								"symbol": "ALFA",
+								"spot": 100,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 450,
+												"c-110-30": 375,
+												"c-100-60": 0,
+												"c-105-60": 375,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 1200,
+												"c-110-30": 1000,
+												"c-100-60": 0,
+												"c-105-60": 1000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 2400,
+												"c-110-30": 2000,
+												"c-100-60": 0,
+												"c-105-60": 2000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 3000,
+												"c-110-30": 2500,
+												"c-100-60": 0,
+												"c-105-60": 2500,
+												"c-110-60": 0
+											}
+										}
+									]
+								}
+							}
+						},
+						{
+							"label": { "en": "Case B", "zh": "案例 B" },
+							"data": {
+								"id": "breadth-v2-0-1",
+								"symbol": "ALFA",
+								"spot": 100,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 75,
+												"c-105-14": 113,
+												"c-110-14": 75,
+												"c-100-30": 113,
+												"c-105-30": 450,
+												"c-110-30": 113,
+												"c-100-60": 75,
+												"c-105-60": 113,
+												"c-110-60": 75
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 200,
+												"c-105-14": 300,
+												"c-110-14": 200,
+												"c-100-30": 300,
+												"c-105-30": 1200,
+												"c-110-30": 300,
+												"c-100-60": 200,
+												"c-105-60": 300,
+												"c-110-60": 200
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 400,
+												"c-105-14": 600,
+												"c-110-14": 400,
+												"c-100-30": 600,
+												"c-105-30": 2400,
+												"c-110-30": 600,
+												"c-100-60": 400,
+												"c-105-60": 600,
+												"c-110-60": 400
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 500,
+												"c-105-14": 750,
+												"c-110-14": 500,
+												"c-100-30": 750,
+												"c-105-30": 3000,
+												"c-110-30": 750,
+												"c-100-60": 500,
+												"c-105-60": 750,
+												"c-110-60": 500
+											}
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "breadth-a",
+						"prompt": {
+							"en": "At the close, how many of Case A's cells have any volume?",
+							"zh": "收盘时，案例 A 中有多少格有成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "cells", "zh": "格" }
+						},
+						"accepted": ["3"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "Only 3 cells traded, 3,000, 2,500 and 2,500: the same total and peak as Case B, packed into far fewer cells. Count the whole grid, whatever slice the display shows.",
+							"zh": "只有 3 格有成交，分别是 3,000、2,500 和 2,500：总量和峰值与案例 B 相同，却集中在少得多的合约上。要数整个网格，不管显示的是哪个切片。"
+						}
+					},
+					{
+						"id": "moneyness",
+						"prompt": {
+							"en": "With ALFA at $100, the 105 call is…",
+							"zh": "ALFA 为 $100 时，105 看涨属于……"
+						},
+						"choices": [
+							{
+								"id": "atm",
+								"label": {
+									"en": "At the money: the strike equals ALFA's price",
+									"zh": "平值：行权价等于 ALFA 的价格"
+								},
+								"why": {
+									"en": "At the money means the strike equals the stock's price. $105 is above $100.",
+									"zh": "平值表示行权价等于股价。$105 高于 $100。"
+								}
+							},
+							{
+								"id": "itm",
+								"label": {
+									"en": "In the money: the strike is below ALFA's price",
+									"zh": "实值：行权价低于 ALFA 的价格"
+								},
+								"why": {
+									"en": "A call is in the money only when its strike is below the stock. $105 is above $100.",
+									"zh": "看涨只有在行权价低于股价时才是实值。$105 高于 $100。"
+								}
+							},
+							{
+								"id": "otm",
+								"label": {
+									"en": "Out of the money: the strike is above ALFA's price",
+									"zh": "虚值：行权价高于 ALFA 的价格"
+								}
+							}
+						],
+						"accepted": ["otm"],
+						"explanation": {
+							"en": "A call is in the money when its strike is below the stock. $105 is above $100, so it's out of the money. That says nothing about where ALFA goes next.",
+							"zh": "看涨在行权价低于股价时为实值。$105 高于 $100，所以是虚值。这不能说明 ALFA 接下来会怎么走。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Count only cells that were observed with volume; a missing cell isn't a zero. Display controls change what you see, not the data or what qualifies.",
+					"zh": "只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。"
+				}
+			},
+			{
+				"brief": {
+					"en": "At the 16:00 close, two ALFA call neighborhoods each total 8,000 contracts, with a 3,000 peak in one cell. ALFA is at $98. Every zero in the grids was actually observed, not missing; the replay between checkpoints is only an illustration.",
+					"zh": "16:00 收盘时，两个 ALFA 看涨邻域的总量都是 8,000 张，其中一格峰值为 3,000。ALFA 现价 $98。网格中的每个零都是实际观测到的，不是缺失；检查点之间的回放只是示意。"
+				},
+				"neighborhoodPair": {
+					"id": "breadth-v2-1",
+					"cases": [
+						{
+							"label": { "en": "Case A", "zh": "案例 A" },
+							"data": {
+								"id": "breadth-v2-1-0",
+								"symbol": "ALFA",
+								"spot": 98,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 75,
+												"c-105-14": 113,
+												"c-110-14": 75,
+												"c-100-30": 113,
+												"c-105-30": 450,
+												"c-110-30": 113,
+												"c-100-60": 75,
+												"c-105-60": 113,
+												"c-110-60": 75
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 200,
+												"c-105-14": 300,
+												"c-110-14": 200,
+												"c-100-30": 300,
+												"c-105-30": 1200,
+												"c-110-30": 300,
+												"c-100-60": 200,
+												"c-105-60": 300,
+												"c-110-60": 200
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 400,
+												"c-105-14": 600,
+												"c-110-14": 400,
+												"c-100-30": 600,
+												"c-105-30": 2400,
+												"c-110-30": 600,
+												"c-100-60": 400,
+												"c-105-60": 600,
+												"c-110-60": 400
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 500,
+												"c-105-14": 750,
+												"c-110-14": 500,
+												"c-100-30": 750,
+												"c-105-30": 3000,
+												"c-110-30": 750,
+												"c-100-60": 500,
+												"c-105-60": 750,
+												"c-110-60": 500
+											}
+										}
+									]
+								}
+							}
+						},
+						{
+							"label": { "en": "Case B", "zh": "案例 B" },
+							"data": {
+								"id": "breadth-v2-1-1",
+								"symbol": "ALFA",
+								"spot": 98,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 450,
+												"c-110-30": 375,
+												"c-100-60": 0,
+												"c-105-60": 375,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 1200,
+												"c-110-30": 1000,
+												"c-100-60": 0,
+												"c-105-60": 1000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 2400,
+												"c-110-30": 2000,
+												"c-100-60": 0,
+												"c-105-60": 2000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 3000,
+												"c-110-30": 2500,
+												"c-100-60": 0,
+												"c-105-60": 2500,
+												"c-110-60": 0
+											}
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "breadth-a",
+						"prompt": {
+							"en": "At the close, how many of Case A's cells have any volume?",
+							"zh": "收盘时，案例 A 中有多少格有成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "cells", "zh": "格" }
+						},
+						"accepted": ["9"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "All 9 cells traded: Case A spreads its 8,000 contracts widely. Count the whole grid, whatever slice the display shows.",
+							"zh": "9 格全部有成交：案例 A 的 8,000 张分布得很广。要数整个网格，不管显示的是哪个切片。"
+						}
+					},
+					{
+						"id": "moneyness",
+						"prompt": {
+							"en": "With ALFA at $98, the 105 call is…",
+							"zh": "ALFA 为 $98 时，105 看涨属于……"
+						},
+						"choices": [
+							{
+								"id": "itm",
+								"label": {
+									"en": "In the money: the strike is below ALFA's price",
+									"zh": "实值：行权价低于 ALFA 的价格"
+								},
+								"why": {
+									"en": "A call is in the money only when its strike is below the stock. $105 is above $98.",
+									"zh": "看涨只有在行权价低于股价时才是实值。$105 高于 $98。"
+								}
+							},
+							{
+								"id": "otm",
+								"label": {
+									"en": "Out of the money: the strike is above ALFA's price",
+									"zh": "虚值：行权价高于 ALFA 的价格"
+								}
+							},
+							{
+								"id": "atm",
+								"label": {
+									"en": "At the money: the strike equals ALFA's price",
+									"zh": "平值：行权价等于 ALFA 的价格"
+								},
+								"why": {
+									"en": "At the money means the strike equals the stock's price. $105 is above $98.",
+									"zh": "平值表示行权价等于股价。$105 高于 $98。"
+								}
+							}
+						],
+						"accepted": ["otm"],
+						"explanation": {
+							"en": "A call is in the money when its strike is below the stock. $105 is above $98, so it's out of the money. That says nothing about where ALFA goes next.",
+							"zh": "看涨在行权价低于股价时为实值。$105 高于 $98，所以是虚值。这不能说明 ALFA 接下来会怎么走。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Count only cells that were observed with volume; a missing cell isn't a zero. Display controls change what you see, not the data or what qualifies.",
+					"zh": "只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。"
+				}
+			}
+		]
+	},
+	{
+		"id": "rank-contracts-practice-2",
+		"lessonId": "rank-contracts",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "rank-contracts",
+				"brief": {
+					"en": "Read ALFA's Monday call volume across strikes and expiries, compare two expiries with the same total but different breadth, and audit a screen's top values before picking a candidate.",
+					"zh": "按行权价与到期日阅读 ALFA 周一看涨成交量，比较两个合计相同但广度不同的到期日，并在选出候选前审计筛选器的最高值。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Count only cells that were observed with volume; a missing cell isn't a zero. Display controls change what you see, not the data or what qualifies.",
+					"zh": "只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。"
+				}
+			},
+			{
+				"brief": {
+					"en": "At the 16:00 close, two ALFA call neighborhoods each total 8,000 contracts, with a 3,000 peak in one cell. ALFA is at $100. Every zero in the grids was actually observed, not missing; the replay between checkpoints is only an illustration.",
+					"zh": "16:00 收盘时，两个 ALFA 看涨邻域的总量都是 8,000 张，其中一格峰值为 3,000。ALFA 现价 $100。网格中的每个零都是实际观测到的，不是缺失；检查点之间的回放只是示意。"
+				},
+				"neighborhoodPair": {
+					"id": "breadth-v2-0",
+					"cases": [
+						{
+							"label": { "en": "Case A", "zh": "案例 A" },
+							"data": {
+								"id": "breadth-v2-0-0",
+								"symbol": "ALFA",
+								"spot": 100,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 450,
+												"c-110-30": 375,
+												"c-100-60": 0,
+												"c-105-60": 375,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 1200,
+												"c-110-30": 1000,
+												"c-100-60": 0,
+												"c-105-60": 1000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 2400,
+												"c-110-30": 2000,
+												"c-100-60": 0,
+												"c-105-60": 2000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 3000,
+												"c-110-30": 2500,
+												"c-100-60": 0,
+												"c-105-60": 2500,
+												"c-110-60": 0
+											}
+										}
+									]
+								}
+							}
+						},
+						{
+							"label": { "en": "Case B", "zh": "案例 B" },
+							"data": {
+								"id": "breadth-v2-0-1",
+								"symbol": "ALFA",
+								"spot": 100,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 75,
+												"c-105-14": 113,
+												"c-110-14": 75,
+												"c-100-30": 113,
+												"c-105-30": 450,
+												"c-110-30": 113,
+												"c-100-60": 75,
+												"c-105-60": 113,
+												"c-110-60": 75
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 200,
+												"c-105-14": 300,
+												"c-110-14": 200,
+												"c-100-30": 300,
+												"c-105-30": 1200,
+												"c-110-30": 300,
+												"c-100-60": 200,
+												"c-105-60": 300,
+												"c-110-60": 200
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 400,
+												"c-105-14": 600,
+												"c-110-14": 400,
+												"c-100-30": 600,
+												"c-105-30": 2400,
+												"c-110-30": 600,
+												"c-100-60": 400,
+												"c-105-60": 600,
+												"c-110-60": 400
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 500,
+												"c-105-14": 750,
+												"c-110-14": 500,
+												"c-100-30": 750,
+												"c-105-30": 3000,
+												"c-110-30": 750,
+												"c-100-60": 500,
+												"c-105-60": 750,
+												"c-110-60": 500
+											}
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "breadth-a",
+						"prompt": {
+							"en": "At the close, how many of Case A's cells have any volume?",
+							"zh": "收盘时，案例 A 中有多少格有成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "cells", "zh": "格" }
+						},
+						"accepted": ["3"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "Only 3 cells traded, 3,000, 2,500 and 2,500: the same total and peak as Case B, packed into far fewer cells. Count the whole grid, whatever slice the display shows.",
+							"zh": "只有 3 格有成交，分别是 3,000、2,500 和 2,500：总量和峰值与案例 B 相同，却集中在少得多的合约上。要数整个网格，不管显示的是哪个切片。"
+						}
+					},
+					{
+						"id": "moneyness",
+						"prompt": {
+							"en": "With ALFA at $100, the 105 call is…",
+							"zh": "ALFA 为 $100 时，105 看涨属于……"
+						},
+						"choices": [
+							{
+								"id": "atm",
+								"label": {
+									"en": "At the money: the strike equals ALFA's price",
+									"zh": "平值：行权价等于 ALFA 的价格"
+								},
+								"why": {
+									"en": "At the money means the strike equals the stock's price. $105 is above $100.",
+									"zh": "平值表示行权价等于股价。$105 高于 $100。"
+								}
+							},
+							{
+								"id": "itm",
+								"label": {
+									"en": "In the money: the strike is below ALFA's price",
+									"zh": "实值：行权价低于 ALFA 的价格"
+								},
+								"why": {
+									"en": "A call is in the money only when its strike is below the stock. $105 is above $100.",
+									"zh": "看涨只有在行权价低于股价时才是实值。$105 高于 $100。"
+								}
+							},
+							{
+								"id": "otm",
+								"label": {
+									"en": "Out of the money: the strike is above ALFA's price",
+									"zh": "虚值：行权价高于 ALFA 的价格"
+								}
+							}
+						],
+						"accepted": ["otm"],
+						"explanation": {
+							"en": "A call is in the money when its strike is below the stock. $105 is above $100, so it's out of the money. That says nothing about where ALFA goes next.",
+							"zh": "看涨在行权价低于股价时为实值。$105 高于 $100，所以是虚值。这不能说明 ALFA 接下来会怎么走。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Count only cells that were observed with volume; a missing cell isn't a zero. Display controls change what you see, not the data or what qualifies.",
+					"zh": "只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。"
+				}
+			},
+			{
+				"brief": {
+					"en": "At the 16:00 close, two ALFA call neighborhoods each total 8,000 contracts, with a 3,000 peak in one cell. ALFA is at $108. Every zero in the grids was actually observed, not missing; the replay between checkpoints is only an illustration.",
+					"zh": "16:00 收盘时，两个 ALFA 看涨邻域的总量都是 8,000 张，其中一格峰值为 3,000。ALFA 现价 $108。网格中的每个零都是实际观测到的，不是缺失；检查点之间的回放只是示意。"
+				},
+				"neighborhoodPair": {
+					"id": "breadth-v2-2",
+					"cases": [
+						{
+							"label": { "en": "Case A", "zh": "案例 A" },
+							"data": {
+								"id": "breadth-v2-2-0",
+								"symbol": "ALFA",
+								"spot": 108,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 2500,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 0,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 450,
+												"c-110-30": 375,
+												"c-100-60": 0,
+												"c-105-60": 375,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 1200,
+												"c-110-30": 1000,
+												"c-100-60": 0,
+												"c-105-60": 1000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 2400,
+												"c-110-30": 2000,
+												"c-100-60": 0,
+												"c-105-60": 2000,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 3000,
+												"c-110-30": 2500,
+												"c-100-60": 0,
+												"c-105-60": 2500,
+												"c-110-60": 0
+											}
+										}
+									]
+								}
+							}
+						},
+						{
+							"label": { "en": "Case B", "zh": "案例 B" },
+							"data": {
+								"id": "breadth-v2-2-1",
+								"symbol": "ALFA",
+								"spot": 108,
+								"asOf": { "en": "Fixed synthetic close", "zh": "固定模拟收盘" },
+								"scope": {
+									"minStrike": 100,
+									"maxStrike": 110,
+									"minDays": 14,
+									"maxDays": 60
+								},
+								"contracts": [
+									{
+										"id": "c-100-14",
+										"strike": 100,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-14",
+										"strike": 105,
+										"days": 14,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-14",
+										"strike": 110,
+										"days": 14,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-100-30",
+										"strike": 100,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-105-30",
+										"strike": 105,
+										"days": 30,
+										"volume": 3000,
+										"fresh": true
+									},
+									{
+										"id": "c-110-30",
+										"strike": 110,
+										"days": 30,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-100-60",
+										"strike": 100,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									},
+									{
+										"id": "c-105-60",
+										"strike": 105,
+										"days": 60,
+										"volume": 750,
+										"fresh": true
+									},
+									{
+										"id": "c-110-60",
+										"strike": 110,
+										"days": 60,
+										"volume": 500,
+										"fresh": true
+									}
+								],
+								"replay": {
+									"durationMs": 14000,
+									"openMinute": 570,
+									"closeMinute": 960,
+									"frames": [
+										{
+											"position": 0,
+											"volumes": {
+												"c-100-14": 0,
+												"c-105-14": 0,
+												"c-110-14": 0,
+												"c-100-30": 0,
+												"c-105-30": 0,
+												"c-110-30": 0,
+												"c-100-60": 0,
+												"c-105-60": 0,
+												"c-110-60": 0
+											}
+										},
+										{
+											"position": 0.2,
+											"volumes": {
+												"c-100-14": 75,
+												"c-105-14": 113,
+												"c-110-14": 75,
+												"c-100-30": 113,
+												"c-105-30": 450,
+												"c-110-30": 113,
+												"c-100-60": 75,
+												"c-105-60": 113,
+												"c-110-60": 75
+											}
+										},
+										{
+											"position": 0.45,
+											"volumes": {
+												"c-100-14": 200,
+												"c-105-14": 300,
+												"c-110-14": 200,
+												"c-100-30": 300,
+												"c-105-30": 1200,
+												"c-110-30": 300,
+												"c-100-60": 200,
+												"c-105-60": 300,
+												"c-110-60": 200
+											}
+										},
+										{
+											"position": 0.75,
+											"volumes": {
+												"c-100-14": 400,
+												"c-105-14": 600,
+												"c-110-14": 400,
+												"c-100-30": 600,
+												"c-105-30": 2400,
+												"c-110-30": 600,
+												"c-100-60": 400,
+												"c-105-60": 600,
+												"c-110-60": 400
+											}
+										},
+										{
+											"position": 1,
+											"volumes": {
+												"c-100-14": 500,
+												"c-105-14": 750,
+												"c-110-14": 500,
+												"c-100-30": 750,
+												"c-105-30": 3000,
+												"c-110-30": 750,
+												"c-100-60": 500,
+												"c-105-60": 750,
+												"c-110-60": 500
+											}
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				"questions": [
+					{
+						"id": "breadth-a",
+						"prompt": {
+							"en": "At the close, how many of Case A's cells have any volume?",
+							"zh": "收盘时，案例 A 中有多少格有成交？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "cells", "zh": "格" }
+						},
+						"accepted": ["3"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "Only 3 cells traded, 3,000, 2,500 and 2,500: the same total and peak as Case B, packed into far fewer cells. Count the whole grid, whatever slice the display shows.",
+							"zh": "只有 3 格有成交，分别是 3,000、2,500 和 2,500：总量和峰值与案例 B 相同，却集中在少得多的合约上。要数整个网格，不管显示的是哪个切片。"
+						}
+					},
+					{
+						"id": "moneyness",
+						"prompt": {
+							"en": "With ALFA at $108, the 105 call is…",
+							"zh": "ALFA 为 $108 时，105 看涨属于……"
+						},
+						"choices": [
+							{
+								"id": "otm",
+								"label": {
+									"en": "Out of the money: the strike is above ALFA's price",
+									"zh": "虚值：行权价高于 ALFA 的价格"
+								},
+								"why": {
+									"en": "A call is out of the money only when its strike is above the stock. $105 is below $108.",
+									"zh": "看涨只有在行权价高于股价时才是虚值。$105 低于 $108。"
+								}
+							},
+							{
+								"id": "atm",
+								"label": {
+									"en": "At the money: the strike equals ALFA's price",
+									"zh": "平值：行权价等于 ALFA 的价格"
+								},
+								"why": {
+									"en": "At the money means the strike equals the stock's price. $105 is below $108.",
+									"zh": "平值表示行权价等于股价。$105 低于 $108。"
+								}
+							},
+							{
+								"id": "itm",
+								"label": {
+									"en": "In the money: the strike is below ALFA's price",
+									"zh": "实值：行权价低于 ALFA 的价格"
+								}
+							}
+						],
+						"accepted": ["itm"],
+						"explanation": {
+							"en": "A call is in the money when its strike is below the stock. $105 is below $108, so it's in the money. That says nothing about where ALFA goes next.",
+							"zh": "看涨在行权价低于股价时为实值。$105 低于 $108，所以是实值。这不能说明 ALFA 接下来会怎么走。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Count only cells that were observed with volume; a missing cell isn't a zero. Display controls change what you see, not the data or what qualifies.",
+					"zh": "只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。"
+				}
+			}
+		]
+	},
+	{
+		"id": "point-in-time-research-practice-1",
+		"lessonId": "point-in-time-research",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "point-in-time-research",
+				"brief": {
+					"en": "Replay Monday's 105 call facts by when they arrived, watch the block's weight fade with no new trade, read a 97th percentile as a rank, and see a searched-for winner shrink on sealed data.",
+					"zh": "按到达时间重放周一 105 看涨的事实，观察没有新成交时大单权重如何淡出，把第 97 百分位读作排名，并看到搜索出的胜者在封存数据上缩水。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Freeze when you could have known something, not just when it happened. And every look at held-out data uses up some of its independence.",
+					"zh": "要固定你当时能知道什么的时间点，而不只是事件发生的时间。每看一次保留数据，都会消耗它的一部分独立性。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A recency-weighted score starts at 80 and halves every 60 seconds, and nothing new happens for 120 seconds. Separately, a correction to a 09:59 trade arrives at 10:02, and your decision is made at 10:00.",
+					"zh": "一个按近期加权的分数从 80 开始，每 60 秒减半，之后 120 秒内没有任何新事件。另外，一笔 09:59 成交的更正在 10:02 才到，而你的决策是在 10:00 做出的。"
+				},
+				"questions": [
+					{
+						"id": "weight",
+						"prompt": {
+							"en": "What is the score now?",
+							"zh": "现在这个分数是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "weight units", "zh": "权重单位" }
+						},
+						"accepted": ["20"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "120 seconds is 2 half-lives: 80 × (½)^2 = 20. The trades behind it haven't changed; only their weight has faded.",
+							"zh": "120 秒是 2 个半衰期：80 × (½)^2 = 20。背后的成交没有变，只是它们的权重衰减了。"
+						}
+					},
+					{
+						"id": "cutoff",
+						"prompt": {
+							"en": "Can the 10:00 decision use that correction?",
+							"zh": "10:00 的决策能使用这笔更正吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the trade happened before 10:00",
+									"zh": "能：这笔成交发生在 10:00 之前"
+								},
+								"why": {
+									"en": "What matters is when you could know the trade, not when it happened. The correction arrived at 10:02, after the 10:00 decision.",
+									"zh": "要看的不是成交何时发生，而是你何时能知道它。更正在 10:02 才到，晚于 10:00 的决策。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the correction only arrived at 10:02",
+									"zh": "不能：更正到 10:02 才到"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "What matters is when you could have known it. The trade happened at 09:59, but its correction arrived after your decision, so using it would be hindsight.",
+							"zh": "关键是你什么时候能知道。成交发生在 09:59，但更正在你决策之后才到，用它就是后见之明。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Freeze when you could have known something, not just when it happened. And every look at held-out data uses up some of its independence.",
+					"zh": "要固定你当时能知道什么的时间点，而不只是事件发生的时间。每看一次保留数据，都会消耗它的一部分独立性。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A recency-weighted score starts at 120 and halves every 60 seconds, and nothing new happens for 180 seconds. Separately, a correction to a 09:59 trade arrives at 10:02, and your decision is made at 10:00.",
+					"zh": "一个按近期加权的分数从 120 开始，每 60 秒减半，之后 180 秒内没有任何新事件。另外，一笔 09:59 成交的更正在 10:02 才到，而你的决策是在 10:00 做出的。"
+				},
+				"questions": [
+					{
+						"id": "weight",
+						"prompt": {
+							"en": "What is the score now?",
+							"zh": "现在这个分数是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "weight units", "zh": "权重单位" }
+						},
+						"accepted": ["15"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "180 seconds is 3 half-lives: 120 × (½)^3 = 15. The trades behind it haven't changed; only their weight has faded.",
+							"zh": "180 秒是 3 个半衰期：120 × (½)^3 = 15。背后的成交没有变，只是它们的权重衰减了。"
+						}
+					},
+					{
+						"id": "cutoff",
+						"prompt": {
+							"en": "Can the 10:00 decision use that correction?",
+							"zh": "10:00 的决策能使用这笔更正吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the correction only arrived at 10:02",
+									"zh": "不能：更正到 10:02 才到"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the trade happened before 10:00",
+									"zh": "能：这笔成交发生在 10:00 之前"
+								},
+								"why": {
+									"en": "What matters is when you could know the trade, not when it happened. The correction arrived at 10:02, after the 10:00 decision.",
+									"zh": "要看的不是成交何时发生，而是你何时能知道它。更正在 10:02 才到，晚于 10:00 的决策。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "What matters is when you could have known it. The trade happened at 09:59, but its correction arrived after your decision, so using it would be hindsight.",
+							"zh": "关键是你什么时候能知道。成交发生在 09:59，但更正在你决策之后才到，用它就是后见之明。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Freeze when you could have known something, not just when it happened. And every look at held-out data uses up some of its independence.",
+					"zh": "要固定你当时能知道什么的时间点，而不只是事件发生的时间。每看一次保留数据，都会消耗它的一部分独立性。"
+				}
+			}
+		]
+	},
+	{
+		"id": "point-in-time-research-practice-2",
+		"lessonId": "point-in-time-research",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "point-in-time-research",
+				"brief": {
+					"en": "Replay Monday's 105 call facts by when they arrived, watch the block's weight fade with no new trade, read a 97th percentile as a rank, and see a searched-for winner shrink on sealed data.",
+					"zh": "按到达时间重放周一 105 看涨的事实，观察没有新成交时大单权重如何淡出，把第 97 百分位读作排名，并看到搜索出的胜者在封存数据上缩水。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Freeze when you could have known something, not just when it happened. And every look at held-out data uses up some of its independence.",
+					"zh": "要固定你当时能知道什么的时间点，而不只是事件发生的时间。每看一次保留数据，都会消耗它的一部分独立性。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A recency-weighted score starts at 80 and halves every 60 seconds, and nothing new happens for 120 seconds. Separately, a correction to a 09:59 trade arrives at 10:02, and your decision is made at 10:00.",
+					"zh": "一个按近期加权的分数从 80 开始，每 60 秒减半，之后 120 秒内没有任何新事件。另外，一笔 09:59 成交的更正在 10:02 才到，而你的决策是在 10:00 做出的。"
+				},
+				"questions": [
+					{
+						"id": "weight",
+						"prompt": {
+							"en": "What is the score now?",
+							"zh": "现在这个分数是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "weight units", "zh": "权重单位" }
+						},
+						"accepted": ["20"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "120 seconds is 2 half-lives: 80 × (½)^2 = 20. The trades behind it haven't changed; only their weight has faded.",
+							"zh": "120 秒是 2 个半衰期：80 × (½)^2 = 20。背后的成交没有变，只是它们的权重衰减了。"
+						}
+					},
+					{
+						"id": "cutoff",
+						"prompt": {
+							"en": "Can the 10:00 decision use that correction?",
+							"zh": "10:00 的决策能使用这笔更正吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the trade happened before 10:00",
+									"zh": "能：这笔成交发生在 10:00 之前"
+								},
+								"why": {
+									"en": "What matters is when you could know the trade, not when it happened. The correction arrived at 10:02, after the 10:00 decision.",
+									"zh": "要看的不是成交何时发生，而是你何时能知道它。更正在 10:02 才到，晚于 10:00 的决策。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the correction only arrived at 10:02",
+									"zh": "不能：更正到 10:02 才到"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "What matters is when you could have known it. The trade happened at 09:59, but its correction arrived after your decision, so using it would be hindsight.",
+							"zh": "关键是你什么时候能知道。成交发生在 09:59，但更正在你决策之后才到，用它就是后见之明。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Freeze when you could have known something, not just when it happened. And every look at held-out data uses up some of its independence.",
+					"zh": "要固定你当时能知道什么的时间点，而不只是事件发生的时间。每看一次保留数据，都会消耗它的一部分独立性。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A recency-weighted score starts at 160 and halves every 60 seconds, and nothing new happens for 60 seconds. Separately, a correction to a 09:59 trade arrives at 10:02, and your decision is made at 10:00.",
+					"zh": "一个按近期加权的分数从 160 开始，每 60 秒减半，之后 60 秒内没有任何新事件。另外，一笔 09:59 成交的更正在 10:02 才到，而你的决策是在 10:00 做出的。"
+				},
+				"questions": [
+					{
+						"id": "weight",
+						"prompt": {
+							"en": "What is the score now?",
+							"zh": "现在这个分数是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "weight units", "zh": "权重单位" }
+						},
+						"accepted": ["80"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "60 seconds is 1 half-life: 160 × (½)^1 = 80. The trades behind it haven't changed; only their weight has faded.",
+							"zh": "60 秒是 1 个半衰期：160 × (½)^1 = 80。背后的成交没有变，只是它们的权重衰减了。"
+						}
+					},
+					{
+						"id": "cutoff",
+						"prompt": {
+							"en": "Can the 10:00 decision use that correction?",
+							"zh": "10:00 的决策能使用这笔更正吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the trade happened before 10:00",
+									"zh": "能：这笔成交发生在 10:00 之前"
+								},
+								"why": {
+									"en": "What matters is when you could know the trade, not when it happened. The correction arrived at 10:02, after the 10:00 decision.",
+									"zh": "要看的不是成交何时发生，而是你何时能知道它。更正在 10:02 才到，晚于 10:00 的决策。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the correction only arrived at 10:02",
+									"zh": "不能：更正到 10:02 才到"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "What matters is when you could have known it. The trade happened at 09:59, but its correction arrived after your decision, so using it would be hindsight.",
+							"zh": "关键是你什么时候能知道。成交发生在 09:59，但更正在你决策之后才到，用它就是后见之明。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Freeze when you could have known something, not just when it happened. And every look at held-out data uses up some of its independence.",
+					"zh": "要固定你当时能知道什么的时间点，而不只是事件发生的时间。每看一次保留数据，都会消耗它的一部分独立性。"
+				}
+			}
+		]
+	},
+	{
+		"id": "market-recap-practice-1",
+		"lessonId": "market-recap",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "market-recap",
+				"brief": {
+					"en": "Put packet P1's chart under the claim it measures, watch a raised axis turn 540 against 505 into 8 to 1, and rewrite an overclaiming headline into one the packet supports, caption attached.",
+					"zh": "让研究包 P1 的图表对上它所衡量的结论，看提高的坐标轴如何把 540 对 505 画成 8 比 1，并把过度的标题改写成研究包支持的版本，附上图注。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Put a caveat right next to the claim it limits. A missing row isn't a bar of zero height.",
+					"zh": "限制说明要紧挨着它所限制的结论。缺失的行不是高度为零的柱子。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Practice packet A covers ALFA calls expiring October 16 in the complete September 3 session, from tape-A; each contract covers 100 shares. R1: the 100 call, 200 contracts at $1.80, against a quote of $1.80 / $1.90 from the same moment. R2: the 105 call, 300 contracts at $2.40, against $2.30 / $2.40. R3: the 110 call, whose trade data is missing. Nothing links the trades to a participant or a strategy.",
+					"zh": "练习研究包 A 覆盖 9 月 3 日完整交易时段中 10 月 16 日到期的 ALFA 看涨，来源 tape-A；每张合约对应 100 股。R1：100 看涨，200 张成交在 $1.80，对照同一时刻的报价 $1.80 / $1.90。R2：105 看涨，300 张成交在 $2.40，对照 $2.30 / $2.40。R3：110 看涨，成交数据缺失。没有任何信息把这些成交与某个参与者或策略联系起来。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Source row", "zh": "来源行" },
+						{ "en": "Strike", "zh": "行权价" },
+						{ "en": "Contracts", "zh": "张数" },
+						{ "en": "Price/share (USD)", "zh": "每股价格（美元）" }
+					],
+					"rows": [
+						["R1", "100", "200", "1.80"],
+						["R2", "105", "300", "2.40"],
+						["R3", "110", "—", "—"]
+					],
+					"caption": {
+						"en": "Practice packet A · tape-A · 2026-09-03 · October 16 calls · R3 missing",
+						"zh": "练习研究包 A · tape-A · 2026-09-03 · 10 月 16 日看涨 · R3 缺失"
+					},
+					"chart": {
+						"labelColumn": 1,
+						"valueColumn": 2,
+						"unit": { "en": "Contracts traded", "zh": "成交张数" }
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts were observed in total, for the chart?",
+							"zh": "图表中一共观测到多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["500"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "200 + 300 = 500. R3 stays out of the sum, but the chart must still show it as missing.",
+							"zh": "200 + 300 = 500。R3 不计入合计，但图表上仍要标明它缺失。"
+						}
+					},
+					{
+						"id": "headline",
+						"prompt": {
+							"en": "Write a headline the packet supports, with the observed quantity and the coverage limit.",
+							"zh": "写一个研究包能支持的标题，包含已观测的数量和覆盖范围的限制。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 30, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"500 contracts traded in the ALFA October 16 calls with data on September 3; the 110 call is missing.\" A superlative about all of the calls isn't supported.",
+							"zh": "例如：“9 月 3 日，有数据的 ALFA 10 月 16 日看涨共成交 500 张；110 看涨数据缺失。”关于全部看涨的“最”字结论没有依据。"
+						}
+					},
+					{
+						"id": "caption",
+						"prompt": {
+							"en": "Write a caption for the chart: its axes, units, source, date and what's missing.",
+							"zh": "为图表写图注：坐标轴、单位、来源、日期，以及缺失了什么。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Strike on the horizontal axis; contracts traded on the vertical axis, starting at zero. Tape-A, September 3, ALFA calls expiring October 16. R1 and R2 observed; R3, the 110 call, missing.\"",
+							"zh": "例如：“横轴为行权价；纵轴为成交张数，从零开始。来源 tape-A，9 月 3 日，10 月 16 日到期的 ALFA 看涨。R1 和 R2 有观测；R3（110 看涨）缺失。”"
+						}
+					},
+					{
+						"id": "full-total",
+						"prompt": {
+							"en": "Is a total for every strike in the question available?",
+							"zh": "问题涉及的所有行权价的总量能得到吗？"
+						},
+						"choices": [
+							{
+								"id": "available",
+								"label": {
+									"en": "Yes: the two bars add up to it",
+									"zh": "能：两根柱子加起来就是"
+								},
+								"why": {
+									"en": "The two bars add up only what was observed. R3 is missing, so their sum isn't the total for every strike in the question.",
+									"zh": "两根柱子只加总了观测到的部分。R3 缺失，所以它们的和不是问题中全部行权价的合计。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "No: R3 is missing, so the chart's total covers only what was observed",
+									"zh": "不能：R3 缺失，所以图上的总量只覆盖已观测的部分"
+								}
+							}
+						],
+						"accepted": ["unknown"],
+						"explanation": {
+							"en": "Say exactly which strikes a total covers. With R3 missing, the bars add up to an observed subtotal.",
+							"zh": "要说清总量覆盖哪些行权价。R3 缺失时，柱子加起来只是已观测的小计。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Put a caveat right next to the claim it limits. A missing row isn't a bar of zero height.",
+					"zh": "限制说明要紧挨着它所限制的结论。缺失的行不是高度为零的柱子。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Practice packet B covers ALFA calls expiring October 16 in the complete September 3 session, from tape-A; each contract covers 100 shares. R1: the 100 call, 400 contracts at $1.80, against a quote of $1.80 / $1.90 from the same moment. R2: the 105 call, 150 contracts at $2.40, against $2.30 / $2.40. R3: the 110 call, whose trade data is missing. Nothing links the trades to a participant or a strategy.",
+					"zh": "练习研究包 B 覆盖 9 月 3 日完整交易时段中 10 月 16 日到期的 ALFA 看涨，来源 tape-A；每张合约对应 100 股。R1：100 看涨，400 张成交在 $1.80，对照同一时刻的报价 $1.80 / $1.90。R2：105 看涨，150 张成交在 $2.40，对照 $2.30 / $2.40。R3：110 看涨，成交数据缺失。没有任何信息把这些成交与某个参与者或策略联系起来。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Source row", "zh": "来源行" },
+						{ "en": "Strike", "zh": "行权价" },
+						{ "en": "Contracts", "zh": "张数" },
+						{ "en": "Price/share (USD)", "zh": "每股价格（美元）" }
+					],
+					"rows": [
+						["R1", "100", "400", "1.80"],
+						["R2", "105", "150", "2.40"],
+						["R3", "110", "—", "—"]
+					],
+					"caption": {
+						"en": "Practice packet B · tape-A · 2026-09-03 · October 16 calls · R3 missing",
+						"zh": "练习研究包 B · tape-A · 2026-09-03 · 10 月 16 日看涨 · R3 缺失"
+					},
+					"chart": {
+						"labelColumn": 1,
+						"valueColumn": 2,
+						"unit": { "en": "Contracts traded", "zh": "成交张数" }
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts were observed in total, for the chart?",
+							"zh": "图表中一共观测到多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["550"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "400 + 150 = 550. R3 stays out of the sum, but the chart must still show it as missing.",
+							"zh": "400 + 150 = 550。R3 不计入合计，但图表上仍要标明它缺失。"
+						}
+					},
+					{
+						"id": "headline",
+						"prompt": {
+							"en": "Write a headline the packet supports, with the observed quantity and the coverage limit.",
+							"zh": "写一个研究包能支持的标题，包含已观测的数量和覆盖范围的限制。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 30, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"550 contracts traded in the ALFA October 16 calls with data on September 3; the 110 call is missing.\" A superlative about all of the calls isn't supported.",
+							"zh": "例如：“9 月 3 日，有数据的 ALFA 10 月 16 日看涨共成交 550 张；110 看涨数据缺失。”关于全部看涨的“最”字结论没有依据。"
+						}
+					},
+					{
+						"id": "caption",
+						"prompt": {
+							"en": "Write a caption for the chart: its axes, units, source, date and what's missing.",
+							"zh": "为图表写图注：坐标轴、单位、来源、日期，以及缺失了什么。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Strike on the horizontal axis; contracts traded on the vertical axis, starting at zero. Tape-A, September 3, ALFA calls expiring October 16. R1 and R2 observed; R3, the 110 call, missing.\"",
+							"zh": "例如：“横轴为行权价；纵轴为成交张数，从零开始。来源 tape-A，9 月 3 日，10 月 16 日到期的 ALFA 看涨。R1 和 R2 有观测；R3（110 看涨）缺失。”"
+						}
+					},
+					{
+						"id": "full-total",
+						"prompt": {
+							"en": "Is a total for every strike in the question available?",
+							"zh": "问题涉及的所有行权价的总量能得到吗？"
+						},
+						"choices": [
+							{
+								"id": "unknown",
+								"label": {
+									"en": "No: R3 is missing, so the chart's total covers only what was observed",
+									"zh": "不能：R3 缺失，所以图上的总量只覆盖已观测的部分"
+								}
+							},
+							{
+								"id": "available",
+								"label": {
+									"en": "Yes: the two bars add up to it",
+									"zh": "能：两根柱子加起来就是"
+								},
+								"why": {
+									"en": "The two bars add up only what was observed. R3 is missing, so their sum isn't the total for every strike in the question.",
+									"zh": "两根柱子只加总了观测到的部分。R3 缺失，所以它们的和不是问题中全部行权价的合计。"
+								}
+							}
+						],
+						"accepted": ["unknown"],
+						"explanation": {
+							"en": "Say exactly which strikes a total covers. With R3 missing, the bars add up to an observed subtotal.",
+							"zh": "要说清总量覆盖哪些行权价。R3 缺失时，柱子加起来只是已观测的小计。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Put a caveat right next to the claim it limits. A missing row isn't a bar of zero height.",
+					"zh": "限制说明要紧挨着它所限制的结论。缺失的行不是高度为零的柱子。"
+				}
+			}
+		]
+	},
+	{
+		"id": "market-recap-practice-2",
+		"lessonId": "market-recap",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "market-recap",
+				"brief": {
+					"en": "Put packet P1's chart under the claim it measures, watch a raised axis turn 540 against 505 into 8 to 1, and rewrite an overclaiming headline into one the packet supports, caption attached.",
+					"zh": "让研究包 P1 的图表对上它所衡量的结论，看提高的坐标轴如何把 540 对 505 画成 8 比 1，并把过度的标题改写成研究包支持的版本，附上图注。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Put a caveat right next to the claim it limits. A missing row isn't a bar of zero height.",
+					"zh": "限制说明要紧挨着它所限制的结论。缺失的行不是高度为零的柱子。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Practice packet A covers ALFA calls expiring October 16 in the complete September 3 session, from tape-A; each contract covers 100 shares. R1: the 100 call, 200 contracts at $1.80, against a quote of $1.80 / $1.90 from the same moment. R2: the 105 call, 300 contracts at $2.40, against $2.30 / $2.40. R3: the 110 call, whose trade data is missing. Nothing links the trades to a participant or a strategy.",
+					"zh": "练习研究包 A 覆盖 9 月 3 日完整交易时段中 10 月 16 日到期的 ALFA 看涨，来源 tape-A；每张合约对应 100 股。R1：100 看涨，200 张成交在 $1.80，对照同一时刻的报价 $1.80 / $1.90。R2：105 看涨，300 张成交在 $2.40，对照 $2.30 / $2.40。R3：110 看涨，成交数据缺失。没有任何信息把这些成交与某个参与者或策略联系起来。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Source row", "zh": "来源行" },
+						{ "en": "Strike", "zh": "行权价" },
+						{ "en": "Contracts", "zh": "张数" },
+						{ "en": "Price/share (USD)", "zh": "每股价格（美元）" }
+					],
+					"rows": [
+						["R1", "100", "200", "1.80"],
+						["R2", "105", "300", "2.40"],
+						["R3", "110", "—", "—"]
+					],
+					"caption": {
+						"en": "Practice packet A · tape-A · 2026-09-03 · October 16 calls · R3 missing",
+						"zh": "练习研究包 A · tape-A · 2026-09-03 · 10 月 16 日看涨 · R3 缺失"
+					},
+					"chart": {
+						"labelColumn": 1,
+						"valueColumn": 2,
+						"unit": { "en": "Contracts traded", "zh": "成交张数" }
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts were observed in total, for the chart?",
+							"zh": "图表中一共观测到多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["500"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "200 + 300 = 500. R3 stays out of the sum, but the chart must still show it as missing.",
+							"zh": "200 + 300 = 500。R3 不计入合计，但图表上仍要标明它缺失。"
+						}
+					},
+					{
+						"id": "headline",
+						"prompt": {
+							"en": "Write a headline the packet supports, with the observed quantity and the coverage limit.",
+							"zh": "写一个研究包能支持的标题，包含已观测的数量和覆盖范围的限制。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 30, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"500 contracts traded in the ALFA October 16 calls with data on September 3; the 110 call is missing.\" A superlative about all of the calls isn't supported.",
+							"zh": "例如：“9 月 3 日，有数据的 ALFA 10 月 16 日看涨共成交 500 张；110 看涨数据缺失。”关于全部看涨的“最”字结论没有依据。"
+						}
+					},
+					{
+						"id": "caption",
+						"prompt": {
+							"en": "Write a caption for the chart: its axes, units, source, date and what's missing.",
+							"zh": "为图表写图注：坐标轴、单位、来源、日期，以及缺失了什么。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Strike on the horizontal axis; contracts traded on the vertical axis, starting at zero. Tape-A, September 3, ALFA calls expiring October 16. R1 and R2 observed; R3, the 110 call, missing.\"",
+							"zh": "例如：“横轴为行权价；纵轴为成交张数，从零开始。来源 tape-A，9 月 3 日，10 月 16 日到期的 ALFA 看涨。R1 和 R2 有观测；R3（110 看涨）缺失。”"
+						}
+					},
+					{
+						"id": "full-total",
+						"prompt": {
+							"en": "Is a total for every strike in the question available?",
+							"zh": "问题涉及的所有行权价的总量能得到吗？"
+						},
+						"choices": [
+							{
+								"id": "available",
+								"label": {
+									"en": "Yes: the two bars add up to it",
+									"zh": "能：两根柱子加起来就是"
+								},
+								"why": {
+									"en": "The two bars add up only what was observed. R3 is missing, so their sum isn't the total for every strike in the question.",
+									"zh": "两根柱子只加总了观测到的部分。R3 缺失，所以它们的和不是问题中全部行权价的合计。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "No: R3 is missing, so the chart's total covers only what was observed",
+									"zh": "不能：R3 缺失，所以图上的总量只覆盖已观测的部分"
+								}
+							}
+						],
+						"accepted": ["unknown"],
+						"explanation": {
+							"en": "Say exactly which strikes a total covers. With R3 missing, the bars add up to an observed subtotal.",
+							"zh": "要说清总量覆盖哪些行权价。R3 缺失时，柱子加起来只是已观测的小计。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Put a caveat right next to the claim it limits. A missing row isn't a bar of zero height.",
+					"zh": "限制说明要紧挨着它所限制的结论。缺失的行不是高度为零的柱子。"
+				}
+			},
+			{
+				"brief": {
+					"en": "Practice packet C covers ALFA calls expiring October 16 in the complete September 3 session, from tape-A; each contract covers 100 shares. R1: the 100 call, 250 contracts at $1.80, against a quote of $1.80 / $1.90 from the same moment. R2: the 105 call, 450 contracts at $2.40, against $2.30 / $2.40. R3: the 110 call, whose trade data is missing. Nothing links the trades to a participant or a strategy.",
+					"zh": "练习研究包 C 覆盖 9 月 3 日完整交易时段中 10 月 16 日到期的 ALFA 看涨，来源 tape-A；每张合约对应 100 股。R1：100 看涨，250 张成交在 $1.80，对照同一时刻的报价 $1.80 / $1.90。R2：105 看涨，450 张成交在 $2.40，对照 $2.30 / $2.40。R3：110 看涨，成交数据缺失。没有任何信息把这些成交与某个参与者或策略联系起来。"
+				},
+				"worksheet": {
+					"columns": [
+						{ "en": "Source row", "zh": "来源行" },
+						{ "en": "Strike", "zh": "行权价" },
+						{ "en": "Contracts", "zh": "张数" },
+						{ "en": "Price/share (USD)", "zh": "每股价格（美元）" }
+					],
+					"rows": [
+						["R1", "100", "250", "1.80"],
+						["R2", "105", "450", "2.40"],
+						["R3", "110", "—", "—"]
+					],
+					"caption": {
+						"en": "Practice packet C · tape-A · 2026-09-03 · October 16 calls · R3 missing",
+						"zh": "练习研究包 C · tape-A · 2026-09-03 · 10 月 16 日看涨 · R3 缺失"
+					},
+					"chart": {
+						"labelColumn": 1,
+						"valueColumn": 2,
+						"unit": { "en": "Contracts traded", "zh": "成交张数" }
+					}
+				},
+				"questions": [
+					{
+						"id": "volume",
+						"prompt": {
+							"en": "How many contracts were observed in total, for the chart?",
+							"zh": "图表中一共观测到多少张？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "张" }
+						},
+						"accepted": ["700"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "250 + 450 = 700. R3 stays out of the sum, but the chart must still show it as missing.",
+							"zh": "250 + 450 = 700。R3 不计入合计，但图表上仍要标明它缺失。"
+						}
+					},
+					{
+						"id": "headline",
+						"prompt": {
+							"en": "Write a headline the packet supports, with the observed quantity and the coverage limit.",
+							"zh": "写一个研究包能支持的标题，包含已观测的数量和覆盖范围的限制。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 30, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"700 contracts traded in the ALFA October 16 calls with data on September 3; the 110 call is missing.\" A superlative about all of the calls isn't supported.",
+							"zh": "例如：“9 月 3 日，有数据的 ALFA 10 月 16 日看涨共成交 700 张；110 看涨数据缺失。”关于全部看涨的“最”字结论没有依据。"
+						}
+					},
+					{
+						"id": "caption",
+						"prompt": {
+							"en": "Write a caption for the chart: its axes, units, source, date and what's missing.",
+							"zh": "为图表写图注：坐标轴、单位、来源、日期，以及缺失了什么。"
+						},
+						"choices": [],
+						"input": { "kind": "text", "minLength": 40, "maxLength": 1800 },
+						"accepted": [],
+						"explanation": {
+							"en": "For example: \"Strike on the horizontal axis; contracts traded on the vertical axis, starting at zero. Tape-A, September 3, ALFA calls expiring October 16. R1 and R2 observed; R3, the 110 call, missing.\"",
+							"zh": "例如：“横轴为行权价；纵轴为成交张数，从零开始。来源 tape-A，9 月 3 日，10 月 16 日到期的 ALFA 看涨。R1 和 R2 有观测；R3（110 看涨）缺失。”"
+						}
+					},
+					{
+						"id": "full-total",
+						"prompt": {
+							"en": "Is a total for every strike in the question available?",
+							"zh": "问题涉及的所有行权价的总量能得到吗？"
+						},
+						"choices": [
+							{
+								"id": "available",
+								"label": {
+									"en": "Yes: the two bars add up to it",
+									"zh": "能：两根柱子加起来就是"
+								},
+								"why": {
+									"en": "The two bars add up only what was observed. R3 is missing, so their sum isn't the total for every strike in the question.",
+									"zh": "两根柱子只加总了观测到的部分。R3 缺失，所以它们的和不是问题中全部行权价的合计。"
+								}
+							},
+							{
+								"id": "unknown",
+								"label": {
+									"en": "No: R3 is missing, so the chart's total covers only what was observed",
+									"zh": "不能：R3 缺失，所以图上的总量只覆盖已观测的部分"
+								}
+							}
+						],
+						"accepted": ["unknown"],
+						"explanation": {
+							"en": "Say exactly which strikes a total covers. With R3 missing, the bars add up to an observed subtotal.",
+							"zh": "要说清总量覆盖哪些行权价。R3 缺失时，柱子加起来只是已观测的小计。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Put a caveat right next to the claim it limits. A missing row isn't a bar of zero height.",
+					"zh": "限制说明要紧挨着它所限制的结论。缺失的行不是高度为零的柱子。"
+				}
+			}
+		]
+	},
+	{
+		"id": "portfolio-exposure-practice-1",
+		"lessonId": "portfolio-exposure",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "portfolio-exposure",
+				"brief": {
+					"en": "Add up delta across your two accounts while one holding's Greeks are missing, hedge it to zero and watch a quiet week cost $964, then align two brokers' units and timestamps before totaling.",
+					"zh": "在一项持仓的希腊值缺失时汇总你两个账户的 Delta，把它对冲到零后看平静的一周如何损失 $964，再在合计前对齐两家券商的单位和时间戳。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Delta-neutral isn't risk-free, and a tidy net number can't make an unreported holding disappear.",
+					"zh": "Delta 中性不等于没有风险，一个整齐的净值也不能让未报送的持仓消失。"
+				}
+			},
+			{
+				"brief": {
+					"en": "In one account you hold 100 ALFA shares and are short 2 ALFA calls with a model delta of 0.40 each; one contract covers 100 shares. A holding in your second account hasn't reported its Greeks, so work out only what's covered.",
+					"zh": "在一个账户里，你持有 100 股 ALFA，并做空 2 张 ALFA 看涨，每张模型 Delta 为 0.40；一张合约对应 100 股。你第二个账户里的一项持仓还没有报送希腊值，所以只计算已覆盖的部分。"
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is the covered net delta, in share-equivalents?",
+							"zh": "已覆盖部分的净 Delta 是多少股等价？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "share-equivalents", "zh": "股等价" }
+						},
+						"accepted": ["20"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "+100 from the shares, and −2 × 0.40 × 100 = −80 from the short calls: +20.",
+							"zh": "股票贡献 +100，空头看涨贡献 −2 × 0.40 × 100 = −80：合计 +20。"
+						}
+					},
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares would offset that covered delta? Enter a purchase as positive and a sale as negative.",
+							"zh": "需要交易多少股才能抵消已覆盖的 Delta？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["-20"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "To cancel +20, trade −20 shares.",
+							"zh": "要抵消 +20，需要交易 −20 股。"
+						}
+					},
+					{
+						"id": "coverage",
+						"prompt": {
+							"en": "Does that make the whole portfolio neutral?",
+							"zh": "这样整个组合就中性了吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the unreported holding and other risks remain",
+									"zh": "否：未报送的持仓和其他风险仍在"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the subtotal is offset",
+									"zh": "是：小计已被抵消"
+								},
+								"why": {
+									"en": "A zero subtotal covers only the holdings that reported. The missing holding, and risks like gamma and vega, remain.",
+									"zh": "小计为零只覆盖已报送的持仓。缺失的持仓，以及 Gamma、Vega 等风险，仍然存在。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The second account's holding is still unknown, and a zero delta leaves gamma, time and volatility risk in place.",
+							"zh": "第二个账户的持仓仍然未知；而且 Delta 为零，并不能消除 Gamma、时间和波动率风险。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Delta-neutral isn't risk-free, and a tidy net number can't make an unreported holding disappear.",
+					"zh": "Delta 中性不等于没有风险，一个整齐的净值也不能让未报送的持仓消失。"
+				}
+			},
+			{
+				"brief": {
+					"en": "In one account you hold 150 ALFA shares and are short 3 ALFA calls with a model delta of 0.60 each; one contract covers 100 shares. A holding in your second account hasn't reported its Greeks, so work out only what's covered.",
+					"zh": "在一个账户里，你持有 150 股 ALFA，并做空 3 张 ALFA 看涨，每张模型 Delta 为 0.60；一张合约对应 100 股。你第二个账户里的一项持仓还没有报送希腊值，所以只计算已覆盖的部分。"
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is the covered net delta, in share-equivalents?",
+							"zh": "已覆盖部分的净 Delta 是多少股等价？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "share-equivalents", "zh": "股等价" }
+						},
+						"accepted": ["-29.99999999999997"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "+150 from the shares, and −3 × 0.60 × 100 = −180 from the short calls: −30.",
+							"zh": "股票贡献 +150，空头看涨贡献 −3 × 0.60 × 100 = −180：合计 −30。"
+						}
+					},
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares would offset that covered delta? Enter a purchase as positive and a sale as negative.",
+							"zh": "需要交易多少股才能抵消已覆盖的 Delta？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["29.99999999999997"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "To cancel −30, trade +30 shares.",
+							"zh": "要抵消 −30，需要交易 +30 股。"
+						}
+					},
+					{
+						"id": "coverage",
+						"prompt": {
+							"en": "Does that make the whole portfolio neutral?",
+							"zh": "这样整个组合就中性了吗？"
+						},
+						"choices": [
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the subtotal is offset",
+									"zh": "是：小计已被抵消"
+								},
+								"why": {
+									"en": "A zero subtotal covers only the holdings that reported. The missing holding, and risks like gamma and vega, remain.",
+									"zh": "小计为零只覆盖已报送的持仓。缺失的持仓，以及 Gamma、Vega 等风险，仍然存在。"
+								}
+							},
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the unreported holding and other risks remain",
+									"zh": "否：未报送的持仓和其他风险仍在"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The second account's holding is still unknown, and a zero delta leaves gamma, time and volatility risk in place.",
+							"zh": "第二个账户的持仓仍然未知；而且 Delta 为零，并不能消除 Gamma、时间和波动率风险。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Delta-neutral isn't risk-free, and a tidy net number can't make an unreported holding disappear.",
+					"zh": "Delta 中性不等于没有风险，一个整齐的净值也不能让未报送的持仓消失。"
+				}
+			}
+		]
+	},
+	{
+		"id": "portfolio-exposure-practice-2",
+		"lessonId": "portfolio-exposure",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "portfolio-exposure",
+				"brief": {
+					"en": "Add up delta across your two accounts while one holding's Greeks are missing, hedge it to zero and watch a quiet week cost $964, then align two brokers' units and timestamps before totaling.",
+					"zh": "在一项持仓的希腊值缺失时汇总你两个账户的 Delta，把它对冲到零后看平静的一周如何损失 $964，再在合计前对齐两家券商的单位和时间戳。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Delta-neutral isn't risk-free, and a tidy net number can't make an unreported holding disappear.",
+					"zh": "Delta 中性不等于没有风险，一个整齐的净值也不能让未报送的持仓消失。"
+				}
+			},
+			{
+				"brief": {
+					"en": "In one account you hold 100 ALFA shares and are short 2 ALFA calls with a model delta of 0.40 each; one contract covers 100 shares. A holding in your second account hasn't reported its Greeks, so work out only what's covered.",
+					"zh": "在一个账户里，你持有 100 股 ALFA，并做空 2 张 ALFA 看涨，每张模型 Delta 为 0.40；一张合约对应 100 股。你第二个账户里的一项持仓还没有报送希腊值，所以只计算已覆盖的部分。"
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is the covered net delta, in share-equivalents?",
+							"zh": "已覆盖部分的净 Delta 是多少股等价？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "share-equivalents", "zh": "股等价" }
+						},
+						"accepted": ["20"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "+100 from the shares, and −2 × 0.40 × 100 = −80 from the short calls: +20.",
+							"zh": "股票贡献 +100，空头看涨贡献 −2 × 0.40 × 100 = −80：合计 +20。"
+						}
+					},
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares would offset that covered delta? Enter a purchase as positive and a sale as negative.",
+							"zh": "需要交易多少股才能抵消已覆盖的 Delta？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["-20"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "To cancel +20, trade −20 shares.",
+							"zh": "要抵消 +20，需要交易 −20 股。"
+						}
+					},
+					{
+						"id": "coverage",
+						"prompt": {
+							"en": "Does that make the whole portfolio neutral?",
+							"zh": "这样整个组合就中性了吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the unreported holding and other risks remain",
+									"zh": "否：未报送的持仓和其他风险仍在"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the subtotal is offset",
+									"zh": "是：小计已被抵消"
+								},
+								"why": {
+									"en": "A zero subtotal covers only the holdings that reported. The missing holding, and risks like gamma and vega, remain.",
+									"zh": "小计为零只覆盖已报送的持仓。缺失的持仓，以及 Gamma、Vega 等风险，仍然存在。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The second account's holding is still unknown, and a zero delta leaves gamma, time and volatility risk in place.",
+							"zh": "第二个账户的持仓仍然未知；而且 Delta 为零，并不能消除 Gamma、时间和波动率风险。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Delta-neutral isn't risk-free, and a tidy net number can't make an unreported holding disappear.",
+					"zh": "Delta 中性不等于没有风险，一个整齐的净值也不能让未报送的持仓消失。"
+				}
+			},
+			{
+				"brief": {
+					"en": "In one account you hold 90 ALFA shares and are short 2 ALFA calls with a model delta of 0.30 each; one contract covers 100 shares. A holding in your second account hasn't reported its Greeks, so work out only what's covered.",
+					"zh": "在一个账户里，你持有 90 股 ALFA，并做空 2 张 ALFA 看涨，每张模型 Delta 为 0.30；一张合约对应 100 股。你第二个账户里的一项持仓还没有报送希腊值，所以只计算已覆盖的部分。"
+				},
+				"questions": [
+					{
+						"id": "net",
+						"prompt": {
+							"en": "What is the covered net delta, in share-equivalents?",
+							"zh": "已覆盖部分的净 Delta 是多少股等价？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "share-equivalents", "zh": "股等价" }
+						},
+						"accepted": ["30"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "+90 from the shares, and −2 × 0.30 × 100 = −60 from the short calls: +30.",
+							"zh": "股票贡献 +90，空头看涨贡献 −2 × 0.30 × 100 = −60：合计 +30。"
+						}
+					},
+					{
+						"id": "hedge",
+						"prompt": {
+							"en": "How many shares would offset that covered delta? Enter a purchase as positive and a sale as negative.",
+							"zh": "需要交易多少股才能抵消已覆盖的 Delta？买入填正数，卖出填负数。"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "shares", "zh": "股" }
+						},
+						"accepted": ["-30"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "To cancel +30, trade −30 shares.",
+							"zh": "要抵消 +30，需要交易 −30 股。"
+						}
+					},
+					{
+						"id": "coverage",
+						"prompt": {
+							"en": "Does that make the whole portfolio neutral?",
+							"zh": "这样整个组合就中性了吗？"
+						},
+						"choices": [
+							{
+								"id": "no",
+								"label": {
+									"en": "No: the unreported holding and other risks remain",
+									"zh": "否：未报送的持仓和其他风险仍在"
+								}
+							},
+							{
+								"id": "yes",
+								"label": {
+									"en": "Yes: the subtotal is offset",
+									"zh": "是：小计已被抵消"
+								},
+								"why": {
+									"en": "A zero subtotal covers only the holdings that reported. The missing holding, and risks like gamma and vega, remain.",
+									"zh": "小计为零只覆盖已报送的持仓。缺失的持仓，以及 Gamma、Vega 等风险，仍然存在。"
+								}
+							}
+						],
+						"accepted": ["no"],
+						"explanation": {
+							"en": "The second account's holding is still unknown, and a zero delta leaves gamma, time and volatility risk in place.",
+							"zh": "第二个账户的持仓仍然未知；而且 Delta 为零，并不能消除 Gamma、时间和波动率风险。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Delta-neutral isn't risk-free, and a tidy net number can't make an unreported holding disappear.",
+					"zh": "Delta 中性不等于没有风险，一个整齐的净值也不能让未报送的持仓消失。"
+				}
+			}
+		]
+	}
+]

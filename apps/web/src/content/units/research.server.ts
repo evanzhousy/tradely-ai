@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 import {
 	choose as c,
+	fact,
 	money,
 	numberQuestion as n,
 	oi,
@@ -14,6 +15,7 @@ import {
 export const researchUnits: TeachingUnit[] = [
 	{
 		id: "audited-boundary",
+		version: 3,
 		conceptLab: {
 			kind: "audited-boundary",
 			intro: t(
@@ -36,11 +38,28 @@ export const researchUnits: TeachingUnit[] = [
 		),
 		case: (v) => {
 			const day = [3, 4, 8, 9][v];
+			const strikes = [100, 105, 110, 115, 120];
+			// The call whose volume hasn't arrived at the cutoff, if any, and the leader among calls with data.
+			const missing = [110, 120, null, 115][v];
+			const lead = [105, 110, 100, 105][v];
 			return {
 				brief: t(
 					`Your research record asks about BETA calls expiring October 16, from tape-B, for the September ${day} session. A colleague proposes a rerun that ${v % 2 ? "switches to puts after seeing which call had the most volume" : "adds one corrected call trade from the same session and keeps the method"}.`,
 					`你的研究记录问的是 10 月 16 日到期的 BETA 看涨，来源 tape-B，9 月 ${day} 日交易时段。一位同事建议重跑：${v % 2 ? "在看到哪张看涨成交最多之后，改为研究看跌" : "加入同一时段的一笔更正后的看涨成交，方法不变"}。`,
 				),
+				facts: [
+					fact("Calls in the question", "问题中的看涨", strikes.join(", ")),
+					fact(
+						"Calls with volume at the cutoff",
+						"截止时有成交量的看涨",
+						strikes.filter((strike) => strike !== missing).join(", "),
+					),
+					fact(
+						"Most volume among calls with data",
+						"有数据的看涨中成交量最多",
+						String(lead),
+					),
+				],
 				questions: [
 					c(
 						"change",
@@ -78,12 +97,41 @@ export const researchUnits: TeachingUnit[] = [
 						`例如：“在 10 月 16 日到期的 BETA 看涨中，哪个行权价在 9 月 ${day} 日交易时段成交最多？来源 tape-B，以完整交易时段为截止。如果截止时仍缺少必要行权价的数据，则修订。”检查你的写法是否包含这些部分；这一题不由机器评分。`,
 						40,
 					),
+					c(
+						"leader",
+						`At the cutoff, can the record name the ${lead} call the leader of all the calls in the question?`,
+						`截止时，记录能把 ${lead} 看涨称为问题中所有看涨的领先者吗？`,
+						[
+							[
+								"yes",
+								"Yes: it has the most, and every call in the question has data",
+								"能：它最多，而且问题中的每个看涨都有数据",
+								`The ${missing} call has no volume at the cutoff, and it could be larger. Record the ${lead} call as the leader of the calls with data, and say the ${missing} call is missing.`,
+								`${missing} 看涨在截止时没有成交量数据，它可能更大。把 ${lead} 看涨记为有数据看涨中的领先者，并注明 ${missing} 看涨缺失。`,
+							],
+							[
+								"not-yet",
+								"Not yet: it leads only the calls with data",
+								"暂时不能：它只在有数据的看涨中领先",
+								`All five calls from 100 to 120 have volume at the cutoff, so nothing is missing: the ${lead} call leads every call in the question.`,
+								`100 到 120 的五个看涨在截止时都有成交量数据，没有缺失：${lead} 看涨在问题中的所有看涨里领先。`,
+							],
+						],
+						missing === null ? "yes" : "not-yet",
+						missing === null
+							? `Every call in the question has volume at the cutoff, so the comparison covers the whole question and the ${lead} call leads it.`
+							: `The ${missing} call's volume hadn't arrived by the cutoff, so the leader of the whole question has to wait. Record the ${lead} call as the leader of the calls with data, and revise when the ${missing} call arrives.`,
+						missing === null
+							? `问题中的每个看涨在截止时都有成交量数据，所以比较覆盖了整个问题，${lead} 看涨领先。`
+							: `${missing} 看涨的成交量在截止时还没到，所以整个问题的领先者要等一等。把 ${lead} 看涨记为有数据看涨中的领先者，等 ${missing} 看涨的数据到了再修订。`,
+					),
 				],
 			};
 		},
 	},
 	{
 		id: "symbol-universe",
+		version: 3,
 		conceptLab: {
 			kind: "symbol-universe",
 			intro: t(
@@ -107,6 +155,48 @@ export const researchUnits: TeachingUnit[] = [
 		case: (v) => {
 			const a = [800, 900, 650, 750][v];
 			const b = [400, 700, 450, 950][v];
+			// IOTA's volume when its observation is complete; null when it's missing.
+			const iota = [null, 300, 520, null][v];
+			const names: [string, number | null][] = [
+				["ALFA", a],
+				["BETA", b],
+				["IOTA", iota],
+			];
+			const admitted = names.flatMap(([symbol, volume]) =>
+				volume !== null && volume >= 500 ? [{ symbol, volume }] : [],
+			);
+			const below = names.flatMap(([symbol, volume]) =>
+				volume !== null && volume < 500 ? [{ symbol, volume }] : [],
+			);
+			const total = admitted.reduce((sum, row) => sum + row.volume, 0);
+			const top = admitted.reduce((best, row) =>
+				row.volume > best.volume ? row : best,
+			);
+			/** Why a name doesn't lead the comparison, in both languages. */
+			const notLeader = (
+				symbol: string,
+				volume: number | null,
+			): [string, string] =>
+				volume === null
+					? [
+							`${symbol}'s volume is missing, so it can't be ranked. Missing isn't zero, and it isn't a lead either.`,
+							`${symbol} 的成交量缺失，无法参与排名。缺失不是零，也不是领先。`,
+						]
+					: volume < 500
+						? [
+								`${symbol}'s ${plain(volume)} is below the 500-contract floor, so it isn't in the comparison.`,
+								`${symbol} 的 ${plain(volume)} 低于 500 张的门槛，不在比较范围内。`,
+							]
+						: [
+								`${symbol} qualifies, but its ${plain(volume)} is less than ${top.symbol}'s ${plain(top.volume)}.`,
+								`${symbol} 合格，但它的 ${plain(volume)} 少于 ${top.symbol} 的 ${plain(top.volume)}。`,
+							];
+			const outside = below
+				.map((row) => `${row.symbol}'s ${plain(row.volume)}`)
+				.join(" and ");
+			const outsideZh = below
+				.map((row) => `${row.symbol} 的 ${plain(row.volume)}`)
+				.join("和");
 			return {
 				brief: t(
 					"Your comparison covers stock options on ALFA, BETA and IOTA in one stated session. A name counts only if its observation is complete and its volume is at least 500 contracts. No other names belong.",
@@ -121,7 +211,9 @@ export const researchUnits: TeachingUnit[] = [
 					rows: [
 						["ALFA", String(a), "complete / 完整"],
 						["BETA", String(b), "complete / 完整"],
-						["IOTA", "—", "missing / 缺失"],
+						iota === null
+							? ["IOTA", "—", "missing / 缺失"]
+							: ["IOTA", String(iota), "complete / 完整"],
 					],
 					caption: t(
 						"Synthetic fixed-session source · volume in contracts; dash is missing",
@@ -133,21 +225,34 @@ export const researchUnits: TeachingUnit[] = [
 						"admitted",
 						"How many names qualify for the comparison of observed volume?",
 						"有多少个标的有资格进入已观测成交量的比较？",
-						b >= 500 ? 2 : 1,
+						admitted.length,
 						"names",
 						"个",
-						`ALFA's ${plain(a)} qualifies, and BETA's ${plain(b)} ${b >= 500 ? "clears 500 too" : "falls short of 500"}. IOTA's volume is missing, so it can't be measured: ${b >= 500 ? 2 : 1} ${b >= 500 ? "names" : "name"}.`,
-						`ALFA 的 ${plain(a)} 合格，BETA 的 ${plain(b)} ${b >= 500 ? "也超过 500" : "不足 500"}。IOTA 的成交量缺失，无法测量：共 ${b >= 500 ? 2 : 1} 个。`,
+						`ALFA's ${plain(a)} qualifies, and BETA's ${plain(b)} ${b >= 500 ? "clears 500 too" : "falls short of 500"}. ${iota === null ? "IOTA's volume is missing, so it can't be measured" : `IOTA's ${plain(iota)} ${iota >= 500 ? "qualifies as well" : "was observed but falls short of 500"}`}: ${admitted.length} ${admitted.length === 1 ? "name" : "names"}.`,
+						`ALFA 的 ${plain(a)} 合格，BETA 的 ${plain(b)} ${b >= 500 ? "也超过 500" : "不足 500"}。${iota === null ? "IOTA 的成交量缺失，无法测量" : `IOTA 的 ${plain(iota)} ${iota >= 500 ? "同样合格" : "有观测，但不足 500"}`}：共 ${admitted.length} 个。`,
 					),
 					n(
 						"eligible-volume",
 						"What volume do the qualifying names add up to?",
 						"有资格的标的成交量合计多少？",
-						a + (b >= 500 ? b : 0),
+						total,
 						"contracts",
 						"张",
-						`${b >= 500 ? `${plain(a)} + ${plain(b)} = ${plain(a + b)}` : `ALFA alone: ${plain(a)}`} contracts. That's the observed subtotal, not the total for all three names: IOTA is missing.`,
-						`${b >= 500 ? `${plain(a)} + ${plain(b)} = ${plain(a + b)}` : `只有 ALFA：${plain(a)}`} 张。这是已观测的小计，而不是三个标的的总量：IOTA 缺失。`,
+						`${admitted.length > 1 ? `${admitted.map((row) => plain(row.volume)).join(" + ")} = ${plain(total)}` : `ALFA alone: ${plain(a)}`} contracts. ${iota === null ? "That's the observed subtotal, not the total for all three names: IOTA is missing." : `All three names were observed; ${outside} stays out only because it's below 500.`}`,
+						`${admitted.length > 1 ? `${admitted.map((row) => plain(row.volume)).join(" + ")} = ${plain(total)}` : `只有 ALFA：${plain(a)}`} 张。${iota === null ? "这是已观测的小计，而不是三个标的的总量：IOTA 缺失。" : `三个标的都有观测；${outsideZh} 不计入，只是因为不足 500。`}`,
+					),
+					c(
+						"leader",
+						"Which name leads the comparison of observed volume?",
+						"哪个标的在已观测成交量的比较中领先？",
+						[
+							["ALFA", "ALFA", "ALFA", ...notLeader("ALFA", a)],
+							["BETA", "BETA", "BETA", ...notLeader("BETA", b)],
+							["IOTA", "IOTA", "IOTA", ...notLeader("IOTA", iota)],
+						],
+						top.symbol,
+						`Of the names that qualify, ${top.symbol} has the most: ${plain(top.volume)} contracts.${iota === null ? " IOTA's volume is missing, so this ranks only the names you observed." : ""}`,
+						`在合格的标的中，${top.symbol} 最多：${plain(top.volume)} 张。${iota === null ? "IOTA 的成交量缺失，所以这只是已观测标的的排名。" : ""}`,
 					),
 					c(
 						"claim",
@@ -158,18 +263,35 @@ export const researchUnits: TeachingUnit[] = [
 								"full",
 								"Yes: count the missing name as zero",
 								"能：把缺失的标的当作零",
-								"A missing name isn't zero. Counting IOTA as zero would let the observed leader claim a title it may not hold.",
-								"缺失的名字不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。",
+								iota === null
+									? "A missing name isn't zero. Counting IOTA as zero would let the observed leader claim a title it may not hold."
+									: `No name is missing here: IOTA's ${plain(iota)} contracts were observed. The claim holds because all three were measured, not because anything counts as zero.`,
+								iota === null
+									? "缺失的名字不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。"
+									: `这里没有缺失的标的：IOTA 的 ${plain(iota)} 张有观测。结论成立是因为三个标的都测量到了，而不是因为把什么当作零。`,
 							],
 							[
 								"limited",
 								"No: say it leads the names you observed, and that IOTA is missing",
 								"不能：要说它在已观测的标的中领先，并注明 IOTA 缺失",
+								`IOTA isn't missing here: its ${plain(iota ?? 0)} contracts were observed, fewer than ${top.symbol}'s ${plain(top.volume)}. With all three measured, the claim can cover all three.`,
+								`这里 IOTA 并没有缺失：它的 ${plain(iota ?? 0)} 张有观测，少于 ${top.symbol} 的 ${plain(top.volume)}。三个标的都测量到了，结论可以涵盖全部三个。`,
+							],
+							[
+								"measured",
+								"Yes: all three names were observed, and it has the most",
+								"能：三个标的都有观测，而且它最多",
+								`IOTA shows a dash, not a volume: it wasn't observed. Its unknown volume could be larger than ${top.symbol}'s ${plain(top.volume)}.`,
+								`IOTA 一栏是横线，不是成交量：它没有被观测到。它未知的成交量可能比 ${top.symbol} 的 ${plain(top.volume)} 还大。`,
 							],
 						],
-						"limited",
-						"IOTA's volume is unknown and could be larger than either. Report the leader among the names you observed.",
-						"IOTA 的成交量未知，可能比两者都大。只能报告已观测标的中的领先者。",
+						iota === null ? "limited" : "measured",
+						iota === null
+							? "IOTA's volume is unknown and could be larger than either. Report the leader among the names you observed."
+							: `All three names were observed, and none has more than ${top.symbol}'s ${plain(top.volume)}, so it's the most active of all three. A name below the 500 floor is still measured; it just isn't ranked.`,
+						iota === null
+							? "IOTA 的成交量未知，可能比两者都大。只能报告已观测标的中的领先者。"
+							: `三个标的都有观测，没有一个超过 ${top.symbol} 的 ${plain(top.volume)}，所以它是三者中最活跃的。低于 500 门槛的标的仍然有观测，只是不参与排名。`,
 					),
 				],
 			};
@@ -177,6 +299,7 @@ export const researchUnits: TeachingUnit[] = [
 	},
 	{
 		id: "rank-symbols",
+		version: 3,
 		conceptLab: {
 			kind: "rank-symbols",
 			intro: t(
@@ -198,10 +321,15 @@ export const researchUnits: TeachingUnit[] = [
 			"排名上升，可能是因为同组的其他标的下降或被排除。单凭排名变化，不能说明这个标的自身活跃度变了，也不是方向信号。",
 		),
 		case: (v) => {
-			const rawA = [1200, 1800, 1600, 1400][v];
-			const normalA = [2400, 600, 2000, 700][v];
-			const rawB = [900, 1200, 1000, 1100][v];
-			const normalB = [300, 1200, 500, 1100][v];
+			const rawA = [1200, 900, 1600, 1400][v];
+			const normalA = [2400, 300, 2000, 700][v];
+			const rawB = [900, 1200, 1800, 2100][v];
+			const normalB = [300, 1200, 500, 2100][v];
+			const relativeLeader = rawA / normalA > rawB / normalB ? "ALFA" : "BETA";
+			const rawLeader = rawA > rawB ? "ALFA" : "BETA";
+			const agree = relativeLeader === rawLeader;
+			const rawHigh = plain(Math.max(rawA, rawB));
+			const rawLow = plain(Math.min(rawA, rawB));
 			return {
 				brief: t(
 					"Two fully covered names are eligible. Your question: which one is more active relative to its own usual full-session volume?",
@@ -224,7 +352,7 @@ export const researchUnits: TeachingUnit[] = [
 						{
 							symbol: "BETA",
 							volume: rawB,
-							peerVolume: rawA + 300,
+							peerVolume: rawB > rawA ? rawA - 300 : rawA + 300,
 							fresh: true,
 							eligible: true,
 						},
@@ -280,12 +408,41 @@ export const researchUnits: TeachingUnit[] = [
 						`ALFA: ${plain(rawA / normalA)}×. BETA: ${plain(rawB)} ÷ ${plain(normalB)} = ${plain(rawB / normalB)}×. ${rawA / normalA > rawB / normalB ? "ALFA" : "BETA"} is further above its own normal${(rawA > rawB) !== rawA / normalA > rawB / normalB ? `, even though ${rawA > rawB ? "ALFA" : "BETA"} traded more contracts` : ""}.`,
 						`ALFA：${plain(rawA / normalA)}×。BETA：${plain(rawB)} ÷ ${plain(normalB)} = ${plain(rawB / normalB)}×。${rawA / normalA > rawB / normalB ? "ALFA" : "BETA"} 超出自身平常水平更多${(rawA > rawB) !== rawA / normalA > rawB / normalB ? `，尽管 ${rawA > rawB ? "ALFA" : "BETA"} 成交的张数更多` : ""}。`,
 					),
+					c(
+						"raw-leader",
+						"If the question asked for raw contracts instead, would the same name lead?",
+						"如果问题改问原始成交张数，领先的还会是同一个标的吗？",
+						[
+							[
+								"same",
+								"Yes: the same name leads on both measures",
+								"会：两种指标下领先的是同一个标的",
+								`On raw contracts ${rawLeader} leads, ${rawHigh} to ${rawLow}, while ${relativeLeader} is further above its own normal. The two measures pick different names.`,
+								`按原始张数是 ${rawLeader} 领先（${rawHigh} 对 ${rawLow}），而相对自身平常水平是 ${relativeLeader} 领先。两种指标选出了不同的标的。`,
+							],
+							[
+								"other",
+								"No: the other name traded more contracts",
+								"不会：另一个标的成交的张数更多",
+								`${relativeLeader} also traded more contracts, ${rawHigh} to ${rawLow}. Here the two measures agree, though they don't have to.`,
+								`${relativeLeader} 成交的张数也更多（${rawHigh} 对 ${rawLow}）。这里两种指标恰好一致，但并不总是如此。`,
+							],
+						],
+						agree ? "same" : "other",
+						agree
+							? `${relativeLeader} leads both ways: ${rawHigh} contracts to ${rawLow}, and further above its own normal. Check each measure anyway; they often disagree.`
+							: `${rawLeader} traded more contracts, ${rawHigh} to ${rawLow}, but ${relativeLeader} is further above its own normal. Raw size and relative activity answer different questions.`,
+						agree
+							? `${relativeLeader} 两种指标都领先：成交 ${rawHigh} 张对 ${rawLow} 张，相对自身平常水平也更高。即便如此，每种指标都要单独核对；它们常常不一致。`
+							: `${rawLeader} 成交的张数更多（${rawHigh} 对 ${rawLow}），但 ${relativeLeader} 超出自身平常水平更多。原始规模与相对活跃度回答的是不同的问题。`,
+					),
 				],
 			};
 		},
 	},
 	{
 		id: "rank-contracts",
+		version: 3,
 		conceptLab: {
 			kind: "rank-contracts",
 			intro: t(
@@ -307,7 +464,7 @@ export const researchUnits: TeachingUnit[] = [
 			"只计有观测且有成交的格子；缺失的格子不等于零。显示控件改变的是你看到什么，而不是数据本身或资格。",
 		),
 		case: (v) => {
-			const spot = [100, 98, 108, 104][v];
+			const spot = [100, 105, 108, 107][v];
 			const strikes = [100, 105, 110];
 			const a = [0, 0, 0, 0, 3000, 2500, 0, 2500, 0];
 			const b = [500, 750, 500, 750, 3000, 750, 500, 750, 500];
@@ -408,8 +565,8 @@ export const researchUnits: TeachingUnit[] = [
 							],
 						],
 						105 < spot ? "itm" : 105 > spot ? "otm" : "atm",
-						`A call is in the money when its strike is below the stock. $105 is ${105 < spot ? "below" : "above"} ${money(spot, 0)}, so it's ${105 < spot ? "in" : "out of"} the money. That says nothing about where ALFA goes next.`,
-						`看涨在行权价低于股价时为实值。$105 ${105 < spot ? "低于" : "高于"} ${money(spot, 0)}，所以是${105 < spot ? "实值" : "虚值"}。这不能说明 ALFA 接下来会怎么走。`,
+						`${105 === spot ? "A call is at the money when its strike equals the stock's price" : "A call is in the money when its strike is below the stock"}. $105 is ${105 < spot ? "below" : 105 > spot ? "above" : "equal to"} ${money(spot, 0)}, so it's ${105 < spot ? "in" : 105 > spot ? "out of" : "at"} the money. That says nothing about where ALFA goes next.`,
+						`${105 === spot ? "看涨在行权价等于股价时为平值" : "看涨在行权价低于股价时为实值"}。$105 ${105 < spot ? "低于" : 105 > spot ? "高于" : "等于"} ${money(spot, 0)}，所以是${105 < spot ? "实值" : 105 > spot ? "虚值" : "平值"}。这不能说明 ALFA 接下来会怎么走。`,
 					),
 				],
 			};
@@ -417,6 +574,7 @@ export const researchUnits: TeachingUnit[] = [
 	},
 	{
 		id: "point-in-time-research",
+		version: 3,
 		conceptLab: {
 			kind: "point-in-time-research",
 			intro: t(
@@ -440,10 +598,17 @@ export const researchUnits: TeachingUnit[] = [
 		case: (v) => {
 			const initial = [80, 120, 160, 96][v];
 			const halves = [2, 3, 1, 4][v];
+			const trade = ["09:59", "09:52", "09:45", "09:41"][v];
+			const arrival = ["10:02", "09:57", "10:04", "09:55"][v];
+			const known = arrival < "10:00";
+			// Whether the rule was edited after its July–August result was seen.
+			const tuned = v !== 2;
+			const first = [40, 50, 60, 45][v];
+			const edited = [60, 35, 60, 70][v];
 			return {
 				brief: t(
-					`A recency-weighted score starts at ${initial} and halves every 60 seconds, and nothing new happens for ${halves * 60} seconds. Separately, a correction to a 09:59 trade arrives at 10:02, and your decision is made at 10:00.`,
-					`一个按近期加权的分数从 ${initial} 开始，每 60 秒减半，之后 ${halves * 60} 秒内没有任何新事件。另外，一笔 09:59 成交的更正在 10:02 才到，而你的决策是在 10:00 做出的。`,
+					`A recency-weighted score starts at ${initial} and halves every 60 seconds, and nothing new happens for ${halves * 60} seconds. Separately, a correction to a ${trade} trade arrives at ${arrival}, and your decision is made at 10:00.\n\nYou also froze an alert rule, "score above ${first}", on January to June data and ran it on July and August data, which stayed sealed until then. ${tuned ? `After seeing that result, you changed the rule to "score above ${edited}" and ran July and August again.` : "The rule hasn't changed since that one run."}`,
+					`一个按近期加权的分数从 ${initial} 开始，每 60 秒减半，之后 ${halves * 60} 秒内没有任何新事件。另外，一笔 ${trade} 成交的更正在 ${arrival} 到达，而你的决策是在 10:00 做出的。\n\n你还在 1–6 月数据上冻结了一条提醒规则“分数高于 ${first}”，并在此前一直封存的 7–8 月数据上运行了它。${tuned ? `看到结果之后，你把规则改成“分数高于 ${edited}”，又在 7–8 月上运行了一次。` : "那次运行之后，规则没有改过。"}`,
 				),
 				questions: [
 					n(
@@ -465,18 +630,63 @@ export const researchUnits: TeachingUnit[] = [
 								"yes",
 								"Yes: the trade happened before 10:00",
 								"能：这笔成交发生在 10:00 之前",
-								"What matters is when you could know the trade, not when it happened. The correction arrived at 10:02, after the 10:00 decision.",
-								"要看的不是成交何时发生，而是你何时能知道它。更正在 10:02 才到，晚于 10:00 的决策。",
+								known
+									? `The trade's time isn't the test: a trade from before 10:00 can be corrected after it. This correction is usable because it arrived at ${arrival}, before the decision.`
+									: `What matters is when you could know the trade, not when it happened. The correction arrived at ${arrival}, after the 10:00 decision.`,
+								known
+									? `成交时间不是判断标准：10:00 之前的成交，也可能在 10:00 之后才被更正。这笔更正能用，是因为它在 ${arrival} 就到了，早于决策。`
+									: `要看的不是成交何时发生，而是你何时能知道它。更正在 ${arrival} 才到，晚于 10:00 的决策。`,
+							],
+							[
+								"arrived",
+								"Yes: the correction itself arrived before 10:00",
+								"能：更正本身在 10:00 之前就到了",
+								`The correction arrived at ${arrival}, after the 10:00 decision. At 10:00 only the first report of the trade was known.`,
+								`更正在 ${arrival} 才到，晚于 10:00 的决策。10:00 时只知道这笔成交最初的报告。`,
 							],
 							[
 								"no",
-								"No: the correction only arrived at 10:02",
-								"不能：更正到 10:02 才到",
+								"No: the correction arrived after 10:00",
+								"不能：更正在 10:00 之后才到",
+								`The correction arrived at ${arrival}, before the 10:00 decision, so it was already known when you decided.`,
+								`更正在 ${arrival} 就到了，早于 10:00 的决策，所以决策时已经知道它。`,
 							],
 						],
-						"no",
-						"What matters is when you could have known it. The trade happened at 09:59, but its correction arrived after your decision, so using it would be hindsight.",
-						"关键是你什么时候能知道。成交发生在 09:59，但更正在你决策之后才到，用它就是后见之明。",
+						known ? "arrived" : "no",
+						known
+							? `What matters is when you could have known it. The correction arrived at ${arrival}, before your 10:00 decision, so the decision can use it.`
+							: `What matters is when you could have known it. The trade happened at ${trade}, but its correction arrived after your decision, so using it would be hindsight.`,
+						known
+							? `关键是你什么时候能知道。更正在 ${arrival} 就到了，早于你 10:00 的决策，所以决策可以使用它。`
+							: `关键是你什么时候能知道。成交发生在 ${trade}，但更正在你决策之后才到，用它就是后见之明。`,
+					),
+					c(
+						"holdout",
+						"Is the July and August data still a holdout test of the rule as it stands now?",
+						"对现在这条规则来说，7–8 月还算是保留集检验吗？",
+						[
+							[
+								"holdout",
+								"Yes: it still tests the rule on data it hasn't seen",
+								"是：它仍在用规则没见过的数据检验它",
+								`You changed the rule from above ${first} to above ${edited} after seeing July and August, so those months helped choose it. They're search data now; the new rule needs a period that's still sealed.`,
+								`你是在看过 7–8 月的结果之后，才把规则从高于 ${first} 改成高于 ${edited} 的，所以这两个月参与了选规则。它们现在是搜索数据；新规则需要一段仍然封存的数据来检验。`,
+							],
+							[
+								"search",
+								"No: it has become search data",
+								"不是：它已经变成了搜索数据",
+								"The rule was frozen on January to June and run once on July and August, unchanged since. That single run is the holdout test.",
+								"规则是在 1–6 月上冻结的，只在 7–8 月上运行了一次，之后没有改过。那一次运行就是保留集检验。",
+							],
+						],
+						tuned ? "search" : "holdout",
+						tuned
+							? `Editing a rule after seeing the holdout turns the holdout into more search data. The above-${edited} rule needs a period it hasn't seen.`
+							: "Freeze first, then open the holdout once: that's what happened here, so the July and August result tests the rule. Editing the rule now would use that test up.",
+						tuned
+							? `看过保留集之后再修改规则，就把保留集变成了更多的搜索数据。高于 ${edited} 的规则需要一段它没见过的数据。`
+							: "先冻结，再只打开一次保留集：这里正是这样做的，所以 7–8 月的结果检验了这条规则。现在再改规则，就会把这次检验用掉。",
 					),
 				],
 			};

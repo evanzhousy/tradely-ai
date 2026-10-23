@@ -237,6 +237,7 @@ export const portfolioUnits: TeachingUnit[] = [
 	performanceUnit,
 	{
 		id: "portfolio-exposure",
+		version: 3,
 		conceptLab: {
 			kind: "portfolio-exposure",
 			intro: t(
@@ -261,11 +262,29 @@ export const portfolioUnits: TeachingUnit[] = [
 			const stock = [100, 150, 90, 200][v];
 			const count = [2, 3, 2, 4][v];
 			const d = [0.4, 0.6, 0.3, 0.4][v];
-			const net = stock - count * d * 100;
+			// The second account's long puts: not reported, reported at the same close, or stamped at Friday's close.
+			const second = (["missing", "same", "stale", "same"] as const)[v];
+			const puts = [0, 4, 3, 2][v];
+			const putDelta = [0, 0.25, 0.4, 0.45][v];
+			const putShares = puts * putDelta * 100;
+			const net =
+				Math.round(
+					(stock - count * d * 100 - (second === "same" ? putShares : 0)) * 100,
+				) / 100;
+			const opening = `In one account you hold ${stock} ALFA shares and are short ${count} ALFA calls with a model delta of ${plain(d, 2)} each; one contract covers 100 shares.`;
+			const openingZh = `在一个账户里，你持有 ${stock} 股 ALFA，并做空 ${count} 张 ALFA 看涨，每张模型 Delta 为 ${plain(d, 2)}；一张合约对应 100 股。`;
 			return {
 				brief: t(
-					`In one account you hold ${stock} ALFA shares and are short ${count} ALFA calls with a model delta of ${plain(d, 2)} each; one contract covers 100 shares. A holding in your second account hasn't reported its Greeks, so work out only what's covered.`,
-					`在一个账户里，你持有 ${stock} 股 ALFA，并做空 ${count} 张 ALFA 看涨，每张模型 Delta 为 ${plain(d, 2)}；一张合约对应 100 股。你第二个账户里的一项持仓还没有报送希腊值，所以只计算已覆盖的部分。`,
+					second === "missing"
+						? `${opening} A holding in your second account hasn't reported its Greeks, so work out only what's covered.`
+						: second === "same"
+							? `${opening} Your second account holds ${puts} long ALFA puts with a model delta of −${plain(putDelta, 2)} each, stamped at the same close as your first account's figures. Work out the net delta of what's covered.`
+							: `${opening} Your second account's broker reports ${puts} long ALFA puts with a delta of −${plain(putDelta, 2)} each, but stamped at Friday's close, while your first account's figures are from today's close. Work out only what's covered at today's close.`,
+					second === "missing"
+						? `${openingZh}你第二个账户里的一项持仓还没有报送希腊值，所以只计算已覆盖的部分。`
+						: second === "same"
+							? `${openingZh}你第二个账户持有 ${puts} 张 ALFA 看跌多头，每张模型 Delta 为 −${plain(putDelta, 2)}，时间戳与第一个账户的数据是同一个收盘。计算已覆盖部分的净 Delta。`
+							: `${openingZh}你第二个账户的券商报送了 ${puts} 张 ALFA 看跌多头，每张 Delta 为 −${plain(putDelta, 2)}，但时间戳是上周五收盘，而第一个账户的数据来自今天收盘。只计算今天收盘已覆盖的部分。`,
 				),
 				questions: [
 					n(
@@ -275,8 +294,8 @@ export const portfolioUnits: TeachingUnit[] = [
 						net,
 						"share-equivalents",
 						"股等价",
-						`+${stock} from the shares, and −${count} × ${plain(d, 2)} × 100 = −${plain(count * d * 100)} from the short calls: ${signed(net)}.`,
-						`股票贡献 +${stock}，空头看涨贡献 −${count} × ${plain(d, 2)} × 100 = −${plain(count * d * 100)}：合计 ${signed(net)}。`,
+						`+${stock} from the shares, and −${count} × ${plain(d, 2)} × 100 = −${plain(count * d * 100)} from the short calls${second === "same" ? `, and −${puts} × ${plain(putDelta, 2)} × 100 = −${plain(putShares)} from the puts` : ""}: ${signed(net)}.${second === "stale" ? " The puts' Friday delta stays out until it's restated at today's close." : ""}`,
+						`股票贡献 +${stock}，空头看涨贡献 −${count} × ${plain(d, 2)} × 100 = −${plain(count * d * 100)}${second === "same" ? `，看跌贡献 −${puts} × ${plain(putDelta, 2)} × 100 = −${plain(putShares)}` : ""}：合计 ${signed(net)}。${second === "stale" ? "看跌的周五 Delta 在换成今天收盘的数值之前不计入。" : ""}`,
 					),
 					n(
 						"hedge",
@@ -290,25 +309,54 @@ export const portfolioUnits: TeachingUnit[] = [
 					),
 					c(
 						"coverage",
-						"Does that make the whole portfolio neutral?",
-						"这样整个组合就中性了吗？",
+						"Does that make the whole portfolio delta-neutral?",
+						"这样整个组合就 Delta 中性了吗？",
 						[
 							[
 								"yes",
-								"Yes: the subtotal is offset",
-								"是：小计已被抵消",
-								"A zero subtotal covers only the holdings that reported. The missing holding, and risks like gamma and vega, remain.",
-								"小计为零只覆盖已报送的持仓。缺失的持仓，以及 Gamma、Vega 等风险，仍然存在。",
+								"Yes: every holding's delta is in the offset total",
+								"是：所有持仓的 Delta 都已计入被抵消的合计",
+								second === "stale"
+									? `The puts' −${plain(putShares)} is stamped at Friday's close, so it isn't in today's total. Until it's restated at today's close, the whole portfolio's delta isn't known to be zero.`
+									: "A zero subtotal covers only the holdings that reported. The second account's holding is still unknown, so the whole portfolio's delta is too.",
+								second === "stale"
+									? `看跌的 −${plain(putShares)} 时间戳是上周五收盘，不在今天的合计里。在换成今天收盘的数值之前，无法确认整个组合的 Delta 为零。`
+									: "小计为零只覆盖已报送的持仓。第二个账户的持仓仍然未知，所以整个组合的 Delta 也未知。",
 							],
 							[
 								"no",
-								"No: the unreported holding and other risks remain",
-								"否：未报送的持仓和其他风险仍在",
+								"No: a holding hasn't reported its Greeks",
+								"否：有持仓还没有报送希腊值",
+								second === "stale"
+									? "The second account has reported, just at Friday's close. What's missing is a figure from today's close, not a first report."
+									: `Both accounts have reported: the puts' −${plain(putShares)} is stamped at the same close and already in the total, so trading ${signed(-net)} shares brings the whole portfolio's delta to zero.`,
+								second === "stale"
+									? "第二个账户已经报送了，只是时间戳是上周五收盘。缺的是今天收盘的数值，而不是第一次报送。"
+									: `两个账户都已报送：看跌的 −${plain(putShares)} 与第一个账户是同一个收盘的时间戳，已经计入合计，所以交易 ${signed(-net)} 股能让整个组合的 Delta 归零。`,
+							],
+							[
+								"stale",
+								"Not yet: one holding's delta is from an earlier close",
+								"还不能：有一项持仓的 Delta 来自更早的收盘",
+								second === "missing"
+									? "Nothing from the second account has arrived, early or late: its Greeks haven't reported at all."
+									: "The puts' delta is stamped at the same close as your first account's, so the two line up and can be added.",
+								second === "missing"
+									? "第二个账户什么都没有报送，无论早晚：它的希腊值根本还没到。"
+									: "看跌的 Delta 与第一个账户的数据是同一个收盘的时间戳，两者对齐，可以相加。",
 							],
 						],
-						"no",
-						"The second account's holding is still unknown, and a zero delta leaves gamma, time and volatility risk in place.",
-						"第二个账户的持仓仍然未知；而且 Delta 为零，并不能消除 Gamma、时间和波动率风险。",
+						second === "missing" ? "no" : second === "same" ? "yes" : "stale",
+						second === "missing"
+							? "The second account's holding is still unknown, and a zero delta leaves gamma, time and volatility risk in place."
+							: second === "same"
+								? `Every holding's delta is from the same close and in the total, so trading ${signed(-net)} shares brings the whole portfolio's delta to zero. That's delta-neutral, not risk-free: gamma, time and volatility risk stay in place.`
+								: "Friday's put delta can't be added to today's figures, so the total covers your first account only. Get the puts' delta at today's close before calling the whole portfolio neutral; even then, gamma, time and volatility risk remain.",
+						second === "missing"
+							? "第二个账户的持仓仍然未知；而且 Delta 为零，并不能消除 Gamma、时间和波动率风险。"
+							: second === "same"
+								? `所有持仓的 Delta 都来自同一个收盘并已计入合计，所以交易 ${signed(-net)} 股能让整个组合的 Delta 归零。这是 Delta 中性，不是没有风险：Gamma、时间和波动率风险仍然存在。`
+								: "上周五的看跌 Delta 不能和今天的数据相加，所以合计只覆盖第一个账户。先取得看跌在今天收盘的 Delta，再说整个组合是否中性；即便那样，Gamma、时间和波动率风险依然存在。",
 					),
 				],
 			};

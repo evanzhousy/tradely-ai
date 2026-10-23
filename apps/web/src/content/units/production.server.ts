@@ -4,6 +4,7 @@ import {
 	money,
 	numberQuestion as n,
 	oi,
+	plain,
 	quotes,
 	type TeachingUnit,
 	t,
@@ -118,6 +119,7 @@ export const productionUnits: TeachingUnit[] = [
 	},
 	{
 		id: "market-recap",
+		version: 3,
 		conceptLab: {
 			kind: "market-recap",
 			intro: t(
@@ -139,7 +141,19 @@ export const productionUnits: TeachingUnit[] = [
 			"限制说明要紧挨着它所限制的结论。缺失的行不是高度为零的柱子。",
 		),
 		case: (v) => {
+			// The packet is cookbook-research-packet's case(v), unchanged, so the recap agrees with
+			// the learner's packet work; only the draft chart is the recap's own.
 			const p = packetData(v);
+			const r1Leads = p.countA > p.countB;
+			const leadStrike = r1Leads ? 100 : 105;
+			const high = Math.max(p.countA, p.countB);
+			const low = Math.min(p.countA, p.countB);
+			const highRow = r1Leads ? "R1" : "R2";
+			const lowRow = r1Leads ? "R2" : "R1";
+			// Where the draft chart's contracts axis starts; above zero, bar heights stop matching counts.
+			const axis = [150, 100, 0, 0][v];
+			const drawn = plain((high - axis) / (low - axis));
+			const ratio = plain(high / low);
 			return {
 				brief: p.brief,
 				worksheet: p.worksheet,
@@ -191,6 +205,65 @@ export const productionUnits: TeachingUnit[] = [
 						"unknown",
 						"Say exactly which strikes a total covers. With R3 missing, the bars add up to an observed subtotal.",
 						"要说清总量覆盖哪些行权价。R3 缺失时，柱子加起来只是已观测的小计。",
+					),
+					c(
+						"leader",
+						"Which headline does the packet support?",
+						"研究包支持哪一个标题？",
+						[
+							[
+								"100",
+								"The 100 call traded the most contracts among the calls with data",
+								"在有数据的看涨中，100 看涨成交的张数最多",
+								`R1, the 100 call, traded ${p.countA} contracts, fewer than R2's ${p.countB}. Read the bars before naming a leader.`,
+								`R1（100 看涨）成交 ${p.countA} 张，少于 R2 的 ${p.countB} 张。先看清柱子，再说谁领先。`,
+							],
+							[
+								"105",
+								"The 105 call traded the most contracts among the calls with data",
+								"在有数据的看涨中，105 看涨成交的张数最多",
+								`R2, the 105 call, traded ${p.countB} contracts, fewer than R1's ${p.countA}. Read the bars before naming a leader.`,
+								`R2（105 看涨）成交 ${p.countB} 张，少于 R1 的 ${p.countA} 张。先看清柱子，再说谁领先。`,
+							],
+							[
+								"busiest",
+								`The ${leadStrike} call was the busiest October 16 call on September 3`,
+								`${leadStrike} 看涨是 9 月 3 日最活跃的 10 月 16 日看涨`,
+								`It names the right call, but "busiest" covers every call in the question. R3, the 110 call, is missing, so the lead holds only among the calls with data.`,
+								"它选对了合约，但“最活跃”涵盖问题中的所有看涨。R3（110 看涨）缺失，所以领先只在有数据的看涨中成立。",
+							],
+						],
+						String(leadStrike),
+						`${highRow}, the ${leadStrike} call, traded ${high} contracts against ${low}. With R3 missing, the headline has to say "among the calls with data".`,
+						`${highRow}（${leadStrike} 看涨）成交 ${high} 张，对比 ${low} 张。R3 缺失，所以标题必须写明“在有数据的看涨中”。`,
+					),
+					c(
+						"axis",
+						`Your draft chart of contracts by strike starts its vertical axis at ${axis} and marks R3 as no data. Can it go out as drawn?`,
+						`你的草稿图按行权价显示成交张数，纵轴从 ${axis} 开始，并把 R3 标为无数据。它能按原样发布吗？`,
+						[
+							[
+								"publish",
+								"Yes: each bar's height is in proportion to its count",
+								"能：每根柱子的高度与张数成比例",
+								`From ${axis}, ${highRow}'s bar is drawn ${drawn}× ${lowRow}'s, though it traded only ${ratio}× as many. Start the axis at zero.`,
+								`从 ${axis} 开始，${highRow} 的柱子被画成 ${lowRow} 的 ${drawn} 倍，而它的成交只有 ${ratio} 倍。要让坐标轴从零开始。`,
+							],
+							[
+								"redraw",
+								"No: start the axis at zero first",
+								"不能：先让坐标轴从零开始",
+								`The axis already starts at zero, so ${p.countA} and ${p.countB} are drawn in proportion, and R3 is marked as missing. It can go out with its caption.`,
+								`坐标轴已经从零开始，${p.countA} 和 ${p.countB} 按比例画出，R3 也标为缺失。配上图注就可以发布。`,
+							],
+						],
+						axis > 0 ? "redraw" : "publish",
+						axis > 0
+							? `A bar's height should be in proportion to its count. From ${axis}, ${high} against ${low} is drawn as ${high - axis} against ${low - axis}: ${drawn}× instead of ${ratio}×.`
+							: "From zero, each bar's height is in proportion to its count, and R3 is marked as missing rather than drawn as a zero. The chart can go out with its caption.",
+						axis > 0
+							? `柱高应与张数成比例。从 ${axis} 开始，${high} 对 ${low} 被画成 ${high - axis} 对 ${low - axis}：${drawn} 倍，而不是 ${ratio} 倍。`
+							: "从零开始，每根柱子的高度都与张数成比例，R3 也标为缺失，而不是画成零。配上图注就可以发布。",
 					),
 				],
 			};

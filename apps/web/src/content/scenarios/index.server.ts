@@ -5,6 +5,7 @@ import foundationsCasesV2 from "../units/archive/foundations-cases-v2.json";
 import { archivedFoundationUnits } from "../units/archive/foundations-original.server";
 import { optionContractsV2 } from "../units/archive/option-contracts-v2.server";
 import orientationCasesV2 from "../units/archive/orientation-cases-v2.json";
+import researchCasesV2 from "../units/archive/research-cases-v2.json";
 import workflowsCasesV2 from "../units/archive/workflows-cases-v2.json";
 import { unitScenarios } from "../units/authoring.server";
 import { archivedFoundationV4Units } from "../units/foundation-revision.server";
@@ -24,6 +25,7 @@ import { sessionFlowScenarios } from "./session-flow";
 const frozen = (scenarios: unknown) => scenarios as LearningScenario[];
 
 const archivedScenarios = [
+	...frozen(researchCasesV2),
 	...frozen(workflowsCasesV2),
 	...frozen(exposureStructureCasesV2),
 	...frozen(foundationsCasesV2),
