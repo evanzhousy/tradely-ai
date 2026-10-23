@@ -525,8 +525,22 @@ const scenes = [
 					id: "less",
 					label: ["Less: time value has drained", "更少：时间价值流失了"],
 				},
-				{ id: "more", label: ["More: ALFA went up", "更多：ALFA 涨了"] },
-				{ id: "same", label: ["Exactly $4.20", "正好 $4.20"] },
+				{
+					id: "more",
+					label: ["More: ALFA went up", "更多：ALFA 涨了"],
+					why: [
+						"The $2 rise does add value, but 20 of the 32 days have also passed, and the lost time value outweighs the rise.",
+						"$2 的上涨确实增加了价值，但 32 天中也已过去 20 天，流失的时间价值超过了上涨带来的部分。",
+					],
+				},
+				{
+					id: "same",
+					label: ["Exactly $4.20", "正好 $4.20"],
+					why: [
+						"An option's price changes every day even when the stock doesn't, because its time value shrinks as expiry nears.",
+						"即使股价不变，期权价格也每天都在变，因为越接近到期，时间价值越少。",
+					],
+				},
 			],
 			answer: "less",
 			explain: [
@@ -598,8 +612,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "loss", label: ["−$1,580", "−$1,580"] },
-				{ id: "keep", label: ["+$420", "+$420"] },
-				{ id: "premium", label: ["−$420", "−$420"] },
+				{
+					id: "keep",
+					label: ["+$420", "+$420"],
+					why: [
+						"Ben keeps the $420 only if ALFA ends at or below $100. At $120 the shares he must deliver are worth $2,000 more than he gets for them.",
+						"只有 ALFA 收在 $100 或以下，Ben 才能保住 $420。在 $120，他必须交付的股票比他收到的价钱多值 $2,000。",
+					],
+				},
+				{
+					id: "premium",
+					label: ["−$420", "−$420"],
+					why: [
+						"A buyer's loss stops at the premium; a writer's does not. Ben loses $20 a share on 100 shares, less the $420 he collected.",
+						"买方的亏损以权利金为限，义务方不是。Ben 每股亏 $20，共 100 股，再减去他收取的 $420。",
+					],
+				},
 			],
 			answer: "loss",
 			entry: { answer: -1580, prefix: "$" },
@@ -673,8 +701,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "full", label: ["$231.50", "$231.50"] },
-				{ id: "spread", label: ["$45", "$45"] },
-				{ id: "fees", label: ["$6.50", "$6.50"] },
+				{
+					id: "spread",
+					label: ["$45", "$45"],
+					why: [
+						"$45 is the $0.45 spread on one contract. You traded 5 contracts, $225 of spread, and paid fees on both trades.",
+						"$45 是一张合约的 $0.45 价差。你交易了 5 张，价差共 $225，两笔交易还要付费用。",
+					],
+				},
+				{
+					id: "fees",
+					label: ["$6.50", "$6.50"],
+					why: [
+						"$6.50 is only the fees. Buying at the ask and selling at the bid also costs the $0.45 spread on 500 shares, $225.",
+						"$6.50 只是费用。按卖价买、按买价卖，还要付 500 股的 $0.45 价差，共 $225。",
+					],
+				},
 			],
 			answer: "full",
 			entry: { answer: 231.5, prefix: "$", tolerance: 0.5, eitherSign: true },

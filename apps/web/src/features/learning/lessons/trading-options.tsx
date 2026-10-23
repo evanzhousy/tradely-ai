@@ -531,8 +531,19 @@ const scenes = [
 				{
 					id: "sooner",
 					label: ["The Oct 18 call: it's sooner", "10月18日：更快到期"],
+					why: [
+						"Expiring sooner leaves less time for ALFA to move above $100, so the right is worth less, not more.",
+						"越快到期，ALFA 涨过 $100 的时间就越少，所以这项权利更不值钱，而不是更贵。",
+					],
 				},
-				{ id: "same", label: ["They cost the same", "价格相同"] },
+				{
+					id: "same",
+					label: ["They cost the same", "价格相同"],
+					why: [
+						"The strike is the same, but the Nov 15 call gives four more weeks of the same right, and that extra time has value.",
+						"行权价相同，但 11月15日 看涨多给了四周同样的权利，多出的时间是有价值的。",
+					],
+				},
 			],
 			answer: "later",
 			explain: [
@@ -611,8 +622,22 @@ const scenes = [
 						"0 张：它作为新的最优买价等待",
 					],
 				},
-				{ id: "ask", label: ["Both, at $2.65", "2 张，价格 $2.65"] },
-				{ id: "limit", label: ["Both, at $2.40", "2 张，价格 $2.40"] },
+				{
+					id: "ask",
+					label: ["Both, at $2.65", "2 张，价格 $2.65"],
+					why: [
+						"A limit order never pays more than its limit. $2.65 is above your $2.40, so the order can't fill there.",
+						"限价单绝不会付出高于限价的价格。$2.65 高于你的 $2.40，所以这张单不能在那里成交。",
+					],
+				},
+				{
+					id: "limit",
+					label: ["Both, at $2.40", "2 张，价格 $2.40"],
+					why: [
+						"A limit sets the most you'll pay; it doesn't make anyone sell at that price. No seller is offering $2.40, so nothing fills yet.",
+						"限价只设定你最多愿意付的价格，并不会让任何人按这个价格卖给你。目前没有卖方报 $2.40，所以还不会成交。",
+					],
+				},
 			],
 			answer: "wait",
 			entry: { answer: 0, unit: [" contracts", " 张"] },
@@ -695,10 +720,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "sell", label: ["Sell it to close", "卖出平仓"] },
-				{ id: "exercise", label: ["Exercise it", "行权"] },
+				{
+					id: "exercise",
+					label: ["Exercise it", "行权"],
+					why: [
+						"Exercising buys 100 shares at the strike and throws away the option's remaining time value. Selling the call keeps it.",
+						"行权会按行权价买入 100 股，并丢掉期权剩余的时间价值。卖出看涨则能保留它。",
+					],
+				},
 				{
 					id: "wait",
 					label: ["Wait for the broker to close it", "等券商帮你平仓"],
+					why: [
+						"Waiting leaves the outcome to expiry rules and your broker's policies, and time value drains while you wait. Selling the call is how you exit on your own terms.",
+						"等待会把结果交给到期规则和券商的政策，而且等待期间时间价值不断流失。卖出看涨，才能按你自己的方式退出。",
+					],
 				},
 			],
 			answer: "sell",

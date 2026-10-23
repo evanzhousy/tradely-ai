@@ -599,9 +599,23 @@ const scenes = [
 				"你持有 100 股 ALFA，价格 $100。ALFA 涨到 $101。你的持仓增加多少？",
 			],
 			choices: [
-				{ id: "one", label: ["$1", "$1"] },
+				{
+					id: "one",
+					label: ["$1", "$1"],
+					why: [
+						"$1 is the gain on one share. You own 100, so the position gains 100 times that.",
+						"$1 是一股的收益。你持有 100 股，所以持仓的收益是它的 100 倍。",
+					],
+				},
 				{ id: "hundred", label: ["$100", "$100"] },
-				{ id: "value", label: ["$101", "$101"] },
+				{
+					id: "value",
+					label: ["$101", "$101"],
+					why: [
+						"$101 is the new price of one share, not a gain. The gain is the $1 change times the 100 shares you own.",
+						"$101 是一股的新价格，不是收益。收益是 $1 的变化乘以你持有的 100 股。",
+					],
+				},
 			],
 			answer: "hundred",
 			revealAt: 2,
@@ -684,10 +698,18 @@ const scenes = [
 				{
 					id: "bid",
 					label: ["$1,000.00, at the bid", "$1,000.00，按买价"],
+					why: [
+						"The bid is what buyers are offering. To buy right away you pay what a seller asks, $100.05 a share.",
+						"买价是买方的出价。要立即买入，你得付卖方的要价，每股 $100.05。",
+					],
 				},
 				{
 					id: "last",
 					label: ["$1,000.20, at the last trade", "$1,000.20，按最新成交价"],
+					why: [
+						"$100.02 is where the last trade happened, not a price anyone is offering now. An immediate buy pays the current ask.",
+						"$100.02 是上一笔成交的价格，不是现在有人提供的价格。立即买入要付当前的卖价。",
+					],
 				},
 				{
 					id: "ask",
@@ -778,8 +800,22 @@ const scenes = [
 					id: "two",
 					label: ["ALFA and BRDX, not IDX 500", "ALFA 和 BRDX，不包括 IDX 500"],
 				},
-				{ id: "all", label: ["All three", "三个都可以"] },
-				{ id: "one", label: ["Only ALFA", "只有 ALFA"] },
+				{
+					id: "all",
+					label: ["All three", "三个都可以"],
+					why: [
+						"An index such as IDX 500 is a number calculated from many stocks, so there is no IDX 500 share to buy. You reach it through funds or index options.",
+						"IDX 500 这样的指数是由许多股票计算出来的数值，没有可以买的 IDX 500 份额。你只能通过基金或指数期权参与。",
+					],
+				},
+				{
+					id: "one",
+					label: ["Only ALFA", "只有 ALFA"],
+					why: [
+						"An ETF trades on an exchange like a share, so BRDX can be bought directly, just as ALFA can.",
+						"ETF 像股票一样在交易所交易，所以 BRDX 和 ALFA 一样可以直接买入。",
+					],
+				},
 			],
 			answer: "two",
 			revealAt: 2,

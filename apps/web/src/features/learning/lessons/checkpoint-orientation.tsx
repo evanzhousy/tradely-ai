@@ -498,8 +498,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "bid", label: [usd(STOCK.bid * 30), usd(STOCK.bid * 30)] },
-				{ id: "last", label: [usd(STOCK.last * 30), usd(STOCK.last * 30)] },
-				{ id: "ask", label: [usd(STOCK.ask * 30), usd(STOCK.ask * 30)] },
+				{
+					id: "last",
+					label: [usd(STOCK.last * 30), usd(STOCK.last * 30)],
+					why: [
+						`${usd(STOCK.last)} is the last trade, already history. Selling right away takes the best bid, ${usd(STOCK.bid)}.`,
+						`${usd(STOCK.last)} 是上一笔成交，已经是历史。立即卖出成交在最优买价 ${usd(STOCK.bid)}。`,
+					],
+				},
+				{
+					id: "ask",
+					label: [usd(STOCK.ask * 30), usd(STOCK.ask * 30)],
+					why: [
+						`The ask, ${usd(STOCK.ask)}, is what sellers want. You are the seller, so you get what buyers bid, ${usd(STOCK.bid)}.`,
+						`卖价 ${usd(STOCK.ask)} 是卖方的要价。你是卖方，所以只能拿到买方的出价 ${usd(STOCK.bid)}。`,
+					],
+				},
 			],
 			answer: "bid",
 			entry: { answer: (STOCK.bid * 30) / 100, tolerance: 0.01, prefix: "$" },
@@ -579,12 +593,20 @@ const scenes = [
 				{
 					id: "value",
 					label: [perContract(worth(BUYER_AT)), perContract(worth(BUYER_AT))],
+					why: [
+						`At $${BUYER_AT} the call is worth $${(BUYER_AT - 105) * 100} a contract. That is its value, not your profit: take off the ${usd(CALL_QUOTE.ask * 100, 0)} you paid.`,
+						`$${BUYER_AT} 时看涨每张值 $${(BUYER_AT - 105) * 100}。这是它的价值，不是你的盈亏：还要减去你付出的 ${usd(CALL_QUOTE.ask * 100, 0)}。`,
+					],
 				},
 				{
 					id: "loss",
 					label: [
 						perContract(-CALL_QUOTE.ask / 100),
 						perContract(-CALL_QUOTE.ask / 100),
+					],
+					why: [
+						`You lose the whole premium only if ALFA ends at or below $105. At $${BUYER_AT} the call is in the money and worth $${(BUYER_AT - 105) * 100} a contract.`,
+						`只有 ALFA 收在 $105 或以下，你才会损失全部权利金。在 $${BUYER_AT}，看涨处于实值，每张值 $${(BUYER_AT - 105) * 100}。`,
 					],
 				},
 			],
@@ -674,12 +696,20 @@ const scenes = [
 						perContract(CALL_QUOTE.bid / 100),
 						perContract(CALL_QUOTE.bid / 100),
 					],
+					why: [
+						`Ben keeps the full ${usd(CALL_QUOTE.bid * 100, 0)} only if ALFA ends at or below $105. At $${WRITER_AT} he owes $${WRITER_AT - 105} a share on the call.`,
+						`只有 ALFA 收在 $105 或以下，Ben 才能保住全部 ${usd(CALL_QUOTE.bid * 100, 0)}。在 $${WRITER_AT}，他在这张看涨上每股欠 $${WRITER_AT - 105}。`,
+					],
 				},
 				{
 					id: "capped",
 					label: [
 						perContract(-CALL_QUOTE.bid / 100),
 						perContract(-CALL_QUOTE.bid / 100),
+					],
+					why: [
+						`The premium caps the buyer's loss, not the writer's. At $${WRITER_AT} Ben owes $${(WRITER_AT - 105) * 100} a contract, more than the ${usd(CALL_QUOTE.bid * 100, 0)} he collected.`,
+						`权利金限制的是买方的亏损，不是义务方的。ALFA 在 $${WRITER_AT} 时，Ben 每张欠 $${(WRITER_AT - 105) * 100}，超过他收取的 ${usd(CALL_QUOTE.bid * 100, 0)}。`,
 					],
 				},
 			],
@@ -760,12 +790,20 @@ const scenes = [
 				{
 					id: "all",
 					label: [`Both, at ${usd(LIMIT)}`, `2 张，价格 ${usd(LIMIT)}`],
+					why: [
+						`A limit sets the most you'll pay; it doesn't make anyone sell to you. Nobody is offering ${usd(LIMIT)}, so the order waits.`,
+						`限价只设定你最多愿意付的价格，并不会让任何人卖给你。没有人报 ${usd(LIMIT)}，所以这张单会等待。`,
+					],
 				},
 				{
 					id: "ask",
 					label: [
 						`Both, at ${usd(NOV_QUOTE.ask)}`,
 						`2 张，价格 ${usd(NOV_QUOTE.ask)}`,
+					],
+					why: [
+						`A limit buy never pays more than its limit. The ${usd(NOV_QUOTE.ask)} ask is above your ${usd(LIMIT)}, so it can't fill there.`,
+						`限价买单绝不会付出高于限价的价格。卖价 ${usd(NOV_QUOTE.ask)} 高于你的 ${usd(LIMIT)}，所以不能在那里成交。`,
 					],
 				},
 			],

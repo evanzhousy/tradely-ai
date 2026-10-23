@@ -613,8 +613,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "zero", label: ["$0: it expires worthless", "$0：作废"] },
-				{ id: "five", label: ["$500", "$500"] },
-				{ id: "minus", label: ["−$500", "−$500"] },
+				{
+					id: "five",
+					label: ["$500", "$500"],
+					why: [
+						"$500 is what a $100 put would pay with ALFA at $95. A call pays only when ALFA ends above $100.",
+						"$500 是 ALFA 为 $95 时 $100 看跌期权的收益。看涨期权只有在 ALFA 收在 $100 以上时才有价值。",
+					],
+				},
+				{
+					id: "minus",
+					label: ["−$500", "−$500"],
+					why: [
+						"A call is a right, not an obligation, so it can't be worth less than nothing. You simply don't use it, and you lose only the premium.",
+						"看涨期权是权利而不是义务，所以它的价值不会低于零。你只是不使用它，损失的只有权利金。",
+					],
+				},
 			],
 			answer: "zero",
 			entry: { answer: 0, prefix: "$" },
@@ -696,8 +710,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "put", label: ["Buy a put", "买入看跌"] },
-				{ id: "call", label: ["Buy a call", "买入看涨"] },
-				{ id: "sellput", label: ["Sell a put", "卖出看跌"] },
+				{
+					id: "call",
+					label: ["Buy a call", "买入看涨"],
+					why: [
+						"A call gains when ALFA rises, the same direction as your shares, so it pays nothing when they fall.",
+						"看涨期权在 ALFA 上涨时获利，和你的股票同方向，所以股票下跌时它什么也不赔。",
+					],
+				},
+				{
+					id: "sellput",
+					label: ["Sell a put", "卖出看跌"],
+					why: [
+						"Selling a put obliges you to buy more ALFA at the strike if it falls, so a fall hurts you on the shares and on the put.",
+						"卖出看跌意味着 ALFA 下跌时你必须按行权价再买入，所以下跌时股票和看跌两头都亏。",
+					],
+				},
 			],
 			answer: "put",
 			explain: [
@@ -795,10 +823,21 @@ const scenes = [
 					id: "sell",
 					label: ["Sell you 100 shares at $100", "以 $100 卖给你 100 股"],
 				},
-				{ id: "pay", label: ["Pay you $110 a share", "每股付你 $110"] },
+				{
+					id: "pay",
+					label: ["Pay you $110 a share", "每股付你 $110"],
+					why: [
+						"Exercising a call means buying shares at the strike, so Ben delivers 100 shares at $100. He doesn't pay you the stock's price.",
+						"行使看涨期权就是按行权价买入股票，所以 Ben 要以 $100 交付 100 股，而不是付给你股价。",
+					],
+				},
 				{
 					id: "refuse",
 					label: ["Nothing; he can refuse", "什么都不用做，他可以拒绝"],
+					why: [
+						"Ben took on the obligation when he sold the call and collected the premium. Only the holder chooses whether to exercise; the writer must deliver.",
+						"Ben 卖出看涨、收取权利金时就承担了义务。只有持有人决定是否行权；义务方必须交付。",
+					],
 				},
 			],
 			answer: "sell",
