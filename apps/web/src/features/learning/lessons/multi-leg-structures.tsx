@@ -644,8 +644,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "both", label: ["$108.40", "$108.40"] },
-				{ id: "one", label: ["$104.20: one premium", "$104.20：一份权利金"] },
-				{ id: "strike", label: ["$100: the strike", "$100：行权价"] },
+				{
+					id: "one",
+					label: ["$104.20: one premium", "$104.20：一份权利金"],
+					why: [
+						"$104.20 covers only the call's premium. You paid for the put too, so above $100 the call must recover $8.40.",
+						"$104.20 只覆盖了看涨的权利金。你还为看跌付了钱，所以在 $100 以上看涨要收回 $8.40。",
+					],
+				},
+				{
+					id: "strike",
+					label: ["$100: the strike", "$100：行权价"],
+					why: [
+						"At $100 both legs expire worthless and you lose the full $8.40. The pair needs a move of $8.40 either way.",
+						"在 $100，两条腿都到期作废，你损失全部 $8.40。这一组需要向任一方向变动 $8.40。",
+					],
+				},
 			],
 			answer: "both",
 			entry: { answer: STRADDLE_HIGH, tolerance: 0.01, prefix: "$" },
@@ -728,8 +742,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "net", label: ["$283", "$283"] },
-				{ id: "width", label: ["$500: the width", "$500：价差宽度"] },
-				{ id: "credit", label: ["$217: the credit", "$217：收入"] },
+				{
+					id: "width",
+					label: ["$500: the width", "$500：价差宽度"],
+					why: [
+						"$500 is one side's width, but you keep the $217 credit whatever happens. The worst case is $500 − $217.",
+						"$500 是一侧的宽度，但无论发生什么，你都保留 $217 的收入。最坏情况是 $500 − $217。",
+					],
+				},
+				{
+					id: "credit",
+					label: ["$217: the credit", "$217：收入"],
+					why: [
+						"$217 is the most it can make, not lose. If ALFA ends beyond a long strike, one side costs $500, less the credit.",
+						"$217 是它最多能赚的，而不是最多会亏的。如果 ALFA 收在买入的行权价之外，一侧要付 $500，再减去收入。",
+					],
+				},
 			],
 			answer: "net",
 			entry: { answer: Math.round(MAX_LOSS * 100), tolerance: 1, prefix: "$" },
@@ -821,10 +849,18 @@ const scenes = [
 				{
 					id: "bullish",
 					label: ["Bullish: two legs are bullish", "看涨：有两条腿是看涨的"],
+					why: [
+						"Counting legs misreads a package. Two of the four labels look bullish, but together the legs are a short iron condor that profits if ALFA stays in a range.",
+						"数腿会误读组合单。四个标签中有两个看似看涨，但合起来是铁鹰空头，ALFA 留在区间内才获利。",
+					],
 				},
 				{
 					id: "bearish",
 					label: ["Slightly bearish, by premium", "按权利金算，略偏看跌"],
+					why: [
+						"Weighing labels by premium still reads the legs one by one. Together they are a short iron condor: a bet on ALFA staying between $95 and $105.",
+						"按权利金加权标签，仍然是逐腿解读。合起来它们是铁鹰空头：押注 ALFA 留在 $95 到 $105 之间。",
+					],
 				},
 			],
 			answer: "range",

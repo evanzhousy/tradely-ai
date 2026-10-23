@@ -610,8 +610,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "mid", label: ["MID: inside the spread", "MID：价差之内"] },
-				{ id: "ask", label: ["ASK: a buyer paid up", "ASK：买方加价"] },
-				{ id: "bid", label: ["BID", "BID"] },
+				{
+					id: "ask",
+					label: ["ASK: a buyer paid up", "ASK：买方加价"],
+					why: [
+						"$4.15 is below the $4.20 ask, so nobody paid the ask. It printed inside the spread.",
+						"$4.15 低于 $4.20 的卖价，所以没有人付卖价。它成交在价差之内。",
+					],
+				},
+				{
+					id: "bid",
+					label: ["BID", "BID"],
+					why: [
+						"$4.15 is above the $4.10 bid, so it didn't print at the bid. It sits inside the spread.",
+						"$4.15 高于 $4.10 的买价，所以不是在买价成交。它位于价差之内。",
+					],
+				},
 			],
 			answer: "mid",
 			revealAt: 1,
@@ -693,8 +707,22 @@ const scenes = [
 					id: "withheld",
 					label: ["Can't say: the quote is too old", "无法判断：报价太旧"],
 				},
-				{ id: "aask", label: ["AASK: above the ask", "AASK：高于卖价"] },
-				{ id: "mid", label: ["MID", "MID"] },
+				{
+					id: "aask",
+					label: ["AASK: above the ask", "AASK：高于卖价"],
+					why: [
+						"Against the 90-second-old quote it looks above the ask, but the market at 11:42 may have moved. An old quote can't place a print.",
+						"对照 90 秒前的报价，它看似高于卖价，但 11:42 的市场可能已经变了。过时的报价不能用来给成交定位。",
+					],
+				},
+				{
+					id: "mid",
+					label: ["MID", "MID"],
+					why: [
+						"The quote you have can't give MID: against it the print is above the ask. Without the quote in force at 11:42, the side stays unknown.",
+						"你手上的报价得不出 MID：对照它，这笔成交高于卖价。没有 11:42 有效的报价，位置就仍未知。",
+					],
+				},
 			],
 			answer: "withheld",
 			revealAt: 1,
@@ -790,10 +818,18 @@ const scenes = [
 				{
 					id: "bearish",
 					label: ["Someone is betting ALFA falls", "有人押注 ALFA 下跌"],
+					why: [
+						"A print at the bid suggests who started it, not why. The seller may have been closing a long position, not betting on a fall.",
+						"在买价成交只提示可能是谁发起，并不说明原因。卖方可能是在平掉多头，而不是押注下跌。",
+					],
 				},
 				{
 					id: "short",
 					label: ["A new short position opened", "开立了新的空头"],
+					why: [
+						"The tape doesn't say whether a trade opened or closed a position. Here both sides were in fact closing.",
+						"成交记录不显示交易是开仓还是平仓。在这里，双方其实都在平仓。",
+					],
 				},
 			],
 			answer: "seller",

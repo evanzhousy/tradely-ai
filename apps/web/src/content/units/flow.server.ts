@@ -414,6 +414,8 @@ export const flowUnits: TeachingUnit[] = [
 								"can",
 								"Yes: selling calls always means a spread",
 								"能：卖出看涨总是意味着价差",
+								"Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
+								"卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。",
 							],
 							[
 								"cannot",
@@ -611,9 +613,27 @@ export const flowUnits: TeachingUnit[] = [
 						"What does this position need to make money?",
 						"这个持仓要赚钱需要什么？",
 						[
-							["big", "A big move, either way", "大幅变动，方向不限"],
-							["up", "A rise", "上涨"],
-							["calm", "The stock staying in a range", "股价留在一个区间内"],
+							[
+								"big",
+								"A big move, either way",
+								"大幅变动，方向不限",
+								"A big move is what a long straddle or strangle needs. This short condor loses if the stock breaks out; it needs calm.",
+								"大幅变动是跨式或宽跨式多头需要的。这组铁鹰空头在股价突破时亏损，它需要平稳。",
+							],
+							[
+								"up",
+								"A rise",
+								"上涨",
+								`${condor ? "A rise past the short call strike loses money for a short condor. It profits only while the stock stays between its short strikes." : "A rise is only half of it: the long put pays if the stock falls far enough too. Either big move works."}`,
+								`${condor ? "对铁鹰空头来说，涨过卖出的看涨行权价会亏钱。只有股价留在两个卖出行权价之间时才获利。" : "上涨只是一半：股价跌得足够多时，看跌多头同样赚钱。向任一方向的大幅变动都可以。"}`,
+							],
+							[
+								"calm",
+								"The stock staying in a range",
+								"股价留在一个区间内",
+								`A long ${cases.kind === "straddle" ? "straddle" : "strangle"} loses most if the stock stays put, because both legs lose value. It needs a move past a break-even.`,
+								`${cases.kind === "straddle" ? "跨式" : "宽跨式"}多头在股价原地不动时亏得最多，因为两条腿都在贬值。它需要越过盈亏平衡点的变动。`,
+							],
 						],
 						condor ? "calm" : "big",
 						condor

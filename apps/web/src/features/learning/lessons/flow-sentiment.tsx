@@ -566,10 +566,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "bearish", label: ["Bearish", "看跌"] },
-				{ id: "bullish", label: ["Bullish: someone bought", "看涨：有人买入"] },
+				{
+					id: "bullish",
+					label: ["Bullish: someone bought", "看涨：有人买入"],
+					why: [
+						"Buying isn't bullish by itself. A bought put gains as ALFA falls, so the feed labels it bearish.",
+						"买入本身并不代表看涨。买入的看跌在 ALFA 下跌时获利，所以数据把它标为看跌。",
+					],
+				},
 				{
 					id: "none",
 					label: ["No label: puts are different", "没有标签：看跌期权不同"],
+					why: [
+						"Puts get labels too. The rule covers all four cases, and a put bought at the ask is labelled bearish.",
+						"看跌期权同样有标签。规则涵盖全部四种情况，在卖价买入的看跌被标为看跌。",
+					],
 				},
 			],
 			answer: "bearish",
@@ -658,10 +669,18 @@ const scenes = [
 				{
 					id: "bullish",
 					label: ["Bullish: calls were bought", "看涨：看涨期权被买入"],
+					why: [
+						"Every trade has a buyer and a seller. Inside the spread you can't tell which one started it, so the label stays neutral.",
+						"每笔成交都有买方和卖方。在价差之内，你看不出是哪一方发起的，所以标签保持中性。",
+					],
 				},
 				{
 					id: "split",
 					label: ["Half bullish, half bearish", "一半看涨，一半看跌"],
+					why: [
+						"Neutral doesn't split a print between two views. It means the side is unknown, so the print gets no direction at all.",
+						"中性不是把一笔成交分给两种观点。它表示方向未知，所以这笔成交完全没有方向。",
+					],
 				},
 			],
 			answer: "neutral",
@@ -764,12 +783,23 @@ const scenes = [
 					id: "floor",
 					label: ["Still long ALFA, with a floor", "仍然看多 ALFA，并有下限"],
 				},
-				{ id: "bearish", label: ["A bearish position", "看跌的持仓"] },
+				{
+					id: "bearish",
+					label: ["A bearish position", "看跌的持仓"],
+					why: [
+						"The bearish label describes the put leg alone. With the shares, the position still gains as ALFA rises; the put only limits losses below $95.",
+						"看跌标签只描述看跌这条腿。加上股票，持仓在 ALFA 上涨时仍然获利；看跌只是限制 $95 以下的亏损。",
+					],
+				},
 				{
 					id: "flat",
 					label: [
 						"Nothing: the put cancels the stock",
 						"什么都没有：看跌抵消了股票",
+					],
+					why: [
+						"The put cancels only the losses below $95. Above that the shares still gain, so the investor is still long ALFA.",
+						"看跌只抵消 $95 以下的亏损。在那之上，股票仍然获利，所以投资者依旧看多 ALFA。",
 					],
 				},
 			],

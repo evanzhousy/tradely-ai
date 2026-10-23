@@ -656,8 +656,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "ten", label: ["10 contracts: one trade", "10 张：一笔成交"] },
-				{ id: "twenty", label: ["20: a buy and a sell", "20 张：一买一卖"] },
-				{ id: "none", label: ["0 until Ben confirms", "Ben 确认前为 0"] },
+				{
+					id: "twenty",
+					label: ["20: a buy and a sell", "20 张：一买一卖"],
+					why: [
+						"Your buy and Ben's sell are one execution seen from two sides. Volume counts the contracts traded once, not once for each party.",
+						"你的买入和 Ben 的卖出是同一笔成交的两面。成交量按成交的合约计一次，而不是每方各计一次。",
+					],
+				},
+				{
+					id: "none",
+					label: ["0 until Ben confirms", "Ben 确认前为 0"],
+					why: [
+						"Ben's resting offer already agreed to sell at $4.10. When your order meets it, the trade executes and prints; nobody confirms it afterwards.",
+						"Ben 的挂单已经同意以 $4.10 卖出。你的订单遇到它时，成交就完成并被记录，事后不需要谁来确认。",
+					],
+				},
 			],
 			answer: "ten",
 			entry: { answer: 10, unit: [" contracts", " 张"] },
@@ -742,10 +756,21 @@ const scenes = [
 						"22 张；另外 8 张在 $4.15 等待",
 					],
 				},
-				{ id: "all", label: ["All 30, at $4.15", "全部 30 张，价格 $4.15"] },
+				{
+					id: "all",
+					label: ["All 30, at $4.15", "全部 30 张，价格 $4.15"],
+					why: [
+						"A limit buy takes only what is offered at or below its price. There are 22 contracts up to $4.15, so the other 8 wait.",
+						"限价买单只能吃下不高于限价的卖单。$4.15 及以下只有 22 张，所以另外 8 张要等待。",
+					],
+				},
 				{
 					id: "none",
 					label: ["None: limit orders always wait", "0 张：限价单总是等待"],
+					why: [
+						"A limit order waits only for the part it can't fill. This one can trade now: offers at $4.10 and $4.15 are within its limit.",
+						"限价单只有成交不了的部分才会等待。这张单现在就能成交：$4.10 和 $4.15 的卖单都在限价以内。",
+					],
 				},
 			],
 			answer: "some",
@@ -832,8 +857,22 @@ const scenes = [
 					id: "unknown",
 					label: ["Can't tell from the print", "仅凭成交记录无法判断"],
 				},
-				{ id: "market", label: ["A market order", "市价单"] },
-				{ id: "limit", label: ["A limit order", "限价单"] },
+				{
+					id: "market",
+					label: ["A market order", "市价单"],
+					why: [
+						"A market order would print this way, but so would a buy limit at $4.10 or higher. The tape doesn't record the order type.",
+						"市价单会这样成交，不低于 $4.10 的买入限价单也会。成交记录不包含订单类型。",
+					],
+				},
+				{
+					id: "limit",
+					label: ["A limit order", "限价单"],
+					why: [
+						"A buy limit at $4.10 or higher would print this way, but so would a market order. The tape doesn't record the order type.",
+						"不低于 $4.10 的买入限价单会这样成交，市价单也会。成交记录不包含订单类型。",
+					],
+				},
 			],
 			answer: "unknown",
 			revealAt: 2,

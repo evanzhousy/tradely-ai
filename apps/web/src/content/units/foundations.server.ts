@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 import {
 	basics,
+	type ChoiceSpec,
 	choose as c,
 	money,
 	numberQuestion as n,
@@ -13,6 +14,15 @@ import {
 } from "./authoring.server";
 
 import { revisedFoundationUnits } from "./foundation-revision.server";
+
+/** What each execution-side code means, for the why line of a code the learner picked. */
+const codeMeaning: Record<string, { en: string; zh: string }> = {
+	AASK: t("above the ask", "高于卖价"),
+	ASK: t("exactly at the ask", "正好等于卖价"),
+	MID: t("inside the spread", "在价差之内"),
+	BID: t("exactly at the bid", "正好等于买价"),
+	BBID: t("below the bid", "低于买价"),
+};
 
 export const foundationUnits: TeachingUnit[] = [
 	...revisedFoundationUnits,
@@ -150,6 +160,8 @@ export const foundationUnits: TeachingUnit[] = [
 								buyer
 									? "挂单的卖方，因为卖单是他挂的"
 									: "你，主动到来的卖方；双方都在买价成交",
+								"The resting seller only supplied the offer. Your incoming buy asked for an immediate fill, so you started the trade.",
+								"挂单的卖方只是提供了卖单。你的买单要求立即成交，所以是你发起的。",
 							],
 							[
 								"buyer",
@@ -159,11 +171,15 @@ export const foundationUnits: TeachingUnit[] = [
 								buyer
 									? "你，主动到来的买方；双方都在卖价成交"
 									: "挂单的买方，因为成交在买价",
+								"The resting buyer only supplied the bid. Your incoming sell asked for an immediate fill, so you started the trade.",
+								"挂单的买方只是提供了买单。你的卖单要求立即成交，所以是你发起的。",
 							],
 							[
 								"both",
 								"Neither: count the buyer and the seller as two prints",
 								"都不是：把买方和卖方算作两笔成交",
+								"One trade has two sides but prints once. Your incoming order started it; the resting order is the other side of the same trade.",
+								"一笔成交有两方，但只记录一次。你的订单发起了它，挂单是同一笔成交的另一方。",
 							],
 						],
 						buyer ? "buyer" : "seller",
@@ -243,7 +259,13 @@ export const foundationUnits: TeachingUnit[] = [
 							`Print ${i + 1} is at ${money(item.price)}. Which code does it get?`,
 							`第 ${i + 1} 笔成交在 ${money(item.price)}。它属于哪个代码？`,
 							["ASK", "MID", "BBID", "AASK", "BID"].map(
-								(code) => [code, code, code] as [string, string, string],
+								(code): ChoiceSpec => [
+									code,
+									code,
+									code,
+									`${code} means a print ${codeMeaning[code].en}. ${money(item.price)} is ${item.why.en}.`,
+									`${code} 表示成交${codeMeaning[code].zh}。${money(item.price)} ${item.why.zh}。`,
+								],
 							),
 							item.code,
 							`${money(item.price)} is ${item.why.en}: ${item.code}.`,
@@ -255,7 +277,13 @@ export const foundationUnits: TeachingUnit[] = [
 						"If that quote turns out to be 90 seconds old, what can you still keep?",
 						"如果发现这个报价其实早了 90 秒，你还能保留什么？",
 						[
-							["same", "All five codes, unchanged", "全部五个代码，保持不变"],
+							[
+								"same",
+								"All five codes, unchanged",
+								"全部五个代码，保持不变",
+								"The codes depended on the quote. If it's 90 seconds old, it can't place these prints, so the codes no longer hold.",
+								"代码取决于报价。如果报价早了 90 秒，就无法给这些成交定位，代码也就不再成立。",
+							],
 							[
 								"unknown",
 								"The five prices, but not their codes",
@@ -265,6 +293,8 @@ export const foundationUnits: TeachingUnit[] = [
 								"reverse",
 								"The codes, flipped from buys to sells",
 								"代码，但把买入全部改成卖出",
+								"An old quote makes the side unknown, not reversed. Nothing in the evidence says the buys were sells.",
+								"过时的报价让方向变得未知，而不是相反。证据中没有任何东西表明买入其实是卖出。",
 							],
 						],
 						"unknown",
@@ -307,6 +337,10 @@ export const foundationUnits: TeachingUnit[] = [
 						"A call bought at the ask: the buyer who started it gains if ALFA rises, so bullish flow.",
 						"在卖价买入看涨：发起的买方在 ALFA 上涨时获利，所以是看涨成交流。",
 					),
+					opposite: t(
+						"Bearish would fit a call sold at the bid. This call was bought at the ask, and a bought call gains if ALFA rises.",
+						"看跌标签适用于在买价卖出的看涨。这张看涨是在卖价买入的，买入的看涨在 ALFA 上涨时获利。",
+					),
 				},
 				{
 					type: "CALL",
@@ -315,6 +349,10 @@ export const foundationUnits: TeachingUnit[] = [
 					why: t(
 						"A call sold at the bid: the seller who started it gives up ALFA's upside, so bearish flow.",
 						"在买价卖出看涨：发起的卖方放弃了 ALFA 的上涨空间，所以是看跌成交流。",
+					),
+					opposite: t(
+						"A call isn't bullish by itself. This one was sold at the bid, and its seller gives up ALFA's upside.",
+						"看涨期权本身并不代表看涨。这张是在买价卖出的，卖方放弃了 ALFA 的上涨空间。",
 					),
 				},
 				{
@@ -325,6 +363,10 @@ export const foundationUnits: TeachingUnit[] = [
 						"A put bought at the ask: the buyer who started it gains if ALFA falls, so bearish flow.",
 						"在卖价买入看跌：发起的买方在 ALFA 下跌时获利，所以是看跌成交流。",
 					),
+					opposite: t(
+						"Buying isn't bullish by itself. A put bought at the ask gains if ALFA falls.",
+						"买入本身并不代表看涨。在卖价买入的看跌在 ALFA 下跌时获利。",
+					),
 				},
 				{
 					type: "PUT",
@@ -333,6 +375,10 @@ export const foundationUnits: TeachingUnit[] = [
 					why: t(
 						"A put sold at the bid: the seller who started it collects premium and loses if ALFA falls, so bullish flow.",
 						"在买价卖出看跌：发起的卖方收取权利金、在 ALFA 下跌时亏损，所以是看涨成交流。",
+					),
+					opposite: t(
+						"A put isn't bearish by itself. This one was sold at the bid, and its seller loses if ALFA falls.",
+						"看跌期权本身并不代表看跌。这张是在买价卖出的，卖方在 ALFA 下跌时亏损。",
 					),
 				},
 			];
@@ -365,9 +411,27 @@ export const foundationUnits: TeachingUnit[] = [
 							`Which flow label does print P${v + 1}-${i + 1} get?`,
 							`成交 P${v + 1}-${i + 1} 应该贴哪个成交流标签？`,
 							[
-								["bull", "Bullish flow", "看涨成交流"],
-								["bear", "Bearish flow", "看跌成交流"],
-								["neutral", "Direction can't be told", "无法判断方向"],
+								[
+									"bull",
+									"Bullish flow",
+									"看涨成交流",
+									row.opposite.en,
+									row.opposite.zh,
+								],
+								[
+									"bear",
+									"Bearish flow",
+									"看跌成交流",
+									row.opposite.en,
+									row.opposite.zh,
+								],
+								[
+									"neutral",
+									"Direction can't be told",
+									"无法判断方向",
+									"The side is known: there's a quote from the same moment and reliable evidence of who started it, so the print gets a direction.",
+									"方向是已知的：有同一时刻的报价和谁发起的可靠证据，所以这笔成交有方向。",
+								],
 							],
 							row.answer,
 							row.why.en,
@@ -383,6 +447,8 @@ export const foundationUnits: TeachingUnit[] = [
 								"flat",
 								"The trader expects ALFA to stay flat",
 								"交易者预期 ALFA 横盘",
+								"Neutral describes the evidence, not a forecast. Nothing here says the trader expects ALFA to stay flat.",
+								"中性描述的是证据，而不是预测。这里没有任何信息说明交易者预期 ALFA 横盘。",
 							],
 							[
 								"unknown",
@@ -393,6 +459,8 @@ export const foundationUnits: TeachingUnit[] = [
 								"hedged",
 								"The trader's whole book is delta-neutral",
 								"交易者的整个账户 Delta 中性",
+								"A label on one print says nothing about the trader's whole book. Neutral here only means the side is unknown.",
+								"一笔成交的标签说明不了交易者的整个账户。这里的中性只表示方向未知。",
 							],
 						],
 						"unknown",
@@ -408,6 +476,8 @@ export const foundationUnits: TeachingUnit[] = [
 								"yes",
 								"Yes: a put buyer must be bearish overall",
 								"能：买看跌的人整体上必然看跌",
+								"A put buyer isn't necessarily bearish overall: a shareholder buying protection, or someone closing a short put, prints the same way.",
+								"买看跌的人整体上不一定看跌：买保护的持股者、平掉看跌空头的人，成交记录都一样。",
 							],
 							[
 								"no",
@@ -470,16 +540,26 @@ export const foundationUnits: TeachingUnit[] = [
 						"What can you say about who started the trade?",
 						"关于谁发起了这笔成交，你能得出什么结论？",
 						[
-							["buyer", "A buyer probably started it", "大概是买方发起的"],
+							[
+								"buyer",
+								"A buyer probably started it",
+								"大概是买方发起的",
+								`${stale ? "The quote is 90 seconds older than the trade, so it can't say who started it, buyer or seller." : "It printed at a bid from the same moment, which points to a seller starting it, not a buyer."}`,
+								`${stale ? "报价比成交早了 90 秒，无法说明是买方还是卖方发起的。" : "它成交在同一时刻的买价上，说明大概是卖方发起的，而不是买方。"}`,
+							],
 							[
 								"seller",
 								"A seller probably started it; the strategy is still unknown",
 								"大概是卖方发起的；策略仍然未知",
+								"A bid from 90 seconds earlier can't place this print, so even a probable seller goes further than the evidence.",
+								"90 秒前的买价无法给这笔成交定位，所以连“大概是卖方”也超出了证据。",
 							],
 							[
 								"unknown",
 								"You can't reliably say who started it",
 								"无法可靠判断是谁发起的",
+								"With a bid from the same moment, the print points to a seller starting it. That much you can say; it's the strategy that stays unknown.",
+								"有同一时刻的买价，这笔成交说明大概是卖方发起的。这一点可以说，仍然未知的是策略。",
 							],
 						],
 						stale ? "unknown" : "seller",

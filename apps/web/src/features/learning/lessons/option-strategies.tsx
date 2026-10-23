@@ -655,10 +655,18 @@ const scenes = [
 				{
 					id: "bearish",
 					label: ["Yes: short calls are bearish", "是的：看涨空头就是看跌"],
+					why: [
+						"A short call can be one leg of a bullish plan: written against shares it's a covered call, and paired with a long call it's a bull spread.",
+						"看涨空头可以是看涨计划中的一条腿：对着股票卖出是备兑看涨，与看涨多头搭配是看涨价差。",
+					],
 				},
 				{
 					id: "risk",
 					label: ["Yes, and with unlimited risk", "是的，而且风险无限"],
+					why: [
+						"Unlimited risk applies only to an uncovered call. Against 100 shares or a long 100 call, the risk above the strike is covered.",
+						"只有未备兑的看涨空头才有无限风险。对着 100 股或 100 看涨多头时，行权价以上的风险已被覆盖。",
+					],
 				},
 			],
 			answer: "unknown",
@@ -737,8 +745,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: ["+$375", "+$375"] },
-				{ id: "long", label: ["+$1,000", "+$1,000"] },
-				{ id: "gross", label: ["+$875", "+$875"] },
+				{
+					id: "long",
+					label: ["+$1,000", "+$1,000"],
+					why: [
+						"+$1,000 is the long 105 call alone. The short 110 call gives back $500 at $115, and the spread cost $125.",
+						"+$1,000 只是 105 看涨多头本身。110 看涨空头在 $115 时要退回 $500，而且价差成本是 $125。",
+					],
+				},
+				{
+					id: "gross",
+					label: ["+$875", "+$875"],
+					why: [
+						"+$875 takes the cost off the long call but leaves out the short 110 call, which costs $500 at $115.",
+						"+$875 是从看涨多头中减去了成本，却漏掉了 110 看涨空头，它在 $115 时要付 $500。",
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: 375, prefix: "$" },
@@ -827,8 +849,19 @@ const scenes = [
 				{
 					id: "flip",
 					label: ["They changed their mind twice", "他改了两次主意"],
+					why: [
+						"The two trades came a second apart at the same strike and size. That's one plan, closing October and opening November, not two changes of mind.",
+						"两笔交易相隔一秒，行权价和数量都相同。这是一个计划：平掉十月、开立十一月，而不是两次改变主意。",
+					],
 				},
-				{ id: "two", label: ["Two different traders", "两个不同的交易者"] },
+				{
+					id: "two",
+					label: ["Two different traders", "两个不同的交易者"],
+					why: [
+						"Same size, same strike, a second apart: that pattern points to one trader rolling the position, not two strangers matching by chance.",
+						"相同数量、相同行权价、相隔一秒：这种形态指向一个交易者在移仓，而不是两个陌生人碰巧对上。",
+					],
+				},
 			],
 			answer: "roll",
 			revealAt: 2,

@@ -502,8 +502,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: [String(AT_OR_ABOVE), String(AT_OR_ABOVE)] },
-				{ id: "ask", label: ["20", "20"] },
-				{ id: "all", label: ["40", "40"] },
+				{
+					id: "ask",
+					label: ["20", "20"],
+					why: [
+						`20 printed at the ask, but 3 more printed above it, at ${usd(PRINTS[3].price)}. At or above the ask counts both.`,
+						`20 张成交在卖价，但还有 3 张高于卖价，在 ${usd(PRINTS[3].price)}。“卖价及以上”两者都算。`,
+					],
+				},
+				{
+					id: "all",
+					label: ["40", "40"],
+					why: [
+						`40 counts every print. The 5 at ${usd(PRINTS[1].price)} sit inside the spread and the 12 at ${usd(PRINTS[2].price)} at the bid.`,
+						`40 张算上了全部成交。${usd(PRINTS[1].price)} 的 5 张在价差之内，${usd(PRINTS[2].price)} 的 12 张在买价。`,
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: AT_OR_ABOVE, unit: [" contracts", " 张"] },
@@ -580,8 +594,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: [`+${NET}`, `+${NET}`] },
-				{ id: "all", label: [`+${AT_OR_ABOVE + 5}`, `+${AT_OR_ABOVE + 5}`] },
-				{ id: "zero", label: ["0", "0"] },
+				{
+					id: "all",
+					label: [`+${AT_OR_ABOVE + 5}`, `+${AT_OR_ABOVE + 5}`],
+					why: [
+						`+${AT_OR_ABOVE + 5} adds the 5 neutral contracts to the bullish ones and never subtracts the ${BID_SIDE} sold at the bid. Neutral prints stay out of the net; bearish ones come off it.`,
+						`+${AT_OR_ABOVE + 5} 把 5 张中性成交加进了看涨，却没有减去在买价卖出的 ${BID_SIDE} 张。中性成交不计入净额，看跌成交要从中减去。`,
+					],
+				},
+				{
+					id: "zero",
+					label: ["0", "0"],
+					why: [
+						`The labels don't cancel out: ${AT_OR_ABOVE} contracts are bullish and ${BID_SIDE} bearish, so the net is +${NET}.`,
+						`标签并没有相互抵消：看涨 ${AT_OR_ABOVE} 张，看跌 ${BID_SIDE} 张，所以净额是 +${NET}。`,
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: NET, unit: [" contracts", " 张"] },
@@ -664,12 +692,23 @@ const scenes = [
 						usd(Math.round(NET_DEBIT * 100)),
 					],
 				},
-				{ id: "long", label: [usd(QUOTE.ask), usd(QUOTE.ask)] },
+				{
+					id: "long",
+					label: [usd(QUOTE.ask), usd(QUOTE.ask)],
+					why: [
+						`${usd(QUOTE.ask)} is what the 105 calls cost alone. Selling the 110 calls brought back ${usd(QUOTE_110.bid)}, so the package paid less.`,
+						`${usd(QUOTE.ask)} 只是 105 看涨本身的成本。卖出 110 看涨收回了 ${usd(QUOTE_110.bid)}，所以整体付得更少。`,
+					],
+				},
 				{
 					id: "sum",
 					label: [
 						usd(QUOTE.ask + QUOTE_110.bid),
 						usd(QUOTE.ask + QUOTE_110.bid),
+					],
+					why: [
+						`Adding the two prices treats the sale as a cost. Selling the 110 calls brought money in, so it comes off: ${usd(QUOTE.ask)} − ${usd(QUOTE_110.bid)}.`,
+						`把两个价格相加，是把卖出当成了成本。卖出 110 看涨带来了收入，应当减去：${usd(QUOTE.ask)} − ${usd(QUOTE_110.bid)}。`,
 					],
 				},
 			],
@@ -740,8 +779,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "none", label: ["0", "0"] },
-				{ id: "drop", label: [String(BEFORE - AFTER), String(BEFORE - AFTER)] },
-				{ id: "rest", label: [String(AFTER), String(AFTER)] },
+				{
+					id: "drop",
+					label: [String(BEFORE - AFTER), String(BEFORE - AFTER)],
+					why: [
+						`A drop of ${BEFORE - AFTER} could come from a cancel as easily as from a trade. With no print on the tape, nothing traded.`,
+						`减少 ${BEFORE - AFTER} 张既可能是撤单，也可能是成交。逐笔成交里没有记录，就没有成交。`,
+					],
+				},
+				{
+					id: "rest",
+					label: [String(AFTER), String(AFTER)],
+					why: [
+						`${AFTER} is what is still offered, not what traded. Only a print on the tape shows a trade.`,
+						`${AFTER} 张是仍挂着的数量，不是成交的数量。只有成交记录才显示成交。`,
+					],
+				},
 			],
 			answer: "none",
 			entry: { answer: 0, unit: [" contracts", " 张"] },

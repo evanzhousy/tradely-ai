@@ -496,8 +496,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: ["$107,500", "$107,500"] },
-				{ id: "shares", label: ["$1,075", "$1,075"] },
-				{ id: "price", label: ["$215", "$215"] },
+				{
+					id: "shares",
+					label: ["$1,075", "$1,075"],
+					why: [
+						"$1,075 is $2.15 × 500, the price of 500 shares. Each contract covers 100 shares, so multiply by 100 as well.",
+						"$1,075 是 $2.15 × 500，只是 500 股的价钱。每张合约对应 100 股，还要再乘以 100。",
+					],
+				},
+				{
+					id: "price",
+					label: ["$215", "$215"],
+					why: [
+						"$215 is one contract's premium, $2.15 × 100. The print was 500 contracts.",
+						"$215 是一张合约的权利金，$2.15 × 100。这笔成交有 500 张。",
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: 107500, prefix: "$" },
@@ -609,10 +623,18 @@ const scenes = [
 				{
 					id: "bet",
 					label: ["A big bet that ALFA rises", "押注 ALFA 上涨的大单"],
+					why: [
+						"The record shows a trade, not a belief. The calls may close a short, cover shares or form part of a spread.",
+						"记录显示的是一笔成交，而不是看法。这些看涨可能是平掉空头、备兑股票或组成价差的一部分。",
+					],
 				},
 				{
 					id: "open",
 					label: ["500 new contracts opened", "开立了 500 张新合约"],
+					why: [
+						"A print doesn't say whether it opened or closed positions. That takes the next open-interest report.",
+						"成交记录不显示是开仓还是平仓。这需要下一次的未平仓量报告。",
+					],
 				},
 			],
 			answer: "facts",
@@ -721,10 +743,18 @@ const scenes = [
 				{
 					id: "bigger",
 					label: ["Another large print today", "今天另一笔大单"],
+					why: [
+						"Another print adds volume, not an answer: it can't say whether either trade opened or closed. Open interest can.",
+						"另一笔成交只增加成交量，不提供答案：它不能说明哪笔是开仓还是平仓。未平仓量可以。",
+					],
 				},
 				{
 					id: "wait",
 					label: ["Watching whether ALFA rises", "观察 ALFA 是否上涨"],
+					why: [
+						"ALFA's price says nothing about whether contracts opened. Only open interest counts the contracts still outstanding.",
+						"ALFA 的价格不能说明合约是否开仓。只有未平仓量统计仍然存续的合约。",
+					],
 				},
 			],
 			answer: "oi",

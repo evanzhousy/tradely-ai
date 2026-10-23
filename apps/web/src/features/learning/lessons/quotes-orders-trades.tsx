@@ -704,8 +704,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "ask", label: ["$2.15, the ask", "$2.15，卖价"] },
-				{ id: "last", label: ["$2.00, the last", "$2.00，最新成交价"] },
-				{ id: "mid", label: ["$2.10, the midpoint", "$2.10，中点"] },
+				{
+					id: "last",
+					label: ["$2.00, the last", "$2.00，最新成交价"],
+					why: [
+						"$2.00 is where the last trade happened, not a price anyone is offering now. A market buy takes the best offer, $2.15.",
+						"$2.00 是上一笔成交的价格，不是现在有人提供的价格。市价买单会成交在最优卖价 $2.15。",
+					],
+				},
+				{
+					id: "mid",
+					label: ["$2.10, the midpoint", "$2.10，中点"],
+					why: [
+						"Nobody is offering $2.10; it's just the average of bid and ask. A market buy pays the ask, $2.15.",
+						"没有人报 $2.10，它只是买价和卖价的平均。市价买单要付卖价 $2.15。",
+					],
+				},
 			],
 			answer: "ask",
 			entry: { answer: 2.15, prefix: "$", unit: [" a share", " 每股"] },
@@ -794,10 +808,18 @@ const scenes = [
 				{
 					id: "traded",
 					label: ["5: the size fell by 5", "5 张：数量减少了 5"],
+					why: [
+						"A smaller size can come from a cancel as easily as from a trade. With no print on the tape, you can't say any contracts traded.",
+						"数量减少既可能来自成交，也可能来自撤单。逐笔成交里没有记录，就不能说有合约成交。",
+					],
 				},
 				{
 					id: "rest",
 					label: ["8: the size still offered", "8 张：仍挂着的数量"],
+					why: [
+						"8 is what is still offered, not what traded. A quote shows willingness to trade; only a print shows a trade.",
+						"8 张是仍挂着的数量，不是成交的数量。报价显示的是交易意愿，只有成交记录才显示成交。",
+					],
 				},
 			],
 			answer: "unknown",
@@ -880,8 +902,19 @@ const scenes = [
 				{
 					id: "a",
 					label: ["$2.00 / $2.20, venue A's", "$2.00 / $2.20，场所 A 的"],
+					why: [
+						"That is only one venue's quote. The best quote takes the highest bid and the lowest ask from any venue: B's $2.05 and C's $2.15.",
+						"这只是一个场所的报价。最优报价取所有场所中最高的买价和最低的卖价：B 的 $2.05 和 C 的 $2.15。",
+					],
 				},
-				{ id: "wide", label: ["$1.95 / $2.25", "$1.95 / $2.25"] },
+				{
+					id: "wide",
+					label: ["$1.95 / $2.25", "$1.95 / $2.25"],
+					why: [
+						"That takes the lowest bid and the highest ask, the worst price on each side. The best quote is the highest bid and the lowest ask.",
+						"这是取了最低的买价和最高的卖价，即每一边最差的价格。最优报价是最高的买价和最低的卖价。",
+					],
+				},
 			],
 			answer: "best",
 			revealAt: 2,
