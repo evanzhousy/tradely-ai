@@ -1034,8 +1034,8 @@ export const concepts: Record<ConceptId, Concept> = {
 		id: "C29",
 		name: t("Performance measurement", "绩效衡量"),
 		description: t(
-			"Balance growth is not return: deposits and withdrawals must be separated from performance, which time-weighted return does. Win rate alone says nothing about size, so average win against average loss, profit factor and drawdown are read together, and attribution shows which positions produced the result.",
-			"账户余额增长不等于收益：必须把存取款与绩效分开，时间加权收益率正是为此。胜率本身不说明金额大小，所以要把平均盈利与平均亏损、盈利因子和回撤放在一起读，归因则显示哪些持仓产生了结果。",
+			"Balance growth is not return: deposits and withdrawals must be separated from performance, which time-weighted return does. Win rate counts profitable closed trades and says nothing about size, so average win against average loss, profit factor (gross gains over gross losses) and drawdown are read together, and attribution shows which positions produced the result within the history actually covered.",
+			"账户余额增长不等于收益：必须把存取款与绩效分开，时间加权收益率正是为此。胜率统计的是盈利的已平仓交易，不说明金额大小，所以要把平均盈利与平均亏损、盈利因子（总盈利除以总亏损）和回撤放在一起读，归因则在实际覆盖的历史范围内显示哪些持仓产生了结果。",
 		),
 		evidence: [
 			t(
@@ -1043,8 +1043,8 @@ export const concepts: Record<ConceptId, Concept> = {
 				"从一段时期的收益中剔除存款，并算出时间加权收益率",
 			),
 			t(
-				"Weigh a win rate against average win and loss to find the profit factor",
-				"把胜率与平均盈亏放在一起权衡，算出盈利因子",
+				"Compute the profit factor from gross gains and gross losses, and show how a high win rate can still lose money",
+				"由总盈利与总亏损算出盈利因子，并演示高胜率为何仍可能亏钱",
 			),
 			t(
 				"Read a drawdown from an equity path and say what it does and does not measure",
@@ -1448,8 +1448,8 @@ export const concepts: Record<ConceptId, Concept> = {
 		id: "C41",
 		name: t("Expected move", "预期变动"),
 		description: t(
-			"Implied volatility is an annual standard deviation under the pricing model; the expected move to expiry is spot times IV times the square root of the fraction of a year left, with the day-count convention stated. About 68 % of model outcomes fall within one such move, the at-the-money straddle prices roughly 0.8 of it, and real stocks close outside the range more often than the model's tails suggest.",
-			"隐含波动率是定价模型下的年化标准差；到期前的预期变动等于标的价格乘以 IV 再乘以剩余年份比例的平方根，并要说明天数约定。模型下约 68% 的结果落在一个这样的变动之内，平值跨式的价格约为它的 0.8，而真实股价收在区间之外的频率高于模型尾部的暗示。",
+			"Implied volatility is an annual standard deviation under the pricing model; the expected move to expiry is spot times IV times the square root of the fraction of a year left, with the day-count convention stated. About 68 % of model outcomes fall within one such move, the at-the-money straddle prices the average move, about 0.8 of it, and real prices jump around news more often than the model allows. Both describe a size the options price, not a direction.",
+			"隐含波动率是定价模型下的年化标准差；到期前的预期变动等于标的价格乘以 IV 再乘以剩余年份比例的平方根，并要说明天数约定。模型下约 68% 的结果落在一个这样的变动之内，平值跨式定价的是平均变动，约为它的 0.8，而真实价格在新闻前后跳动的频率高于模型所允许的。两者描述的都是期权定价的幅度，而不是方向。",
 		),
 		evidence: [
 			t(
