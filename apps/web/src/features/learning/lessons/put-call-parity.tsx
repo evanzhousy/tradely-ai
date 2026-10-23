@@ -732,8 +732,19 @@ const scenes = [
 				{
 					id: "call",
 					label: ["$0: the call expires worthless", "$0：看涨到期作废"],
+					why: [
+						"The call does expire worthless, but you also sold the put. At $90 it costs you $10 a share, −$1,000.",
+						"看涨确实到期作废，但你还卖出了看跌。在 $90，它让你每股付 $10，即 −$1,000。",
+					],
 				},
-				{ id: "put", label: ["+$1,000: the put pays", "+$1,000：看跌赚钱"] },
+				{
+					id: "put",
+					label: ["+$1,000: the put pays", "+$1,000：看跌赚钱"],
+					why: [
+						"A put pays its holder, and you sold this one, so you are the one paying. At $90 that is −$1,000 for you.",
+						"看跌期权让持有人赚钱，而你是卖方，所以付钱的是你。在 $90，对你来说是 −$1,000。",
+					],
+				},
 			],
 			answer: "line",
 			entry: { answer: -1000, prefix: "$" },
@@ -819,10 +830,18 @@ const scenes = [
 				{
 					id: "same",
 					label: ["$5.25, the same as the call", "$5.25，和看涨一样"],
+					why: [
+						"A call and a put at one strike cost the same only when ALFA sits at the strike. With ALFA $2 above it, the call is worth $2 more.",
+						"同一行权价的看涨和看跌只有在 ALFA 正好等于行权价时才同价。ALFA 高出行权价 $2，看涨就要多值 $2。",
+					],
 				},
 				{
 					id: "added",
 					label: ["$7.25: $5.25 + $2.00", "$7.25：$5.25 + $2.00"],
+					why: [
+						"The $2.00 gap goes the other way. ALFA above the strike makes the call dearer, so the put is $5.25 − $2.00, not plus.",
+						"$2.00 的差额方向相反。ALFA 高于行权价让看涨更贵，所以看跌是 $5.25 − $2.00，而不是加。",
+					],
 				},
 			],
 			answer: "parity",
@@ -897,10 +916,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "gap", label: ["$0.65", "$0.65"] },
-				{ id: "diff", label: ["$2.65: call minus put", "$2.65：看涨减看跌"] },
+				{
+					id: "diff",
+					label: ["$2.65: call minus put", "$2.65：看涨减看跌"],
+					why: [
+						"$2.65 is the gap between the two prints. Parity says that gap should be ALFA minus the strike, $2.00, so the call sits $0.65 above it.",
+						"$2.65 是两笔成交之差。平价关系要求这个差等于 ALFA 减行权价，即 $2.00，所以看涨高出 $0.65。",
+					],
+				},
 				{
 					id: "none",
 					label: ["$0: prints can't break parity", "$0：成交不会偏离平价"],
+					why: [
+						"Prints can stray from parity: a late report, a stale quote or a package can put a trade off the line. A gap is a reason to check, not proof of anything.",
+						"成交可能偏离平价：延迟报告、过时报价或组合单都可能让一笔成交偏离。偏离是去核查的理由，而不是任何证据。",
+					],
 				},
 			],
 			answer: "gap",

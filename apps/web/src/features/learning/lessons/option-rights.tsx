@@ -911,10 +911,18 @@ const scenes = [
 				{
 					id: "sell",
 					label: ["Sell 100 ALFA at $95", "按 $95 卖出 100 股 ALFA"],
+					why: [
+						"Selling at $95 is the holder's right. As the writer you are on the other side, so you buy.",
+						"按 $95 卖出是持有人的权利。你是义务方，站在另一边，所以你要买入。",
+					],
 				},
 				{
 					id: "choose",
 					label: ["Nothing: it's my choice", "什么都不用做，由我决定"],
+					why: [
+						"The choice belongs to the holder. Once you are assigned, the writer has no choice left: you must buy the shares.",
+						"选择权属于持有人。一旦被指派，义务方就没有选择了：你必须买入股票。",
+					],
 				},
 			],
 			answer: "buy",
@@ -1006,8 +1014,19 @@ const scenes = [
 				{
 					id: "flat",
 					label: ["Flat: I sold what I had", "空仓：我卖掉了持有的"],
+					why: [
+						"You can only close what you hold. With no ALFA options, selling one opens a new short position.",
+						"你只能平掉你持有的仓位。没有任何 ALFA 期权时，卖出一张就是开立新的空头。",
+					],
 				},
-				{ id: "long", label: ["Still long 1 call", "仍是多头 1 张"] },
+				{
+					id: "long",
+					label: ["Still long 1 call", "仍是多头 1 张"],
+					why: [
+						"Selling never adds to a long position. With nothing held, the sale makes you the writer, short 1 call.",
+						"卖出不会增加多头仓位。没有持仓时，卖出让你成为义务方，持有 1 张看涨空头。",
+					],
+				},
 			],
 			answer: "short",
 			revealAt: 3,
@@ -1104,8 +1123,22 @@ const scenes = [
 						"持有该看跌空头的某人，随机选出",
 					],
 				},
-				{ id: "ben", label: ["Ben, who sold it to me", "卖给我的 Ben"] },
-				{ id: "broker", label: ["My broker", "我的券商"] },
+				{
+					id: "ben",
+					label: ["Ben, who sold it to me", "卖给我的 Ben"],
+					why: [
+						"Once a trade clears, the clearinghouse stands between the two sides, so your put isn't tied to Ben. He may have closed his position long ago.",
+						"成交清算后，清算机构站在双方之间，所以你的看跌期权不绑定 Ben。他可能早就平仓了。",
+					],
+				},
+				{
+					id: "broker",
+					label: ["My broker", "我的券商"],
+					why: [
+						"Your broker passes the exercise on; it doesn't buy the shares itself. The clearinghouse assigns it to someone short that put.",
+						"券商只是把行权转交出去，自己并不买入股票。清算机构把它指派给持有该看跌空头的人。",
+					],
+				},
 			],
 			answer: "random",
 			revealAt: 2,

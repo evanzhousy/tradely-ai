@@ -2,6 +2,7 @@ import "@tanstack/react-start/server-only";
 import type { ScenarioQuestion } from "@/domain/learning/scenario";
 import { archivedFoundationUnits } from "./archive/foundations-original.server";
 import {
+	type ChoiceSpec,
 	choose as c,
 	fact as f,
 	money,
@@ -12,7 +13,8 @@ import {
 	t,
 } from "./authoring.server";
 
-const identityChoices: [string, string, string][] = [
+type IdentityId = "same" | "different" | "unknown";
+const identityLabels: [IdentityId, string, string][] = [
 	[
 		"same",
 		"The same contract, seen at two moments",
@@ -29,6 +31,14 @@ const identityChoices: [string, string, string][] = [
 		"无法判断：缺少一项定义条款",
 	],
 ];
+/** The identity answers with why each misses in this case; choose() drops the accepted one's. */
+const identityChoices = (
+	why: Partial<Record<IdentityId, [string, string]>>,
+): ChoiceSpec[] =>
+	identityLabels.map(([id, en, zh]) => {
+		const line = why[id];
+		return line ? [id, en, zh, line[0], line[1]] : [id, en, zh];
+	});
 const missingAmount = (id: string, en: string, zh: string) =>
 	c(
 		id,
@@ -40,8 +50,16 @@ const missingAmount = (id: string, en: string, zh: string) =>
 				"standard",
 				"Yes: assume 100 shares per contract",
 				"能：假设每张 100 股",
+				"100 shares is common but not guaranteed: adjusted and mini contracts cover other amounts. Without the terms, assuming 100 could be wrong.",
+				"100 股很常见，但不是必然：调整后的合约和迷你合约对应其他股数。没有条款时，假设 100 股可能是错的。",
 			],
-			["zero", "Yes: count the missing amount as zero", "能：把缺失的数当作零"],
+			[
+				"zero",
+				"Yes: count the missing amount as zero",
+				"能：把缺失的数当作零",
+				"A missing number isn't zero: the contracts cover some number of shares, and you can't say how many until the terms are known.",
+				"缺失的数字不等于零：这些合约确实对应一定股数，只是在知道条款之前说不出是多少。",
+			],
 		],
 		"unknown",
 		"How many shares a contract covers has to come from its terms. A missing term isn't a standard 100-share contract, and it isn't zero.",
@@ -60,7 +78,16 @@ function contractsCase(variant: number): TeachingCase {
 					"identity",
 					"Can you tell whether A and B are the same contract?",
 					"你能判断 A 和 B 是不是同一份合约吗？",
-					identityChoices,
+					identityChoices({
+						same: [
+							"A and B match on ticker and strike, but B's expiry is missing, so you can't say they are the same contract.",
+							"A 和 B 的代码和行权价相同，但 B 的到期日缺失，所以不能说它们是同一份合约。",
+						],
+						different: [
+							"Nothing shows a term differs: B's expiry is missing, not different. A missing term leaves the question open.",
+							"没有证据表明有条款不同：B 的到期日是缺失，而不是不同。缺失的条款让问题悬而未决。",
+						],
+					}),
 					"unknown",
 					"B's expiry is missing. A matching ticker and strike aren't enough to say what a contract is, and a price can't settle it either.",
 					"B 的到期日缺失。标的和行权价相同，不足以确定是哪份合约，价格也无法确定这一点。",
@@ -96,7 +123,20 @@ function contractsCase(variant: number): TeachingCase {
 				"identity",
 				"Are A and B the same contract?",
 				"A 和 B 是同一份合约吗？",
-				identityChoices,
+				identityChoices({
+					same: [
+						"B is a put and A a call. Ticker, strike and expiry match, but the right differs, so they're different contracts.",
+						"B 是看跌，A 是看涨。代码、行权价和到期日相同，但权利不同，所以是不同的合约。",
+					],
+					different: [
+						"Every defining term matches. A different time and price are two observations of one contract, not a second contract.",
+						"每一项定义条款都相同。时间和价格不同，只是对同一份合约的两次观测，而不是另一份合约。",
+					],
+					unknown: [
+						"Nothing is missing: both records state every defining term, so you can compare them directly.",
+						"没有缺失：两条记录都写明了全部定义条款，可以直接比较。",
+					],
+				}),
 				different ? "different" : "same",
 				different
 					? "A call and a put give different rights, so they're different contracts even with the same ticker, strike and expiry."
@@ -152,12 +192,20 @@ function rightsCase(variant: number): TeachingCase {
 					"What does assignment require Ben to do?",
 					"被指派后，Ben 必须做什么？",
 					[
-						["buy", "Buy the shares", "买入股票"],
+						[
+							"buy",
+							"Buy the shares",
+							"买入股票",
+							"Buying at the strike is a put writer's duty. Ben wrote calls, whose holders buy, so he delivers the shares.",
+							"按行权价买入是看跌义务方的义务。Ben 卖出的是看涨，持有人买入，所以他要交付股票。",
+						],
 						["sell", "Deliver the shares at the strike", "按行权价交付股票"],
 						[
 							"choice",
 							"Decide whether to go through with it",
 							"自行决定是否履行",
+							"Assignment isn't optional: Ben took on the obligation when he wrote the calls. The holder chose; Ben must deliver.",
+							"指派不是可选的：Ben 卖出看涨时就承担了义务。持有人已经做了选择，Ben 必须交付。",
 						],
 					],
 					"sell",
@@ -186,16 +234,22 @@ function rightsCase(variant: number): TeachingCase {
 						"close-long",
 						"Closed a long option position you held",
 						"平掉了你持有的期权多头",
+						"You started short these puts, so buying them back closes a short position, not a long one.",
+						"你一开始是这些看跌的空头，所以买回它们是平掉空头，而不是多头。",
 					],
 					[
 						"close-short",
 						"Closed a short option position you held",
 						"平掉了你持有的期权空头",
+						"You started out owning these puts, so selling them closes a long position, not a short one.",
+						"你一开始持有这些看跌，所以卖出它们是平掉多头，而不是空头。",
 					],
 					[
 						"exercise",
 						"Exercised the option and moved stock",
 						"行使了期权并转移了股票",
+						"Trading an option isn't exercising it. Nothing was exercised or assigned, so no stock changed hands.",
+						"交易期权不等于行权。没有行权或指派，所以没有股票易手。",
 					],
 				],
 				closeShort ? "close-short" : "close-long",
@@ -295,8 +349,20 @@ function payoffCase(variant: number): TeachingCase {
 				"Is the option in the money at expiry?",
 				"期权到期时是实值吗？",
 				[
-					["itm", "Yes: it has intrinsic value", "是：它有内在价值"],
-					["otm", "No: its intrinsic value is zero", "否：它的内在价值为零"],
+					[
+						"itm",
+						"Yes: it has intrinsic value",
+						"是：它有内在价值",
+						`A ${strike} ${put ? "put" : "call"} has intrinsic value only with ALFA ${put ? "below" : "above"} ${money(strike)}. At ${money(spot)} it has none, so it is out of the money.`,
+						`${strike} ${put ? "看跌" : "看涨"}只有在 ALFA ${put ? "低于" : "高于"} ${money(strike)} 时才有内在价值。在 ${money(spot)}，它没有内在价值，所以是虚值。`,
+					],
+					[
+						"otm",
+						"No: its intrinsic value is zero",
+						"否：它的内在价值为零",
+						`Its intrinsic value is ${money(intrinsic)} a share, so it is in the money. A loss after the premium doesn't change that.`,
+						`它每股有 ${money(intrinsic)} 的内在价值，所以是实值。扣除权利金后亏损也不改变这一点。`,
+					],
 				],
 				intrinsic > 0 ? "itm" : "otm",
 				"In the money compares the strike with ALFA's price. Whether you made money also depends on what you paid and on fees.",
@@ -348,6 +414,8 @@ function settlementCase(variant: number): TeachingCase {
 							"same",
 							"It isn't: they're the same event",
 							"没有不同：它们是同一件事",
+							"Selling to close passes the option to someone else for its price, and no shares move. Exercising uses the right: you pay $50 a share and receive the stock.",
+							"卖出平仓是把期权按价格转给别人，不涉及股票。行权是使用权利：你每股付 $50，收到股票。",
 						],
 					],
 					"exercise",
@@ -377,11 +445,15 @@ function settlementCase(variant: number): TeachingCase {
 							"spot",
 							"Yes: use the last price shown, 4,030",
 							"能：用最近显示的 4,030",
+							"4,030 is the last level shown, not the official settlement value the terms name. Until that is published, the payout is unknown.",
+							"4,030 是最近显示的点位，不是条款指定的官方结算值。在它公布之前，支付金额是未知的。",
 						],
 						[
 							"zero",
 							"Yes: it's zero while the value is missing",
 							"能：数值缺失时就是零",
+							"A missing value isn't zero. The calls may well pay; you can't say how much until the official value arrives.",
+							"缺失的数值不等于零。这些看涨很可能有支付，只是在官方结算值公布前说不出多少。",
 						],
 					],
 					"unknown",
@@ -402,6 +474,8 @@ function settlementCase(variant: number): TeachingCase {
 							"yes",
 							"Yes: 100 shares are delivered instead",
 							"会：改为交付 100 股",
+							"A late value doesn't change the contract. Its terms say cash settlement, and they still apply.",
+							"数值晚到不会改变合约。条款规定现金结算，仍然适用。",
 						],
 					],
 					"no",
@@ -436,7 +510,13 @@ function settlementCase(variant: number): TeachingCase {
 						"The official settlement value, 3,990",
 						"官方结算值 3,990",
 					],
-					["last", "The last price shown, 3,980", "最近显示的价格 3,980"],
+					[
+						"last",
+						"The last price shown, 3,980",
+						"最近显示的价格 3,980",
+						"3,980 is the last level shown, but the terms settle on the official value, 3,990. A more recent-looking price can't replace it.",
+						"3,980 是最近显示的点位，但条款按官方结算值 3,990 结算。看起来更新的价格也不能替代它。",
+					],
 				],
 				"official",
 				"The terms name the official settlement value. A price that looks more recent can't replace it.",
@@ -458,7 +538,13 @@ function settlementCase(variant: number): TeachingCase {
 				"你会收到什么？",
 				[
 					["cash", "Cash; no shares of the index", "现金；不交付指数的股票"],
-					["shares", "100 shares for each contract", "每张 100 股"],
+					[
+						"shares",
+						"100 shares for each contract",
+						"每张 100 股",
+						"The $50 a point converts index points into dollars. An index has no shares to deliver, so these puts pay cash.",
+						"每点 $50 是把指数点换算成美元。指数没有可交付的股票，所以这些看跌支付现金。",
+					],
 				],
 				"cash",
 				"The $50 per point turns index points into dollars; it doesn't mean shares are delivered.",
@@ -488,9 +574,21 @@ const guided: Record<string, () => TeachingCase> = {
 				"Can you treat A and B as the same contract?",
 				"A 和 B 能当作同一份合约吗？",
 				[
-					["same", "Yes: the ticker and strike match", "能：代码和行权价相同"],
+					[
+						"same",
+						"Yes: the ticker and strike match",
+						"能：代码和行权价相同",
+						"Ticker and strike aren't enough: A expires October 16 and B November 20, so they're different contracts.",
+						"代码和行权价还不够：A 于 10 月 16 日到期，B 于 11 月 20 日到期，所以是不同的合约。",
+					],
 					["different", "No: the expiry differs", "不能：到期日不同"],
-					["unknown", "Only the next price can tell", "只有下一个价格才能判断"],
+					[
+						"unknown",
+						"Only the next price can tell",
+						"只有下一个价格才能判断",
+						"A price can't decide what a contract is. The expiries already differ, and that settles it.",
+						"价格无法决定合约是什么。到期日已经不同，这就足以判断。",
+					],
 				],
 				"different",
 				"The expiry is part of what a contract is, so A and B are different contracts. A price is only an observation of one of them.",
@@ -540,11 +638,19 @@ const guided: Record<string, () => TeachingCase> = {
 				"被指派后，Ben 必须做什么？",
 				[
 					["buy", "Buy the shares at the strike", "按行权价买入股票"],
-					["sell", "Sell the shares at the strike", "按行权价卖出股票"],
+					[
+						"sell",
+						"Sell the shares at the strike",
+						"按行权价卖出股票",
+						"Selling at the strike is a put holder's right. Ben wrote the puts, so he takes the other side and buys.",
+						"按行权价卖出是看跌持有人的权利。Ben 是看跌的义务方，站在另一边，所以他要买入。",
+					],
 					[
 						"choice",
 						"Decide whether to go through with it",
 						"自行决定是否履行",
+						"Assignment isn't optional: Ben took on the obligation when he wrote the puts.",
+						"指派不是可选的：Ben 卖出看跌时就承担了义务。",
 					],
 				],
 				"buy",
@@ -612,9 +718,21 @@ const guided: Record<string, () => TeachingCase> = {
 				"What do you receive?",
 				"你会收到什么？",
 				[
-					["shares", "100 shares of the index", "100 股指数股票"],
+					[
+						"shares",
+						"100 shares of the index",
+						"100 股指数股票",
+						"An index can't be delivered as shares, so the call pays the cash amount instead.",
+						"指数无法以股票形式交付，所以这张看涨改为支付现金金额。",
+					],
 					["cash", "The cash amount; no shares", "现金金额；不交付股票"],
-					["premium", "A refund of the premium you paid", "退还你支付的权利金"],
+					[
+						"premium",
+						"A refund of the premium you paid",
+						"退还你支付的权利金",
+						"A premium is never refunded: it paid for the right, which here is worth $1,200 in cash.",
+						"权利金从不退还：它买的是这项权利，而这项权利此时值 $1,200 现金。",
+					],
 				],
 				"cash",
 				"The terms say cash settlement: an index can't be delivered as shares, and the premium is never refunded.",
@@ -676,11 +794,15 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 				"lapse",
 				"It lapses unless you actively submit an exercise notice.",
 				"除非你主动提交行权通知，否则作废。",
+				"It's the other way round: an option 1 cent or more in the money is exercised automatically unless you tell your broker not to.",
+				"正好相反：价内 1 美分或以上的期权会被自动行权，除非你通知券商不要行权。",
 			],
 			[
 				"threshold",
 				"It is exercised only if it is at least 50 points in the money.",
 				"只有价内至少 50 点才会被行权。",
+				"There is no 50-point threshold. The normal rule exercises an option in the money by $0.01 or more.",
+				"没有 50 点的门槛。通常规则是价内 $0.01 或以上就会被行权。",
 			],
 		],
 		"auto",
@@ -701,11 +823,15 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 				"safe",
 				"That there will be no assignment, because the call is not in the money.",
 				"不会被指派，因为看涨期权不在价内。",
+				"At exactly the strike the call isn't in the money, but its holder can still exercise, for example after an after-hours move. The writer can't rule it out.",
+				"恰好在行权价时看涨不在价内，但持有人仍可以行权，例如根据盘后变动。义务方无法排除被指派。",
 			],
 			[
 				"certain",
 				"That assignment is certain, because the stock reached the strike.",
 				"一定会被指派，因为股价到达了行权价。",
+				"Reaching the strike doesn't trigger assignment. At exactly $50.00 the call isn't exercised automatically; it depends on the holder.",
+				"到达行权价不会触发指派。恰好 $50.00 时看涨不会被自动行权，要看持有人。",
 			],
 		],
 		"unknown",
@@ -726,11 +852,15 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 				"last",
 				"At the last trade you could make the day before.",
 				"在前一天你能完成的最后一笔交易时确定。",
+				"The last trade the day before isn't the settlement. The payoff comes from opening prices the next morning, which you can no longer trade against.",
+				"前一天的最后一笔交易不是结算值。到期支付来自第二天早上的开盘价格，而那时你已无法再交易。",
 			],
 			[
 				"choice",
 				"Whenever the holder decides to exercise.",
 				"在持有人决定行权时确定。",
+				"The holder can't pick the moment: the payoff is fixed by the opening-based settlement value on expiration morning.",
+				"持有人无法选择时点：到期支付由到期日早上按开盘价格计算的结算值确定。",
 			],
 		],
 		"open",
@@ -751,11 +881,15 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 				"none",
 				"None: short calls can be assigned only at expiration.",
 				"没有：空头看涨只能在到期时被指派。",
+				"That's true only of European-style options. American-style calls can be assigned on any trading day, and the eve of an ex-dividend date is when it's most likely.",
+				"那只适用于欧式期权。美式看涨任何交易日都可能被指派，而除息日前一天正是最可能的时候。",
 			],
 			[
 				"cash",
 				"The call switches to cash settlement because of the dividend.",
 				"因为派息，看涨期权改为现金结算。",
+				"A dividend doesn't change how a contract settles. It changes the holder's reason to exercise early and collect it.",
+				"派息不会改变合约的结算方式。它改变的是持有人提前行权以获取股息的动机。",
 			],
 		],
 		"early",

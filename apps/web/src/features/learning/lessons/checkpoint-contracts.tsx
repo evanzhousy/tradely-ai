@@ -525,8 +525,19 @@ const scenes = [
 				{
 					id: "share",
 					label: [usd(PUT_QUOTE.ask * 4), usd(PUT_QUOTE.ask * 4)],
+					why: [
+						`${usd(PUT_QUOTE.ask * 4)} is the price of 4 shares. Each contract covers 100 shares, so 4 contracts cost 100 times that.`,
+						`${usd(PUT_QUOTE.ask * 4)} 只是 4 股的价钱。每张合约对应 100 股，所以 4 张要再乘以 100。`,
+					],
 				},
-				{ id: "one", label: [usd(cost(1), 0), usd(cost(1), 0)] },
+				{
+					id: "one",
+					label: [usd(cost(1), 0), usd(cost(1), 0)],
+					why: [
+						`${usd(cost(1), 0)} is one contract. You are buying 4, so multiply by 4.`,
+						`${usd(cost(1), 0)} 只是一张合约的价钱。你要买 4 张，还要乘以 4。`,
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: cost(4) / 100, tolerance: 0.5, prefix: "$" },
@@ -604,10 +615,21 @@ const scenes = [
 						usd(SHORT_PUT * 100 * ASSIGNED * 100, 0),
 					],
 				},
-				{ id: "receive", label: ["$0: you receive cash", "$0：你会收到现金"] },
+				{
+					id: "receive",
+					label: ["$0: you receive cash", "$0：你会收到现金"],
+					why: [
+						"That is the holder's side: they sell and receive cash. As the writer of a put you buy the shares, so you pay.",
+						"那是持有人一方：他们卖出并收到现金。作为看跌的义务方，你要买入股票，所以是你付钱。",
+					],
+				},
 				{
 					id: "premium",
 					label: [usd(cost(ASSIGNED), 0), usd(cost(ASSIGNED), 0)],
+					why: [
+						`${usd(cost(ASSIGNED), 0)} is what ${ASSIGNED} of these puts cost at today's ask. Assignment makes you buy ${ASSIGNED * 100} shares at the $95 strike.`,
+						`${usd(cost(ASSIGNED), 0)} 是按今天的卖价买 ${ASSIGNED} 张这种看跌的价钱。被指派时，你要以 $95 的行权价买入 ${ASSIGNED * 100} 股。`,
+					],
 				},
 			],
 			answer: "pay",
@@ -700,10 +722,21 @@ const scenes = [
 			],
 			choices: [
 				{ id: "parity", label: [share(PUT_MID), share(PUT_MID)] },
-				{ id: "same", label: [share(CALL_MID), share(CALL_MID)] },
+				{
+					id: "same",
+					label: [share(CALL_MID), share(CALL_MID)],
+					why: [
+						`A call and a put at one strike cost the same only when ALFA sits at the strike. ALFA is ${share(SPOT - 100)} above $100, so the call is worth that much more than the put.`,
+						`同一行权价的看涨和看跌只有在 ALFA 正好等于行权价时才同价。ALFA 比 $100 高 ${share(SPOT - 100)}，所以看涨要比看跌多值这么多。`,
+					],
+				},
 				{
 					id: "added",
 					label: [share(CALL_MID + SPOT - 100), share(CALL_MID + SPOT - 100)],
+					why: [
+						`The ${share(SPOT - 100)} goes the other way: ALFA above the strike makes the call dearer, so the put is the call's mid minus it, not plus.`,
+						`${share(SPOT - 100)} 的方向相反：ALFA 高于行权价让看涨更贵，所以看跌是看涨中间价减去它，而不是加上。`,
+					],
 				},
 			],
 			answer: "parity",
@@ -788,8 +821,19 @@ const scenes = [
 						usd((INDEX_STRIKE - LAST) * PER_POINT * 100, 0),
 						usd((INDEX_STRIKE - LAST) * PER_POINT * 100, 0),
 					],
+					why: [
+						`The last level shown, ${count(LAST)}, isn't the settlement. Index options pay on the official value, ${count(OFFICIAL)}, set by the exchange's rules.`,
+						`最近显示的 ${count(LAST)} 不是结算值。指数期权按交易所规则确定的官方值 ${count(OFFICIAL)} 支付。`,
+					],
 				},
-				{ id: "shares", label: ["100 index shares", "100 股指数"] },
+				{
+					id: "shares",
+					label: ["100 index shares", "100 股指数"],
+					why: [
+						"An index can't be delivered, so the put settles in cash: the points it finished in the money times $100.",
+						"指数无法交付，所以这张看跌以现金结算：到期时的实值点数乘以 $100。",
+					],
+				},
 			],
 			answer: "official",
 			entry: { answer: (INDEX_STRIKE - OFFICIAL) * PER_POINT, prefix: "$" },

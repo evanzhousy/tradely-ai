@@ -625,8 +625,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "five", label: ["$5.00", "$5.00"] },
-				{ id: "same", label: ["$7.30, the same", "$7.30，不变"] },
-				{ id: "zero", label: ["$0", "$0"] },
+				{
+					id: "same",
+					label: ["$7.30, the same", "$7.30，不变"],
+					why: [
+						"$7.30 included $2.30 of time value. At expiry no time is left, so only the $5.00 of intrinsic value remains.",
+						"$7.30 里有 $2.30 是时间价值。到期时没有时间了，只剩 $5.00 的内在价值。",
+					],
+				},
+				{
+					id: "zero",
+					label: ["$0", "$0"],
+					why: [
+						"A 95 call with ALFA at $100 is in the money: the right to buy at $95 a stock worth $100 is worth $5.00 a share.",
+						"ALFA 为 $100 时，95 看涨处于实值：以 $95 买入价值 $100 的股票，这项权利每股值 $5.00。",
+					],
+				},
 			],
 			answer: "five",
 			entry: { answer: 5, prefix: "$", unit: [" a share", " 每股"] },
@@ -712,8 +726,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "loss", label: ["−$220: a loss", "−$220：亏损"] },
-				{ id: "gain", label: ["+$200: it's in the money", "+$200：它是实值"] },
-				{ id: "zero", label: ["$0: about even", "$0：大致持平"] },
+				{
+					id: "gain",
+					label: ["+$200: it's in the money", "+$200：它是实值"],
+					why: [
+						"+$200 is the call's value at $102, not your profit. You paid $420 for it, so you are $220 behind.",
+						"+$200 是 ALFA 为 $102 时看涨的价值，不是你的盈亏。你为它付了 $420，所以还差 $220。",
+					],
+				},
+				{
+					id: "zero",
+					label: ["$0: about even", "$0：大致持平"],
+					why: [
+						"You break even only at $104.20, the strike plus the premium. At $102 the call returns $200 of the $420 you paid.",
+						"只有到 $104.20，也就是行权价加权利金，才能持平。在 $102，看涨只收回你付出的 $420 中的 $200。",
+					],
+				},
 			],
 			answer: "loss",
 			entry: { answer: -220, prefix: "$" },
@@ -799,8 +827,19 @@ const scenes = [
 				{
 					id: "keep",
 					label: ["+$205: I keep the premium", "+$205：权利金归我"],
+					why: [
+						"You keep the $205 only if ALFA ends at or above $95. At $90 the put is worth $500 to its holder, and you pay that.",
+						"只有 ALFA 收在 $95 或以上，你才能保住 $205。在 $90，这张看跌对持有人值 $500，由你来付。",
+					],
 				},
-				{ id: "owe", label: ["−$500", "−$500"] },
+				{
+					id: "owe",
+					label: ["−$500", "−$500"],
+					why: [
+						"−$500 is what you owe the holder, but you also kept the $205 premium. Your result is −$500 + $205.",
+						"−$500 是你欠持有人的，但你还保留了 $205 权利金。结果是 −$500 + $205。",
+					],
+				},
 			],
 			answer: "loss",
 			entry: { answer: -295, prefix: "$" },

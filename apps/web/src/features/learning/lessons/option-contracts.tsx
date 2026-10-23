@@ -559,10 +559,18 @@ const scenes = [
 				{
 					id: "yes",
 					label: ["Yes: same ticker and strike", "是：代码和行权价相同"],
+					why: [
+						"Ticker and strike aren't enough: the expiry is part of what the contract is. The Oct 18 and Nov 15 calls trade separately, each with its own price.",
+						"代码和行权价还不够：到期日也是合约的一部分。10月18日 与 11月15日 的看涨分开交易，各有各的价格。",
+					],
 				},
 				{
 					id: "price",
 					label: ["Only if their prices match", "只有价格相同时才是"],
+					why: [
+						"Two contracts are the same only if their terms match: underlying, type, strike and expiry. Equal prices would be a coincidence, not the same contract.",
+						"两份合约只有条款都相同才是同一份：标的、类型、行权价与到期日。价格相等只是巧合，不代表是同一份合约。",
+					],
 				},
 			],
 			answer: "no",
@@ -647,8 +655,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: ["$1,260", "$1,260"] },
-				{ id: "shares", label: ["$12.60", "$12.60"] },
-				{ id: "tenth", label: ["$126", "$126"] },
+				{
+					id: "shares",
+					label: ["$12.60", "$12.60"],
+					why: [
+						"$12.60 is 3 × $4.20, the price of 3 shares. Each contract covers 100 shares, so multiply by 100 as well.",
+						"$12.60 是 3 × $4.20，只是 3 股的价钱。每张合约对应 100 股，还要再乘以 100。",
+					],
+				},
+				{
+					id: "tenth",
+					label: ["$126", "$126"],
+					why: [
+						"$126 counts 10 shares a contract. A standard contract covers 100 shares: $4.20 × 100 × 3.",
+						"$126 是按每张 10 股算的。标准合约对应 100 股：$4.20 × 100 × 3。",
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: 1260, prefix: "$" },
@@ -724,8 +746,22 @@ const scenes = [
 					id: "both",
 					label: ["Each is its price at that time", "各是那个时间的价格"],
 				},
-				{ id: "first", label: ["$4.20: the first quote", "$4.20：第一个报价"] },
-				{ id: "average", label: ["$4.55: the average", "$4.55：平均值"] },
+				{
+					id: "first",
+					label: ["$4.20: the first quote", "$4.20：第一个报价"],
+					why: [
+						"The first quote isn't the contract's price for the whole day. By 15:59 ALFA had risen and the ask was $4.90.",
+						"第一个报价并不是合约全天的价格。到 15:59，ALFA 已经上涨，卖价变成 $4.90。",
+					],
+				},
+				{
+					id: "average",
+					label: ["$4.55: the average", "$4.55：平均值"],
+					why: [
+						"$4.55 was never quoted, so nobody could trade there. A price belongs to its moment: each quote is the price at its own time.",
+						"$4.55 从未出现在报价中，没有人能按它成交。价格属于它的时刻：每个报价都是那个时间的价格。",
+					],
+				},
 			],
 			answer: "both",
 			revealAt: 2,

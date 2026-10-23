@@ -1028,10 +1028,18 @@ const scenes = [
 				{
 					id: "same",
 					label: ["$7.40, the same as selling", "$7.40，与卖出相同"],
+					why: [
+						"Exercising gets only the intrinsic value, $102 − $95. The extra $0.40 in the bid is time value, which only selling keeps.",
+						"行权只能得到内在价值，即 $102 − $95。买价中多出的 $0.40 是时间价值，只有卖出才能保留。",
+					],
 				},
 				{
 					id: "share",
 					label: ["$102: you get the share", "$102：你得到了股票"],
+					why: [
+						"You do get a share worth $102, but you pay $95 for it, so exercising is worth $7.00 a share.",
+						"你确实得到一股价值 $102 的股票，但要为它付 $95，所以行权每股只值 $7.00。",
+					],
 				},
 			],
 			answer: "intrinsic",
@@ -1111,8 +1119,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "cash", label: ["$2,500 in cash", "$2,500 现金"] },
-				{ id: "units", label: ["Units of the index", "指数份额"] },
-				{ id: "points", label: ["$25", "$25"] },
+				{
+					id: "units",
+					label: ["Units of the index", "指数份额"],
+					why: [
+						"An index is a calculated number with no units to deliver, so index options settle in cash.",
+						"指数是计算出来的数值，没有可交付的份额，所以指数期权以现金结算。",
+					],
+				},
+				{
+					id: "points",
+					label: ["$25", "$25"],
+					why: [
+						"$25 counts the 25 points at $1 each. Each point is worth $100 on this contract: 25 × $100.",
+						"$25 是把 25 点按每点 $1 计算。这份合约每点值 $100：25 × $100。",
+					],
+				},
 			],
 			answer: "cash",
 			entry: { answer: 2500, prefix: "$" },
@@ -1198,8 +1220,22 @@ const scenes = [
 					id: "any",
 					label: ["Any trading day until Oct 18", "10月18日前任一交易日"],
 				},
-				{ id: "expiry", label: ["Only on Oct 18", "只在 10月18日"] },
-				{ id: "agree", label: ["Only if I agree", "只有我同意时"] },
+				{
+					id: "expiry",
+					label: ["Only on Oct 18", "只在 10月18日"],
+					why: [
+						"That is the rule for European-style options. ALFA options are American-style, so the holder can exercise on any trading day before expiry.",
+						"那是欧式期权的规则。ALFA 期权是美式的，持有人可以在到期前任一交易日行权。",
+					],
+				},
+				{
+					id: "agree",
+					label: ["Only if I agree", "只有我同意时"],
+					why: [
+						"Assignment isn't a request: you took on the obligation when you sold the call. The holder decides; you deliver.",
+						"指派不是请求：卖出看涨时你就承担了义务。由持有人决定，你来交付。",
+					],
+				},
 			],
 			answer: "any",
 			revealAt: 1,
@@ -1292,8 +1328,22 @@ const scenes = [
 						"被行权：我以 $10,000 买入 100 股",
 					],
 				},
-				{ id: "expires", label: ["It expires worthless", "到期作废"] },
-				{ id: "paid", label: ["I am paid $2", "我收到 $2"] },
+				{
+					id: "expires",
+					label: ["It expires worthless", "到期作废"],
+					why: [
+						"At expiry, an option 1 cent or more in the money is exercised automatically unless you tell your broker otherwise. 2 cents is enough.",
+						"到期时，实值 1 美分或以上的期权会被自动行权，除非你另行通知券商。2 美分就够了。",
+					],
+				},
+				{
+					id: "paid",
+					label: ["I am paid $2", "我收到 $2"],
+					why: [
+						"A share option doesn't pay the difference in cash. Exercise buys 100 ALFA at $100; the $2 is only the value inside that purchase.",
+						"股票期权不会以现金支付差额。行权是以 $100 买入 100 股 ALFA；$2 只是这笔买入中包含的价值。",
+					],
+				},
 			],
 			answer: "exercised",
 			revealAt: 1,
