@@ -28,6 +28,8 @@ export const guestWorkSchema = guestScenarioSchema
 			.max(practiceCaseCount - 1),
 		actions: z.array(learningActionSchema).max(256),
 		intent: z.enum(["result", "place", "research"]),
+		/** The guest had already seen this case answered earlier in the session. */
+		repeat: z.literal(true).optional(),
 	})
 	.strict();
 export type GuestWork = z.infer<typeof guestWorkSchema>;

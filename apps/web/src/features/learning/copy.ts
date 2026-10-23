@@ -57,6 +57,14 @@ export const learningCopy = {
 		en: "You used a hint on the independent case. This counts as assisted practice.",
 		zh: "你在独立案例中使用了提示，因此本次属于辅助练习。",
 	},
+	repeatCase: {
+		en: "You saw this case's answers in an earlier attempt, so this time it counts as practice, not as a demonstrated result.",
+		zh: "你在之前的练习中已经看过这个案例的答案，所以这次只算练习，不算独立检查通过。",
+	},
+	repeated: {
+		en: "You had already seen this case's answers, so this counts as practice.",
+		zh: "你之前已经看过这个案例的答案，因此本次计为练习。",
+	},
 	completeNote: {
 		en: "This practice result is separate from your study marks and video progress.",
 		zh: "本次练习结果与学习标记及视频进度分别记录。",

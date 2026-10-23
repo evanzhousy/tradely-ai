@@ -18,6 +18,21 @@ export function initialAttemptState(): AttemptState {
 	return { step: 0, phase: "answer", answers: {}, inspected: {}, hinted: [] };
 }
 
+/**
+ * Whether an attempt got as far as seeing its independent case answered: the independent step
+ * was checked, so its debrief showed every accepted answer.
+ */
+export function sawIndependentAnswers(
+	scenario: LearningScenario,
+	state: AttemptState,
+): boolean {
+	const index = scenario.steps.findIndex((step) => step.kind === "independent");
+	if (index < 0) return false;
+	return (
+		state.step > index || (state.step === index && state.phase !== "answer")
+	);
+}
+
 function requireStep(
 	scenario: LearningScenario,
 	state: AttemptState,
@@ -190,15 +205,22 @@ export function assessAttempt(
 	const met = feedback.filter((criterion) => criterion.met).length;
 	const usedHint = independent.some((step) => state.hinted.includes(step.id));
 	const unreviewed = feedback.filter((item) => item.reviewRequired).length;
+	// A case answered before tests memory of its debrief, not the idea.
+	const repeated = state.repeat === true;
 	return {
 		status:
-			feedback.length > 0 && met === feedback.length && !usedHint && !unreviewed
+			feedback.length > 0 &&
+			met === feedback.length &&
+			!usedHint &&
+			!unreviewed &&
+			!repeated
 				? "demonstrated"
 				: "practiced",
 		met,
 		total: feedback.length,
 		usedHint,
 		...(unreviewed ? { unreviewed } : {}),
+		...(repeated ? { repeated: true as const } : {}),
 	};
 }
 
@@ -225,6 +247,7 @@ export function projectAttempt(
 		stepCount: scenario.steps.length,
 		stepKinds: scenario.steps.map((item) => item.kind),
 		phase: state.phase,
+		...(state.repeat ? { repeat: true as const } : {}),
 		step: {
 			id: step.id,
 			kind: step.kind,

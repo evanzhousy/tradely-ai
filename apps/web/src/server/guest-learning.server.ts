@@ -16,7 +16,7 @@ import {
 	transitionAttempt,
 } from "@/domain/learning/engine";
 import { captureServerException } from "./analytics/posthog.server";
-import { projectRecord } from "./learning.server";
+import { projectRecord, sawScenarioBefore } from "./learning.server";
 import { authorizeLearning } from "./learning-access.server";
 import { ensureAppUser } from "./users.server";
 
@@ -65,9 +65,16 @@ export async function importGuestLearningImpl(
 			scenario.version !== work.scenarioVersion
 		)
 			return { ok: false, reason: "retired" };
+		// A case the guest already saw answered, here or in this account, is practice.
+		const repeat =
+			work.repeat === true ||
+			(await sawScenarioBefore(db, access.userId, scenario));
 		const state = work.actions.reduce(
 			(state, action) => transitionAttempt(scenario, state, action),
-			initialAttemptState(),
+			{
+				...initialAttemptState(),
+				...(repeat ? { repeat: true as const } : {}),
+			},
 		);
 		if (
 			(work.intent === "result" || saveSeparately) &&

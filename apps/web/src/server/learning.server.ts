@@ -16,8 +16,10 @@ import {
 	InvalidLearningAction,
 	initialAttemptState,
 	projectAttempt,
+	sawIndependentAnswers,
 	transitionAttempt,
 } from "@/domain/learning/engine";
+import type { LearningScenario } from "@/domain/learning/scenario";
 import {
 	attemptStateSchema,
 	type LearningResponse,
@@ -34,6 +36,32 @@ function isCurrentScenario(record: LessonAttemptCore) {
 		(item) =>
 			item.id === record.scenarioId && item.version === record.scenarioVersion,
 	);
+}
+
+/**
+ * Whether the learner already saw this scenario's independent case answered, in any earlier
+ * attempt at the same version. A new attempt on it is then practice: it can't demonstrate.
+ */
+export async function sawScenarioBefore(
+	db: ReturnType<typeof createDb>,
+	userId: string,
+	scenario: LearningScenario,
+) {
+	const earlier = await db
+		.select({ state: lessonAttempt.state })
+		.from(lessonAttempt)
+		.where(
+			and(
+				eq(lessonAttempt.userId, userId),
+				eq(lessonAttempt.lessonId, scenario.lessonId),
+				eq(lessonAttempt.scenarioId, scenario.id),
+				eq(lessonAttempt.scenarioVersion, scenario.version),
+			),
+		);
+	return earlier.some((row) => {
+		const state = attemptStateSchema.safeParse(row.state);
+		return state.success && sawIndependentAnswers(scenario, state.data);
+	});
 }
 
 export function projectRecord(record: LessonAttemptCore): LearningResponse {
@@ -155,6 +183,7 @@ export async function openLearningImpl(
 					? sourceWork.caseVariant - 1
 					: (previousIndex + 1) % scenarios.length
 			];
+		const repeat = await sawScenarioBefore(db, access.userId, scenario);
 		await ensureAppUser(access.userId);
 		const [created] = await db
 			.insert(lessonAttempt)
@@ -167,6 +196,7 @@ export async function openLearningImpl(
 				state: {
 					...initialAttemptState(),
 					...(sourceWork ? { sourceWork } : {}),
+					...(repeat ? { repeat: true as const } : {}),
 				},
 			})
 			.onConflictDoNothing()

@@ -21,6 +21,42 @@ import {
 import { guestSaveCopy } from "./guest-save-copy";
 import { LearningScreen } from "./learning-screen";
 
+const seenKey = (lessonId: string) => `tradely:case-seen:v1:${lessonId}`;
+
+/** Practice cases (by variant) whose independent answers this tab has already shown. */
+function readSeen(lessonId: string): Set<number> {
+	try {
+		const stored = JSON.parse(
+			sessionStorage.getItem(seenKey(lessonId)) ?? "[]",
+		);
+		return new Set(
+			Array.isArray(stored)
+				? stored.filter((item): item is number => Number.isInteger(item))
+				: [],
+		);
+	} catch {
+		return new Set();
+	}
+}
+
+function writeSeen(lessonId: string, seen: ReadonlySet<number>) {
+	try {
+		sessionStorage.setItem(seenKey(lessonId), JSON.stringify([...seen]));
+	} catch {
+		/* Storage is optional: the flag then lasts only while the page is open. */
+	}
+}
+
+/** The independent step was checked, so its debrief has shown every accepted answer. */
+function sawIndependent(view: LearningView) {
+	const index = view.stepKinds?.indexOf("independent") ?? -1;
+	return (
+		index >= 0 &&
+		(view.stepIndex > index ||
+			(view.stepIndex === index && view.phase !== "answer"))
+	);
+}
+
 export function PreviewLearning({
 	lessonId,
 	currentUserId = null,
@@ -45,6 +81,9 @@ export function PreviewLearning({
 	const [error, setError] = useState<LearningFailure | null>(null);
 	const actions = useRef<LearningAction[]>([]);
 	const variant = useRef(0);
+	/** This attempt's case was answered in an earlier one this session, so it can't demonstrate. */
+	const repeat = useRef(false);
+	const seen = useRef<Set<number> | null>(null);
 	const pending = useRef(false);
 	const failedRequest = useRef<{
 		actions: LearningAction[];
@@ -101,6 +140,7 @@ export function PreviewLearning({
 					actions: actions.current,
 					variant: variant.current,
 					intent,
+					...(repeat.current ? { repeat: true as const } : {}),
 				},
 				sessionStorage,
 			);
@@ -134,8 +174,15 @@ export function PreviewLearning({
 			nextVariant = variant.current,
 			restart = false,
 			restore = false,
+			restoredRepeat?: boolean,
 		) => {
 			if (pending.current) return;
+			seen.current ??= readSeen(lessonId);
+			const seenVariants = seen.current;
+			// A fresh attempt is a repeat when this tab already showed its case's answers.
+			const nextRepeat =
+				restoredRepeat ??
+				(next.length === 0 ? seenVariants.has(nextVariant) : repeat.current);
 			failedRequest.current = { actions: next, variant: nextVariant, restart };
 			const consentAtAction = consent === "granted";
 			pending.current = true;
@@ -149,6 +196,7 @@ export function PreviewLearning({
 						variant: nextVariant,
 						actions: next,
 						...(restart ? {} : { pin: pin.current }),
+						...(nextRepeat ? { repeat: true as const } : {}),
 					},
 				});
 				if (current !== generation.current) return;
@@ -193,6 +241,14 @@ export function PreviewLearning({
 						};
 					actions.current = next;
 					variant.current = nextVariant;
+					repeat.current = nextRepeat;
+					if (sawIndependent(response.view)) {
+						const all = seenVariants;
+						if (!all.has(nextVariant)) {
+							all.add(nextVariant);
+							writeSeen(lessonId, all);
+						}
+					}
 					setView(response.view);
 				} else setError(response.reason);
 			} catch {
@@ -229,7 +285,7 @@ export function PreviewLearning({
 				};
 				setRestoring(true);
 				resumed = true;
-				void run(work.actions, work.variant, false, true);
+				void run(work.actions, work.variant, false, true, work.repeat === true);
 			}
 		} catch {
 			/* Guest practice still works when storage is unavailable. */

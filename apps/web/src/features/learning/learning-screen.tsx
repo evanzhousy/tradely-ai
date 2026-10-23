@@ -472,6 +472,11 @@ function LearningScreenContent({
 									<TermText text={local(view.step.brief)} locale={locale} />
 								)}
 							</p>
+							{view.repeat && view.step.kind === "independent" && answering ? (
+								<p className="border-border border-l-2 pl-3 text-muted-foreground text-sm leading-relaxed">
+									{text("repeatCase")}
+								</p>
+							) : null}
 						</LessonReveal>
 						{Concept ? (
 							<Concept
@@ -763,6 +768,7 @@ function LearningScreenContent({
 										</p>
 									) : null}
 									{view.result.usedHint ? <p>{text("hinted")}</p> : null}
+									{view.result.repeated ? <p>{text("repeated")}</p> : null}
 									<p>{text("completeNote")}</p>
 									<p>
 										{persistence === "preview"

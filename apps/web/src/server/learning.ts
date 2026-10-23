@@ -44,6 +44,8 @@ export const previewLearningSchema = z
 			.max(practiceCaseCount - 1),
 		actions: z.array(learningActionSchema).max(256),
 		pin: guestScenarioSchema.optional(),
+		/** The guest had already seen this case answered earlier in the session. */
+		repeat: z.literal(true).optional(),
 	})
 	.strict();
 export type PreviewLearningInput = z.infer<typeof previewLearningSchema>;

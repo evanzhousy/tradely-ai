@@ -35,7 +35,10 @@ export function previewLearningImpl(
 	try {
 		const state = data.actions.reduce(
 			(state, action) => transitionAttempt(scenario, state, action),
-			initialAttemptState(),
+			{
+				...initialAttemptState(),
+				...(data.repeat ? { repeat: true as const } : {}),
+			},
 		);
 		return {
 			ok: true,

@@ -224,6 +224,8 @@ export const attemptStateSchema = z
 		inspected: z.record(identifier, z.array(identifier).max(12)),
 		hinted: z.array(identifier).max(20),
 		sourceWork: sourceWorkSchema.optional(),
+		/** The learner saw this independent case answered in an earlier attempt: it can't demonstrate. */
+		repeat: z.literal(true).optional(),
 	})
 	.strict();
 export type AttemptState = z.infer<typeof attemptStateSchema>;
@@ -245,6 +247,8 @@ export const learningResultSchema = z
 		total: z.number().int().positive(),
 		usedHint: z.boolean(),
 		unreviewed: z.number().int().nonnegative().optional(),
+		/** The independent case had been answered before, so the result is practice. */
+		repeated: z.literal(true).optional(),
 	})
 	.strict();
 export type LearningResult = z.infer<typeof learningResultSchema>;
@@ -260,6 +264,8 @@ export type LearningView = {
 	stepCount: number;
 	stepKinds?: LearningStepView["kind"][];
 	phase: AttemptState["phase"];
+	/** This attempt's independent case was answered in an earlier one; see `AttemptState.repeat`. */
+	repeat?: true;
 	step: LearningStepView;
 	answers: Record<string, string>;
 	initialJudgment: LearningCopy | null;

@@ -87,6 +87,11 @@ export function LessonLearningStatus({
 							{locale === "zh" ? "文字待复核" : "Written work needs review"}
 						</Badge>
 					) : null}
+					{result.repeated ? (
+						<Badge variant="outline">
+							{locale === "zh" ? "案例此前已见过" : "Case seen before"}
+						</Badge>
+					) : null}
 					{result.met < result.total - (result.unreviewed ?? 0) ? (
 						<Badge variant="outline">
 							{locale === "zh"
