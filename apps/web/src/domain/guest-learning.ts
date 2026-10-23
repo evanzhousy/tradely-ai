@@ -3,6 +3,7 @@ import {
 	type LearningFailure,
 	type LearningView,
 	learningActionSchema,
+	practiceCaseCount,
 } from "./learning/types";
 
 const lessonId = z
@@ -20,7 +21,11 @@ export const guestScenarioSchema = z
 export const guestWorkSchema = guestScenarioSchema
 	.extend({
 		lessonId,
-		variant: z.number().int().min(0).max(1),
+		variant: z
+			.number()
+			.int()
+			.min(0)
+			.max(practiceCaseCount - 1),
 		actions: z.array(learningActionSchema).max(256),
 		intent: z.enum(["result", "place", "research"]),
 	})

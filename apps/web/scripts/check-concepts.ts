@@ -240,24 +240,22 @@ for (const lesson of lessons)
 const caseQuestions = new Set<string>();
 const caseQuestionsWithWhy = new Set<string>();
 for (const unit of teachingUnits) {
-	for (const purpose of ["practice", "evaluation"] as const) {
-		for (const scenario of unitScenarios(unit, purpose)) {
-			for (const step of scenario.steps) {
-				for (const question of step.questions) {
-					if (question.choices.length === 0) continue;
-					caseQuestions.add(`${unit.id}/${question.id}`);
-					if (!question.choices.some((choice) => choice.why)) continue;
-					caseQuestionsWithWhy.add(`${unit.id}/${question.id}`);
-					const label = `${scenario.id}/${step.id}/${question.id}`;
-					for (const choice of question.choices) {
-						const accepted = question.accepted.includes(choice.id);
-						if (accepted && choice.why)
-							fail(`${label}: choice "${choice.id}" is accepted and has a why`);
-						if (!accepted && !choice.why)
-							fail(`${label}: wrong choice "${choice.id}" has no why`);
-						if (choice.why && !filled(choice.why))
-							fail(`${label}: choice "${choice.id}" has an empty why`);
-					}
+	for (const scenario of unitScenarios(unit)) {
+		for (const step of scenario.steps) {
+			for (const question of step.questions) {
+				if (question.choices.length === 0) continue;
+				caseQuestions.add(`${unit.id}/${question.id}`);
+				if (!question.choices.some((choice) => choice.why)) continue;
+				caseQuestionsWithWhy.add(`${unit.id}/${question.id}`);
+				const label = `${scenario.id}/${step.id}/${question.id}`;
+				for (const choice of question.choices) {
+					const accepted = question.accepted.includes(choice.id);
+					if (accepted && choice.why)
+						fail(`${label}: choice "${choice.id}" is accepted and has a why`);
+					if (!accepted && !choice.why)
+						fail(`${label}: wrong choice "${choice.id}" has no why`);
+					if (choice.why && !filled(choice.why))
+						fail(`${label}: choice "${choice.id}" has an empty why`);
 				}
 			}
 		}
@@ -268,7 +266,7 @@ for (const unit of teachingUnits) {
 // guided case lets a learner answer from memory of the guided feedback. Listed, not failed. ---
 const repeatsGuided: string[] = [];
 for (const unit of teachingUnits) {
-	const practice = unitScenarios(unit, "practice");
+	const practice = unitScenarios(unit);
 	const guided = practice[0]?.steps.find((step) => step.id === "guided");
 	if (!guided) continue;
 	const choiceQuestions = guided.questions.filter((q) => q.choices.length > 0);

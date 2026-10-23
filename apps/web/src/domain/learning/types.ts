@@ -59,6 +59,12 @@ const worksheetSchema = z
 			.optional(),
 	})
 	.strict();
+/**
+ * How many practice cases a lesson's case rotates through. Each new attempt takes the next one
+ * after the learner's last, so a retry meets an independent case whose answers it hasn't seen.
+ */
+export const practiceCaseCount = 3;
+
 export const sourceWorkSchema = z
 	.object({
 		caseVariant: z.number().int().min(1).max(3).optional(),

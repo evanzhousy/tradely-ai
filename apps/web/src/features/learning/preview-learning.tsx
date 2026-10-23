@@ -4,10 +4,11 @@ import { authIsConfigured } from "@/auth/client";
 import { PracticeCard } from "@/components/practice-card";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import type { GuestSaveIntent } from "@/domain/guest-learning";
-import type {
-	LearningAction,
-	LearningFailure,
-	LearningView,
+import {
+	type LearningAction,
+	type LearningFailure,
+	type LearningView,
+	practiceCaseCount,
 } from "@/domain/learning/types";
 import { useI18n } from "@/i18n/provider";
 import { previewLearning } from "@/server/learning";
@@ -260,7 +261,9 @@ export function PreviewLearning({
 					if (pending.current) return;
 					void run(
 						restart ? [] : actions.current,
-						restart ? (variant.current + 1) % 2 : variant.current,
+						restart
+							? (variant.current + 1) % practiceCaseCount
+							: variant.current,
 						restart,
 					);
 				}}

@@ -58,7 +58,7 @@ export function projectRecord(record: LessonAttemptCore): LearningResponse {
 	if (!current) view.archived = true;
 	if (view.work) {
 		view.work.submittedAt = record.submittedAt?.toISOString() ?? "";
-		const variant = Number(record.scenarioId.match(/-practice-([12])$/)?.[1]);
+		const variant = Number(record.scenarioId.match(/-practice-(\d+)$/)?.[1]);
 		if (variant) view.work.caseVariant = variant;
 	}
 	return { ok: true, view };
@@ -143,7 +143,7 @@ export async function openLearningImpl(
 				)
 				.orderBy(desc(lessonAttempt.createdAt), desc(lessonAttempt.id))
 				.limit(1);
-			if (source && /-practice-[12]$/.test(source.scenarioId)) {
+			if (source && /-practice-\d+$/.test(source.scenarioId)) {
 				const projected = projectRecord(source);
 				if (projected.ok && !projected.view.archived)
 					sourceWork = projected.view.work;

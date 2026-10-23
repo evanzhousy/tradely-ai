@@ -4,7 +4,10 @@ import {
 	guestImportSchema,
 	guestScenarioSchema,
 } from "@/domain/guest-learning";
-import { learningActionSchema } from "@/domain/learning/types";
+import {
+	learningActionSchema,
+	practiceCaseCount,
+} from "@/domain/learning/types";
 
 const lessonId = z
 	.string()
@@ -34,7 +37,11 @@ export type UpdateLearningInput = z.infer<typeof updateLearningSchema>;
 export const previewLearningSchema = z
 	.object({
 		lessonId,
-		variant: z.number().int().min(0).max(1),
+		variant: z
+			.number()
+			.int()
+			.min(0)
+			.max(practiceCaseCount - 1),
 		actions: z.array(learningActionSchema).max(256),
 		pin: guestScenarioSchema.optional(),
 	})

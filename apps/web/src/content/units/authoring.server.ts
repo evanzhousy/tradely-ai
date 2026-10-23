@@ -4,10 +4,11 @@ import type {
 	ScenarioQuestion,
 	ScenarioStep,
 } from "@/domain/learning/scenario";
-import type {
-	LearningCopy,
-	LearningFact,
-	LearningStepView,
+import {
+	type LearningCopy,
+	type LearningFact,
+	type LearningStepView,
+	practiceCaseCount,
 } from "@/domain/learning/types";
 
 export const t = (en: string, zh: string): LearningCopy => ({ en, zh });
@@ -149,11 +150,10 @@ export const greeks = {
 	href: "https://www.optionseducation.org/advancedconcepts/understanding-options-greeks",
 };
 
-export function unitScenarios(
-	unit: TeachingUnit,
-	purpose: "practice" | "evaluation" = "practice",
-): LearningScenario[] {
-	return (purpose === "practice" ? [1, 2] : [3]).map((variant) => {
+/** A unit's practice cases: the guided case (variant 0) with each independent variant in turn. */
+export function unitScenarios(unit: TeachingUnit): LearningScenario[] {
+	const variants = Array.from({ length: practiceCaseCount }, (_, i) => i + 1);
+	return variants.map((variant) => {
 		const build = (v: number, independent: boolean): ScenarioStep => {
 			const data = unit.case(v);
 			return {
@@ -185,7 +185,7 @@ export function unitScenarios(
 			};
 		};
 		return {
-			id: `${unit.id}-${purpose}-${variant}`,
+			id: `${unit.id}-practice-${variant}`,
 			lessonId: unit.id,
 			version: unit.version ?? 2,
 			steps: [
