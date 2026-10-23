@@ -27,6 +27,7 @@ const mcpGuide = {
 export const workflowUnits: TeachingUnit[] = [
 	{
 		id: "tradingflow-recipes",
+		version: 3,
 		conceptLab: {
 			kind: "tradingflow-recipes",
 			intro: t(
@@ -60,14 +61,14 @@ export const workflowUnits: TeachingUnit[] = [
 					answer: "lookup",
 				},
 				{
-					en: "What did the whole session's flow look like, chapter by chapter?",
-					zh: "整个时段的成交流是什么样子，逐章来看？",
-					answer: "report",
-				},
-				{
 					en: "How did the session's premium execute: sweeps, blocks or single fills?",
 					zh: "本时段的权利金是如何成交的：扫单、大宗还是单笔？",
 					answer: "screen",
+				},
+				{
+					en: "What did the whole session's flow look like, chapter by chapter?",
+					zh: "整个时段的成交流是什么样子，逐章来看？",
+					answer: "report",
 				},
 			][v];
 			const timeCase = [
@@ -213,6 +214,7 @@ export const workflowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "recipe-map",
+		version: 3,
 		conceptLab: {
 			kind: "recipe-map",
 			intro: t(
@@ -261,6 +263,121 @@ export const workflowUnits: TeachingUnit[] = [
 					"排名表格载入的是每次运行的前几行，所以数据或输入一变它就变。",
 				],
 			};
+			/** The sentence quoted in the notes: live data, or in case 2 recipe content. */
+			const quote = (
+				{
+					bottom: {
+						en: "a Bottom line sentence",
+						zh: "一句核心结论",
+						accepted: "session",
+						session: [
+							"The sentence is computed from the represented session and the inputs; without them, another reader can't reproduce it.",
+							"这句话是根据所展示的交易时段和输入算出来的；没有它们，其他读者无法复现。",
+						],
+						time: [
+							"When you read it doesn't change the sentence; the session and the thresholds do. Without them nobody can reproduce it.",
+							"你何时阅读不会改变这句话；改变它的是交易时段和阈值。没有它们，没人能复现。",
+						],
+						nothing: [
+							"The sentence is computed from one session and a set of inputs. Quoted without them, another reader can't check it.",
+							"这句话是根据一个交易时段和一组输入算出的。不带上它们，其他读者无法核查。",
+						],
+						explanation: [
+							"The sentence is computed from the represented session and the inputs; without them, another reader can't reproduce it.",
+							"这句话是根据所展示的交易时段和输入算出来的；没有它们，其他读者无法复现。",
+						],
+					},
+					takeaways: {
+						en: "a Takeaways sentence",
+						zh: "一句要点",
+						accepted: "nothing",
+						session: [
+							"No session or threshold feeds the Takeaways: they're recipe content and read the same on every run.",
+							"没有任何交易时段或阈值为要点提供数据：它们是 Recipe 内容，每次运行都一样。",
+						],
+						time: [
+							"When you read them doesn't matter: recipe content reads the same on every run.",
+							"你何时阅读无关紧要：Recipe 内容每次运行都一样。",
+						],
+						nothing: [
+							"The Takeaways are recipe content, written once and run by no query.",
+							"要点是 Recipe 内容，只写一次，不运行任何查询。",
+						],
+						explanation: [
+							"The Takeaways are recipe content: written once and fed by no session or input. Quote them as the recipe's method, not as a finding about the session.",
+							"要点是 Recipe 内容：只写一次，不由任何交易时段或输入提供。引用时把它当作 Recipe 对方法的说明，而不是关于该交易时段的发现。",
+						],
+					},
+				} as const
+			)[v === 2 ? "takeaways" : "bottom"];
+			/** What the claim to check is about: one contract's prints, how many passed, or the method's limits. */
+			const claim = (
+				{
+					prints: {
+						en: "Your claim is about one contract's prints. Where do you check it?",
+						zh: "你的说法关于某一份合约的成交记录。去哪里核查？",
+						accepted: "trades",
+						trades: [
+							"Option Trades shows the prints of one contract.",
+							"Option Trades 显示单个合约的成交记录。",
+						],
+						takeaways: [
+							"The Takeaways are recipe text that reads the same every run; they don't describe any contract's prints.",
+							"要点是每次运行都一样的 Recipe 文字，并不描述任何合约的成交。",
+						],
+						kpis: [
+							"The key figures summarize the whole screen. One contract's prints are on Option Trades.",
+							"关键数字汇总的是整个筛选。单个合约的成交记录在 Option Trades 上。",
+						],
+						explanation: [
+							"A screen summarizes many contracts; the prints of one contract are on Option Trades.",
+							"筛选汇总的是很多合约；单个合约的成交记录在 Option Trades 上。",
+						],
+					},
+					count: {
+						en: "Your claim is how many contracts passed after the new run. Where do you check it?",
+						zh: "你的说法是重新运行后有多少份合约通过。去哪里核查？",
+						accepted: "kpis",
+						trades: [
+							"Option Trades shows one contract's prints. How many contracts passed is a count of the whole screen, in the key figures.",
+							"Option Trades 显示的是单个合约的成交记录。有多少合约通过是对整个筛选的计数，在关键数字里。",
+						],
+						takeaways: [
+							"The Takeaways are recipe text that reads the same every run; they don't count what passed.",
+							"要点是每次运行都一样的 Recipe 文字，并不统计有多少合约通过。",
+						],
+						kpis: [
+							"The key figures count every contract that passed.",
+							"关键数字统计所有通过的合约。",
+						],
+						explanation: [
+							"A claim about the whole screen uses the key figures, which count every contract that passed; the table loads only the top rows.",
+							"关于整个筛选的说法要用关键数字，它统计所有通过的合约；表格只载入排在前面的行。",
+						],
+					},
+					method: {
+						en: "Your claim is that high volume/OI can't tell a hedge from a lottery ticket. Where do you check it?",
+						zh: "你的说法是：高成交量/OI 无法区分对冲和彩票式押注。去哪里核查？",
+						accepted: "takeaways",
+						trades: [
+							"Option Trades shows one contract's prints; it doesn't say what the screen's method can't tell. The Takeaways do.",
+							"Option Trades 显示单个合约的成交记录，并不说明筛选方法无法区分什么。要点说明了这一点。",
+						],
+						takeaways: [
+							"The Takeaways explain the method and its limits.",
+							"要点解释方法及其局限。",
+						],
+						kpis: [
+							"The key figures count what passed; they don't describe the method's limits. The Takeaways, recipe content, explain them.",
+							"关键数字统计通过的合约，并不描述方法的局限。要点属于 Recipe 内容，解释了这些局限。",
+						],
+						explanation: [
+							"A claim about the method, not the data, is checked against recipe content: the Takeaways explain what the screen can't tell, the same on every run.",
+							"关于方法而非数据的说法，要对照 Recipe 内容核查：要点解释筛选无法区分什么，每次运行都一样。",
+						],
+					},
+				} as const
+			)[(["prints", "count", "prints", "method"] as const)[v]];
 			return {
 				brief: t(
 					`A screen's key figures count ${total.toLocaleString("en-US")} contracts that passed; its table shows the top ${shown}. You raise the minimum open interest and run again.`,
@@ -308,57 +425,44 @@ export const workflowUnits: TeachingUnit[] = [
 					),
 					c(
 						"cite",
-						"You quote a Bottom line sentence in your notes. What must go with it?",
-						"你在笔记里引用了一句核心结论。必须一起记下什么？",
+						`You quote ${quote.en} in your notes. What must go with it?`,
+						`你在笔记里引用了${quote.zh}。必须一起记下什么？`,
 						[
-							["session", "The session and the thresholds", "交易时段和阈值"],
 							[
-								"time",
-								"The time you read it",
-								"你阅读的时间",
-								"When you read it doesn't change the sentence; the session and the thresholds do. Without them nobody can reproduce it.",
-								"你何时阅读不会改变这句话；改变它的是交易时段和阈值。没有它们，没人能复现。",
+								"session",
+								"The session and the thresholds",
+								"交易时段和阈值",
+								...quote.session,
 							],
+							["time", "The time you read it", "你阅读的时间", ...quote.time],
 							[
 								"nothing",
-								"Nothing: it explains itself",
-								"什么都不用：它自己说明了一切",
-								"The sentence is computed from one session and a set of inputs. Quoted without them, another reader can't check it.",
-								"这句话是根据一个交易时段和一组输入算出的。不带上它们，其他读者无法核查。",
+								"Nothing: it reads the same on every run",
+								"什么都不用：它每次运行都一样",
+								...quote.nothing,
 							],
 						],
-						"session",
-						"The sentence is computed from the represented session and the inputs; without them, another reader can't reproduce it.",
-						"这句话是根据所展示的交易时段和输入算出来的；没有它们，其他读者无法复现。",
+						quote.accepted,
+						quote.explanation[0],
+						quote.explanation[1],
 					),
 					c(
 						"check",
-						"Your claim is about one contract's prints. Where do you check it?",
-						"你的说法关于某一份合约的成交记录。去哪里核查？",
+						claim.en,
+						claim.zh,
 						[
-							[
-								"trades",
-								"Option Trades, for that contract",
-								"Option Trades 中的该合约",
-							],
+							["trades", "Option Trades", "Option Trades", ...claim.trades],
 							[
 								"takeaways",
 								"The recipe's Takeaways",
 								"Recipe 的要点",
-								"The Takeaways are recipe text that reads the same every run; they don't describe any contract's prints.",
-								"要点是每次运行都一样的 Recipe 文字，并不描述任何合约的成交。",
+								...claim.takeaways,
 							],
-							[
-								"kpis",
-								"The key figures",
-								"关键数字",
-								"The key figures summarize the whole screen. One contract's prints are on Option Trades.",
-								"关键数字汇总的是整个筛选。单个合约的成交记录在 Option Trades 上。",
-							],
+							["kpis", "The key figures", "关键数字", ...claim.kpis],
 						],
-						"trades",
-						"A screen summarizes many contracts; the prints of one contract are on Option Trades.",
-						"筛选汇总的是很多合约；单个合约的成交记录在 Option Trades 上。",
+						claim.accepted,
+						claim.explanation[0],
+						claim.explanation[1],
 					),
 				],
 			};
@@ -366,6 +470,7 @@ export const workflowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "recipe-inputs",
+		version: 3,
 		conceptLab: {
 			kind: "recipe-inputs",
 			intro: t(
@@ -411,6 +516,8 @@ export const workflowUnits: TeachingUnit[] = [
 				[45, 9],
 				[80, 16],
 			][v];
+			/** Case 2 presses Run after the edit; the others leave it a draft. */
+			const ran = v === 2;
 			return {
 				brief: t(
 					"You are working in TradingFlow's unusual-activity screener on Monday's session, starting from its default inputs.",
@@ -419,10 +526,20 @@ export const workflowUnits: TeachingUnit[] = [
 				questions: [
 					c(
 						"draft",
-						"You change Min volume/OI to 3 and don't press Run. What do the key figures and table show?",
-						"你把最低成交量/OI 改成 3，但没有点“运行”。关键数字和表格显示什么？",
+						ran
+							? "You change Min volume/OI to 2 and press Run. What do the key figures and table show?"
+							: "You change Min volume/OI to 3 and don't press Run. What do the key figures and table show?",
+						ran
+							? "你把最低成交量/OI 改成 2，然后点“运行”。关键数字和表格显示什么？"
+							: "你把最低成交量/OI 改成 3，但没有点“运行”。关键数字和表格显示什么？",
 						[
-							["last", "The last run, unchanged", "上一次运行，没有变化"],
+							[
+								"last",
+								"The run before your change",
+								"你修改之前的那次运行",
+								"Run is what applies a draft: once you press it, every dependent cell refreshes together at the new threshold.",
+								"“运行”才会让草稿生效：一旦点了它，所有依赖的单元格都会按新阈值一起刷新。",
+							],
 							[
 								"new",
 								"Results at the new threshold",
@@ -434,13 +551,21 @@ export const workflowUnits: TeachingUnit[] = [
 								"empty",
 								"Nothing until you run",
 								"运行前什么也不显示",
-								"Nothing clears while you edit. The report keeps the last run until you press Run.",
-								"编辑时什么都不会清空。在你点“运行”之前，报告保留上一次运行的结果。",
+								ran
+									? "The report never goes blank while you edit, and you've pressed Run: the key figures and table show the results at 2."
+									: "Nothing clears while you edit. The report keeps the last run until you press Run.",
+								ran
+									? "编辑时报告从不会变成空白，而且你已经点了“运行”：关键数字和表格显示阈值为 2 的结果。"
+									: "编辑时什么都不会清空。在你点“运行”之前，报告保留上一次运行的结果。",
 							],
 						],
-						"last",
-						"An edited input is a draft; every cell keeps the last run until you press Run, then they refresh together.",
-						"修改的输入只是草稿；在你点“运行”之前每个单元格都保留上一次运行，运行后再一起刷新。",
+						ran ? "new" : "last",
+						ran
+							? "Pressing Run turns the draft into a run: the key figures and table refresh together at the new threshold."
+							: "An edited input is a draft; every cell keeps the last run until you press Run, then they refresh together.",
+						ran
+							? "点“运行”会把草稿变成一次运行：关键数字和表格按新阈值一起刷新。"
+							: "修改的输入只是草稿；在你点“运行”之前每个单元格都保留上一次运行，运行后再一起刷新。",
 					),
 					c(
 						"kind",
@@ -512,6 +637,7 @@ export const workflowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "research-checklist",
+		version: 3,
 		conceptLab: {
 			kind: "research-checklist",
 			intro: t(
@@ -533,21 +659,98 @@ export const workflowUnits: TeachingUnit[] = [
 			"清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。",
 		),
 		case: (v) => {
-			const forecast = [
-				[
-					"Confirm ALFA stays below $105 until Oct 18",
-					"确认 ALFA 在10月18日前一直低于 $105",
-				],
-				[
-					"Make sure earnings won't move ALFA much",
-					"确保财报不会让 ALFA 大幅波动",
-				],
-				[
-					"Check that IV will fall after earnings",
-					"确认财报后隐含波动率会下降",
-				],
-				["Verify the call will expire worthless", "核实该看涨期权会到期作废"],
+			/** A step someone added to the checklist: a forecast, except in case 3, where it can be checked today. */
+			const added = [
+				{
+					id: "forecast",
+					en: "Confirm ALFA stays below $105 until Oct 18",
+					zh: "确认 ALFA 在10月18日前一直低于 $105",
+				},
+				{
+					id: "forecast",
+					en: "Make sure earnings won't move ALFA much",
+					zh: "确保财报不会让 ALFA 大幅波动",
+				},
+				{
+					id: "forecast",
+					en: "Check that IV will fall after earnings",
+					zh: "确认财报后隐含波动率会下降",
+				},
+				{
+					id: "earnings",
+					en: "Check that ALFA reports on Oct 3, before the Oct 18 expiry",
+					zh: "确认 ALFA 在10月18日到期前的10月3日发布财报",
+				},
 			][v];
+			const checkable = added.id === "earnings";
+			/** The checklist step whose tool is asked about. */
+			const step = (
+				{
+					trade: {
+						en: "Check the call's spread, liquidity and open interest",
+						zh: "检查看涨期权的价差、流动性与未平仓量",
+						accepted: "contracts",
+						contracts: [
+							"Rank Contracts shows one contract's spread, liquidity and open interest.",
+							"Rank Contracts 显示单个合约的价差、流动性和未平仓量。",
+						],
+						trades: [
+							"Option Trades shows individual prints. The step asks about the contract's spread and open interest, which Rank Contracts shows.",
+							"Option Trades 显示的是单笔成交。这一步问的是合约的价差和未平仓量，由 Rank Contracts 显示。",
+						],
+						symbols: [
+							"Rank Symbols compares names. A call's spread, liquidity and open interest are contract details, shown on Rank Contracts.",
+							"Rank Symbols 比较的是标的。看涨的价差、流动性和未平仓量是合约层面的信息，在 Rank Contracts 上显示。",
+						],
+						explanation: [
+							"Tradeability is about one contract: Rank Contracts shows its spread, liquidity and open interest. Option Trades shows its prints.",
+							"可交易性关乎单个合约：Rank Contracts 显示它的价差、流动性和未平仓量；Option Trades 显示它的成交记录。",
+						],
+					},
+					flow: {
+						en: "Review recent call flow",
+						zh: "回顾近期的看涨成交流",
+						accepted: "trades",
+						contracts: [
+							"Rank Contracts shows one contract's spread, liquidity and open interest. Recent call flow is the prints themselves, which Option Trades shows.",
+							"Rank Contracts 显示单个合约的价差、流动性和未平仓量。近期的看涨成交流就是一笔笔成交记录，由 Option Trades 显示。",
+						],
+						trades: [
+							"Option Trades shows the prints, trade by trade.",
+							"Option Trades 逐笔显示成交记录。",
+						],
+						symbols: [
+							"Rank Symbols compares names. Recent call flow is a list of prints, shown on Option Trades.",
+							"Rank Symbols 比较的是标的。近期的看涨成交流是一笔笔成交记录，在 Option Trades 上显示。",
+						],
+						explanation: [
+							"Recent flow is the prints themselves: Option Trades shows them. Rank Contracts shows one contract's tradeability, and Rank Symbols compares names.",
+							"近期成交流就是成交记录本身：由 Option Trades 显示。Rank Contracts 显示单个合约的可交易性，Rank Symbols 比较各个标的。",
+						],
+					},
+					vol: {
+						en: "Compare ALFA's IV with its realized volatility",
+						zh: "比较 ALFA 的隐含波动率与已实现波动率",
+						accepted: "symbols",
+						contracts: [
+							"Rank Contracts shows one contract's spread and open interest. IV against realized volatility is a reading for the whole symbol, on Rank Symbols.",
+							"Rank Contracts 显示单个合约的价差和未平仓量。隐含波动率与已实现波动率的比较针对的是整个标的，在 Rank Symbols 上。",
+						],
+						trades: [
+							"Option Trades shows individual prints. ALFA's IV against its realized volatility is a reading for the whole symbol, on Rank Symbols.",
+							"Option Trades 显示的是单笔成交。ALFA 的隐含波动率与已实现波动率的比较针对的是整个标的，在 Rank Symbols 上。",
+						],
+						symbols: [
+							"Rank Symbols shows each name's volatility.",
+							"Rank Symbols 显示每个标的的波动率。",
+						],
+						explanation: [
+							"Volatility is read per symbol: Rank Symbols compares ALFA's IV with its realized volatility. Rank Contracts shows one contract's tradeability, Option Trades its prints.",
+							"波动率按标的来看：Rank Symbols 比较 ALFA 的隐含波动率与已实现波动率。Rank Contracts 显示单个合约的可交易性，Option Trades 显示它的成交记录。",
+						],
+					},
+				} as const
+			)[(["trade", "flow", "vol", "trade"] as const)[v]];
 			return {
 				brief: t(
 					"You are preparing to research selling an ALFA call, starting from TradingFlow Home's checklist.",
@@ -559,7 +762,17 @@ export const workflowUnits: TeachingUnit[] = [
 						"Which step doesn't belong in a research checklist?",
 						"哪一步不应列入研究清单？",
 						[
-							["forecast", forecast[0], forecast[1]],
+							[
+								added.id,
+								added.en,
+								added.zh,
+								checkable
+									? "ALFA's Oct 3 earnings date is already on the calendar, and Rank Symbols shows it today. Checking that it falls before the Oct 18 expiry is a fair step."
+									: "This step asks you to confirm something that hasn't happened yet, so no tool can check it today.",
+								checkable
+									? "ALFA 10月3日的财报日期已经排定，Rank Symbols 今天就能显示。核查它是否在10月18日到期之前，是合理的一步。"
+									: "这一步要求你确认尚未发生的事，所以今天没有工具能核查它。",
+							],
 							[
 								"vol",
 								"Compare ALFA's IV with its realized volatility",
@@ -574,35 +787,39 @@ export const workflowUnits: TeachingUnit[] = [
 								"The call's spread and open interest are on screen today, so checking them belongs.",
 								"看涨的价差和未平仓量今天就在屏幕上，所以检查它们属于清单。",
 							],
+							[
+								"none",
+								"None of them: each can be checked today",
+								"没有：每一步今天都能核查",
+								`"${added.en}" asks you to confirm what hasn't happened yet. No tool can check that today, so that step doesn't belong.`,
+								`“${added.zh}”要求你确认尚未发生的事。今天没有工具能核查它，所以这一步不属于清单。`,
+							],
 						],
-						"forecast",
-						"Every step should inspect evidence a tool can show today; a claim about the future can't be checked.",
-						"每一步都应查看今天有工具能显示的证据；关于未来的说法无法核查。",
+						checkable ? "none" : "forecast",
+						checkable
+							? "Every step should inspect evidence a tool can show today. A scheduled earnings date is on Rank Symbols today, so all three steps belong."
+							: "Every step should inspect evidence a tool can show today; a claim about the future can't be checked.",
+						checkable
+							? "每一步都应查看今天有工具能显示的证据。排定的财报日期今天就在 Rank Symbols 上，所以三步都属于清单。"
+							: "每一步都应查看今天有工具能显示的证据；关于未来的说法无法核查。",
 					),
 					c(
 						"tool",
-						'"Check the call\'s spread, liquidity and open interest": which tool does that step open?',
-						"“检查看涨期权的价差、流动性与未平仓量”：这一步打开哪个工具？",
+						`"${step.en}": which tool does that step open?`,
+						`“${step.zh}”：这一步打开哪个工具？`,
 						[
-							["contracts", "Rank Contracts", "Rank Contracts"],
 							[
-								"trades",
-								"Option Trades",
-								"Option Trades",
-								"Option Trades shows individual prints. The step asks about the contract's spread and open interest, which Rank Contracts shows.",
-								"Option Trades 显示的是单笔成交。这一步问的是合约的价差和未平仓量，由 Rank Contracts 显示。",
+								"contracts",
+								"Rank Contracts",
+								"Rank Contracts",
+								...step.contracts,
 							],
-							[
-								"symbols",
-								"Rank Symbols",
-								"Rank Symbols",
-								"Rank Symbols compares names. A call's spread, liquidity and open interest are contract details, shown on Rank Contracts.",
-								"Rank Symbols 比较的是标的。看涨的价差、流动性和未平仓量是合约层面的信息，在 Rank Contracts 上显示。",
-							],
+							["trades", "Option Trades", "Option Trades", ...step.trades],
+							["symbols", "Rank Symbols", "Rank Symbols", ...step.symbols],
 						],
-						"contracts",
-						"Tradeability is about one contract: Rank Contracts shows its spread, liquidity and open interest. Option Trades shows its prints.",
-						"可交易性关乎单个合约：Rank Contracts 显示它的价差、流动性和未平仓量；Option Trades 显示它的成交记录。",
+						step.accepted,
+						step.explanation[0],
+						step.explanation[1],
 					),
 					c(
 						"refresh",
@@ -664,6 +881,7 @@ export const workflowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "ai-verify",
+		version: 3,
 		conceptLab: {
 			kind: "ai-verify",
 			intro: t(
@@ -713,6 +931,53 @@ export const workflowUnits: TeachingUnit[] = [
 				[1, 2],
 				[4, 0],
 			][v];
+			/** The AI action taken on the recipe: AI Insight, or in case 2 Edit with AI. */
+			const action = (
+				{
+					insight: {
+						en: "You run AI Insight on the recipe. What changes?",
+						zh: "你对这个 Recipe 运行 AI Insight。会改变什么？",
+						accepted: "nothing",
+						nothing: [
+							"AI Insight explains one completed run and changes nothing.",
+							"AI Insight 解释一次已完成的运行，不改动任何内容。",
+						],
+						draft: [
+							"That's Edit with AI. AI Insight explains one completed run and opens nothing.",
+							"那是 Edit with AI。AI Insight 只解释一次已完成的运行，不会打开任何东西。",
+						],
+						inputs: [
+							"AI Insight doesn't touch the inputs; it explains the run you already have.",
+							"AI Insight 不会改动输入；它解释的是你已有的那次运行。",
+						],
+						explanation: [
+							"AI Insight explains one completed run; only Edit with AI opens a draft that can change.",
+							"AI Insight 解释一次已完成的运行；只有 Edit with AI 会打开可修改的草稿。",
+						],
+					},
+					edit: {
+						en: "You choose Edit with AI on the recipe. What happens?",
+						zh: "你在这个 Recipe 上选择 Edit with AI。会发生什么？",
+						accepted: "draft",
+						nothing: [
+							"Edit with AI leaves the official recipe as it is, but something does happen: it forks the recipe into a private draft you can change and save. AI Insight is the one that only explains.",
+							"Edit with AI 不会改动官方 Recipe，但并非什么都没发生：它把 Recipe 分叉成一份你可以修改并保存的私有草稿。只做解释的是 AI Insight。",
+						],
+						draft: [
+							"Edit with AI forks the recipe into a private draft.",
+							"Edit with AI 把 Recipe 分叉成一份私有草稿。",
+						],
+						inputs: [
+							"Edit with AI doesn't change the inputs of the run you're reading; it opens a private draft of the recipe to change and save.",
+							"Edit with AI 不会改动你正在看的这次运行的输入；它打开一份 Recipe 的私有草稿，供你修改和保存。",
+						],
+						explanation: [
+							"Edit with AI forks the recipe into a private draft you can change and save; AI Insight explains one completed run and changes nothing.",
+							"Edit with AI 把 Recipe 分叉成一份你可以修改并保存的私有草稿；AI Insight 解释一次已完成的运行，不改动任何内容。",
+						],
+					},
+				} as const
+			)[v === 2 ? "edit" : "insight"];
 			return {
 				brief: t(
 					"You ask TradingFlow AI about Monday's unusual-activity screen and check its answer before using it.",
@@ -755,28 +1020,26 @@ export const workflowUnits: TeachingUnit[] = [
 					),
 					c(
 						"insight",
-						"You run AI Insight on the recipe. What changes?",
-						"你对这个 Recipe 运行 AI Insight。会改变什么？",
+						action.en,
+						action.zh,
 						[
-							["nothing", "Nothing in the recipe", "Recipe 中什么都不变"],
+							[
+								"nothing",
+								"Nothing in the recipe",
+								"Recipe 中什么都不变",
+								...action.nothing,
+							],
 							[
 								"draft",
 								"A private draft opens",
 								"会打开一份私有草稿",
-								"That's Edit with AI. AI Insight explains one completed run and opens nothing.",
-								"那是 Edit with AI。AI Insight 只解释一次已完成的运行，不会打开任何东西。",
+								...action.draft,
 							],
-							[
-								"inputs",
-								"The inputs update",
-								"输入会更新",
-								"AI Insight doesn't touch the inputs; it explains the run you already have.",
-								"AI Insight 不会改动输入；它解释的是你已有的那次运行。",
-							],
+							["inputs", "The inputs update", "输入会更新", ...action.inputs],
 						],
-						"nothing",
-						"AI Insight explains one completed run; only Edit with AI opens a draft that can change.",
-						"AI Insight 解释一次已完成的运行；只有 Edit with AI 会打开可修改的草稿。",
+						action.accepted,
+						action.explanation[0],
+						action.explanation[1],
 					),
 					c(
 						"annotate",
@@ -813,6 +1076,7 @@ export const workflowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "custom-formulas",
+		version: 3,
 		conceptLab: {
 			kind: "custom-formulas",
 			intro: t(
@@ -864,10 +1128,14 @@ export const workflowUnits: TeachingUnit[] = [
 					"[Trades] + [Call Premium]",
 				],
 			][v];
-			const ratioCase = v % 2 === 1;
-			const formatFormula = ratioCase
-				? "[Call Premium] / [Total Premium]"
-				: "[Total Premium] / [Trades]";
+			/** The formula whose value format is asked about: dollars per trade, or a share of premium. */
+			const formatFormula = [
+				"[Total Premium] / [Trades]",
+				"[Call Premium] / [Total Premium]",
+				"[Put Premium] / [Total Premium]",
+				"[Total Premium] / [Trades]",
+			][v];
+			const ratioCase = formatFormula.endsWith("[Total Premium]");
 			return {
 				brief: t(
 					"You build a formula column on Rank Symbols in the course's market.",
@@ -1007,6 +1275,7 @@ export const workflowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "edit-with-ai",
+		version: 3,
 		conceptLab: {
 			kind: "edit-with-ai",
 			intro: t(
@@ -1030,12 +1299,17 @@ export const workflowUnits: TeachingUnit[] = [
 		case: (v) => {
 			const symbol = ["ALFA", "CRUX", "DUNE", "BRDX"][v];
 			const other = ["CRUX", "ALFA", "BRDX", "DUNE"][v];
+			const article = symbol === "ALFA" ? "an" : "a";
 			const removed = [
 				"Index GEX",
 				"Market tone",
 				"Where the money went",
 				"Index GEX",
 			][v];
+			/** Cases 2 and 3 asked for the removal; cases 0 and 1 didn't. */
+			const askedRemoval = v >= 2;
+			/** Cases 1 and 3 ask the assistant for a new default; cases 0 and 2 type a value in the preview. */
+			const newDefault = v % 2 === 1;
 			return {
 				brief: t(
 					"You fork Daily Market Recap in TradingFlow's authoring workspace and change it with AI.",
@@ -1054,10 +1328,10 @@ export const workflowUnits: TeachingUnit[] = [
 							],
 							[
 								"vague",
-								`Make this a ${symbol} report.`,
+								`Make this ${article} ${symbol} report.`,
 								`把它改成一份 ${symbol} 报告。`,
-								"Make this an ALFA report sets no boundary, so the assistant decides what to replace and any block may change.",
-								"“把它改成一份 ALFA 报告”没有划定范围，助手会自己决定替换什么，任何区块都可能变。",
+								`"Make this ${article} ${symbol} report" sets no boundary, so the assistant decides what to replace and any block may change.`,
+								`“把它改成一份 ${symbol} 报告”没有划定范围，助手会自己决定替换什么，任何区块都可能变。`,
 							],
 							[
 								"subjective",
@@ -1073,61 +1347,116 @@ export const workflowUnits: TeachingUnit[] = [
 					),
 					c(
 						"removed",
-						`After an edit, the preview shows ${removed} was removed, though you didn't ask for that. What do you do first?`,
-						`一次修改之后，预览显示 ${removed} 被删除了，而你并没有要求。你首先做什么？`,
+						askedRemoval
+							? `You asked the assistant: "Remove ${removed}; leave everything else as it is." The preview shows that block is gone. What do you do first?`
+							: `After an edit, the preview shows ${removed} was removed, though you didn't ask for that. What do you do first?`,
+						askedRemoval
+							? `你对助手说：“删除 ${removed}，其他一切保持不变。”预览显示这个区块已被删除。你首先做什么？`
+							: `一次修改之后，预览显示 ${removed} 被删除了，而你并没有要求。你首先做什么？`,
 						[
 							[
 								"undo",
 								"Undo, then repeat the request with what must stay",
 								"撤销，然后重发请求并写明哪些要保留",
+								askedRemoval
+									? "You asked for that removal, so it's the change you wanted. Undo would throw it away; check the rest of the report instead."
+									: "Undo returns to the version you reviewed.",
+								askedRemoval
+									? "这处删除是你要求的，正是你想要的修改。撤销会把它丢掉；应该去检查报告的其余部分。"
+									: "撤销会回到你审阅过的版本。",
 							],
 							[
 								"repair",
 								"Ask the assistant to restore it",
 								"让助手把它恢复",
-								"Asking for a repair stacks another edit on one you haven't checked. Undo returns to the version you reviewed.",
-								"要求修复是在一个你还没核查的修改上再叠一次修改。撤销会回到你审阅过的版本。",
+								askedRemoval
+									? "There's nothing to restore: you asked for that block to go. What needs checking is whether anything else changed."
+									: "Asking for a repair stacks another edit on one you haven't checked. Undo returns to the version you reviewed.",
+								askedRemoval
+									? "没有什么需要恢复：删除这个区块是你要求的。要检查的是其他部分有没有变。"
+									: "要求修复是在一个你还没核查的修改上再叠一次修改。撤销会回到你审阅过的版本。",
 							],
 							[
 								"save",
 								"Save, and fix it later",
 								"先保存，之后再修",
-								"Saving keeps the version without Index GEX. Undo first, then repeat the request with what must stay.",
-								"保存会留下缺了 Index GEX 的版本。先撤销，再重发请求并写明要保留什么。",
+								askedRemoval
+									? "Check before you save: the rest of the report should still match the previous version."
+									: `Saving keeps the version without ${removed}. Undo first, then repeat the request with what must stay.`,
+								askedRemoval
+									? "保存之前先检查：报告的其余部分应该仍与上一个版本一致。"
+									: `保存会留下缺了 ${removed} 的版本。先撤销，再重发请求并写明要保留什么。`,
+							],
+							[
+								"keep",
+								"Keep the edit and check the rest of the report",
+								"保留这次修改，检查报告的其余部分",
+								askedRemoval
+									? "A removal you asked for is the change itself."
+									: `You didn't ask for ${removed} to go, so the edit changed more than you asked. Undo it before anything else.`,
+								askedRemoval
+									? "你要求的删除就是这次修改本身。"
+									: `删除 ${removed} 不是你要求的，这次修改超出了你的要求。先撤销它，再做别的。`,
 							],
 						],
-						"undo",
-						"Undo returns to the version you reviewed; a second edit on top of an unchecked one is harder to verify.",
-						"撤销会回到你审阅过的版本；在未核查的修改上再叠一次修改，会更难核对。",
+						askedRemoval ? "keep" : "undo",
+						askedRemoval
+							? "A removal you asked for is the change itself: keep it, and check the rest of the report against the previous version before the next edit."
+							: "Undo returns to the version you reviewed; a second edit on top of an unchecked one is harder to verify.",
+						askedRemoval
+							? "你要求的删除就是这次修改本身：保留它，并在下一次修改前把报告的其余部分与上一个版本对照。"
+							: "撤销会回到你审阅过的版本；在未核查的修改上再叠一次修改，会更难核对。",
 					),
 					c(
 						"input",
-						`In the preview you change the Symbol input from ${symbol} to ${other}. What changed?`,
-						`你在预览中把 Symbol 输入从 ${symbol} 改成 ${other}。改变了什么？`,
+						newDefault
+							? `You ask the assistant: "Start the Symbol input on ${other} instead of ${symbol} every time the report opens." What changed?`
+							: `In the preview you change the Symbol input from ${symbol} to ${other}. What changed?`,
+						newDefault
+							? `你对助手说：“以后每次打开报告，Symbol 输入都从 ${other} 开始，而不是 ${symbol}。”改变了什么？`
+							: `你在预览中把 Symbol 输入从 ${symbol} 改成 ${other}。改变了什么？`,
 						[
 							[
 								"value",
 								"Only the draft value for this run",
 								"只是这次运行的草稿值",
+								newDefault
+									? `A draft value lasts one run, and you'd type it in the preview yourself. Starting the input on ${other} every time changes its default: a recipe change.`
+									: "A value typed in the preview lasts one run.",
+								newDefault
+									? `草稿值只管一次运行，而且是你自己在预览里输入的。让输入每次都从 ${other} 开始，改的是它的默认值：这是对 Recipe 的修改。`
+									: "在预览里输入的值只管一次运行。",
 							],
 							[
 								"default",
 								"The recipe's default symbol",
 								"Recipe 的默认标的",
-								"Changing an input's value in the preview sets a draft value for that run. Changing its default is a recipe change you'd make on purpose.",
-								"在预览中修改输入的值，只是为这次运行设定草稿值。修改它的默认值才是对 Recipe 的改动，需要专门去做。",
+								newDefault
+									? "What an input starts on is its default, and changing it is a recipe change."
+									: "Changing an input's value in the preview sets a draft value for that run. Changing its default is a recipe change you'd make on purpose.",
+								newDefault
+									? "输入的起始值就是它的默认值，修改它就是修改 Recipe。"
+									: "在预览中修改输入的值，只是为这次运行设定草稿值。修改它的默认值才是对 Recipe 的改动，需要专门去做。",
 							],
 							[
 								"official",
 								"The official recipe",
 								"官方 Recipe",
-								"The official recipe is never edited; you're working in a private fork, and this is only a draft value for the run.",
-								"官方 Recipe 从不被修改；你在私有分叉里工作，而这只是这次运行的草稿值。",
+								newDefault
+									? "The official recipe is never edited. The new default lands in your private fork, and it's kept only once you save."
+									: "The official recipe is never edited; you're working in a private fork, and this is only a draft value for the run.",
+								newDefault
+									? "官方 Recipe 从不被修改。新的默认值落在你的私有分叉里，保存后才会保留。"
+									: "官方 Recipe 从不被修改；你在私有分叉里工作，而这只是这次运行的草稿值。",
 							],
 						],
-						"value",
-						"An input's value is a draft for one run; its label, default or meaning only change through a recipe edit.",
-						"输入的值只是一次运行的草稿；它的标签、默认值或含义只能通过修改 Recipe 来改变。",
+						newDefault ? "default" : "value",
+						newDefault
+							? "Asking for what an input starts on changes its default, a recipe change in your private fork; a value typed in the preview is only a draft for one run."
+							: "An input's value is a draft for one run; its label, default or meaning only change through a recipe edit.",
+						newDefault
+							? "要求改变输入的起始值，就是修改它的默认值，这是在你的私有分叉里修改 Recipe；在预览里输入的值只是一次运行的草稿。"
+							: "输入的值只是一次运行的草稿；它的标签、默认值或含义只能通过修改 Recipe 来改变。",
 					),
 					c(
 						"saved",

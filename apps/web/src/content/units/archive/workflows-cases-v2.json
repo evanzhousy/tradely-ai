@@ -1,0 +1,5231 @@
+[
+	{
+		"id": "tradingflow-recipes-practice-1",
+		"lessonId": "tradingflow-recipes",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "tradingflow-recipes",
+				"brief": {
+					"en": "Match questions to TradingFlow's official recipes, read which session a run shows before trusting its numbers, and see what forking a recipe changes and what it leaves alone.",
+					"zh": "把问题和 TradingFlow 的官方 Recipe 对应起来，在相信数字之前先看清一次运行展示的是哪个交易时段，并理解分叉 Recipe 会改变什么、不会改变什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "\"Latest\" isn't \"today\", and a recipe isn't a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.",
+					"zh": "“最新”不等于“今天”，Recipe 也不是交易信号。先看页眉里的交易时段再读任何数字；分叉的副本只属于你，不会改变官方 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You use TradingFlow's official recipes on the course's market. The question in front of you: \"Which contracts traded far above their open interest today?\"",
+					"zh": "你在课程的市场上使用 TradingFlow 的官方 Recipe。眼前的问题是：“今天哪些合约的成交远超其未平仓量？”"
+				},
+				"questions": [
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "Which kind of official recipe answers it?",
+							"zh": "哪种官方 Recipe 回答这个问题？"
+						},
+						"choices": [
+							{
+								"id": "screen",
+								"label": {
+									"en": "A session screen across the market",
+									"zh": "覆盖整个市场的时段筛选"
+								}
+							},
+							{
+								"id": "report",
+								"label": { "en": "A multi-step report", "zh": "多步骤报告" },
+								"why": {
+									"en": "A report walks the whole session step by step. This question filters the market for one session: a screen.",
+									"zh": "报告是逐步讲解整个时段。这个问题是在一个时段内筛选市场：属于筛选。"
+								}
+							},
+							{
+								"id": "lookup",
+								"label": {
+									"en": "A quick lookup about one symbol",
+									"zh": "关于单个标的的快速查询"
+								},
+								"why": {
+									"en": "A quick lookup answers one question about one symbol. This question filters the whole market for one session: a screen.",
+									"zh": "快速查询回答关于单个标的的一个问题。这个问题是在一个时段内筛选整个市场：属于筛选。"
+								}
+							}
+						],
+						"accepted": ["screen"],
+						"explanation": {
+							"en": "Lookups answer one question about one symbol, screens filter the whole market for one session, and reports walk a session step by step.",
+							"zh": "查询回答关于单个标的的一个问题，筛选在一个时段内过滤整个市场，报告则逐步讲解一个时段。"
+						}
+					},
+					{
+						"id": "session",
+						"prompt": {
+							"en": "You open the screener at 8:00 on Tuesday Sep 17. Which session does it show?",
+							"zh": "你在9月17日周二 8:00打开筛选器。它显示哪个交易时段？"
+						},
+						"choices": [
+							{
+								"id": "tue",
+								"label": { "en": "Tuesday Sep 17", "zh": "9月17日周二" },
+								"why": {
+									"en": "At 8:00 Tuesday hasn't opened yet; a report shows only completed sessions.",
+									"zh": "8:00 时周二还没有开盘；报告只显示已完成的交易时段。"
+								}
+							},
+							{
+								"id": "fri",
+								"label": { "en": "Friday Sep 13", "zh": "9月13日周五" },
+								"why": {
+									"en": "Friday isn't the latest completed session at 8:00 on Tuesday Sep 17: Monday Sep 16 has finished trading since.",
+									"zh": "在9月17日周二 8:00，周五不是最近一个完整的交易时段：9月16日周一在它之后已经结束交易。"
+								}
+							},
+							{
+								"id": "mon",
+								"label": { "en": "Monday Sep 16", "zh": "9月16日周一" }
+							}
+						],
+						"accepted": ["mon"],
+						"explanation": {
+							"en": "A report opens on the latest completed session: before the open, during the session and on weekends, that's the last session that finished trading.",
+							"zh": "报告默认打开最近一个完整的交易时段：开盘前、交易时段内以及周末，都是最近一个已经结束交易的时段。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "A contract on the screen traded 2,400 contracts against 900 open interest. Its volume/OI, to two decimals?",
+							"zh": "筛选结果中的一份合约成交 2,400 张，未平仓量 900。它的成交量/OI（保留两位小数）是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["2.67"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "2,400 ÷ 900 = 2.67. Above 1 means the session traded more than the open interest standing before it.",
+							"zh": "2,400 ÷ 900 = 2.67。大于 1 表示该时段的成交量超过了此前已有的未平仓量。"
+						}
+					},
+					{
+						"id": "fork",
+						"prompt": {
+							"en": "You fork the recipe with Edit with AI and change a chapter. What does a colleague who opens the official recipe see?",
+							"zh": "你用 Edit with AI 分叉了这个 Recipe 并修改了一个章节。同事打开官方 Recipe 时看到什么？"
+						},
+						"choices": [
+							{
+								"id": "yours",
+								"label": {
+									"en": "Your edited version",
+									"zh": "你修改后的版本"
+								},
+								"why": {
+									"en": "Your fork is private to you. A colleague opening the official recipe sees it unchanged.",
+									"zh": "你的分叉只属于你。同事打开官方 Recipe 时看到的是未改动的版本。"
+								}
+							},
+							{
+								"id": "prompt",
+								"label": {
+									"en": "A prompt to choose a version",
+									"zh": "选择版本的提示"
+								},
+								"why": {
+									"en": "There's no version choice: your fork is private, and the official recipe is the same for every account.",
+									"zh": "没有版本选择：你的分叉是私有的，官方 Recipe 对每个账户都一样。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The official recipe, unchanged",
+									"zh": "未改动的官方 Recipe"
+								}
+							}
+						],
+						"accepted": ["official"],
+						"explanation": {
+							"en": "Forking makes a private, owner-only copy; the official recipe is never edited in place.",
+							"zh": "分叉生成的是私有、仅所有者可见的副本；官方 Recipe 从不被原地修改。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"Latest\" isn't \"today\", and a recipe isn't a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.",
+					"zh": "“最新”不等于“今天”，Recipe 也不是交易信号。先看页眉里的交易时段再读任何数字；分叉的副本只属于你，不会改变官方 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You use TradingFlow's official recipes on the course's market. The question in front of you: \"Where is one symbol's modeled gamma concentrated?\"",
+					"zh": "你在课程的市场上使用 TradingFlow 的官方 Recipe。眼前的问题是：“某个标的的模型 Gamma 集中在哪里？”"
+				},
+				"questions": [
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "Which kind of official recipe answers it?",
+							"zh": "哪种官方 Recipe 回答这个问题？"
+						},
+						"choices": [
+							{
+								"id": "report",
+								"label": { "en": "A multi-step report", "zh": "多步骤报告" },
+								"why": {
+									"en": "A report walks the whole session step by step. This question is about one symbol: a lookup.",
+									"zh": "报告是逐步讲解整个时段。这个问题只关于一个标的：属于查询。"
+								}
+							},
+							{
+								"id": "lookup",
+								"label": {
+									"en": "A quick lookup about one symbol",
+									"zh": "关于单个标的的快速查询"
+								}
+							},
+							{
+								"id": "screen",
+								"label": {
+									"en": "A session screen across the market",
+									"zh": "覆盖整个市场的时段筛选"
+								},
+								"why": {
+									"en": "A screen filters the whole market for one session. This question is about one symbol: a lookup.",
+									"zh": "筛选是在一个时段内过滤整个市场。这个问题只关于一个标的：属于查询。"
+								}
+							}
+						],
+						"accepted": ["lookup"],
+						"explanation": {
+							"en": "Lookups answer one question about one symbol, screens filter the whole market for one session, and reports walk a session step by step.",
+							"zh": "查询回答关于单个标的的一个问题，筛选在一个时段内过滤整个市场，报告则逐步讲解一个时段。"
+						}
+					},
+					{
+						"id": "session",
+						"prompt": {
+							"en": "You open the screener at 10:00 on Monday Sep 16. Which session does it show?",
+							"zh": "你在9月16日周一 10:00打开筛选器。它显示哪个交易时段？"
+						},
+						"choices": [
+							{
+								"id": "fri",
+								"label": { "en": "Friday Sep 13", "zh": "9月13日周五" }
+							},
+							{
+								"id": "mon",
+								"label": { "en": "Monday Sep 16", "zh": "9月16日周一" },
+								"why": {
+									"en": "Monday Sep 16 is still trading, so it isn't a completed session. The report opens on Friday Sep 13.",
+									"zh": "9月16日周一仍在交易，还不是完整的交易时段。报告打开的是 9月13日周五。"
+								}
+							},
+							{
+								"id": "tue",
+								"label": { "en": "Tuesday Sep 17", "zh": "9月17日周二" },
+								"why": {
+									"en": "Tuesday Sep 17 hasn't happened yet; a report shows only completed sessions.",
+									"zh": "9月17日周二还没有到来；报告只显示已完成的交易时段。"
+								}
+							}
+						],
+						"accepted": ["fri"],
+						"explanation": {
+							"en": "A report opens on the latest completed session: before the open, during the session and on weekends, that's the last session that finished trading.",
+							"zh": "报告默认打开最近一个完整的交易时段：开盘前、交易时段内以及周末，都是最近一个已经结束交易的时段。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "A contract on the screen traded 780 contracts against 360 open interest. Its volume/OI, to two decimals?",
+							"zh": "筛选结果中的一份合约成交 780 张，未平仓量 360。它的成交量/OI（保留两位小数）是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["2.17"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "780 ÷ 360 = 2.17. Above 1 means the session traded more than the open interest standing before it.",
+							"zh": "780 ÷ 360 = 2.17。大于 1 表示该时段的成交量超过了此前已有的未平仓量。"
+						}
+					},
+					{
+						"id": "fork",
+						"prompt": {
+							"en": "You fork the recipe with Edit with AI and change a chapter. What does a colleague who opens the official recipe see?",
+							"zh": "你用 Edit with AI 分叉了这个 Recipe 并修改了一个章节。同事打开官方 Recipe 时看到什么？"
+						},
+						"choices": [
+							{
+								"id": "prompt",
+								"label": {
+									"en": "A prompt to choose a version",
+									"zh": "选择版本的提示"
+								},
+								"why": {
+									"en": "There's no version choice: your fork is private, and the official recipe is the same for every account.",
+									"zh": "没有版本选择：你的分叉是私有的，官方 Recipe 对每个账户都一样。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The official recipe, unchanged",
+									"zh": "未改动的官方 Recipe"
+								}
+							},
+							{
+								"id": "yours",
+								"label": {
+									"en": "Your edited version",
+									"zh": "你修改后的版本"
+								},
+								"why": {
+									"en": "Your fork is private to you. A colleague opening the official recipe sees it unchanged.",
+									"zh": "你的分叉只属于你。同事打开官方 Recipe 时看到的是未改动的版本。"
+								}
+							}
+						],
+						"accepted": ["official"],
+						"explanation": {
+							"en": "Forking makes a private, owner-only copy; the official recipe is never edited in place.",
+							"zh": "分叉生成的是私有、仅所有者可见的副本；官方 Recipe 从不被原地修改。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"Latest\" isn't \"today\", and a recipe isn't a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.",
+					"zh": "“最新”不等于“今天”，Recipe 也不是交易信号。先看页眉里的交易时段再读任何数字；分叉的副本只属于你，不会改变官方 Recipe。"
+				}
+			}
+		]
+	},
+	{
+		"id": "tradingflow-recipes-practice-2",
+		"lessonId": "tradingflow-recipes",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "tradingflow-recipes",
+				"brief": {
+					"en": "Match questions to TradingFlow's official recipes, read which session a run shows before trusting its numbers, and see what forking a recipe changes and what it leaves alone.",
+					"zh": "把问题和 TradingFlow 的官方 Recipe 对应起来，在相信数字之前先看清一次运行展示的是哪个交易时段，并理解分叉 Recipe 会改变什么、不会改变什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "\"Latest\" isn't \"today\", and a recipe isn't a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.",
+					"zh": "“最新”不等于“今天”，Recipe 也不是交易信号。先看页眉里的交易时段再读任何数字；分叉的副本只属于你，不会改变官方 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You use TradingFlow's official recipes on the course's market. The question in front of you: \"Which contracts traded far above their open interest today?\"",
+					"zh": "你在课程的市场上使用 TradingFlow 的官方 Recipe。眼前的问题是：“今天哪些合约的成交远超其未平仓量？”"
+				},
+				"questions": [
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "Which kind of official recipe answers it?",
+							"zh": "哪种官方 Recipe 回答这个问题？"
+						},
+						"choices": [
+							{
+								"id": "screen",
+								"label": {
+									"en": "A session screen across the market",
+									"zh": "覆盖整个市场的时段筛选"
+								}
+							},
+							{
+								"id": "report",
+								"label": { "en": "A multi-step report", "zh": "多步骤报告" },
+								"why": {
+									"en": "A report walks the whole session step by step. This question filters the market for one session: a screen.",
+									"zh": "报告是逐步讲解整个时段。这个问题是在一个时段内筛选市场：属于筛选。"
+								}
+							},
+							{
+								"id": "lookup",
+								"label": {
+									"en": "A quick lookup about one symbol",
+									"zh": "关于单个标的的快速查询"
+								},
+								"why": {
+									"en": "A quick lookup answers one question about one symbol. This question filters the whole market for one session: a screen.",
+									"zh": "快速查询回答关于单个标的的一个问题。这个问题是在一个时段内筛选整个市场：属于筛选。"
+								}
+							}
+						],
+						"accepted": ["screen"],
+						"explanation": {
+							"en": "Lookups answer one question about one symbol, screens filter the whole market for one session, and reports walk a session step by step.",
+							"zh": "查询回答关于单个标的的一个问题，筛选在一个时段内过滤整个市场，报告则逐步讲解一个时段。"
+						}
+					},
+					{
+						"id": "session",
+						"prompt": {
+							"en": "You open the screener at 8:00 on Tuesday Sep 17. Which session does it show?",
+							"zh": "你在9月17日周二 8:00打开筛选器。它显示哪个交易时段？"
+						},
+						"choices": [
+							{
+								"id": "tue",
+								"label": { "en": "Tuesday Sep 17", "zh": "9月17日周二" },
+								"why": {
+									"en": "At 8:00 Tuesday hasn't opened yet; a report shows only completed sessions.",
+									"zh": "8:00 时周二还没有开盘；报告只显示已完成的交易时段。"
+								}
+							},
+							{
+								"id": "fri",
+								"label": { "en": "Friday Sep 13", "zh": "9月13日周五" },
+								"why": {
+									"en": "Friday isn't the latest completed session at 8:00 on Tuesday Sep 17: Monday Sep 16 has finished trading since.",
+									"zh": "在9月17日周二 8:00，周五不是最近一个完整的交易时段：9月16日周一在它之后已经结束交易。"
+								}
+							},
+							{
+								"id": "mon",
+								"label": { "en": "Monday Sep 16", "zh": "9月16日周一" }
+							}
+						],
+						"accepted": ["mon"],
+						"explanation": {
+							"en": "A report opens on the latest completed session: before the open, during the session and on weekends, that's the last session that finished trading.",
+							"zh": "报告默认打开最近一个完整的交易时段：开盘前、交易时段内以及周末，都是最近一个已经结束交易的时段。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "A contract on the screen traded 2,400 contracts against 900 open interest. Its volume/OI, to two decimals?",
+							"zh": "筛选结果中的一份合约成交 2,400 张，未平仓量 900。它的成交量/OI（保留两位小数）是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["2.67"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "2,400 ÷ 900 = 2.67. Above 1 means the session traded more than the open interest standing before it.",
+							"zh": "2,400 ÷ 900 = 2.67。大于 1 表示该时段的成交量超过了此前已有的未平仓量。"
+						}
+					},
+					{
+						"id": "fork",
+						"prompt": {
+							"en": "You fork the recipe with Edit with AI and change a chapter. What does a colleague who opens the official recipe see?",
+							"zh": "你用 Edit with AI 分叉了这个 Recipe 并修改了一个章节。同事打开官方 Recipe 时看到什么？"
+						},
+						"choices": [
+							{
+								"id": "yours",
+								"label": {
+									"en": "Your edited version",
+									"zh": "你修改后的版本"
+								},
+								"why": {
+									"en": "Your fork is private to you. A colleague opening the official recipe sees it unchanged.",
+									"zh": "你的分叉只属于你。同事打开官方 Recipe 时看到的是未改动的版本。"
+								}
+							},
+							{
+								"id": "prompt",
+								"label": {
+									"en": "A prompt to choose a version",
+									"zh": "选择版本的提示"
+								},
+								"why": {
+									"en": "There's no version choice: your fork is private, and the official recipe is the same for every account.",
+									"zh": "没有版本选择：你的分叉是私有的，官方 Recipe 对每个账户都一样。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The official recipe, unchanged",
+									"zh": "未改动的官方 Recipe"
+								}
+							}
+						],
+						"accepted": ["official"],
+						"explanation": {
+							"en": "Forking makes a private, owner-only copy; the official recipe is never edited in place.",
+							"zh": "分叉生成的是私有、仅所有者可见的副本；官方 Recipe 从不被原地修改。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"Latest\" isn't \"today\", and a recipe isn't a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.",
+					"zh": "“最新”不等于“今天”，Recipe 也不是交易信号。先看页眉里的交易时段再读任何数字；分叉的副本只属于你，不会改变官方 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You use TradingFlow's official recipes on the course's market. The question in front of you: \"What did the whole session's flow look like, chapter by chapter?\"",
+					"zh": "你在课程的市场上使用 TradingFlow 的官方 Recipe。眼前的问题是：“整个时段的成交流是什么样子，逐章来看？”"
+				},
+				"questions": [
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "Which kind of official recipe answers it?",
+							"zh": "哪种官方 Recipe 回答这个问题？"
+						},
+						"choices": [
+							{
+								"id": "lookup",
+								"label": {
+									"en": "A quick lookup about one symbol",
+									"zh": "关于单个标的的快速查询"
+								},
+								"why": {
+									"en": "A quick lookup answers one question about one symbol. This question walks the whole session chapter by chapter: a report.",
+									"zh": "快速查询回答关于单个标的的一个问题。这个问题是逐章讲解整个时段：属于报告。"
+								}
+							},
+							{
+								"id": "screen",
+								"label": {
+									"en": "A session screen across the market",
+									"zh": "覆盖整个市场的时段筛选"
+								},
+								"why": {
+									"en": "A screen filters the whole market for one session. This question walks the whole session chapter by chapter: a report.",
+									"zh": "筛选是在一个时段内过滤整个市场。这个问题是逐章讲解整个时段：属于报告。"
+								}
+							},
+							{
+								"id": "report",
+								"label": { "en": "A multi-step report", "zh": "多步骤报告" }
+							}
+						],
+						"accepted": ["report"],
+						"explanation": {
+							"en": "Lookups answer one question about one symbol, screens filter the whole market for one session, and reports walk a session step by step.",
+							"zh": "查询回答关于单个标的的一个问题，筛选在一个时段内过滤整个市场，报告则逐步讲解一个时段。"
+						}
+					},
+					{
+						"id": "session",
+						"prompt": {
+							"en": "You open the screener at noon on Saturday Sep 14. Which session does it show?",
+							"zh": "你在9月14日周六中午打开筛选器。它显示哪个交易时段？"
+						},
+						"choices": [
+							{
+								"id": "mon",
+								"label": { "en": "Monday Sep 16", "zh": "9月16日周一" },
+								"why": {
+									"en": "Monday Sep 16 hasn't started yet, so it isn't a completed session. The report opens on Friday Sep 13.",
+									"zh": "9月16日周一还没有开始，还不是完整的交易时段。报告打开的是 9月13日周五。"
+								}
+							},
+							{
+								"id": "tue",
+								"label": { "en": "Tuesday Sep 17", "zh": "9月17日周二" },
+								"why": {
+									"en": "Tuesday Sep 17 hasn't happened yet; a report shows only completed sessions.",
+									"zh": "9月17日周二还没有到来；报告只显示已完成的交易时段。"
+								}
+							},
+							{
+								"id": "fri",
+								"label": { "en": "Friday Sep 13", "zh": "9月13日周五" }
+							}
+						],
+						"accepted": ["fri"],
+						"explanation": {
+							"en": "A report opens on the latest completed session: before the open, during the session and on weekends, that's the last session that finished trading.",
+							"zh": "报告默认打开最近一个完整的交易时段：开盘前、交易时段内以及周末，都是最近一个已经结束交易的时段。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "A contract on the screen traded 620 contracts against 310 open interest. Its volume/OI, to two decimals?",
+							"zh": "筛选结果中的一份合约成交 620 张，未平仓量 310。它的成交量/OI（保留两位小数）是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["2"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "620 ÷ 310 = 2.00. Above 1 means the session traded more than the open interest standing before it.",
+							"zh": "620 ÷ 310 = 2.00。大于 1 表示该时段的成交量超过了此前已有的未平仓量。"
+						}
+					},
+					{
+						"id": "fork",
+						"prompt": {
+							"en": "You fork the recipe with Edit with AI and change a chapter. What does a colleague who opens the official recipe see?",
+							"zh": "你用 Edit with AI 分叉了这个 Recipe 并修改了一个章节。同事打开官方 Recipe 时看到什么？"
+						},
+						"choices": [
+							{
+								"id": "official",
+								"label": {
+									"en": "The official recipe, unchanged",
+									"zh": "未改动的官方 Recipe"
+								}
+							},
+							{
+								"id": "yours",
+								"label": {
+									"en": "Your edited version",
+									"zh": "你修改后的版本"
+								},
+								"why": {
+									"en": "Your fork is private to you. A colleague opening the official recipe sees it unchanged.",
+									"zh": "你的分叉只属于你。同事打开官方 Recipe 时看到的是未改动的版本。"
+								}
+							},
+							{
+								"id": "prompt",
+								"label": {
+									"en": "A prompt to choose a version",
+									"zh": "选择版本的提示"
+								},
+								"why": {
+									"en": "There's no version choice: your fork is private, and the official recipe is the same for every account.",
+									"zh": "没有版本选择：你的分叉是私有的，官方 Recipe 对每个账户都一样。"
+								}
+							}
+						],
+						"accepted": ["official"],
+						"explanation": {
+							"en": "Forking makes a private, owner-only copy; the official recipe is never edited in place.",
+							"zh": "分叉生成的是私有、仅所有者可见的副本；官方 Recipe 从不被原地修改。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"Latest\" isn't \"today\", and a recipe isn't a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.",
+					"zh": "“最新”不等于“今天”，Recipe 也不是交易信号。先看页眉里的交易时段再读任何数字；分叉的副本只属于你，不会改变官方 Recipe。"
+				}
+			}
+		]
+	},
+	{
+		"id": "recipe-map-practice-1",
+		"lessonId": "recipe-map",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "recipe-map",
+				"brief": {
+					"en": "Trace a report's sentences through the recipe map, tell recipe content from live data, and keep a top-N table apart from the population it came from.",
+					"zh": "通过 Recipe 地图追溯报告中的句子，分清 Recipe 内容与实时数据，并把前 N 名表格与其来源总体区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Not every sentence in a report is evidence, and a table isn't the population. Check the recipe map before citing a sentence, and the key figures before counting rows.",
+					"zh": "报告里的句子并不都是证据，表格也不是总体。引用一句话前先看 Recipe 地图，数行数前先看关键数字。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A screen's key figures count 5 contracts that passed; its table shows the top 3. You raise the minimum open interest and run again.",
+					"zh": "一个筛选的关键数字统计出 5 份通过的合约；表格显示前 3 名。你提高最低未平仓量后重新运行。"
+				},
+				"questions": [
+					{
+						"id": "unchanged",
+						"prompt": {
+							"en": "Which cell can't change when you run again: the Bottom line or the Takeaways?",
+							"zh": "重新运行后，哪个单元格不可能变化：核心结论还是要点？"
+						},
+						"choices": [
+							{
+								"id": "bottom",
+								"label": { "en": "The Bottom line", "zh": "核心结论" },
+								"why": {
+									"en": "The Bottom line is computed from live data, so it changes with the session and the thresholds.",
+									"zh": "核心结论由实时数据算出，所以会随交易时段和阈值变化。"
+								}
+							},
+							{
+								"id": "both",
+								"label": { "en": "Both can change", "zh": "两者都可能变化" },
+								"why": {
+									"en": "The Takeaways are recipe content, written once and running no query, so they read the same on every run.",
+									"zh": "要点是 Recipe 内容，只写一次、不运行查询，所以每次运行都一样。"
+								}
+							},
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The Takeaways: recipe content",
+									"zh": "要点：Recipe 内容"
+								}
+							}
+						],
+						"accepted": ["takeaways"],
+						"explanation": {
+							"en": "Recipe content is written into the recipe and runs no query; cells fed by live data change with the session and the thresholds.",
+							"zh": "Recipe 内容写在 Recipe 里，不运行任何查询；由实时数据提供的单元格会随交易时段和阈值变化。"
+						}
+					},
+					{
+						"id": "unloaded",
+						"prompt": {
+							"en": "Before you ran it again, how many contracts passed but weren't loaded into the table?",
+							"zh": "重新运行之前，有多少份合约通过了筛选但没有载入表格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "份合约" }
+						},
+						"accepted": ["2"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "5 passed − 3 shown = 2 not loaded.",
+							"zh": "通过 5 份 − 显示 3 份 = 未载入 2 份。"
+						}
+					},
+					{
+						"id": "cite",
+						"prompt": {
+							"en": "You quote a Bottom line sentence in your notes. What must go with it?",
+							"zh": "你在笔记里引用了一句核心结论。必须一起记下什么？"
+						},
+						"choices": [
+							{
+								"id": "session",
+								"label": {
+									"en": "The session and the thresholds",
+									"zh": "交易时段和阈值"
+								}
+							},
+							{
+								"id": "time",
+								"label": { "en": "The time you read it", "zh": "你阅读的时间" },
+								"why": {
+									"en": "When you read it doesn't change the sentence; the session and the thresholds do. Without them nobody can reproduce it.",
+									"zh": "你何时阅读不会改变这句话；改变它的是交易时段和阈值。没有它们，没人能复现。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: it explains itself",
+									"zh": "什么都不用：它自己说明了一切"
+								},
+								"why": {
+									"en": "The sentence is computed from one session and a set of inputs. Quoted without them, another reader can't check it.",
+									"zh": "这句话是根据一个交易时段和一组输入算出的。不带上它们，其他读者无法核查。"
+								}
+							}
+						],
+						"accepted": ["session"],
+						"explanation": {
+							"en": "The sentence is computed from the represented session and the inputs; without them, another reader can't reproduce it.",
+							"zh": "这句话是根据所展示的交易时段和输入算出来的；没有它们，其他读者无法复现。"
+						}
+					},
+					{
+						"id": "check",
+						"prompt": {
+							"en": "Your claim is about one contract's prints. Where do you check it?",
+							"zh": "你的说法关于某一份合约的成交记录。去哪里核查？"
+						},
+						"choices": [
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The recipe's Takeaways",
+									"zh": "Recipe 的要点"
+								},
+								"why": {
+									"en": "The Takeaways are recipe text that reads the same every run; they don't describe any contract's prints.",
+									"zh": "要点是每次运行都一样的 Recipe 文字，并不描述任何合约的成交。"
+								}
+							},
+							{
+								"id": "kpis",
+								"label": { "en": "The key figures", "zh": "关键数字" },
+								"why": {
+									"en": "The key figures summarize the whole screen. One contract's prints are on Option Trades.",
+									"zh": "关键数字汇总的是整个筛选。单个合约的成交记录在 Option Trades 上。"
+								}
+							},
+							{
+								"id": "trades",
+								"label": {
+									"en": "Option Trades, for that contract",
+									"zh": "Option Trades 中的该合约"
+								}
+							}
+						],
+						"accepted": ["trades"],
+						"explanation": {
+							"en": "A screen summarizes many contracts; the prints of one contract are on Option Trades.",
+							"zh": "筛选汇总的是很多合约；单个合约的成交记录在 Option Trades 上。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Not every sentence in a report is evidence, and a table isn't the population. Check the recipe map before citing a sentence, and the key figures before counting rows.",
+					"zh": "报告里的句子并不都是证据，表格也不是总体。引用一句话前先看 Recipe 地图，数行数前先看关键数字。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A screen's key figures count 12 contracts that passed; its table shows the top 5. You raise the minimum open interest and run again.",
+					"zh": "一个筛选的关键数字统计出 12 份通过的合约；表格显示前 5 名。你提高最低未平仓量后重新运行。"
+				},
+				"questions": [
+					{
+						"id": "unchanged",
+						"prompt": {
+							"en": "Which cell can't change when you run again: the Key figures or the Takeaways?",
+							"zh": "重新运行后，哪个单元格不可能变化：关键数字还是要点？"
+						},
+						"choices": [
+							{
+								"id": "both",
+								"label": { "en": "Both can change", "zh": "两者都可能变化" },
+								"why": {
+									"en": "The Takeaways are recipe content, written once and running no query, so they read the same on every run.",
+									"zh": "要点是 Recipe 内容，只写一次、不运行查询，所以每次运行都一样。"
+								}
+							},
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The Takeaways: recipe content",
+									"zh": "要点：Recipe 内容"
+								}
+							},
+							{
+								"id": "key",
+								"label": { "en": "The Key figures", "zh": "关键数字" },
+								"why": {
+									"en": "The key figures count the screen's matches, so they change with the session and the thresholds.",
+									"zh": "关键数字统计的是筛选的匹配结果，所以会随交易时段和阈值变化。"
+								}
+							}
+						],
+						"accepted": ["takeaways"],
+						"explanation": {
+							"en": "Recipe content is written into the recipe and runs no query; cells fed by live data change with the session and the thresholds.",
+							"zh": "Recipe 内容写在 Recipe 里，不运行任何查询；由实时数据提供的单元格会随交易时段和阈值变化。"
+						}
+					},
+					{
+						"id": "unloaded",
+						"prompt": {
+							"en": "Before you ran it again, how many contracts passed but weren't loaded into the table?",
+							"zh": "重新运行之前，有多少份合约通过了筛选但没有载入表格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "份合约" }
+						},
+						"accepted": ["7"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "12 passed − 5 shown = 7 not loaded.",
+							"zh": "通过 12 份 − 显示 5 份 = 未载入 7 份。"
+						}
+					},
+					{
+						"id": "cite",
+						"prompt": {
+							"en": "You quote a Bottom line sentence in your notes. What must go with it?",
+							"zh": "你在笔记里引用了一句核心结论。必须一起记下什么？"
+						},
+						"choices": [
+							{
+								"id": "time",
+								"label": { "en": "The time you read it", "zh": "你阅读的时间" },
+								"why": {
+									"en": "When you read it doesn't change the sentence; the session and the thresholds do. Without them nobody can reproduce it.",
+									"zh": "你何时阅读不会改变这句话；改变它的是交易时段和阈值。没有它们，没人能复现。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: it explains itself",
+									"zh": "什么都不用：它自己说明了一切"
+								},
+								"why": {
+									"en": "The sentence is computed from one session and a set of inputs. Quoted without them, another reader can't check it.",
+									"zh": "这句话是根据一个交易时段和一组输入算出的。不带上它们，其他读者无法核查。"
+								}
+							},
+							{
+								"id": "session",
+								"label": {
+									"en": "The session and the thresholds",
+									"zh": "交易时段和阈值"
+								}
+							}
+						],
+						"accepted": ["session"],
+						"explanation": {
+							"en": "The sentence is computed from the represented session and the inputs; without them, another reader can't reproduce it.",
+							"zh": "这句话是根据所展示的交易时段和输入算出来的；没有它们，其他读者无法复现。"
+						}
+					},
+					{
+						"id": "check",
+						"prompt": {
+							"en": "Your claim is about one contract's prints. Where do you check it?",
+							"zh": "你的说法关于某一份合约的成交记录。去哪里核查？"
+						},
+						"choices": [
+							{
+								"id": "kpis",
+								"label": { "en": "The key figures", "zh": "关键数字" },
+								"why": {
+									"en": "The key figures summarize the whole screen. One contract's prints are on Option Trades.",
+									"zh": "关键数字汇总的是整个筛选。单个合约的成交记录在 Option Trades 上。"
+								}
+							},
+							{
+								"id": "trades",
+								"label": {
+									"en": "Option Trades, for that contract",
+									"zh": "Option Trades 中的该合约"
+								}
+							},
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The recipe's Takeaways",
+									"zh": "Recipe 的要点"
+								},
+								"why": {
+									"en": "The Takeaways are recipe text that reads the same every run; they don't describe any contract's prints.",
+									"zh": "要点是每次运行都一样的 Recipe 文字，并不描述任何合约的成交。"
+								}
+							}
+						],
+						"accepted": ["trades"],
+						"explanation": {
+							"en": "A screen summarizes many contracts; the prints of one contract are on Option Trades.",
+							"zh": "筛选汇总的是很多合约；单个合约的成交记录在 Option Trades 上。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Not every sentence in a report is evidence, and a table isn't the population. Check the recipe map before citing a sentence, and the key figures before counting rows.",
+					"zh": "报告里的句子并不都是证据，表格也不是总体。引用一句话前先看 Recipe 地图，数行数前先看关键数字。"
+				}
+			}
+		]
+	},
+	{
+		"id": "recipe-map-practice-2",
+		"lessonId": "recipe-map",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "recipe-map",
+				"brief": {
+					"en": "Trace a report's sentences through the recipe map, tell recipe content from live data, and keep a top-N table apart from the population it came from.",
+					"zh": "通过 Recipe 地图追溯报告中的句子，分清 Recipe 内容与实时数据，并把前 N 名表格与其来源总体区分开。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Not every sentence in a report is evidence, and a table isn't the population. Check the recipe map before citing a sentence, and the key figures before counting rows.",
+					"zh": "报告里的句子并不都是证据，表格也不是总体。引用一句话前先看 Recipe 地图，数行数前先看关键数字。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A screen's key figures count 5 contracts that passed; its table shows the top 3. You raise the minimum open interest and run again.",
+					"zh": "一个筛选的关键数字统计出 5 份通过的合约；表格显示前 3 名。你提高最低未平仓量后重新运行。"
+				},
+				"questions": [
+					{
+						"id": "unchanged",
+						"prompt": {
+							"en": "Which cell can't change when you run again: the Bottom line or the Takeaways?",
+							"zh": "重新运行后，哪个单元格不可能变化：核心结论还是要点？"
+						},
+						"choices": [
+							{
+								"id": "bottom",
+								"label": { "en": "The Bottom line", "zh": "核心结论" },
+								"why": {
+									"en": "The Bottom line is computed from live data, so it changes with the session and the thresholds.",
+									"zh": "核心结论由实时数据算出，所以会随交易时段和阈值变化。"
+								}
+							},
+							{
+								"id": "both",
+								"label": { "en": "Both can change", "zh": "两者都可能变化" },
+								"why": {
+									"en": "The Takeaways are recipe content, written once and running no query, so they read the same on every run.",
+									"zh": "要点是 Recipe 内容，只写一次、不运行查询，所以每次运行都一样。"
+								}
+							},
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The Takeaways: recipe content",
+									"zh": "要点：Recipe 内容"
+								}
+							}
+						],
+						"accepted": ["takeaways"],
+						"explanation": {
+							"en": "Recipe content is written into the recipe and runs no query; cells fed by live data change with the session and the thresholds.",
+							"zh": "Recipe 内容写在 Recipe 里，不运行任何查询；由实时数据提供的单元格会随交易时段和阈值变化。"
+						}
+					},
+					{
+						"id": "unloaded",
+						"prompt": {
+							"en": "Before you ran it again, how many contracts passed but weren't loaded into the table?",
+							"zh": "重新运行之前，有多少份合约通过了筛选但没有载入表格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "份合约" }
+						},
+						"accepted": ["2"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "5 passed − 3 shown = 2 not loaded.",
+							"zh": "通过 5 份 − 显示 3 份 = 未载入 2 份。"
+						}
+					},
+					{
+						"id": "cite",
+						"prompt": {
+							"en": "You quote a Bottom line sentence in your notes. What must go with it?",
+							"zh": "你在笔记里引用了一句核心结论。必须一起记下什么？"
+						},
+						"choices": [
+							{
+								"id": "session",
+								"label": {
+									"en": "The session and the thresholds",
+									"zh": "交易时段和阈值"
+								}
+							},
+							{
+								"id": "time",
+								"label": { "en": "The time you read it", "zh": "你阅读的时间" },
+								"why": {
+									"en": "When you read it doesn't change the sentence; the session and the thresholds do. Without them nobody can reproduce it.",
+									"zh": "你何时阅读不会改变这句话；改变它的是交易时段和阈值。没有它们，没人能复现。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: it explains itself",
+									"zh": "什么都不用：它自己说明了一切"
+								},
+								"why": {
+									"en": "The sentence is computed from one session and a set of inputs. Quoted without them, another reader can't check it.",
+									"zh": "这句话是根据一个交易时段和一组输入算出的。不带上它们，其他读者无法核查。"
+								}
+							}
+						],
+						"accepted": ["session"],
+						"explanation": {
+							"en": "The sentence is computed from the represented session and the inputs; without them, another reader can't reproduce it.",
+							"zh": "这句话是根据所展示的交易时段和输入算出来的；没有它们，其他读者无法复现。"
+						}
+					},
+					{
+						"id": "check",
+						"prompt": {
+							"en": "Your claim is about one contract's prints. Where do you check it?",
+							"zh": "你的说法关于某一份合约的成交记录。去哪里核查？"
+						},
+						"choices": [
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The recipe's Takeaways",
+									"zh": "Recipe 的要点"
+								},
+								"why": {
+									"en": "The Takeaways are recipe text that reads the same every run; they don't describe any contract's prints.",
+									"zh": "要点是每次运行都一样的 Recipe 文字，并不描述任何合约的成交。"
+								}
+							},
+							{
+								"id": "kpis",
+								"label": { "en": "The key figures", "zh": "关键数字" },
+								"why": {
+									"en": "The key figures summarize the whole screen. One contract's prints are on Option Trades.",
+									"zh": "关键数字汇总的是整个筛选。单个合约的成交记录在 Option Trades 上。"
+								}
+							},
+							{
+								"id": "trades",
+								"label": {
+									"en": "Option Trades, for that contract",
+									"zh": "Option Trades 中的该合约"
+								}
+							}
+						],
+						"accepted": ["trades"],
+						"explanation": {
+							"en": "A screen summarizes many contracts; the prints of one contract are on Option Trades.",
+							"zh": "筛选汇总的是很多合约；单个合约的成交记录在 Option Trades 上。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Not every sentence in a report is evidence, and a table isn't the population. Check the recipe map before citing a sentence, and the key figures before counting rows.",
+					"zh": "报告里的句子并不都是证据，表格也不是总体。引用一句话前先看 Recipe 地图，数行数前先看关键数字。"
+				}
+			},
+			{
+				"brief": {
+					"en": "A screen's key figures count 40 contracts that passed; its table shows the top 10. You raise the minimum open interest and run again.",
+					"zh": "一个筛选的关键数字统计出 40 份通过的合约；表格显示前 10 名。你提高最低未平仓量后重新运行。"
+				},
+				"questions": [
+					{
+						"id": "unchanged",
+						"prompt": {
+							"en": "Which cell can't change when you run again: the Ranked table or the Takeaways?",
+							"zh": "重新运行后，哪个单元格不可能变化：排名表格还是要点？"
+						},
+						"choices": [
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The Takeaways: recipe content",
+									"zh": "要点：Recipe 内容"
+								}
+							},
+							{
+								"id": "table",
+								"label": { "en": "The Ranked table", "zh": "排名表格" },
+								"why": {
+									"en": "The ranked table loads the top rows of each run, so it changes whenever the data or the inputs do.",
+									"zh": "排名表格载入的是每次运行的前几行，所以数据或输入一变它就变。"
+								}
+							},
+							{
+								"id": "both",
+								"label": { "en": "Both can change", "zh": "两者都可能变化" },
+								"why": {
+									"en": "The Takeaways are recipe content, written once and running no query, so they read the same on every run.",
+									"zh": "要点是 Recipe 内容，只写一次、不运行查询，所以每次运行都一样。"
+								}
+							}
+						],
+						"accepted": ["takeaways"],
+						"explanation": {
+							"en": "Recipe content is written into the recipe and runs no query; cells fed by live data change with the session and the thresholds.",
+							"zh": "Recipe 内容写在 Recipe 里，不运行任何查询；由实时数据提供的单元格会随交易时段和阈值变化。"
+						}
+					},
+					{
+						"id": "unloaded",
+						"prompt": {
+							"en": "Before you ran it again, how many contracts passed but weren't loaded into the table?",
+							"zh": "重新运行之前，有多少份合约通过了筛选但没有载入表格？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "contracts", "zh": "份合约" }
+						},
+						"accepted": ["30"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "40 passed − 10 shown = 30 not loaded.",
+							"zh": "通过 40 份 − 显示 10 份 = 未载入 30 份。"
+						}
+					},
+					{
+						"id": "cite",
+						"prompt": {
+							"en": "You quote a Bottom line sentence in your notes. What must go with it?",
+							"zh": "你在笔记里引用了一句核心结论。必须一起记下什么？"
+						},
+						"choices": [
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: it explains itself",
+									"zh": "什么都不用：它自己说明了一切"
+								},
+								"why": {
+									"en": "The sentence is computed from one session and a set of inputs. Quoted without them, another reader can't check it.",
+									"zh": "这句话是根据一个交易时段和一组输入算出的。不带上它们，其他读者无法核查。"
+								}
+							},
+							{
+								"id": "session",
+								"label": {
+									"en": "The session and the thresholds",
+									"zh": "交易时段和阈值"
+								}
+							},
+							{
+								"id": "time",
+								"label": { "en": "The time you read it", "zh": "你阅读的时间" },
+								"why": {
+									"en": "When you read it doesn't change the sentence; the session and the thresholds do. Without them nobody can reproduce it.",
+									"zh": "你何时阅读不会改变这句话；改变它的是交易时段和阈值。没有它们，没人能复现。"
+								}
+							}
+						],
+						"accepted": ["session"],
+						"explanation": {
+							"en": "The sentence is computed from the represented session and the inputs; without them, another reader can't reproduce it.",
+							"zh": "这句话是根据所展示的交易时段和输入算出来的；没有它们，其他读者无法复现。"
+						}
+					},
+					{
+						"id": "check",
+						"prompt": {
+							"en": "Your claim is about one contract's prints. Where do you check it?",
+							"zh": "你的说法关于某一份合约的成交记录。去哪里核查？"
+						},
+						"choices": [
+							{
+								"id": "trades",
+								"label": {
+									"en": "Option Trades, for that contract",
+									"zh": "Option Trades 中的该合约"
+								}
+							},
+							{
+								"id": "takeaways",
+								"label": {
+									"en": "The recipe's Takeaways",
+									"zh": "Recipe 的要点"
+								},
+								"why": {
+									"en": "The Takeaways are recipe text that reads the same every run; they don't describe any contract's prints.",
+									"zh": "要点是每次运行都一样的 Recipe 文字，并不描述任何合约的成交。"
+								}
+							},
+							{
+								"id": "kpis",
+								"label": { "en": "The key figures", "zh": "关键数字" },
+								"why": {
+									"en": "The key figures summarize the whole screen. One contract's prints are on Option Trades.",
+									"zh": "关键数字汇总的是整个筛选。单个合约的成交记录在 Option Trades 上。"
+								}
+							}
+						],
+						"accepted": ["trades"],
+						"explanation": {
+							"en": "A screen summarizes many contracts; the prints of one contract are on Option Trades.",
+							"zh": "筛选汇总的是很多合约；单个合约的成交记录在 Option Trades 上。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Not every sentence in a report is evidence, and a table isn't the population. Check the recipe map before citing a sentence, and the key figures before counting rows.",
+					"zh": "报告里的句子并不都是证据，表格也不是总体。引用一句话前先看 Recipe 地图，数行数前先看关键数字。"
+				}
+			}
+		]
+	},
+	{
+		"id": "recipe-inputs-practice-1",
+		"lessonId": "recipe-inputs",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "recipe-inputs",
+				"brief": {
+					"en": "Edit a recipe's inputs and see when the report actually changes, sort changes into re-runs and new questions, and see what the screen's floors protect.",
+					"zh": "修改 Recipe 的输入，看报告究竟何时变化；把改动分成重新运行与新问题两类；并理解筛选门槛保护的是什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Typing a value isn't running it, and changing the method isn't tuning: a new measure is a new question, in its own recipe.",
+					"zh": "输入一个值不等于运行它，改方法也不是调参：新的度量就是新的问题，应放在它自己的 Recipe 里。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are working in TradingFlow's unusual-activity screener on Monday's session, starting from its default inputs.",
+					"zh": "你正在 TradingFlow 的异常成交筛选器中处理周一的交易时段，从默认输入开始。"
+				},
+				"questions": [
+					{
+						"id": "draft",
+						"prompt": {
+							"en": "You change Min volume/OI to 3 and don't press Run. What do the key figures and table show?",
+							"zh": "你把最低成交量/OI 改成 3，但没有点“运行”。关键数字和表格显示什么？"
+						},
+						"choices": [
+							{
+								"id": "new",
+								"label": {
+									"en": "Results at the new threshold",
+									"zh": "新阈值下的结果"
+								},
+								"why": {
+									"en": "A changed input is only a draft until you press Run. The key figures and table still show the last run.",
+									"zh": "修改的输入在点“运行”之前只是草稿。关键数字和表格仍显示上一次运行。"
+								}
+							},
+							{
+								"id": "empty",
+								"label": {
+									"en": "Nothing until you run",
+									"zh": "运行前什么也不显示"
+								},
+								"why": {
+									"en": "Nothing clears while you edit. The report keeps the last run until you press Run.",
+									"zh": "编辑时什么都不会清空。在你点“运行”之前，报告保留上一次运行的结果。"
+								}
+							},
+							{
+								"id": "last",
+								"label": {
+									"en": "The last run, unchanged",
+									"zh": "上一次运行，没有变化"
+								}
+							}
+						],
+						"accepted": ["last"],
+						"explanation": {
+							"en": "An edited input is a draft; every cell keeps the last run until you press Run, then they refresh together.",
+							"zh": "修改的输入只是草稿；在你点“运行”之前每个单元格都保留上一次运行，运行后再一起刷新。"
+						}
+					},
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "\"Raise Min OI to 500\": does that re-run the same question or ask a new one?",
+							"zh": "“把最低未平仓量提高到 500”：这是重新运行同一个问题，还是提出新问题？"
+						},
+						"choices": [
+							{
+								"id": "same",
+								"label": {
+									"en": "Re-runs the same question",
+									"zh": "重新运行同一个问题"
+								}
+							},
+							{
+								"id": "new",
+								"label": { "en": "Asks a new question", "zh": "提出新问题" },
+								"why": {
+									"en": "Thresholds and the date are inputs to the same question; changing them re-runs it, and the answers stay comparable.",
+									"zh": "阈值和日期是同一个问题的输入；改变它们只是重跑，答案仍然可比。"
+								}
+							}
+						],
+						"accepted": ["same"],
+						"explanation": {
+							"en": "Thresholds and the date are inputs to the same question. Changing what is measured, how it ranks, or which contracts are eligible asks a new one.",
+							"zh": "阈值和日期是同一个问题的输入；改变度量、排名方式或入选资格，则是提出新问题。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "With the floors at 0, a contract that traded 30 against 5 open interest appears. Its volume/OI?",
+							"zh": "门槛降为 0 后，出现一份成交 30 张、未平仓量 5 的合约。它的成交量/OI 是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["6"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "30 ÷ 5 = 6.00: a big ratio from a tiny denominator.",
+							"zh": "30 ÷ 5 = 6.00：极小的分母带来很大的比率。"
+						}
+					},
+					{
+						"id": "floors",
+						"prompt": {
+							"en": "You lowered the floors for your own research. What should you do when you cite the top contract?",
+							"zh": "你为自己的研究降低了门槛。引用排名第一的合约时应该怎么做？"
+						},
+						"choices": [
+							{
+								"id": "ratio",
+								"label": {
+									"en": "Quote the ratio alone; it's the screen's metric",
+									"zh": "只引用比率，那是筛选的指标"
+								},
+								"why": {
+									"en": "Quoted alone, a ratio from lowered floors can rest on a tiny denominator. Give the volume and open interest behind it, and the floors you used.",
+									"zh": "单独引用的话，降低门槛后的比率可能建立在极小的分母上。要给出背后的成交量和未平仓量，以及使用的门槛。"
+								}
+							},
+							{
+								"id": "hide",
+								"label": {
+									"en": "Restore the defaults first, then cite it",
+									"zh": "先恢复默认值再引用"
+								},
+								"why": {
+									"en": "Restoring the defaults would cite a different screen from the one you ran. State the floors you actually used.",
+									"zh": "恢复默认值后引用的就是另一个筛选，而不是你运行的那个。要说明你实际使用的门槛。"
+								}
+							},
+							{
+								"id": "state",
+								"label": {
+									"en": "State the floors you used and give its volume and open interest",
+									"zh": "说明使用的门槛，并给出它的成交量和未平仓量"
+								}
+							}
+						],
+						"accepted": ["state"],
+						"explanation": {
+							"en": "A ratio without its denominator hides how thin the contract is; the floors you used are part of the result.",
+							"zh": "不给分母的比率会掩盖合约有多冷门；你使用的门槛本身就是结果的一部分。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Typing a value isn't running it, and changing the method isn't tuning: a new measure is a new question, in its own recipe.",
+					"zh": "输入一个值不等于运行它，改方法也不是调参：新的度量就是新的问题，应放在它自己的 Recipe 里。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are working in TradingFlow's unusual-activity screener on Monday's session, starting from its default inputs.",
+					"zh": "你正在 TradingFlow 的异常成交筛选器中处理周一的交易时段，从默认输入开始。"
+				},
+				"questions": [
+					{
+						"id": "draft",
+						"prompt": {
+							"en": "You change Min volume/OI to 3 and don't press Run. What do the key figures and table show?",
+							"zh": "你把最低成交量/OI 改成 3，但没有点“运行”。关键数字和表格显示什么？"
+						},
+						"choices": [
+							{
+								"id": "empty",
+								"label": {
+									"en": "Nothing until you run",
+									"zh": "运行前什么也不显示"
+								},
+								"why": {
+									"en": "Nothing clears while you edit. The report keeps the last run until you press Run.",
+									"zh": "编辑时什么都不会清空。在你点“运行”之前，报告保留上一次运行的结果。"
+								}
+							},
+							{
+								"id": "last",
+								"label": {
+									"en": "The last run, unchanged",
+									"zh": "上一次运行，没有变化"
+								}
+							},
+							{
+								"id": "new",
+								"label": {
+									"en": "Results at the new threshold",
+									"zh": "新阈值下的结果"
+								},
+								"why": {
+									"en": "A changed input is only a draft until you press Run. The key figures and table still show the last run.",
+									"zh": "修改的输入在点“运行”之前只是草稿。关键数字和表格仍显示上一次运行。"
+								}
+							}
+						],
+						"accepted": ["last"],
+						"explanation": {
+							"en": "An edited input is a draft; every cell keeps the last run until you press Run, then they refresh together.",
+							"zh": "修改的输入只是草稿；在你点“运行”之前每个单元格都保留上一次运行，运行后再一起刷新。"
+						}
+					},
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "\"Rank the contracts by trade count instead\": does that re-run the same question or ask a new one?",
+							"zh": "“改为按成交笔数给合约排名”：这是重新运行同一个问题，还是提出新问题？"
+						},
+						"choices": [
+							{
+								"id": "new",
+								"label": { "en": "Asks a new question", "zh": "提出新问题" }
+							},
+							{
+								"id": "same",
+								"label": {
+									"en": "Re-runs the same question",
+									"zh": "重新运行同一个问题"
+								},
+								"why": {
+									"en": "Changing what is ranked, or which contracts are eligible, changes the question. Thresholds and the date are what re-run the same one.",
+									"zh": "改变排名依据或入选资格，就改变了问题。只有阈值和日期才是重跑同一个问题。"
+								}
+							}
+						],
+						"accepted": ["new"],
+						"explanation": {
+							"en": "Thresholds and the date are inputs to the same question. Changing what is measured, how it ranks, or which contracts are eligible asks a new one.",
+							"zh": "阈值和日期是同一个问题的输入；改变度量、排名方式或入选资格，则是提出新问题。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "With the floors at 0, a contract that traded 12 against 3 open interest appears. Its volume/OI?",
+							"zh": "门槛降为 0 后，出现一份成交 12 张、未平仓量 3 的合约。它的成交量/OI 是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["4"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "12 ÷ 3 = 4.00: a big ratio from a tiny denominator.",
+							"zh": "12 ÷ 3 = 4.00：极小的分母带来很大的比率。"
+						}
+					},
+					{
+						"id": "floors",
+						"prompt": {
+							"en": "You lowered the floors for your own research. What should you do when you cite the top contract?",
+							"zh": "你为自己的研究降低了门槛。引用排名第一的合约时应该怎么做？"
+						},
+						"choices": [
+							{
+								"id": "hide",
+								"label": {
+									"en": "Restore the defaults first, then cite it",
+									"zh": "先恢复默认值再引用"
+								},
+								"why": {
+									"en": "Restoring the defaults would cite a different screen from the one you ran. State the floors you actually used.",
+									"zh": "恢复默认值后引用的就是另一个筛选，而不是你运行的那个。要说明你实际使用的门槛。"
+								}
+							},
+							{
+								"id": "state",
+								"label": {
+									"en": "State the floors you used and give its volume and open interest",
+									"zh": "说明使用的门槛，并给出它的成交量和未平仓量"
+								}
+							},
+							{
+								"id": "ratio",
+								"label": {
+									"en": "Quote the ratio alone; it's the screen's metric",
+									"zh": "只引用比率，那是筛选的指标"
+								},
+								"why": {
+									"en": "Quoted alone, a ratio from lowered floors can rest on a tiny denominator. Give the volume and open interest behind it, and the floors you used.",
+									"zh": "单独引用的话，降低门槛后的比率可能建立在极小的分母上。要给出背后的成交量和未平仓量，以及使用的门槛。"
+								}
+							}
+						],
+						"accepted": ["state"],
+						"explanation": {
+							"en": "A ratio without its denominator hides how thin the contract is; the floors you used are part of the result.",
+							"zh": "不给分母的比率会掩盖合约有多冷门；你使用的门槛本身就是结果的一部分。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Typing a value isn't running it, and changing the method isn't tuning: a new measure is a new question, in its own recipe.",
+					"zh": "输入一个值不等于运行它，改方法也不是调参：新的度量就是新的问题，应放在它自己的 Recipe 里。"
+				}
+			}
+		]
+	},
+	{
+		"id": "recipe-inputs-practice-2",
+		"lessonId": "recipe-inputs",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "recipe-inputs",
+				"brief": {
+					"en": "Edit a recipe's inputs and see when the report actually changes, sort changes into re-runs and new questions, and see what the screen's floors protect.",
+					"zh": "修改 Recipe 的输入，看报告究竟何时变化；把改动分成重新运行与新问题两类；并理解筛选门槛保护的是什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "Typing a value isn't running it, and changing the method isn't tuning: a new measure is a new question, in its own recipe.",
+					"zh": "输入一个值不等于运行它，改方法也不是调参：新的度量就是新的问题，应放在它自己的 Recipe 里。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are working in TradingFlow's unusual-activity screener on Monday's session, starting from its default inputs.",
+					"zh": "你正在 TradingFlow 的异常成交筛选器中处理周一的交易时段，从默认输入开始。"
+				},
+				"questions": [
+					{
+						"id": "draft",
+						"prompt": {
+							"en": "You change Min volume/OI to 3 and don't press Run. What do the key figures and table show?",
+							"zh": "你把最低成交量/OI 改成 3，但没有点“运行”。关键数字和表格显示什么？"
+						},
+						"choices": [
+							{
+								"id": "new",
+								"label": {
+									"en": "Results at the new threshold",
+									"zh": "新阈值下的结果"
+								},
+								"why": {
+									"en": "A changed input is only a draft until you press Run. The key figures and table still show the last run.",
+									"zh": "修改的输入在点“运行”之前只是草稿。关键数字和表格仍显示上一次运行。"
+								}
+							},
+							{
+								"id": "empty",
+								"label": {
+									"en": "Nothing until you run",
+									"zh": "运行前什么也不显示"
+								},
+								"why": {
+									"en": "Nothing clears while you edit. The report keeps the last run until you press Run.",
+									"zh": "编辑时什么都不会清空。在你点“运行”之前，报告保留上一次运行的结果。"
+								}
+							},
+							{
+								"id": "last",
+								"label": {
+									"en": "The last run, unchanged",
+									"zh": "上一次运行，没有变化"
+								}
+							}
+						],
+						"accepted": ["last"],
+						"explanation": {
+							"en": "An edited input is a draft; every cell keeps the last run until you press Run, then they refresh together.",
+							"zh": "修改的输入只是草稿；在你点“运行”之前每个单元格都保留上一次运行，运行后再一起刷新。"
+						}
+					},
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "\"Raise Min OI to 500\": does that re-run the same question or ask a new one?",
+							"zh": "“把最低未平仓量提高到 500”：这是重新运行同一个问题，还是提出新问题？"
+						},
+						"choices": [
+							{
+								"id": "same",
+								"label": {
+									"en": "Re-runs the same question",
+									"zh": "重新运行同一个问题"
+								}
+							},
+							{
+								"id": "new",
+								"label": { "en": "Asks a new question", "zh": "提出新问题" },
+								"why": {
+									"en": "Thresholds and the date are inputs to the same question; changing them re-runs it, and the answers stay comparable.",
+									"zh": "阈值和日期是同一个问题的输入；改变它们只是重跑，答案仍然可比。"
+								}
+							}
+						],
+						"accepted": ["same"],
+						"explanation": {
+							"en": "Thresholds and the date are inputs to the same question. Changing what is measured, how it ranks, or which contracts are eligible asks a new one.",
+							"zh": "阈值和日期是同一个问题的输入；改变度量、排名方式或入选资格，则是提出新问题。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "With the floors at 0, a contract that traded 30 against 5 open interest appears. Its volume/OI?",
+							"zh": "门槛降为 0 后，出现一份成交 30 张、未平仓量 5 的合约。它的成交量/OI 是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["6"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "30 ÷ 5 = 6.00: a big ratio from a tiny denominator.",
+							"zh": "30 ÷ 5 = 6.00：极小的分母带来很大的比率。"
+						}
+					},
+					{
+						"id": "floors",
+						"prompt": {
+							"en": "You lowered the floors for your own research. What should you do when you cite the top contract?",
+							"zh": "你为自己的研究降低了门槛。引用排名第一的合约时应该怎么做？"
+						},
+						"choices": [
+							{
+								"id": "ratio",
+								"label": {
+									"en": "Quote the ratio alone; it's the screen's metric",
+									"zh": "只引用比率，那是筛选的指标"
+								},
+								"why": {
+									"en": "Quoted alone, a ratio from lowered floors can rest on a tiny denominator. Give the volume and open interest behind it, and the floors you used.",
+									"zh": "单独引用的话，降低门槛后的比率可能建立在极小的分母上。要给出背后的成交量和未平仓量，以及使用的门槛。"
+								}
+							},
+							{
+								"id": "hide",
+								"label": {
+									"en": "Restore the defaults first, then cite it",
+									"zh": "先恢复默认值再引用"
+								},
+								"why": {
+									"en": "Restoring the defaults would cite a different screen from the one you ran. State the floors you actually used.",
+									"zh": "恢复默认值后引用的就是另一个筛选，而不是你运行的那个。要说明你实际使用的门槛。"
+								}
+							},
+							{
+								"id": "state",
+								"label": {
+									"en": "State the floors you used and give its volume and open interest",
+									"zh": "说明使用的门槛，并给出它的成交量和未平仓量"
+								}
+							}
+						],
+						"accepted": ["state"],
+						"explanation": {
+							"en": "A ratio without its denominator hides how thin the contract is; the floors you used are part of the result.",
+							"zh": "不给分母的比率会掩盖合约有多冷门；你使用的门槛本身就是结果的一部分。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Typing a value isn't running it, and changing the method isn't tuning: a new measure is a new question, in its own recipe.",
+					"zh": "输入一个值不等于运行它，改方法也不是调参：新的度量就是新的问题，应放在它自己的 Recipe 里。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are working in TradingFlow's unusual-activity screener on Monday's session, starting from its default inputs.",
+					"zh": "你正在 TradingFlow 的异常成交筛选器中处理周一的交易时段，从默认输入开始。"
+				},
+				"questions": [
+					{
+						"id": "draft",
+						"prompt": {
+							"en": "You change Min volume/OI to 3 and don't press Run. What do the key figures and table show?",
+							"zh": "你把最低成交量/OI 改成 3，但没有点“运行”。关键数字和表格显示什么？"
+						},
+						"choices": [
+							{
+								"id": "last",
+								"label": {
+									"en": "The last run, unchanged",
+									"zh": "上一次运行，没有变化"
+								}
+							},
+							{
+								"id": "new",
+								"label": {
+									"en": "Results at the new threshold",
+									"zh": "新阈值下的结果"
+								},
+								"why": {
+									"en": "A changed input is only a draft until you press Run. The key figures and table still show the last run.",
+									"zh": "修改的输入在点“运行”之前只是草稿。关键数字和表格仍显示上一次运行。"
+								}
+							},
+							{
+								"id": "empty",
+								"label": {
+									"en": "Nothing until you run",
+									"zh": "运行前什么也不显示"
+								},
+								"why": {
+									"en": "Nothing clears while you edit. The report keeps the last run until you press Run.",
+									"zh": "编辑时什么都不会清空。在你点“运行”之前，报告保留上一次运行的结果。"
+								}
+							}
+						],
+						"accepted": ["last"],
+						"explanation": {
+							"en": "An edited input is a draft; every cell keeps the last run until you press Run, then they refresh together.",
+							"zh": "修改的输入只是草稿；在你点“运行”之前每个单元格都保留上一次运行，运行后再一起刷新。"
+						}
+					},
+					{
+						"id": "kind",
+						"prompt": {
+							"en": "\"Pick last Friday in the date picker\": does that re-run the same question or ask a new one?",
+							"zh": "“在日期选择器中选择上周五”：这是重新运行同一个问题，还是提出新问题？"
+						},
+						"choices": [
+							{
+								"id": "same",
+								"label": {
+									"en": "Re-runs the same question",
+									"zh": "重新运行同一个问题"
+								}
+							},
+							{
+								"id": "new",
+								"label": { "en": "Asks a new question", "zh": "提出新问题" },
+								"why": {
+									"en": "Thresholds and the date are inputs to the same question; changing them re-runs it, and the answers stay comparable.",
+									"zh": "阈值和日期是同一个问题的输入；改变它们只是重跑，答案仍然可比。"
+								}
+							}
+						],
+						"accepted": ["same"],
+						"explanation": {
+							"en": "Thresholds and the date are inputs to the same question. Changing what is measured, how it ranks, or which contracts are eligible asks a new one.",
+							"zh": "阈值和日期是同一个问题的输入；改变度量、排名方式或入选资格，则是提出新问题。"
+						}
+					},
+					{
+						"id": "ratio",
+						"prompt": {
+							"en": "With the floors at 0, a contract that traded 45 against 9 open interest appears. Its volume/OI?",
+							"zh": "门槛降为 0 后，出现一份成交 45 张、未平仓量 9 的合约。它的成交量/OI 是多少？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "× open interest", "zh": "倍未平仓量" }
+						},
+						"accepted": ["5"],
+						"tolerance": 0.01,
+						"explanation": {
+							"en": "45 ÷ 9 = 5.00: a big ratio from a tiny denominator.",
+							"zh": "45 ÷ 9 = 5.00：极小的分母带来很大的比率。"
+						}
+					},
+					{
+						"id": "floors",
+						"prompt": {
+							"en": "You lowered the floors for your own research. What should you do when you cite the top contract?",
+							"zh": "你为自己的研究降低了门槛。引用排名第一的合约时应该怎么做？"
+						},
+						"choices": [
+							{
+								"id": "state",
+								"label": {
+									"en": "State the floors you used and give its volume and open interest",
+									"zh": "说明使用的门槛，并给出它的成交量和未平仓量"
+								}
+							},
+							{
+								"id": "ratio",
+								"label": {
+									"en": "Quote the ratio alone; it's the screen's metric",
+									"zh": "只引用比率，那是筛选的指标"
+								},
+								"why": {
+									"en": "Quoted alone, a ratio from lowered floors can rest on a tiny denominator. Give the volume and open interest behind it, and the floors you used.",
+									"zh": "单独引用的话，降低门槛后的比率可能建立在极小的分母上。要给出背后的成交量和未平仓量，以及使用的门槛。"
+								}
+							},
+							{
+								"id": "hide",
+								"label": {
+									"en": "Restore the defaults first, then cite it",
+									"zh": "先恢复默认值再引用"
+								},
+								"why": {
+									"en": "Restoring the defaults would cite a different screen from the one you ran. State the floors you actually used.",
+									"zh": "恢复默认值后引用的就是另一个筛选，而不是你运行的那个。要说明你实际使用的门槛。"
+								}
+							}
+						],
+						"accepted": ["state"],
+						"explanation": {
+							"en": "A ratio without its denominator hides how thin the contract is; the floors you used are part of the result.",
+							"zh": "不给分母的比率会掩盖合约有多冷门；你使用的门槛本身就是结果的一部分。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "Typing a value isn't running it, and changing the method isn't tuning: a new measure is a new question, in its own recipe.",
+					"zh": "输入一个值不等于运行它，改方法也不是调参：新的度量就是新的问题，应放在它自己的 Recipe 里。"
+				}
+			}
+		]
+	},
+	{
+		"id": "research-checklist-practice-1",
+		"lessonId": "research-checklist",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "research-checklist",
+				"brief": {
+					"en": "Spot the forecast hiding in a checklist, see what Home keeps after a refresh, and watch Customize with AI ask before it proposes.",
+					"zh": "找出藏在清单里的预测，看看刷新后 Home 保留了什么，并观察 Customize with AI 先提问、再建议。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A checklist is a plan for evidence, not a decision, and Home doesn't save it. Keep only steps a tool can check, and copy your version before you refresh.",
+					"zh": "清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are preparing to research selling an ALFA call, starting from TradingFlow Home's checklist.",
+					"zh": "你准备从 TradingFlow Home 的清单出发，研究卖出一份 ALFA 看涨期权。"
+				},
+				"questions": [
+					{
+						"id": "forecast",
+						"prompt": {
+							"en": "Which step doesn't belong in a research checklist?",
+							"zh": "哪一步不应列入研究清单？"
+						},
+						"choices": [
+							{
+								"id": "vol",
+								"label": {
+									"en": "Compare ALFA's IV with its realized volatility",
+									"zh": "比较 ALFA 的隐含波动率与已实现波动率"
+								},
+								"why": {
+									"en": "Comparing IV with realized volatility is something a tool can show you today, so it belongs.",
+									"zh": "比较 IV 与已实现波动率是今天工具就能显示的，所以属于清单。"
+								}
+							},
+							{
+								"id": "trade",
+								"label": {
+									"en": "Check the call's spread and open interest",
+									"zh": "检查看涨期权的价差与未平仓量"
+								},
+								"why": {
+									"en": "The call's spread and open interest are on screen today, so checking them belongs.",
+									"zh": "看涨的价差和未平仓量今天就在屏幕上，所以检查它们属于清单。"
+								}
+							},
+							{
+								"id": "forecast",
+								"label": {
+									"en": "Confirm ALFA stays below $105 until Oct 18",
+									"zh": "确认 ALFA 在10月18日前一直低于 $105"
+								}
+							}
+						],
+						"accepted": ["forecast"],
+						"explanation": {
+							"en": "Every step should inspect evidence a tool can show today; a claim about the future can't be checked.",
+							"zh": "每一步都应查看今天有工具能显示的证据；关于未来的说法无法核查。"
+						}
+					},
+					{
+						"id": "tool",
+						"prompt": {
+							"en": "\"Check the call's spread, liquidity and open interest\": which tool does that step open?",
+							"zh": "“检查看涨期权的价差、流动性与未平仓量”：这一步打开哪个工具？"
+						},
+						"choices": [
+							{
+								"id": "symbols",
+								"label": { "en": "Rank Symbols", "zh": "Rank Symbols" },
+								"why": {
+									"en": "Rank Symbols compares names. A call's spread, liquidity and open interest are contract details, shown on Rank Contracts.",
+									"zh": "Rank Symbols 比较的是标的。看涨的价差、流动性和未平仓量是合约层面的信息，在 Rank Contracts 上显示。"
+								}
+							},
+							{
+								"id": "contracts",
+								"label": { "en": "Rank Contracts", "zh": "Rank Contracts" }
+							},
+							{
+								"id": "trades",
+								"label": { "en": "Option Trades", "zh": "Option Trades" },
+								"why": {
+									"en": "Option Trades shows individual prints. The step asks about the contract's spread and open interest, which Rank Contracts shows.",
+									"zh": "Option Trades 显示的是单笔成交。这一步问的是合约的价差和未平仓量，由 Rank Contracts 显示。"
+								}
+							}
+						],
+						"accepted": ["contracts"],
+						"explanation": {
+							"en": "Tradeability is about one contract: Rank Contracts shows its spread, liquidity and open interest. Option Trades shows its prints.",
+							"zh": "可交易性关乎单个合约：Rank Contracts 显示它的价差、流动性和未平仓量；Option Trades 显示它的成交记录。"
+						}
+					},
+					{
+						"id": "refresh",
+						"prompt": {
+							"en": "You edit the checklist and then refresh the page. What do you see?",
+							"zh": "你编辑了清单，然后刷新页面。你会看到什么？"
+						},
+						"choices": [
+							{
+								"id": "template",
+								"label": { "en": "The template again", "zh": "又是模板" }
+							},
+							{
+								"id": "edited",
+								"label": {
+									"en": "Your edited checklist",
+									"zh": "你编辑后的清单"
+								},
+								"why": {
+									"en": "Home doesn't save your edits; a refresh brings the template back.",
+									"zh": "Home 不会保存你的修改；刷新会恢复模板。"
+								}
+							},
+							{
+								"id": "empty",
+								"label": { "en": "An empty checklist", "zh": "空白清单" },
+								"why": {
+									"en": "A refresh doesn't clear the checklist; it restores the template.",
+									"zh": "刷新不会清空清单；它会恢复模板。"
+								}
+							}
+						],
+						"accepted": ["template"],
+						"explanation": {
+							"en": "Home's checklist resets on refresh; copy the steps you want to keep.",
+							"zh": "Home 的清单刷新即重置；要保留的步骤需要自己抄下来。"
+						}
+					},
+					{
+						"id": "ai",
+						"prompt": {
+							"en": "You open Customize with AI. What happens before it proposes a change?",
+							"zh": "你打开 Customize with AI。在它提出修改之前会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "save",
+								"label": {
+									"en": "It saves a new recipe",
+									"zh": "它会保存一个新 Recipe"
+								},
+								"why": {
+									"en": "Nothing is saved before you confirm. It asks one clarifying question, then proposes a change.",
+									"zh": "在你确认之前不会保存任何东西。它先问一个澄清问题，再提出修改。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing; it rewrites at once",
+									"zh": "什么都不发生，它立即改写"
+								},
+								"why": {
+									"en": "It doesn't rewrite at once: it asks one clarifying question first.",
+									"zh": "它不会立即改写：会先问一个澄清问题。"
+								}
+							},
+							{
+								"id": "clarify",
+								"label": {
+									"en": "It asks one clarifying question",
+									"zh": "它会问一个澄清问题"
+								}
+							}
+						],
+						"accepted": ["clarify"],
+						"explanation": {
+							"en": "It asks one clarifying question first; replies cost credits, and a recipe is built only on your confirmation.",
+							"zh": "它先问一个澄清问题；回复消耗积分，只有你确认后才会构建 Recipe。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A checklist is a plan for evidence, not a decision, and Home doesn't save it. Keep only steps a tool can check, and copy your version before you refresh.",
+					"zh": "清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are preparing to research selling an ALFA call, starting from TradingFlow Home's checklist.",
+					"zh": "你准备从 TradingFlow Home 的清单出发，研究卖出一份 ALFA 看涨期权。"
+				},
+				"questions": [
+					{
+						"id": "forecast",
+						"prompt": {
+							"en": "Which step doesn't belong in a research checklist?",
+							"zh": "哪一步不应列入研究清单？"
+						},
+						"choices": [
+							{
+								"id": "trade",
+								"label": {
+									"en": "Check the call's spread and open interest",
+									"zh": "检查看涨期权的价差与未平仓量"
+								},
+								"why": {
+									"en": "The call's spread and open interest are on screen today, so checking them belongs.",
+									"zh": "看涨的价差和未平仓量今天就在屏幕上，所以检查它们属于清单。"
+								}
+							},
+							{
+								"id": "forecast",
+								"label": {
+									"en": "Make sure earnings won't move ALFA much",
+									"zh": "确保财报不会让 ALFA 大幅波动"
+								}
+							},
+							{
+								"id": "vol",
+								"label": {
+									"en": "Compare ALFA's IV with its realized volatility",
+									"zh": "比较 ALFA 的隐含波动率与已实现波动率"
+								},
+								"why": {
+									"en": "Comparing IV with realized volatility is something a tool can show you today, so it belongs.",
+									"zh": "比较 IV 与已实现波动率是今天工具就能显示的，所以属于清单。"
+								}
+							}
+						],
+						"accepted": ["forecast"],
+						"explanation": {
+							"en": "Every step should inspect evidence a tool can show today; a claim about the future can't be checked.",
+							"zh": "每一步都应查看今天有工具能显示的证据；关于未来的说法无法核查。"
+						}
+					},
+					{
+						"id": "tool",
+						"prompt": {
+							"en": "\"Check the call's spread, liquidity and open interest\": which tool does that step open?",
+							"zh": "“检查看涨期权的价差、流动性与未平仓量”：这一步打开哪个工具？"
+						},
+						"choices": [
+							{
+								"id": "contracts",
+								"label": { "en": "Rank Contracts", "zh": "Rank Contracts" }
+							},
+							{
+								"id": "trades",
+								"label": { "en": "Option Trades", "zh": "Option Trades" },
+								"why": {
+									"en": "Option Trades shows individual prints. The step asks about the contract's spread and open interest, which Rank Contracts shows.",
+									"zh": "Option Trades 显示的是单笔成交。这一步问的是合约的价差和未平仓量，由 Rank Contracts 显示。"
+								}
+							},
+							{
+								"id": "symbols",
+								"label": { "en": "Rank Symbols", "zh": "Rank Symbols" },
+								"why": {
+									"en": "Rank Symbols compares names. A call's spread, liquidity and open interest are contract details, shown on Rank Contracts.",
+									"zh": "Rank Symbols 比较的是标的。看涨的价差、流动性和未平仓量是合约层面的信息，在 Rank Contracts 上显示。"
+								}
+							}
+						],
+						"accepted": ["contracts"],
+						"explanation": {
+							"en": "Tradeability is about one contract: Rank Contracts shows its spread, liquidity and open interest. Option Trades shows its prints.",
+							"zh": "可交易性关乎单个合约：Rank Contracts 显示它的价差、流动性和未平仓量；Option Trades 显示它的成交记录。"
+						}
+					},
+					{
+						"id": "refresh",
+						"prompt": {
+							"en": "You edit the checklist and then refresh the page. What do you see?",
+							"zh": "你编辑了清单，然后刷新页面。你会看到什么？"
+						},
+						"choices": [
+							{
+								"id": "edited",
+								"label": {
+									"en": "Your edited checklist",
+									"zh": "你编辑后的清单"
+								},
+								"why": {
+									"en": "Home doesn't save your edits; a refresh brings the template back.",
+									"zh": "Home 不会保存你的修改；刷新会恢复模板。"
+								}
+							},
+							{
+								"id": "empty",
+								"label": { "en": "An empty checklist", "zh": "空白清单" },
+								"why": {
+									"en": "A refresh doesn't clear the checklist; it restores the template.",
+									"zh": "刷新不会清空清单；它会恢复模板。"
+								}
+							},
+							{
+								"id": "template",
+								"label": { "en": "The template again", "zh": "又是模板" }
+							}
+						],
+						"accepted": ["template"],
+						"explanation": {
+							"en": "Home's checklist resets on refresh; copy the steps you want to keep.",
+							"zh": "Home 的清单刷新即重置；要保留的步骤需要自己抄下来。"
+						}
+					},
+					{
+						"id": "ai",
+						"prompt": {
+							"en": "You open Customize with AI. What happens before it proposes a change?",
+							"zh": "你打开 Customize with AI。在它提出修改之前会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing; it rewrites at once",
+									"zh": "什么都不发生，它立即改写"
+								},
+								"why": {
+									"en": "It doesn't rewrite at once: it asks one clarifying question first.",
+									"zh": "它不会立即改写：会先问一个澄清问题。"
+								}
+							},
+							{
+								"id": "clarify",
+								"label": {
+									"en": "It asks one clarifying question",
+									"zh": "它会问一个澄清问题"
+								}
+							},
+							{
+								"id": "save",
+								"label": {
+									"en": "It saves a new recipe",
+									"zh": "它会保存一个新 Recipe"
+								},
+								"why": {
+									"en": "Nothing is saved before you confirm. It asks one clarifying question, then proposes a change.",
+									"zh": "在你确认之前不会保存任何东西。它先问一个澄清问题，再提出修改。"
+								}
+							}
+						],
+						"accepted": ["clarify"],
+						"explanation": {
+							"en": "It asks one clarifying question first; replies cost credits, and a recipe is built only on your confirmation.",
+							"zh": "它先问一个澄清问题；回复消耗积分，只有你确认后才会构建 Recipe。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A checklist is a plan for evidence, not a decision, and Home doesn't save it. Keep only steps a tool can check, and copy your version before you refresh.",
+					"zh": "清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。"
+				}
+			}
+		]
+	},
+	{
+		"id": "research-checklist-practice-2",
+		"lessonId": "research-checklist",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "research-checklist",
+				"brief": {
+					"en": "Spot the forecast hiding in a checklist, see what Home keeps after a refresh, and watch Customize with AI ask before it proposes.",
+					"zh": "找出藏在清单里的预测，看看刷新后 Home 保留了什么，并观察 Customize with AI 先提问、再建议。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A checklist is a plan for evidence, not a decision, and Home doesn't save it. Keep only steps a tool can check, and copy your version before you refresh.",
+					"zh": "清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are preparing to research selling an ALFA call, starting from TradingFlow Home's checklist.",
+					"zh": "你准备从 TradingFlow Home 的清单出发，研究卖出一份 ALFA 看涨期权。"
+				},
+				"questions": [
+					{
+						"id": "forecast",
+						"prompt": {
+							"en": "Which step doesn't belong in a research checklist?",
+							"zh": "哪一步不应列入研究清单？"
+						},
+						"choices": [
+							{
+								"id": "vol",
+								"label": {
+									"en": "Compare ALFA's IV with its realized volatility",
+									"zh": "比较 ALFA 的隐含波动率与已实现波动率"
+								},
+								"why": {
+									"en": "Comparing IV with realized volatility is something a tool can show you today, so it belongs.",
+									"zh": "比较 IV 与已实现波动率是今天工具就能显示的，所以属于清单。"
+								}
+							},
+							{
+								"id": "trade",
+								"label": {
+									"en": "Check the call's spread and open interest",
+									"zh": "检查看涨期权的价差与未平仓量"
+								},
+								"why": {
+									"en": "The call's spread and open interest are on screen today, so checking them belongs.",
+									"zh": "看涨的价差和未平仓量今天就在屏幕上，所以检查它们属于清单。"
+								}
+							},
+							{
+								"id": "forecast",
+								"label": {
+									"en": "Confirm ALFA stays below $105 until Oct 18",
+									"zh": "确认 ALFA 在10月18日前一直低于 $105"
+								}
+							}
+						],
+						"accepted": ["forecast"],
+						"explanation": {
+							"en": "Every step should inspect evidence a tool can show today; a claim about the future can't be checked.",
+							"zh": "每一步都应查看今天有工具能显示的证据；关于未来的说法无法核查。"
+						}
+					},
+					{
+						"id": "tool",
+						"prompt": {
+							"en": "\"Check the call's spread, liquidity and open interest\": which tool does that step open?",
+							"zh": "“检查看涨期权的价差、流动性与未平仓量”：这一步打开哪个工具？"
+						},
+						"choices": [
+							{
+								"id": "symbols",
+								"label": { "en": "Rank Symbols", "zh": "Rank Symbols" },
+								"why": {
+									"en": "Rank Symbols compares names. A call's spread, liquidity and open interest are contract details, shown on Rank Contracts.",
+									"zh": "Rank Symbols 比较的是标的。看涨的价差、流动性和未平仓量是合约层面的信息，在 Rank Contracts 上显示。"
+								}
+							},
+							{
+								"id": "contracts",
+								"label": { "en": "Rank Contracts", "zh": "Rank Contracts" }
+							},
+							{
+								"id": "trades",
+								"label": { "en": "Option Trades", "zh": "Option Trades" },
+								"why": {
+									"en": "Option Trades shows individual prints. The step asks about the contract's spread and open interest, which Rank Contracts shows.",
+									"zh": "Option Trades 显示的是单笔成交。这一步问的是合约的价差和未平仓量，由 Rank Contracts 显示。"
+								}
+							}
+						],
+						"accepted": ["contracts"],
+						"explanation": {
+							"en": "Tradeability is about one contract: Rank Contracts shows its spread, liquidity and open interest. Option Trades shows its prints.",
+							"zh": "可交易性关乎单个合约：Rank Contracts 显示它的价差、流动性和未平仓量；Option Trades 显示它的成交记录。"
+						}
+					},
+					{
+						"id": "refresh",
+						"prompt": {
+							"en": "You edit the checklist and then refresh the page. What do you see?",
+							"zh": "你编辑了清单，然后刷新页面。你会看到什么？"
+						},
+						"choices": [
+							{
+								"id": "template",
+								"label": { "en": "The template again", "zh": "又是模板" }
+							},
+							{
+								"id": "edited",
+								"label": {
+									"en": "Your edited checklist",
+									"zh": "你编辑后的清单"
+								},
+								"why": {
+									"en": "Home doesn't save your edits; a refresh brings the template back.",
+									"zh": "Home 不会保存你的修改；刷新会恢复模板。"
+								}
+							},
+							{
+								"id": "empty",
+								"label": { "en": "An empty checklist", "zh": "空白清单" },
+								"why": {
+									"en": "A refresh doesn't clear the checklist; it restores the template.",
+									"zh": "刷新不会清空清单；它会恢复模板。"
+								}
+							}
+						],
+						"accepted": ["template"],
+						"explanation": {
+							"en": "Home's checklist resets on refresh; copy the steps you want to keep.",
+							"zh": "Home 的清单刷新即重置；要保留的步骤需要自己抄下来。"
+						}
+					},
+					{
+						"id": "ai",
+						"prompt": {
+							"en": "You open Customize with AI. What happens before it proposes a change?",
+							"zh": "你打开 Customize with AI。在它提出修改之前会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "save",
+								"label": {
+									"en": "It saves a new recipe",
+									"zh": "它会保存一个新 Recipe"
+								},
+								"why": {
+									"en": "Nothing is saved before you confirm. It asks one clarifying question, then proposes a change.",
+									"zh": "在你确认之前不会保存任何东西。它先问一个澄清问题，再提出修改。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing; it rewrites at once",
+									"zh": "什么都不发生，它立即改写"
+								},
+								"why": {
+									"en": "It doesn't rewrite at once: it asks one clarifying question first.",
+									"zh": "它不会立即改写：会先问一个澄清问题。"
+								}
+							},
+							{
+								"id": "clarify",
+								"label": {
+									"en": "It asks one clarifying question",
+									"zh": "它会问一个澄清问题"
+								}
+							}
+						],
+						"accepted": ["clarify"],
+						"explanation": {
+							"en": "It asks one clarifying question first; replies cost credits, and a recipe is built only on your confirmation.",
+							"zh": "它先问一个澄清问题；回复消耗积分，只有你确认后才会构建 Recipe。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A checklist is a plan for evidence, not a decision, and Home doesn't save it. Keep only steps a tool can check, and copy your version before you refresh.",
+					"zh": "清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You are preparing to research selling an ALFA call, starting from TradingFlow Home's checklist.",
+					"zh": "你准备从 TradingFlow Home 的清单出发，研究卖出一份 ALFA 看涨期权。"
+				},
+				"questions": [
+					{
+						"id": "forecast",
+						"prompt": {
+							"en": "Which step doesn't belong in a research checklist?",
+							"zh": "哪一步不应列入研究清单？"
+						},
+						"choices": [
+							{
+								"id": "forecast",
+								"label": {
+									"en": "Check that IV will fall after earnings",
+									"zh": "确认财报后隐含波动率会下降"
+								}
+							},
+							{
+								"id": "vol",
+								"label": {
+									"en": "Compare ALFA's IV with its realized volatility",
+									"zh": "比较 ALFA 的隐含波动率与已实现波动率"
+								},
+								"why": {
+									"en": "Comparing IV with realized volatility is something a tool can show you today, so it belongs.",
+									"zh": "比较 IV 与已实现波动率是今天工具就能显示的，所以属于清单。"
+								}
+							},
+							{
+								"id": "trade",
+								"label": {
+									"en": "Check the call's spread and open interest",
+									"zh": "检查看涨期权的价差与未平仓量"
+								},
+								"why": {
+									"en": "The call's spread and open interest are on screen today, so checking them belongs.",
+									"zh": "看涨的价差和未平仓量今天就在屏幕上，所以检查它们属于清单。"
+								}
+							}
+						],
+						"accepted": ["forecast"],
+						"explanation": {
+							"en": "Every step should inspect evidence a tool can show today; a claim about the future can't be checked.",
+							"zh": "每一步都应查看今天有工具能显示的证据；关于未来的说法无法核查。"
+						}
+					},
+					{
+						"id": "tool",
+						"prompt": {
+							"en": "\"Check the call's spread, liquidity and open interest\": which tool does that step open?",
+							"zh": "“检查看涨期权的价差、流动性与未平仓量”：这一步打开哪个工具？"
+						},
+						"choices": [
+							{
+								"id": "trades",
+								"label": { "en": "Option Trades", "zh": "Option Trades" },
+								"why": {
+									"en": "Option Trades shows individual prints. The step asks about the contract's spread and open interest, which Rank Contracts shows.",
+									"zh": "Option Trades 显示的是单笔成交。这一步问的是合约的价差和未平仓量，由 Rank Contracts 显示。"
+								}
+							},
+							{
+								"id": "symbols",
+								"label": { "en": "Rank Symbols", "zh": "Rank Symbols" },
+								"why": {
+									"en": "Rank Symbols compares names. A call's spread, liquidity and open interest are contract details, shown on Rank Contracts.",
+									"zh": "Rank Symbols 比较的是标的。看涨的价差、流动性和未平仓量是合约层面的信息，在 Rank Contracts 上显示。"
+								}
+							},
+							{
+								"id": "contracts",
+								"label": { "en": "Rank Contracts", "zh": "Rank Contracts" }
+							}
+						],
+						"accepted": ["contracts"],
+						"explanation": {
+							"en": "Tradeability is about one contract: Rank Contracts shows its spread, liquidity and open interest. Option Trades shows its prints.",
+							"zh": "可交易性关乎单个合约：Rank Contracts 显示它的价差、流动性和未平仓量；Option Trades 显示它的成交记录。"
+						}
+					},
+					{
+						"id": "refresh",
+						"prompt": {
+							"en": "You edit the checklist and then refresh the page. What do you see?",
+							"zh": "你编辑了清单，然后刷新页面。你会看到什么？"
+						},
+						"choices": [
+							{
+								"id": "empty",
+								"label": { "en": "An empty checklist", "zh": "空白清单" },
+								"why": {
+									"en": "A refresh doesn't clear the checklist; it restores the template.",
+									"zh": "刷新不会清空清单；它会恢复模板。"
+								}
+							},
+							{
+								"id": "template",
+								"label": { "en": "The template again", "zh": "又是模板" }
+							},
+							{
+								"id": "edited",
+								"label": {
+									"en": "Your edited checklist",
+									"zh": "你编辑后的清单"
+								},
+								"why": {
+									"en": "Home doesn't save your edits; a refresh brings the template back.",
+									"zh": "Home 不会保存你的修改；刷新会恢复模板。"
+								}
+							}
+						],
+						"accepted": ["template"],
+						"explanation": {
+							"en": "Home's checklist resets on refresh; copy the steps you want to keep.",
+							"zh": "Home 的清单刷新即重置；要保留的步骤需要自己抄下来。"
+						}
+					},
+					{
+						"id": "ai",
+						"prompt": {
+							"en": "You open Customize with AI. What happens before it proposes a change?",
+							"zh": "你打开 Customize with AI。在它提出修改之前会发生什么？"
+						},
+						"choices": [
+							{
+								"id": "clarify",
+								"label": {
+									"en": "It asks one clarifying question",
+									"zh": "它会问一个澄清问题"
+								}
+							},
+							{
+								"id": "save",
+								"label": {
+									"en": "It saves a new recipe",
+									"zh": "它会保存一个新 Recipe"
+								},
+								"why": {
+									"en": "Nothing is saved before you confirm. It asks one clarifying question, then proposes a change.",
+									"zh": "在你确认之前不会保存任何东西。它先问一个澄清问题，再提出修改。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing; it rewrites at once",
+									"zh": "什么都不发生，它立即改写"
+								},
+								"why": {
+									"en": "It doesn't rewrite at once: it asks one clarifying question first.",
+									"zh": "它不会立即改写：会先问一个澄清问题。"
+								}
+							}
+						],
+						"accepted": ["clarify"],
+						"explanation": {
+							"en": "It asks one clarifying question first; replies cost credits, and a recipe is built only on your confirmation.",
+							"zh": "它先问一个澄清问题；回复消耗积分，只有你确认后才会构建 Recipe。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A checklist is a plan for evidence, not a decision, and Home doesn't save it. Keep only steps a tool can check, and copy your version before you refresh.",
+					"zh": "清单是收集证据的计划，不是决定，而且 Home 不会保存它。只保留工具能核查的步骤，刷新前把你的版本抄下来。"
+				}
+			}
+		]
+	},
+	{
+		"id": "ai-verify-practice-1",
+		"lessonId": "ai-verify",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "ai-verify",
+				"brief": {
+					"en": "Sort TradingFlow AI's statements about a report by the evidence behind them, count what a conversation costs in credits, and see which AI action changes a recipe.",
+					"zh": "按背后的证据给 TradingFlow AI 关于报告的陈述分类，算清一段对话消耗的积分，并看清哪种 AI 操作会改动 Recipe。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
+					"zh": "回答流畅不等于经过核查。使用之前按证据给每句话分类；也要记住 AI Insight 只解释一次运行，不会改动 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You ask TradingFlow AI about Monday's unusual-activity screen and check its answer before using it.",
+					"zh": "你向 TradingFlow AI 询问周一的异常成交筛选，并在使用前核查它的回答。"
+				},
+				"questions": [
+					{
+						"id": "sort",
+						"prompt": {
+							"en": "The AI writes: \"A buyer was betting on a CRUX drop.\" How do you sort it?",
+							"zh": "AI 写道：“有买家在押注 CRUX 下跌。”你如何给它分类？"
+						},
+						"choices": [
+							{
+								"id": "unsupported",
+								"label": {
+									"en": "Not supported by the data",
+									"zh": "数据不支持"
+								}
+							},
+							{
+								"id": "report",
+								"label": {
+									"en": "Shown in or calculable from the report",
+									"zh": "报告中有或可从报告计算"
+								},
+								"why": {
+									"en": "Who traded and why aren't in flow data, so no report row can show or calculate this claim.",
+									"zh": "谁在交易、为什么交易都不在成交流数据里，所以报告中没有任何一行能显示或算出这个说法。"
+								}
+							}
+						],
+						"accepted": ["unsupported"],
+						"explanation": {
+							"en": "Counts and figures in the rows can be checked; claims about who traded, why, or what comes next go beyond flow data.",
+							"zh": "行里的数量和数字可以核对；关于谁交易、为什么或接下来怎样的说法则超出了成交流数据。"
+						}
+					},
+					{
+						"id": "credits",
+						"prompt": {
+							"en": "The conversation had 2 text replies and 1 with a chart. How many credits did it use?",
+							"zh": "这段对话有 2 条文字回复和 1 条含图表的回复。一共消耗多少积分？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "credits", "zh": "积分" }
+						},
+						"accepted": ["4"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "2 × 1 + 1 × 2 = 4 credits.",
+							"zh": "2 × 1 + 1 × 2 = 4 积分。"
+						}
+					},
+					{
+						"id": "insight",
+						"prompt": {
+							"en": "You run AI Insight on the recipe. What changes?",
+							"zh": "你对这个 Recipe 运行 AI Insight。会改变什么？"
+						},
+						"choices": [
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing in the recipe",
+									"zh": "Recipe 中什么都不变"
+								}
+							},
+							{
+								"id": "draft",
+								"label": {
+									"en": "A private draft opens",
+									"zh": "会打开一份私有草稿"
+								},
+								"why": {
+									"en": "That's Edit with AI. AI Insight explains one completed run and opens nothing.",
+									"zh": "那是 Edit with AI。AI Insight 只解释一次已完成的运行，不会打开任何东西。"
+								}
+							},
+							{
+								"id": "inputs",
+								"label": { "en": "The inputs update", "zh": "输入会更新" },
+								"why": {
+									"en": "AI Insight doesn't touch the inputs; it explains the run you already have.",
+									"zh": "AI Insight 不会改动输入；它解释的是你已有的那次运行。"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "AI Insight explains one completed run; only Edit with AI opens a draft that can change.",
+							"zh": "AI Insight 解释一次已完成的运行；只有 Edit with AI 会打开可修改的草稿。"
+						}
+					},
+					{
+						"id": "annotate",
+						"prompt": {
+							"en": "Your question is about one row of the table. How do you give the AI that context?",
+							"zh": "你的问题是关于表格中的某一行。如何把这个上下文交给 AI？"
+						},
+						"choices": [
+							{
+								"id": "vague",
+								"label": {
+									"en": "Ask about \"this\" and let it guess",
+									"zh": "问“这个”，让它去猜"
+								},
+								"why": {
+									"en": "Asking about this without pointing at it leaves the AI to guess the row. Annotate attaches that row as context.",
+									"zh": "不指明就问“这个”，AI 只能去猜是哪一行。Annotate 会把那一行作为上下文附上。"
+								}
+							},
+							{
+								"id": "chart",
+								"label": {
+									"en": "Ask for a chart first",
+									"zh": "先让它画一张图"
+								},
+								"why": {
+									"en": "A chart doesn't tell the AI which row you mean, and it costs an extra credit. Annotate attaches the row itself.",
+									"zh": "图表不会告诉 AI 你指的是哪一行，还要多花积分。Annotate 会直接附上那一行。"
+								}
+							},
+							{
+								"id": "annotate",
+								"label": {
+									"en": "Use Annotate to pick the row",
+									"zh": "用 Annotate 选取那一行"
+								}
+							}
+						],
+						"accepted": ["annotate"],
+						"explanation": {
+							"en": "Annotate attaches the element you pick, so one reply can answer the question you meant.",
+							"zh": "Annotate 会附上你选取的元素，这样一条回复就能回答你真正想问的问题。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
+					"zh": "回答流畅不等于经过核查。使用之前按证据给每句话分类；也要记住 AI Insight 只解释一次运行，不会改动 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You ask TradingFlow AI about Monday's unusual-activity screen and check its answer before using it.",
+					"zh": "你向 TradingFlow AI 询问周一的异常成交筛选，并在使用前核查它的回答。"
+				},
+				"questions": [
+					{
+						"id": "sort",
+						"prompt": {
+							"en": "The AI writes: \"The DUNE Sep 27 30 call traded 780 against 360 open interest.\" How do you sort it?",
+							"zh": "AI 写道：“DUNE 9月27日 30 看涨成交 780 张，未平仓量 360。”你如何给它分类？"
+						},
+						"choices": [
+							{
+								"id": "report",
+								"label": {
+									"en": "Shown in or calculable from the report",
+									"zh": "报告中有或可从报告计算"
+								}
+							},
+							{
+								"id": "unsupported",
+								"label": {
+									"en": "Not supported by the data",
+									"zh": "数据不支持"
+								},
+								"why": {
+									"en": "This is a count or figure you can find in, or calculate from, the report's rows.",
+									"zh": "这是可以在报告的行中找到或算出的数量或数字。"
+								}
+							}
+						],
+						"accepted": ["report"],
+						"explanation": {
+							"en": "Counts and figures in the rows can be checked; claims about who traded, why, or what comes next go beyond flow data.",
+							"zh": "行里的数量和数字可以核对；关于谁交易、为什么或接下来怎样的说法则超出了成交流数据。"
+						}
+					},
+					{
+						"id": "credits",
+						"prompt": {
+							"en": "The conversation had 3 text replies and 1 with a chart. How many credits did it use?",
+							"zh": "这段对话有 3 条文字回复和 1 条含图表的回复。一共消耗多少积分？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "credits", "zh": "积分" }
+						},
+						"accepted": ["5"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "3 × 1 + 1 × 2 = 5 credits.",
+							"zh": "3 × 1 + 1 × 2 = 5 积分。"
+						}
+					},
+					{
+						"id": "insight",
+						"prompt": {
+							"en": "You run AI Insight on the recipe. What changes?",
+							"zh": "你对这个 Recipe 运行 AI Insight。会改变什么？"
+						},
+						"choices": [
+							{
+								"id": "draft",
+								"label": {
+									"en": "A private draft opens",
+									"zh": "会打开一份私有草稿"
+								},
+								"why": {
+									"en": "That's Edit with AI. AI Insight explains one completed run and opens nothing.",
+									"zh": "那是 Edit with AI。AI Insight 只解释一次已完成的运行，不会打开任何东西。"
+								}
+							},
+							{
+								"id": "inputs",
+								"label": { "en": "The inputs update", "zh": "输入会更新" },
+								"why": {
+									"en": "AI Insight doesn't touch the inputs; it explains the run you already have.",
+									"zh": "AI Insight 不会改动输入；它解释的是你已有的那次运行。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing in the recipe",
+									"zh": "Recipe 中什么都不变"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "AI Insight explains one completed run; only Edit with AI opens a draft that can change.",
+							"zh": "AI Insight 解释一次已完成的运行；只有 Edit with AI 会打开可修改的草稿。"
+						}
+					},
+					{
+						"id": "annotate",
+						"prompt": {
+							"en": "Your question is about one row of the table. How do you give the AI that context?",
+							"zh": "你的问题是关于表格中的某一行。如何把这个上下文交给 AI？"
+						},
+						"choices": [
+							{
+								"id": "chart",
+								"label": {
+									"en": "Ask for a chart first",
+									"zh": "先让它画一张图"
+								},
+								"why": {
+									"en": "A chart doesn't tell the AI which row you mean, and it costs an extra credit. Annotate attaches the row itself.",
+									"zh": "图表不会告诉 AI 你指的是哪一行，还要多花积分。Annotate 会直接附上那一行。"
+								}
+							},
+							{
+								"id": "annotate",
+								"label": {
+									"en": "Use Annotate to pick the row",
+									"zh": "用 Annotate 选取那一行"
+								}
+							},
+							{
+								"id": "vague",
+								"label": {
+									"en": "Ask about \"this\" and let it guess",
+									"zh": "问“这个”，让它去猜"
+								},
+								"why": {
+									"en": "Asking about this without pointing at it leaves the AI to guess the row. Annotate attaches that row as context.",
+									"zh": "不指明就问“这个”，AI 只能去猜是哪一行。Annotate 会把那一行作为上下文附上。"
+								}
+							}
+						],
+						"accepted": ["annotate"],
+						"explanation": {
+							"en": "Annotate attaches the element you pick, so one reply can answer the question you meant.",
+							"zh": "Annotate 会附上你选取的元素，这样一条回复就能回答你真正想问的问题。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
+					"zh": "回答流畅不等于经过核查。使用之前按证据给每句话分类；也要记住 AI Insight 只解释一次运行，不会改动 Recipe。"
+				}
+			}
+		]
+	},
+	{
+		"id": "ai-verify-practice-2",
+		"lessonId": "ai-verify",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "ai-verify",
+				"brief": {
+					"en": "Sort TradingFlow AI's statements about a report by the evidence behind them, count what a conversation costs in credits, and see which AI action changes a recipe.",
+					"zh": "按背后的证据给 TradingFlow AI 关于报告的陈述分类，算清一段对话消耗的积分，并看清哪种 AI 操作会改动 Recipe。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
+					"zh": "回答流畅不等于经过核查。使用之前按证据给每句话分类；也要记住 AI Insight 只解释一次运行，不会改动 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You ask TradingFlow AI about Monday's unusual-activity screen and check its answer before using it.",
+					"zh": "你向 TradingFlow AI 询问周一的异常成交筛选，并在使用前核查它的回答。"
+				},
+				"questions": [
+					{
+						"id": "sort",
+						"prompt": {
+							"en": "The AI writes: \"A buyer was betting on a CRUX drop.\" How do you sort it?",
+							"zh": "AI 写道：“有买家在押注 CRUX 下跌。”你如何给它分类？"
+						},
+						"choices": [
+							{
+								"id": "unsupported",
+								"label": {
+									"en": "Not supported by the data",
+									"zh": "数据不支持"
+								}
+							},
+							{
+								"id": "report",
+								"label": {
+									"en": "Shown in or calculable from the report",
+									"zh": "报告中有或可从报告计算"
+								},
+								"why": {
+									"en": "Who traded and why aren't in flow data, so no report row can show or calculate this claim.",
+									"zh": "谁在交易、为什么交易都不在成交流数据里，所以报告中没有任何一行能显示或算出这个说法。"
+								}
+							}
+						],
+						"accepted": ["unsupported"],
+						"explanation": {
+							"en": "Counts and figures in the rows can be checked; claims about who traded, why, or what comes next go beyond flow data.",
+							"zh": "行里的数量和数字可以核对；关于谁交易、为什么或接下来怎样的说法则超出了成交流数据。"
+						}
+					},
+					{
+						"id": "credits",
+						"prompt": {
+							"en": "The conversation had 2 text replies and 1 with a chart. How many credits did it use?",
+							"zh": "这段对话有 2 条文字回复和 1 条含图表的回复。一共消耗多少积分？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "credits", "zh": "积分" }
+						},
+						"accepted": ["4"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "2 × 1 + 1 × 2 = 4 credits.",
+							"zh": "2 × 1 + 1 × 2 = 4 积分。"
+						}
+					},
+					{
+						"id": "insight",
+						"prompt": {
+							"en": "You run AI Insight on the recipe. What changes?",
+							"zh": "你对这个 Recipe 运行 AI Insight。会改变什么？"
+						},
+						"choices": [
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing in the recipe",
+									"zh": "Recipe 中什么都不变"
+								}
+							},
+							{
+								"id": "draft",
+								"label": {
+									"en": "A private draft opens",
+									"zh": "会打开一份私有草稿"
+								},
+								"why": {
+									"en": "That's Edit with AI. AI Insight explains one completed run and opens nothing.",
+									"zh": "那是 Edit with AI。AI Insight 只解释一次已完成的运行，不会打开任何东西。"
+								}
+							},
+							{
+								"id": "inputs",
+								"label": { "en": "The inputs update", "zh": "输入会更新" },
+								"why": {
+									"en": "AI Insight doesn't touch the inputs; it explains the run you already have.",
+									"zh": "AI Insight 不会改动输入；它解释的是你已有的那次运行。"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "AI Insight explains one completed run; only Edit with AI opens a draft that can change.",
+							"zh": "AI Insight 解释一次已完成的运行；只有 Edit with AI 会打开可修改的草稿。"
+						}
+					},
+					{
+						"id": "annotate",
+						"prompt": {
+							"en": "Your question is about one row of the table. How do you give the AI that context?",
+							"zh": "你的问题是关于表格中的某一行。如何把这个上下文交给 AI？"
+						},
+						"choices": [
+							{
+								"id": "vague",
+								"label": {
+									"en": "Ask about \"this\" and let it guess",
+									"zh": "问“这个”，让它去猜"
+								},
+								"why": {
+									"en": "Asking about this without pointing at it leaves the AI to guess the row. Annotate attaches that row as context.",
+									"zh": "不指明就问“这个”，AI 只能去猜是哪一行。Annotate 会把那一行作为上下文附上。"
+								}
+							},
+							{
+								"id": "chart",
+								"label": {
+									"en": "Ask for a chart first",
+									"zh": "先让它画一张图"
+								},
+								"why": {
+									"en": "A chart doesn't tell the AI which row you mean, and it costs an extra credit. Annotate attaches the row itself.",
+									"zh": "图表不会告诉 AI 你指的是哪一行，还要多花积分。Annotate 会直接附上那一行。"
+								}
+							},
+							{
+								"id": "annotate",
+								"label": {
+									"en": "Use Annotate to pick the row",
+									"zh": "用 Annotate 选取那一行"
+								}
+							}
+						],
+						"accepted": ["annotate"],
+						"explanation": {
+							"en": "Annotate attaches the element you pick, so one reply can answer the question you meant.",
+							"zh": "Annotate 会附上你选取的元素，这样一条回复就能回答你真正想问的问题。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
+					"zh": "回答流畅不等于经过核查。使用之前按证据给每句话分类；也要记住 AI Insight 只解释一次运行，不会改动 Recipe。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You ask TradingFlow AI about Monday's unusual-activity screen and check its answer before using it.",
+					"zh": "你向 TradingFlow AI 询问周一的异常成交筛选，并在使用前核查它的回答。"
+				},
+				"questions": [
+					{
+						"id": "sort",
+						"prompt": {
+							"en": "The AI writes: \"Smart money is moving into BRDX puts.\" How do you sort it?",
+							"zh": "AI 写道：“聪明钱正在流入 BRDX 看跌期权。”你如何给它分类？"
+						},
+						"choices": [
+							{
+								"id": "unsupported",
+								"label": {
+									"en": "Not supported by the data",
+									"zh": "数据不支持"
+								}
+							},
+							{
+								"id": "report",
+								"label": {
+									"en": "Shown in or calculable from the report",
+									"zh": "报告中有或可从报告计算"
+								},
+								"why": {
+									"en": "Who traded and why aren't in flow data, so no report row can show or calculate this claim.",
+									"zh": "谁在交易、为什么交易都不在成交流数据里，所以报告中没有任何一行能显示或算出这个说法。"
+								}
+							}
+						],
+						"accepted": ["unsupported"],
+						"explanation": {
+							"en": "Counts and figures in the rows can be checked; claims about who traded, why, or what comes next go beyond flow data.",
+							"zh": "行里的数量和数字可以核对；关于谁交易、为什么或接下来怎样的说法则超出了成交流数据。"
+						}
+					},
+					{
+						"id": "credits",
+						"prompt": {
+							"en": "The conversation had 1 text replies and 2 with a chart. How many credits did it use?",
+							"zh": "这段对话有 1 条文字回复和 2 条含图表的回复。一共消耗多少积分？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "credits", "zh": "积分" }
+						},
+						"accepted": ["5"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "1 × 1 + 2 × 2 = 5 credits.",
+							"zh": "1 × 1 + 2 × 2 = 5 积分。"
+						}
+					},
+					{
+						"id": "insight",
+						"prompt": {
+							"en": "You run AI Insight on the recipe. What changes?",
+							"zh": "你对这个 Recipe 运行 AI Insight。会改变什么？"
+						},
+						"choices": [
+							{
+								"id": "inputs",
+								"label": { "en": "The inputs update", "zh": "输入会更新" },
+								"why": {
+									"en": "AI Insight doesn't touch the inputs; it explains the run you already have.",
+									"zh": "AI Insight 不会改动输入；它解释的是你已有的那次运行。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing in the recipe",
+									"zh": "Recipe 中什么都不变"
+								}
+							},
+							{
+								"id": "draft",
+								"label": {
+									"en": "A private draft opens",
+									"zh": "会打开一份私有草稿"
+								},
+								"why": {
+									"en": "That's Edit with AI. AI Insight explains one completed run and opens nothing.",
+									"zh": "那是 Edit with AI。AI Insight 只解释一次已完成的运行，不会打开任何东西。"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "AI Insight explains one completed run; only Edit with AI opens a draft that can change.",
+							"zh": "AI Insight 解释一次已完成的运行；只有 Edit with AI 会打开可修改的草稿。"
+						}
+					},
+					{
+						"id": "annotate",
+						"prompt": {
+							"en": "Your question is about one row of the table. How do you give the AI that context?",
+							"zh": "你的问题是关于表格中的某一行。如何把这个上下文交给 AI？"
+						},
+						"choices": [
+							{
+								"id": "annotate",
+								"label": {
+									"en": "Use Annotate to pick the row",
+									"zh": "用 Annotate 选取那一行"
+								}
+							},
+							{
+								"id": "vague",
+								"label": {
+									"en": "Ask about \"this\" and let it guess",
+									"zh": "问“这个”，让它去猜"
+								},
+								"why": {
+									"en": "Asking about this without pointing at it leaves the AI to guess the row. Annotate attaches that row as context.",
+									"zh": "不指明就问“这个”，AI 只能去猜是哪一行。Annotate 会把那一行作为上下文附上。"
+								}
+							},
+							{
+								"id": "chart",
+								"label": {
+									"en": "Ask for a chart first",
+									"zh": "先让它画一张图"
+								},
+								"why": {
+									"en": "A chart doesn't tell the AI which row you mean, and it costs an extra credit. Annotate attaches the row itself.",
+									"zh": "图表不会告诉 AI 你指的是哪一行，还要多花积分。Annotate 会直接附上那一行。"
+								}
+							}
+						],
+						"accepted": ["annotate"],
+						"explanation": {
+							"en": "Annotate attaches the element you pick, so one reply can answer the question you meant.",
+							"zh": "Annotate 会附上你选取的元素，这样一条回复就能回答你真正想问的问题。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A fluent answer isn't a checked one. Sort each sentence by its evidence before you use it, and remember AI Insight explains a run without changing the recipe.",
+					"zh": "回答流畅不等于经过核查。使用之前按证据给每句话分类；也要记住 AI Insight 只解释一次运行，不会改动 Recipe。"
+				}
+			}
+		]
+	},
+	{
+		"id": "custom-formulas-practice-1",
+		"lessonId": "custom-formulas",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "custom-formulas",
+				"brief": {
+					"en": "Write a Rank Symbols formula column whose units make sense, keep thin rows from leading it, and see what a Rank View keeps.",
+					"zh": "在 Rank Symbols 上写一个单位合理的公式列，不让单薄的行领跑，并看清 Rank View 保存了什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A formula column isn't a TradingFlow metric. It describes rows by your rule, and an average over a handful of trades describes those trades, not the name.",
+					"zh": "公式列不是 TradingFlow 的指标。它按你的规则描述各行；几笔交易的平均值描述的是那几笔交易，而不是这个标的。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You build a formula column on Rank Symbols in the course's market.",
+					"zh": "你在课程的市场里，在 Rank Symbols 上构建一个公式列。"
+				},
+				"questions": [
+					{
+						"id": "accept",
+						"prompt": {
+							"en": "Which formula does the editor accept as written?",
+							"zh": "编辑器会接受下面哪个公式？"
+						},
+						"choices": [
+							{
+								"id": "wrong-a",
+								"label": {
+									"en": "[Total Premium] + [Trades]",
+									"zh": "[Total Premium] + [Trades]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							},
+							{
+								"id": "wrong-b",
+								"label": {
+									"en": "[Trades] + [Put Premium]",
+									"zh": "[Trades] + [Put Premium]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							},
+							{
+								"id": "accepted",
+								"label": {
+									"en": "[Total Premium] / [Trades]",
+									"zh": "[Total Premium] / [Trades]"
+								}
+							}
+						],
+						"accepted": ["accepted"],
+						"explanation": {
+							"en": "Fields carry units. Dollars divided by a count is dollars per trade, and dollars divided by dollars is a ratio; the editor refuses to add dollars to a count.",
+							"zh": "字段带着单位。美元除以计数得到每笔交易的美元数，美元除以美元得到比率；编辑器拒绝把美元与计数相加。"
+						}
+					},
+					{
+						"id": "per",
+						"prompt": {
+							"en": "A name traded $180,000 of premium in 45 trades. What does [Total Premium] / [Trades] show for it, in dollars?",
+							"zh": "某个标的成交了 $180,000 权利金，共 45 笔交易。[Total Premium] / [Trades] 对它显示多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["4000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$180,000 ÷ 45 = $4,000 a trade.",
+							"zh": "$180,000 ÷ 45 = 每笔 $4,000。"
+						}
+					},
+					{
+						"id": "guard",
+						"prompt": {
+							"en": "With IF([Trades] >= 20, [Total Premium] / [Trades], NA()), what does that name show?",
+							"zh": "使用 IF([Trades] >= 20, [Total Premium] / [Trades], NA()) 时，这个标的显示什么？"
+						},
+						"choices": [
+							{
+								"id": "value",
+								"label": {
+									"en": "Its premium per trade",
+									"zh": "它的每笔权利金"
+								}
+							},
+							{
+								"id": "na",
+								"label": { "en": "N/A", "zh": "N/A" },
+								"why": {
+									"en": "45 trades clears the floor of 20, so the column shows the premium per trade.",
+									"zh": "45 笔交易超过 20 笔的门槛，所以这一列显示每笔权利金。"
+								}
+							},
+							{
+								"id": "zero",
+								"label": { "en": "0", "zh": "0" },
+								"why": {
+									"en": "The formula never writes 0: below the floor NA() leaves a blank, and above it the cell shows premium per trade.",
+									"zh": "这个公式从不写 0：低于门槛时 NA() 留空，高于门槛时单元格显示每笔权利金。"
+								}
+							}
+						],
+						"accepted": ["value"],
+						"explanation": {
+							"en": "45 trades clear the floor, so the column shows $4,000.",
+							"zh": "45 笔交易超过门槛，所以这一列显示 $4,000。"
+						}
+					},
+					{
+						"id": "format",
+						"prompt": {
+							"en": "Which value format matches [Total Premium] / [Trades]?",
+							"zh": "哪种数值格式与 [Total Premium] / [Trades] 相符？"
+						},
+						"choices": [
+							{
+								"id": "percent",
+								"label": { "en": "Percent", "zh": "百分比" },
+								"why": {
+									"en": "Dollars over a count is still dollars, so Percent would only put a % sign on dollars. Currency fits.",
+									"zh": "美元除以计数仍是美元，用百分比格式只会给美元加上 % 号。应该用货币格式。"
+								}
+							},
+							{ "id": "currency", "label": { "en": "Currency", "zh": "货币" } }
+						],
+						"accepted": ["currency"],
+						"explanation": {
+							"en": "Dollars over a count is still dollars, output unit usd, so Currency fits; Percent would only add a % sign to dollars.",
+							"zh": "美元除以计数仍是美元，输出单位 usd，所以货币格式合适；百分比格式只会给美元加上 % 号。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "What does the Rank View save for the column?",
+							"zh": "Rank View 为这一列保存了什么？"
+						},
+						"choices": [
+							{
+								"id": "both",
+								"label": {
+									"en": "The definition and the values",
+									"zh": "定义和值"
+								},
+								"why": {
+									"en": "Only the definition is saved. The values recompute for whichever session you open.",
+									"zh": "只保存定义。值会针对你打开的时段重新计算。"
+								}
+							},
+							{
+								"id": "definition",
+								"label": {
+									"en": "Its definition: name, formula, format and display",
+									"zh": "它的定义：名称、公式、格式和显示方式"
+								}
+							},
+							{
+								"id": "values",
+								"label": {
+									"en": "The values it calculated",
+									"zh": "它算出的值"
+								},
+								"why": {
+									"en": "Values aren't saved; they recompute from each session's full-chain snapshot. The view keeps the definition.",
+									"zh": "值不会被保存，它们会基于每个时段的全链快照重新计算。视图保存的是定义。"
+								}
+							}
+						],
+						"accepted": ["definition"],
+						"explanation": {
+							"en": "Definitions save with the view; values recompute from the full-chain snapshot of each session you open.",
+							"zh": "定义随视图保存；值会基于你打开的每个交易时段的全链快照重新计算。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A formula column isn't a TradingFlow metric. It describes rows by your rule, and an average over a handful of trades describes those trades, not the name.",
+					"zh": "公式列不是 TradingFlow 的指标。它按你的规则描述各行；几笔交易的平均值描述的是那几笔交易，而不是这个标的。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You build a formula column on Rank Symbols in the course's market.",
+					"zh": "你在课程的市场里，在 Rank Symbols 上构建一个公式列。"
+				},
+				"questions": [
+					{
+						"id": "accept",
+						"prompt": {
+							"en": "Which formula does the editor accept as written?",
+							"zh": "编辑器会接受下面哪个公式？"
+						},
+						"choices": [
+							{
+								"id": "wrong-b",
+								"label": {
+									"en": "[Trades] + [Total Premium]",
+									"zh": "[Trades] + [Total Premium]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							},
+							{
+								"id": "accepted",
+								"label": {
+									"en": "[Call Premium] / [Put Premium]",
+									"zh": "[Call Premium] / [Put Premium]"
+								}
+							},
+							{
+								"id": "wrong-a",
+								"label": {
+									"en": "[Call Premium] + [Trades]",
+									"zh": "[Call Premium] + [Trades]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							}
+						],
+						"accepted": ["accepted"],
+						"explanation": {
+							"en": "Fields carry units. Dollars divided by a count is dollars per trade, and dollars divided by dollars is a ratio; the editor refuses to add dollars to a count.",
+							"zh": "字段带着单位。美元除以计数得到每笔交易的美元数，美元除以美元得到比率；编辑器拒绝把美元与计数相加。"
+						}
+					},
+					{
+						"id": "per",
+						"prompt": {
+							"en": "A name traded $96,000 of premium in 3 trades. What does [Total Premium] / [Trades] show for it, in dollars?",
+							"zh": "某个标的成交了 $96,000 权利金，共 3 笔交易。[Total Premium] / [Trades] 对它显示多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["32000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$96,000 ÷ 3 = $32,000 a trade.",
+							"zh": "$96,000 ÷ 3 = 每笔 $32,000。"
+						}
+					},
+					{
+						"id": "guard",
+						"prompt": {
+							"en": "With IF([Trades] >= 20, [Total Premium] / [Trades], NA()), what does that name show?",
+							"zh": "使用 IF([Trades] >= 20, [Total Premium] / [Trades], NA()) 时，这个标的显示什么？"
+						},
+						"choices": [
+							{ "id": "na", "label": { "en": "N/A", "zh": "N/A" } },
+							{
+								"id": "zero",
+								"label": { "en": "0", "zh": "0" },
+								"why": {
+									"en": "The formula never writes 0: below the floor NA() leaves a blank, and above it the cell shows premium per trade.",
+									"zh": "这个公式从不写 0：低于门槛时 NA() 留空，高于门槛时单元格显示每笔权利金。"
+								}
+							},
+							{
+								"id": "value",
+								"label": {
+									"en": "Its premium per trade",
+									"zh": "它的每笔权利金"
+								},
+								"why": {
+									"en": "3 trades is under the floor of 20, so NA() leaves the row blank.",
+									"zh": "3 笔交易低于 20 笔的门槛，所以 NA() 让这一行留空。"
+								}
+							}
+						],
+						"accepted": ["na"],
+						"explanation": {
+							"en": "3 trades is under the floor, so NA() leaves the row blank: N/A, not zero.",
+							"zh": "3 笔交易低于门槛，所以 NA() 让这一行留空：是 N/A，不是零。"
+						}
+					},
+					{
+						"id": "format",
+						"prompt": {
+							"en": "Which value format matches [Call Premium] / [Total Premium]?",
+							"zh": "哪种数值格式与 [Call Premium] / [Total Premium] 相符？"
+						},
+						"choices": [
+							{
+								"id": "currency",
+								"label": { "en": "Currency", "zh": "货币" },
+								"why": {
+									"en": "Dollars over dollars is a ratio with no unit, and Currency is refused for a ratio. Percent fits.",
+									"zh": "美元除以美元是没有单位的比率，比率不能用货币格式。应该用百分比格式。"
+								}
+							},
+							{ "id": "percent", "label": { "en": "Percent", "zh": "百分比" } }
+						],
+						"accepted": ["percent"],
+						"explanation": {
+							"en": "Dollars over dollars is a ratio: Percent shows it times 100, and Currency is refused for a ratio.",
+							"zh": "美元除以美元是比率：百分比格式把它乘以 100 显示，而比率不能用货币格式。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "What does the Rank View save for the column?",
+							"zh": "Rank View 为这一列保存了什么？"
+						},
+						"choices": [
+							{
+								"id": "definition",
+								"label": {
+									"en": "Its definition: name, formula, format and display",
+									"zh": "它的定义：名称、公式、格式和显示方式"
+								}
+							},
+							{
+								"id": "values",
+								"label": {
+									"en": "The values it calculated",
+									"zh": "它算出的值"
+								},
+								"why": {
+									"en": "Values aren't saved; they recompute from each session's full-chain snapshot. The view keeps the definition.",
+									"zh": "值不会被保存，它们会基于每个时段的全链快照重新计算。视图保存的是定义。"
+								}
+							},
+							{
+								"id": "both",
+								"label": {
+									"en": "The definition and the values",
+									"zh": "定义和值"
+								},
+								"why": {
+									"en": "Only the definition is saved. The values recompute for whichever session you open.",
+									"zh": "只保存定义。值会针对你打开的时段重新计算。"
+								}
+							}
+						],
+						"accepted": ["definition"],
+						"explanation": {
+							"en": "Definitions save with the view; values recompute from the full-chain snapshot of each session you open.",
+							"zh": "定义随视图保存；值会基于你打开的每个交易时段的全链快照重新计算。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A formula column isn't a TradingFlow metric. It describes rows by your rule, and an average over a handful of trades describes those trades, not the name.",
+					"zh": "公式列不是 TradingFlow 的指标。它按你的规则描述各行；几笔交易的平均值描述的是那几笔交易，而不是这个标的。"
+				}
+			}
+		]
+	},
+	{
+		"id": "custom-formulas-practice-2",
+		"lessonId": "custom-formulas",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "custom-formulas",
+				"brief": {
+					"en": "Write a Rank Symbols formula column whose units make sense, keep thin rows from leading it, and see what a Rank View keeps.",
+					"zh": "在 Rank Symbols 上写一个单位合理的公式列，不让单薄的行领跑，并看清 Rank View 保存了什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "A formula column isn't a TradingFlow metric. It describes rows by your rule, and an average over a handful of trades describes those trades, not the name.",
+					"zh": "公式列不是 TradingFlow 的指标。它按你的规则描述各行；几笔交易的平均值描述的是那几笔交易，而不是这个标的。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You build a formula column on Rank Symbols in the course's market.",
+					"zh": "你在课程的市场里，在 Rank Symbols 上构建一个公式列。"
+				},
+				"questions": [
+					{
+						"id": "accept",
+						"prompt": {
+							"en": "Which formula does the editor accept as written?",
+							"zh": "编辑器会接受下面哪个公式？"
+						},
+						"choices": [
+							{
+								"id": "wrong-a",
+								"label": {
+									"en": "[Total Premium] + [Trades]",
+									"zh": "[Total Premium] + [Trades]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							},
+							{
+								"id": "wrong-b",
+								"label": {
+									"en": "[Trades] + [Put Premium]",
+									"zh": "[Trades] + [Put Premium]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							},
+							{
+								"id": "accepted",
+								"label": {
+									"en": "[Total Premium] / [Trades]",
+									"zh": "[Total Premium] / [Trades]"
+								}
+							}
+						],
+						"accepted": ["accepted"],
+						"explanation": {
+							"en": "Fields carry units. Dollars divided by a count is dollars per trade, and dollars divided by dollars is a ratio; the editor refuses to add dollars to a count.",
+							"zh": "字段带着单位。美元除以计数得到每笔交易的美元数，美元除以美元得到比率；编辑器拒绝把美元与计数相加。"
+						}
+					},
+					{
+						"id": "per",
+						"prompt": {
+							"en": "A name traded $180,000 of premium in 45 trades. What does [Total Premium] / [Trades] show for it, in dollars?",
+							"zh": "某个标的成交了 $180,000 权利金，共 45 笔交易。[Total Premium] / [Trades] 对它显示多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["4000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$180,000 ÷ 45 = $4,000 a trade.",
+							"zh": "$180,000 ÷ 45 = 每笔 $4,000。"
+						}
+					},
+					{
+						"id": "guard",
+						"prompt": {
+							"en": "With IF([Trades] >= 20, [Total Premium] / [Trades], NA()), what does that name show?",
+							"zh": "使用 IF([Trades] >= 20, [Total Premium] / [Trades], NA()) 时，这个标的显示什么？"
+						},
+						"choices": [
+							{
+								"id": "value",
+								"label": {
+									"en": "Its premium per trade",
+									"zh": "它的每笔权利金"
+								}
+							},
+							{
+								"id": "na",
+								"label": { "en": "N/A", "zh": "N/A" },
+								"why": {
+									"en": "45 trades clears the floor of 20, so the column shows the premium per trade.",
+									"zh": "45 笔交易超过 20 笔的门槛，所以这一列显示每笔权利金。"
+								}
+							},
+							{
+								"id": "zero",
+								"label": { "en": "0", "zh": "0" },
+								"why": {
+									"en": "The formula never writes 0: below the floor NA() leaves a blank, and above it the cell shows premium per trade.",
+									"zh": "这个公式从不写 0：低于门槛时 NA() 留空，高于门槛时单元格显示每笔权利金。"
+								}
+							}
+						],
+						"accepted": ["value"],
+						"explanation": {
+							"en": "45 trades clear the floor, so the column shows $4,000.",
+							"zh": "45 笔交易超过门槛，所以这一列显示 $4,000。"
+						}
+					},
+					{
+						"id": "format",
+						"prompt": {
+							"en": "Which value format matches [Total Premium] / [Trades]?",
+							"zh": "哪种数值格式与 [Total Premium] / [Trades] 相符？"
+						},
+						"choices": [
+							{
+								"id": "percent",
+								"label": { "en": "Percent", "zh": "百分比" },
+								"why": {
+									"en": "Dollars over a count is still dollars, so Percent would only put a % sign on dollars. Currency fits.",
+									"zh": "美元除以计数仍是美元，用百分比格式只会给美元加上 % 号。应该用货币格式。"
+								}
+							},
+							{ "id": "currency", "label": { "en": "Currency", "zh": "货币" } }
+						],
+						"accepted": ["currency"],
+						"explanation": {
+							"en": "Dollars over a count is still dollars, output unit usd, so Currency fits; Percent would only add a % sign to dollars.",
+							"zh": "美元除以计数仍是美元，输出单位 usd，所以货币格式合适；百分比格式只会给美元加上 % 号。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "What does the Rank View save for the column?",
+							"zh": "Rank View 为这一列保存了什么？"
+						},
+						"choices": [
+							{
+								"id": "both",
+								"label": {
+									"en": "The definition and the values",
+									"zh": "定义和值"
+								},
+								"why": {
+									"en": "Only the definition is saved. The values recompute for whichever session you open.",
+									"zh": "只保存定义。值会针对你打开的时段重新计算。"
+								}
+							},
+							{
+								"id": "definition",
+								"label": {
+									"en": "Its definition: name, formula, format and display",
+									"zh": "它的定义：名称、公式、格式和显示方式"
+								}
+							},
+							{
+								"id": "values",
+								"label": {
+									"en": "The values it calculated",
+									"zh": "它算出的值"
+								},
+								"why": {
+									"en": "Values aren't saved; they recompute from each session's full-chain snapshot. The view keeps the definition.",
+									"zh": "值不会被保存，它们会基于每个时段的全链快照重新计算。视图保存的是定义。"
+								}
+							}
+						],
+						"accepted": ["definition"],
+						"explanation": {
+							"en": "Definitions save with the view; values recompute from the full-chain snapshot of each session you open.",
+							"zh": "定义随视图保存；值会基于你打开的每个交易时段的全链快照重新计算。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A formula column isn't a TradingFlow metric. It describes rows by your rule, and an average over a handful of trades describes those trades, not the name.",
+					"zh": "公式列不是 TradingFlow 的指标。它按你的规则描述各行；几笔交易的平均值描述的是那几笔交易，而不是这个标的。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You build a formula column on Rank Symbols in the course's market.",
+					"zh": "你在课程的市场里，在 Rank Symbols 上构建一个公式列。"
+				},
+				"questions": [
+					{
+						"id": "accept",
+						"prompt": {
+							"en": "Which formula does the editor accept as written?",
+							"zh": "编辑器会接受下面哪个公式？"
+						},
+						"choices": [
+							{
+								"id": "accepted",
+								"label": {
+									"en": "[Put Premium] / [Trades]",
+									"zh": "[Put Premium] / [Trades]"
+								}
+							},
+							{
+								"id": "wrong-a",
+								"label": {
+									"en": "[Put Premium] + [Trades]",
+									"zh": "[Put Premium] + [Trades]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							},
+							{
+								"id": "wrong-b",
+								"label": {
+									"en": "[Trades] + [Call Premium]",
+									"zh": "[Trades] + [Call Premium]"
+								},
+								"why": {
+									"en": "That adds a count of trades to dollars of premium. Fields carry units, and the editor refuses to add unlike units.",
+									"zh": "这是把交易笔数加到权利金美元上。字段带着单位，编辑器拒绝把不同单位相加。"
+								}
+							}
+						],
+						"accepted": ["accepted"],
+						"explanation": {
+							"en": "Fields carry units. Dollars divided by a count is dollars per trade, and dollars divided by dollars is a ratio; the editor refuses to add dollars to a count.",
+							"zh": "字段带着单位。美元除以计数得到每笔交易的美元数，美元除以美元得到比率；编辑器拒绝把美元与计数相加。"
+						}
+					},
+					{
+						"id": "per",
+						"prompt": {
+							"en": "A name traded $520,000 of premium in 260 trades. What does [Total Premium] / [Trades] show for it, in dollars?",
+							"zh": "某个标的成交了 $520,000 权利金，共 260 笔交易。[Total Premium] / [Trades] 对它显示多少美元？"
+						},
+						"choices": [],
+						"input": {
+							"kind": "number",
+							"unit": { "en": "dollars", "zh": "美元" }
+						},
+						"accepted": ["2000"],
+						"tolerance": 0.001,
+						"explanation": {
+							"en": "$520,000 ÷ 260 = $2,000 a trade.",
+							"zh": "$520,000 ÷ 260 = 每笔 $2,000。"
+						}
+					},
+					{
+						"id": "guard",
+						"prompt": {
+							"en": "With IF([Trades] >= 20, [Total Premium] / [Trades], NA()), what does that name show?",
+							"zh": "使用 IF([Trades] >= 20, [Total Premium] / [Trades], NA()) 时，这个标的显示什么？"
+						},
+						"choices": [
+							{
+								"id": "zero",
+								"label": { "en": "0", "zh": "0" },
+								"why": {
+									"en": "The formula never writes 0: below the floor NA() leaves a blank, and above it the cell shows premium per trade.",
+									"zh": "这个公式从不写 0：低于门槛时 NA() 留空，高于门槛时单元格显示每笔权利金。"
+								}
+							},
+							{
+								"id": "value",
+								"label": {
+									"en": "Its premium per trade",
+									"zh": "它的每笔权利金"
+								}
+							},
+							{
+								"id": "na",
+								"label": { "en": "N/A", "zh": "N/A" },
+								"why": {
+									"en": "260 trades clears the floor of 20, so the column shows the premium per trade.",
+									"zh": "260 笔交易超过 20 笔的门槛，所以这一列显示每笔权利金。"
+								}
+							}
+						],
+						"accepted": ["value"],
+						"explanation": {
+							"en": "260 trades clear the floor, so the column shows $2,000.",
+							"zh": "260 笔交易超过门槛，所以这一列显示 $2,000。"
+						}
+					},
+					{
+						"id": "format",
+						"prompt": {
+							"en": "Which value format matches [Total Premium] / [Trades]?",
+							"zh": "哪种数值格式与 [Total Premium] / [Trades] 相符？"
+						},
+						"choices": [
+							{
+								"id": "percent",
+								"label": { "en": "Percent", "zh": "百分比" },
+								"why": {
+									"en": "Dollars over a count is still dollars, so Percent would only put a % sign on dollars. Currency fits.",
+									"zh": "美元除以计数仍是美元，用百分比格式只会给美元加上 % 号。应该用货币格式。"
+								}
+							},
+							{ "id": "currency", "label": { "en": "Currency", "zh": "货币" } }
+						],
+						"accepted": ["currency"],
+						"explanation": {
+							"en": "Dollars over a count is still dollars, output unit usd, so Currency fits; Percent would only add a % sign to dollars.",
+							"zh": "美元除以计数仍是美元，输出单位 usd，所以货币格式合适；百分比格式只会给美元加上 % 号。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "What does the Rank View save for the column?",
+							"zh": "Rank View 为这一列保存了什么？"
+						},
+						"choices": [
+							{
+								"id": "values",
+								"label": {
+									"en": "The values it calculated",
+									"zh": "它算出的值"
+								},
+								"why": {
+									"en": "Values aren't saved; they recompute from each session's full-chain snapshot. The view keeps the definition.",
+									"zh": "值不会被保存，它们会基于每个时段的全链快照重新计算。视图保存的是定义。"
+								}
+							},
+							{
+								"id": "both",
+								"label": {
+									"en": "The definition and the values",
+									"zh": "定义和值"
+								},
+								"why": {
+									"en": "Only the definition is saved. The values recompute for whichever session you open.",
+									"zh": "只保存定义。值会针对你打开的时段重新计算。"
+								}
+							},
+							{
+								"id": "definition",
+								"label": {
+									"en": "Its definition: name, formula, format and display",
+									"zh": "它的定义：名称、公式、格式和显示方式"
+								}
+							}
+						],
+						"accepted": ["definition"],
+						"explanation": {
+							"en": "Definitions save with the view; values recompute from the full-chain snapshot of each session you open.",
+							"zh": "定义随视图保存；值会基于你打开的每个交易时段的全链快照重新计算。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "A formula column isn't a TradingFlow metric. It describes rows by your rule, and an average over a handful of trades describes those trades, not the name.",
+					"zh": "公式列不是 TradingFlow 的指标。它按你的规则描述各行；几笔交易的平均值描述的是那几笔交易，而不是这个标的。"
+				}
+			}
+		]
+	},
+	{
+		"id": "edit-with-ai-practice-1",
+		"lessonId": "edit-with-ai",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "edit-with-ai",
+				"brief": {
+					"en": "Write a prompt whose result you can review, undo an edit that changed more than you asked, and see what Save keeps.",
+					"zh": "写一个结果可以审阅的提示，撤销超出要求的修改，并看清 Save 保留了什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "\"The preview looks right, so it's saved.\" A preview is a draft: nothing is kept until Save, and nothing you save is shared.",
+					"zh": "“预览看起来没问题，所以已经保存了。”预览只是草稿：点 Save 之前什么都不会保留，保存的内容也不会被分享。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You fork Daily Market Recap in TradingFlow's authoring workspace and change it with AI.",
+					"zh": "你在 TradingFlow 的编写工作区分叉 Daily Market Recap，并用 AI 修改它。"
+				},
+				"questions": [
+					{
+						"id": "prompt",
+						"prompt": {
+							"en": "Which prompt sets a boundary you can review?",
+							"zh": "哪个提示划定了一个你能审阅的范围？"
+						},
+						"choices": [
+							{
+								"id": "vague",
+								"label": {
+									"en": "Make this a ALFA report.",
+									"zh": "把它改成一份 ALFA 报告。"
+								},
+								"why": {
+									"en": "Make this an ALFA report sets no boundary, so the assistant decides what to replace and any block may change.",
+									"zh": "“把它改成一份 ALFA 报告”没有划定范围，助手会自己决定替换什么，任何区块都可能变。"
+								}
+							},
+							{
+								"id": "subjective",
+								"label": { "en": "Make it smarter.", "zh": "让它更聪明一点。" },
+								"why": {
+									"en": "Smarter isn't a change you can check. A reviewable prompt names what stays and what may change.",
+									"zh": "“更聪明”不是一个能核对的修改。可审阅的提示要写明哪些保留、哪些可以改。"
+								}
+							},
+							{
+								"id": "bounded",
+								"label": {
+									"en": "Keep every chapter and change only Spotlight: let the reader choose a symbol, ALFA by default.",
+									"zh": "保留所有章节，只修改 Spotlight：让读者可以选择标的，默认 ALFA。"
+								}
+							}
+						],
+						"accepted": ["bounded"],
+						"explanation": {
+							"en": "Naming the part that may change and what must stay gives a change you can check; the others leave the assistant to decide.",
+							"zh": "写明允许修改的部分和必须保留的内容，修改才可以核对；另外两个都让助手自己决定。"
+						}
+					},
+					{
+						"id": "removed",
+						"prompt": {
+							"en": "After an edit, the preview shows Index GEX was removed, though you didn't ask for that. What do you do first?",
+							"zh": "一次修改之后，预览显示 Index GEX 被删除了，而你并没有要求。你首先做什么？"
+						},
+						"choices": [
+							{
+								"id": "save",
+								"label": {
+									"en": "Save, and fix it later",
+									"zh": "先保存，之后再修"
+								},
+								"why": {
+									"en": "Saving keeps the version without Index GEX. Undo first, then repeat the request with what must stay.",
+									"zh": "保存会留下缺了 Index GEX 的版本。先撤销，再重发请求并写明要保留什么。"
+								}
+							},
+							{
+								"id": "undo",
+								"label": {
+									"en": "Undo, then repeat the request with what must stay",
+									"zh": "撤销，然后重发请求并写明哪些要保留"
+								}
+							},
+							{
+								"id": "repair",
+								"label": {
+									"en": "Ask the assistant to restore it",
+									"zh": "让助手把它恢复"
+								},
+								"why": {
+									"en": "Asking for a repair stacks another edit on one you haven't checked. Undo returns to the version you reviewed.",
+									"zh": "要求修复是在一个你还没核查的修改上再叠一次修改。撤销会回到你审阅过的版本。"
+								}
+							}
+						],
+						"accepted": ["undo"],
+						"explanation": {
+							"en": "Undo returns to the version you reviewed; a second edit on top of an unchecked one is harder to verify.",
+							"zh": "撤销会回到你审阅过的版本；在未核查的修改上再叠一次修改，会更难核对。"
+						}
+					},
+					{
+						"id": "input",
+						"prompt": {
+							"en": "In the preview you change the Symbol input from ALFA to CRUX. What changed?",
+							"zh": "你在预览中把 Symbol 输入从 ALFA 改成 CRUX。改变了什么？"
+						},
+						"choices": [
+							{
+								"id": "value",
+								"label": {
+									"en": "Only the draft value for this run",
+									"zh": "只是这次运行的草稿值"
+								}
+							},
+							{
+								"id": "default",
+								"label": {
+									"en": "The recipe's default symbol",
+									"zh": "Recipe 的默认标的"
+								},
+								"why": {
+									"en": "Changing an input's value in the preview sets a draft value for that run. Changing its default is a recipe change you'd make on purpose.",
+									"zh": "在预览中修改输入的值，只是为这次运行设定草稿值。修改它的默认值才是对 Recipe 的改动，需要专门去做。"
+								}
+							},
+							{
+								"id": "official",
+								"label": { "en": "The official recipe", "zh": "官方 Recipe" },
+								"why": {
+									"en": "The official recipe is never edited; you're working in a private fork, and this is only a draft value for the run.",
+									"zh": "官方 Recipe 从不被修改；你在私有分叉里工作，而这只是这次运行的草稿值。"
+								}
+							}
+						],
+						"accepted": ["value"],
+						"explanation": {
+							"en": "An input's value is a draft for one run; its label, default or meaning only change through a recipe edit.",
+							"zh": "输入的值只是一次运行的草稿；它的标签、默认值或含义只能通过修改 Recipe 来改变。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "You close the tab while the header still shows unsaved changes. What's kept?",
+							"zh": "页眉仍显示有未保存的修改时，你关掉了标签页。保留下来的是什么？"
+						},
+						"choices": [
+							{
+								"id": "draft",
+								"label": {
+									"en": "The draft, saved automatically",
+									"zh": "草稿，已自动保存"
+								},
+								"why": {
+									"en": "Nothing saves on its own: unsaved changes are lost when you close the tab.",
+									"zh": "不会自动保存：关掉标签页时，未保存的修改就丢失了。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The changes, on the official recipe",
+									"zh": "这些修改，落在官方 Recipe 上"
+								},
+								"why": {
+									"en": "The official recipe is never edited, saved or not. Your unsaved changes are simply gone.",
+									"zh": "无论是否保存，官方 Recipe 都不会被修改。你未保存的修改直接没了。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: a preview isn't a save",
+									"zh": "什么都没有：预览不等于保存"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "Only Save keeps a recipe, and the header shows Saved when it has; a fork never edits the official recipe.",
+							"zh": "只有 Save 才会保留 Recipe，保存后页眉会显示 Saved；分叉从不修改官方 Recipe。"
+						}
+					},
+					{
+						"id": "share",
+						"prompt": {
+							"en": "A colleague asks for your saved recipe. What does TradingFlow let you do?",
+							"zh": "同事想要你保存的 Recipe。TradingFlow 允许你做什么？"
+						},
+						"choices": [
+							{
+								"id": "org",
+								"label": {
+									"en": "Publish it to your organization",
+									"zh": "发布给你的组织"
+								},
+								"why": {
+									"en": "Saved recipes are owner-only; there's no publishing to an organization.",
+									"zh": "保存的 Recipe 只属于你自己；没有面向组织的发布功能。"
+								}
+							},
+							{
+								"id": "none",
+								"label": {
+									"en": "Nothing: your recipes are owner-only",
+									"zh": "什么都不能：你的 Recipe 只属于你"
+								}
+							},
+							{
+								"id": "link",
+								"label": { "en": "Send a share link", "zh": "发送分享链接" },
+								"why": {
+									"en": "There are no share links: saved recipes are owner-only.",
+									"zh": "没有分享链接：保存的 Recipe 只属于你自己。"
+								}
+							}
+						],
+						"accepted": ["none"],
+						"explanation": {
+							"en": "User recipes have no public, organization or share-link state; describe the prompt and checks instead.",
+							"zh": "用户 Recipe 没有公开、组织或分享链接状态；可以改为描述你的提示和检查步骤。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"The preview looks right, so it's saved.\" A preview is a draft: nothing is kept until Save, and nothing you save is shared.",
+					"zh": "“预览看起来没问题，所以已经保存了。”预览只是草稿：点 Save 之前什么都不会保留，保存的内容也不会被分享。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You fork Daily Market Recap in TradingFlow's authoring workspace and change it with AI.",
+					"zh": "你在 TradingFlow 的编写工作区分叉 Daily Market Recap，并用 AI 修改它。"
+				},
+				"questions": [
+					{
+						"id": "prompt",
+						"prompt": {
+							"en": "Which prompt sets a boundary you can review?",
+							"zh": "哪个提示划定了一个你能审阅的范围？"
+						},
+						"choices": [
+							{
+								"id": "subjective",
+								"label": { "en": "Make it smarter.", "zh": "让它更聪明一点。" },
+								"why": {
+									"en": "Smarter isn't a change you can check. A reviewable prompt names what stays and what may change.",
+									"zh": "“更聪明”不是一个能核对的修改。可审阅的提示要写明哪些保留、哪些可以改。"
+								}
+							},
+							{
+								"id": "bounded",
+								"label": {
+									"en": "Keep every chapter and change only Spotlight: let the reader choose a symbol, CRUX by default.",
+									"zh": "保留所有章节，只修改 Spotlight：让读者可以选择标的，默认 CRUX。"
+								}
+							},
+							{
+								"id": "vague",
+								"label": {
+									"en": "Make this a CRUX report.",
+									"zh": "把它改成一份 CRUX 报告。"
+								},
+								"why": {
+									"en": "Make this an ALFA report sets no boundary, so the assistant decides what to replace and any block may change.",
+									"zh": "“把它改成一份 ALFA 报告”没有划定范围，助手会自己决定替换什么，任何区块都可能变。"
+								}
+							}
+						],
+						"accepted": ["bounded"],
+						"explanation": {
+							"en": "Naming the part that may change and what must stay gives a change you can check; the others leave the assistant to decide.",
+							"zh": "写明允许修改的部分和必须保留的内容，修改才可以核对；另外两个都让助手自己决定。"
+						}
+					},
+					{
+						"id": "removed",
+						"prompt": {
+							"en": "After an edit, the preview shows Market tone was removed, though you didn't ask for that. What do you do first?",
+							"zh": "一次修改之后，预览显示 Market tone 被删除了，而你并没有要求。你首先做什么？"
+						},
+						"choices": [
+							{
+								"id": "undo",
+								"label": {
+									"en": "Undo, then repeat the request with what must stay",
+									"zh": "撤销，然后重发请求并写明哪些要保留"
+								}
+							},
+							{
+								"id": "repair",
+								"label": {
+									"en": "Ask the assistant to restore it",
+									"zh": "让助手把它恢复"
+								},
+								"why": {
+									"en": "Asking for a repair stacks another edit on one you haven't checked. Undo returns to the version you reviewed.",
+									"zh": "要求修复是在一个你还没核查的修改上再叠一次修改。撤销会回到你审阅过的版本。"
+								}
+							},
+							{
+								"id": "save",
+								"label": {
+									"en": "Save, and fix it later",
+									"zh": "先保存，之后再修"
+								},
+								"why": {
+									"en": "Saving keeps the version without Index GEX. Undo first, then repeat the request with what must stay.",
+									"zh": "保存会留下缺了 Index GEX 的版本。先撤销，再重发请求并写明要保留什么。"
+								}
+							}
+						],
+						"accepted": ["undo"],
+						"explanation": {
+							"en": "Undo returns to the version you reviewed; a second edit on top of an unchecked one is harder to verify.",
+							"zh": "撤销会回到你审阅过的版本；在未核查的修改上再叠一次修改，会更难核对。"
+						}
+					},
+					{
+						"id": "input",
+						"prompt": {
+							"en": "In the preview you change the Symbol input from CRUX to ALFA. What changed?",
+							"zh": "你在预览中把 Symbol 输入从 CRUX 改成 ALFA。改变了什么？"
+						},
+						"choices": [
+							{
+								"id": "default",
+								"label": {
+									"en": "The recipe's default symbol",
+									"zh": "Recipe 的默认标的"
+								},
+								"why": {
+									"en": "Changing an input's value in the preview sets a draft value for that run. Changing its default is a recipe change you'd make on purpose.",
+									"zh": "在预览中修改输入的值，只是为这次运行设定草稿值。修改它的默认值才是对 Recipe 的改动，需要专门去做。"
+								}
+							},
+							{
+								"id": "official",
+								"label": { "en": "The official recipe", "zh": "官方 Recipe" },
+								"why": {
+									"en": "The official recipe is never edited; you're working in a private fork, and this is only a draft value for the run.",
+									"zh": "官方 Recipe 从不被修改；你在私有分叉里工作，而这只是这次运行的草稿值。"
+								}
+							},
+							{
+								"id": "value",
+								"label": {
+									"en": "Only the draft value for this run",
+									"zh": "只是这次运行的草稿值"
+								}
+							}
+						],
+						"accepted": ["value"],
+						"explanation": {
+							"en": "An input's value is a draft for one run; its label, default or meaning only change through a recipe edit.",
+							"zh": "输入的值只是一次运行的草稿；它的标签、默认值或含义只能通过修改 Recipe 来改变。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "You close the tab while the header still shows unsaved changes. What's kept?",
+							"zh": "页眉仍显示有未保存的修改时，你关掉了标签页。保留下来的是什么？"
+						},
+						"choices": [
+							{
+								"id": "official",
+								"label": {
+									"en": "The changes, on the official recipe",
+									"zh": "这些修改，落在官方 Recipe 上"
+								},
+								"why": {
+									"en": "The official recipe is never edited, saved or not. Your unsaved changes are simply gone.",
+									"zh": "无论是否保存，官方 Recipe 都不会被修改。你未保存的修改直接没了。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: a preview isn't a save",
+									"zh": "什么都没有：预览不等于保存"
+								}
+							},
+							{
+								"id": "draft",
+								"label": {
+									"en": "The draft, saved automatically",
+									"zh": "草稿，已自动保存"
+								},
+								"why": {
+									"en": "Nothing saves on its own: unsaved changes are lost when you close the tab.",
+									"zh": "不会自动保存：关掉标签页时，未保存的修改就丢失了。"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "Only Save keeps a recipe, and the header shows Saved when it has; a fork never edits the official recipe.",
+							"zh": "只有 Save 才会保留 Recipe，保存后页眉会显示 Saved；分叉从不修改官方 Recipe。"
+						}
+					},
+					{
+						"id": "share",
+						"prompt": {
+							"en": "A colleague asks for your saved recipe. What does TradingFlow let you do?",
+							"zh": "同事想要你保存的 Recipe。TradingFlow 允许你做什么？"
+						},
+						"choices": [
+							{
+								"id": "none",
+								"label": {
+									"en": "Nothing: your recipes are owner-only",
+									"zh": "什么都不能：你的 Recipe 只属于你"
+								}
+							},
+							{
+								"id": "link",
+								"label": { "en": "Send a share link", "zh": "发送分享链接" },
+								"why": {
+									"en": "There are no share links: saved recipes are owner-only.",
+									"zh": "没有分享链接：保存的 Recipe 只属于你自己。"
+								}
+							},
+							{
+								"id": "org",
+								"label": {
+									"en": "Publish it to your organization",
+									"zh": "发布给你的组织"
+								},
+								"why": {
+									"en": "Saved recipes are owner-only; there's no publishing to an organization.",
+									"zh": "保存的 Recipe 只属于你自己；没有面向组织的发布功能。"
+								}
+							}
+						],
+						"accepted": ["none"],
+						"explanation": {
+							"en": "User recipes have no public, organization or share-link state; describe the prompt and checks instead.",
+							"zh": "用户 Recipe 没有公开、组织或分享链接状态；可以改为描述你的提示和检查步骤。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"The preview looks right, so it's saved.\" A preview is a draft: nothing is kept until Save, and nothing you save is shared.",
+					"zh": "“预览看起来没问题，所以已经保存了。”预览只是草稿：点 Save 之前什么都不会保留，保存的内容也不会被分享。"
+				}
+			}
+		]
+	},
+	{
+		"id": "edit-with-ai-practice-2",
+		"lessonId": "edit-with-ai",
+		"version": 2,
+		"steps": [
+			{
+				"id": "worked-example",
+				"kind": "prediction",
+				"title": { "en": "Understand the concept", "zh": "理解概念" },
+				"conceptLab": "edit-with-ai",
+				"brief": {
+					"en": "Write a prompt whose result you can review, undo an edit that changed more than you asked, and see what Save keeps.",
+					"zh": "写一个结果可以审阅的提示，撤销超出要求的修改，并看清 Save 保留了什么。"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"questions": [],
+				"quote": null,
+				"hint": {
+					"en": "\"The preview looks right, so it's saved.\" A preview is a draft: nothing is kept until Save, and nothing you save is shared.",
+					"zh": "“预览看起来没问题，所以已经保存了。”预览只是草稿：点 Save 之前什么都不会保留，保存的内容也不会被分享。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You fork Daily Market Recap in TradingFlow's authoring workspace and change it with AI.",
+					"zh": "你在 TradingFlow 的编写工作区分叉 Daily Market Recap，并用 AI 修改它。"
+				},
+				"questions": [
+					{
+						"id": "prompt",
+						"prompt": {
+							"en": "Which prompt sets a boundary you can review?",
+							"zh": "哪个提示划定了一个你能审阅的范围？"
+						},
+						"choices": [
+							{
+								"id": "vague",
+								"label": {
+									"en": "Make this a ALFA report.",
+									"zh": "把它改成一份 ALFA 报告。"
+								},
+								"why": {
+									"en": "Make this an ALFA report sets no boundary, so the assistant decides what to replace and any block may change.",
+									"zh": "“把它改成一份 ALFA 报告”没有划定范围，助手会自己决定替换什么，任何区块都可能变。"
+								}
+							},
+							{
+								"id": "subjective",
+								"label": { "en": "Make it smarter.", "zh": "让它更聪明一点。" },
+								"why": {
+									"en": "Smarter isn't a change you can check. A reviewable prompt names what stays and what may change.",
+									"zh": "“更聪明”不是一个能核对的修改。可审阅的提示要写明哪些保留、哪些可以改。"
+								}
+							},
+							{
+								"id": "bounded",
+								"label": {
+									"en": "Keep every chapter and change only Spotlight: let the reader choose a symbol, ALFA by default.",
+									"zh": "保留所有章节，只修改 Spotlight：让读者可以选择标的，默认 ALFA。"
+								}
+							}
+						],
+						"accepted": ["bounded"],
+						"explanation": {
+							"en": "Naming the part that may change and what must stay gives a change you can check; the others leave the assistant to decide.",
+							"zh": "写明允许修改的部分和必须保留的内容，修改才可以核对；另外两个都让助手自己决定。"
+						}
+					},
+					{
+						"id": "removed",
+						"prompt": {
+							"en": "After an edit, the preview shows Index GEX was removed, though you didn't ask for that. What do you do first?",
+							"zh": "一次修改之后，预览显示 Index GEX 被删除了，而你并没有要求。你首先做什么？"
+						},
+						"choices": [
+							{
+								"id": "save",
+								"label": {
+									"en": "Save, and fix it later",
+									"zh": "先保存，之后再修"
+								},
+								"why": {
+									"en": "Saving keeps the version without Index GEX. Undo first, then repeat the request with what must stay.",
+									"zh": "保存会留下缺了 Index GEX 的版本。先撤销，再重发请求并写明要保留什么。"
+								}
+							},
+							{
+								"id": "undo",
+								"label": {
+									"en": "Undo, then repeat the request with what must stay",
+									"zh": "撤销，然后重发请求并写明哪些要保留"
+								}
+							},
+							{
+								"id": "repair",
+								"label": {
+									"en": "Ask the assistant to restore it",
+									"zh": "让助手把它恢复"
+								},
+								"why": {
+									"en": "Asking for a repair stacks another edit on one you haven't checked. Undo returns to the version you reviewed.",
+									"zh": "要求修复是在一个你还没核查的修改上再叠一次修改。撤销会回到你审阅过的版本。"
+								}
+							}
+						],
+						"accepted": ["undo"],
+						"explanation": {
+							"en": "Undo returns to the version you reviewed; a second edit on top of an unchecked one is harder to verify.",
+							"zh": "撤销会回到你审阅过的版本；在未核查的修改上再叠一次修改，会更难核对。"
+						}
+					},
+					{
+						"id": "input",
+						"prompt": {
+							"en": "In the preview you change the Symbol input from ALFA to CRUX. What changed?",
+							"zh": "你在预览中把 Symbol 输入从 ALFA 改成 CRUX。改变了什么？"
+						},
+						"choices": [
+							{
+								"id": "value",
+								"label": {
+									"en": "Only the draft value for this run",
+									"zh": "只是这次运行的草稿值"
+								}
+							},
+							{
+								"id": "default",
+								"label": {
+									"en": "The recipe's default symbol",
+									"zh": "Recipe 的默认标的"
+								},
+								"why": {
+									"en": "Changing an input's value in the preview sets a draft value for that run. Changing its default is a recipe change you'd make on purpose.",
+									"zh": "在预览中修改输入的值，只是为这次运行设定草稿值。修改它的默认值才是对 Recipe 的改动，需要专门去做。"
+								}
+							},
+							{
+								"id": "official",
+								"label": { "en": "The official recipe", "zh": "官方 Recipe" },
+								"why": {
+									"en": "The official recipe is never edited; you're working in a private fork, and this is only a draft value for the run.",
+									"zh": "官方 Recipe 从不被修改；你在私有分叉里工作，而这只是这次运行的草稿值。"
+								}
+							}
+						],
+						"accepted": ["value"],
+						"explanation": {
+							"en": "An input's value is a draft for one run; its label, default or meaning only change through a recipe edit.",
+							"zh": "输入的值只是一次运行的草稿；它的标签、默认值或含义只能通过修改 Recipe 来改变。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "You close the tab while the header still shows unsaved changes. What's kept?",
+							"zh": "页眉仍显示有未保存的修改时，你关掉了标签页。保留下来的是什么？"
+						},
+						"choices": [
+							{
+								"id": "draft",
+								"label": {
+									"en": "The draft, saved automatically",
+									"zh": "草稿，已自动保存"
+								},
+								"why": {
+									"en": "Nothing saves on its own: unsaved changes are lost when you close the tab.",
+									"zh": "不会自动保存：关掉标签页时，未保存的修改就丢失了。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The changes, on the official recipe",
+									"zh": "这些修改，落在官方 Recipe 上"
+								},
+								"why": {
+									"en": "The official recipe is never edited, saved or not. Your unsaved changes are simply gone.",
+									"zh": "无论是否保存，官方 Recipe 都不会被修改。你未保存的修改直接没了。"
+								}
+							},
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: a preview isn't a save",
+									"zh": "什么都没有：预览不等于保存"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "Only Save keeps a recipe, and the header shows Saved when it has; a fork never edits the official recipe.",
+							"zh": "只有 Save 才会保留 Recipe，保存后页眉会显示 Saved；分叉从不修改官方 Recipe。"
+						}
+					},
+					{
+						"id": "share",
+						"prompt": {
+							"en": "A colleague asks for your saved recipe. What does TradingFlow let you do?",
+							"zh": "同事想要你保存的 Recipe。TradingFlow 允许你做什么？"
+						},
+						"choices": [
+							{
+								"id": "org",
+								"label": {
+									"en": "Publish it to your organization",
+									"zh": "发布给你的组织"
+								},
+								"why": {
+									"en": "Saved recipes are owner-only; there's no publishing to an organization.",
+									"zh": "保存的 Recipe 只属于你自己；没有面向组织的发布功能。"
+								}
+							},
+							{
+								"id": "none",
+								"label": {
+									"en": "Nothing: your recipes are owner-only",
+									"zh": "什么都不能：你的 Recipe 只属于你"
+								}
+							},
+							{
+								"id": "link",
+								"label": { "en": "Send a share link", "zh": "发送分享链接" },
+								"why": {
+									"en": "There are no share links: saved recipes are owner-only.",
+									"zh": "没有分享链接：保存的 Recipe 只属于你自己。"
+								}
+							}
+						],
+						"accepted": ["none"],
+						"explanation": {
+							"en": "User recipes have no public, organization or share-link state; describe the prompt and checks instead.",
+							"zh": "用户 Recipe 没有公开、组织或分享链接状态；可以改为描述你的提示和检查步骤。"
+						}
+					}
+				],
+				"id": "guided",
+				"kind": "guided",
+				"title": {
+					"en": "Work through a contrasting case",
+					"zh": "练习对比案例"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"The preview looks right, so it's saved.\" A preview is a draft: nothing is kept until Save, and nothing you save is shared.",
+					"zh": "“预览看起来没问题，所以已经保存了。”预览只是草稿：点 Save 之前什么都不会保留，保存的内容也不会被分享。"
+				}
+			},
+			{
+				"brief": {
+					"en": "You fork Daily Market Recap in TradingFlow's authoring workspace and change it with AI.",
+					"zh": "你在 TradingFlow 的编写工作区分叉 Daily Market Recap，并用 AI 修改它。"
+				},
+				"questions": [
+					{
+						"id": "prompt",
+						"prompt": {
+							"en": "Which prompt sets a boundary you can review?",
+							"zh": "哪个提示划定了一个你能审阅的范围？"
+						},
+						"choices": [
+							{
+								"id": "bounded",
+								"label": {
+									"en": "Keep every chapter and change only Spotlight: let the reader choose a symbol, DUNE by default.",
+									"zh": "保留所有章节，只修改 Spotlight：让读者可以选择标的，默认 DUNE。"
+								}
+							},
+							{
+								"id": "vague",
+								"label": {
+									"en": "Make this a DUNE report.",
+									"zh": "把它改成一份 DUNE 报告。"
+								},
+								"why": {
+									"en": "Make this an ALFA report sets no boundary, so the assistant decides what to replace and any block may change.",
+									"zh": "“把它改成一份 ALFA 报告”没有划定范围，助手会自己决定替换什么，任何区块都可能变。"
+								}
+							},
+							{
+								"id": "subjective",
+								"label": { "en": "Make it smarter.", "zh": "让它更聪明一点。" },
+								"why": {
+									"en": "Smarter isn't a change you can check. A reviewable prompt names what stays and what may change.",
+									"zh": "“更聪明”不是一个能核对的修改。可审阅的提示要写明哪些保留、哪些可以改。"
+								}
+							}
+						],
+						"accepted": ["bounded"],
+						"explanation": {
+							"en": "Naming the part that may change and what must stay gives a change you can check; the others leave the assistant to decide.",
+							"zh": "写明允许修改的部分和必须保留的内容，修改才可以核对；另外两个都让助手自己决定。"
+						}
+					},
+					{
+						"id": "removed",
+						"prompt": {
+							"en": "After an edit, the preview shows Where the money went was removed, though you didn't ask for that. What do you do first?",
+							"zh": "一次修改之后，预览显示 Where the money went 被删除了，而你并没有要求。你首先做什么？"
+						},
+						"choices": [
+							{
+								"id": "repair",
+								"label": {
+									"en": "Ask the assistant to restore it",
+									"zh": "让助手把它恢复"
+								},
+								"why": {
+									"en": "Asking for a repair stacks another edit on one you haven't checked. Undo returns to the version you reviewed.",
+									"zh": "要求修复是在一个你还没核查的修改上再叠一次修改。撤销会回到你审阅过的版本。"
+								}
+							},
+							{
+								"id": "save",
+								"label": {
+									"en": "Save, and fix it later",
+									"zh": "先保存，之后再修"
+								},
+								"why": {
+									"en": "Saving keeps the version without Index GEX. Undo first, then repeat the request with what must stay.",
+									"zh": "保存会留下缺了 Index GEX 的版本。先撤销，再重发请求并写明要保留什么。"
+								}
+							},
+							{
+								"id": "undo",
+								"label": {
+									"en": "Undo, then repeat the request with what must stay",
+									"zh": "撤销，然后重发请求并写明哪些要保留"
+								}
+							}
+						],
+						"accepted": ["undo"],
+						"explanation": {
+							"en": "Undo returns to the version you reviewed; a second edit on top of an unchecked one is harder to verify.",
+							"zh": "撤销会回到你审阅过的版本；在未核查的修改上再叠一次修改，会更难核对。"
+						}
+					},
+					{
+						"id": "input",
+						"prompt": {
+							"en": "In the preview you change the Symbol input from DUNE to BRDX. What changed?",
+							"zh": "你在预览中把 Symbol 输入从 DUNE 改成 BRDX。改变了什么？"
+						},
+						"choices": [
+							{
+								"id": "official",
+								"label": { "en": "The official recipe", "zh": "官方 Recipe" },
+								"why": {
+									"en": "The official recipe is never edited; you're working in a private fork, and this is only a draft value for the run.",
+									"zh": "官方 Recipe 从不被修改；你在私有分叉里工作，而这只是这次运行的草稿值。"
+								}
+							},
+							{
+								"id": "value",
+								"label": {
+									"en": "Only the draft value for this run",
+									"zh": "只是这次运行的草稿值"
+								}
+							},
+							{
+								"id": "default",
+								"label": {
+									"en": "The recipe's default symbol",
+									"zh": "Recipe 的默认标的"
+								},
+								"why": {
+									"en": "Changing an input's value in the preview sets a draft value for that run. Changing its default is a recipe change you'd make on purpose.",
+									"zh": "在预览中修改输入的值，只是为这次运行设定草稿值。修改它的默认值才是对 Recipe 的改动，需要专门去做。"
+								}
+							}
+						],
+						"accepted": ["value"],
+						"explanation": {
+							"en": "An input's value is a draft for one run; its label, default or meaning only change through a recipe edit.",
+							"zh": "输入的值只是一次运行的草稿；它的标签、默认值或含义只能通过修改 Recipe 来改变。"
+						}
+					},
+					{
+						"id": "saved",
+						"prompt": {
+							"en": "You close the tab while the header still shows unsaved changes. What's kept?",
+							"zh": "页眉仍显示有未保存的修改时，你关掉了标签页。保留下来的是什么？"
+						},
+						"choices": [
+							{
+								"id": "nothing",
+								"label": {
+									"en": "Nothing: a preview isn't a save",
+									"zh": "什么都没有：预览不等于保存"
+								}
+							},
+							{
+								"id": "draft",
+								"label": {
+									"en": "The draft, saved automatically",
+									"zh": "草稿，已自动保存"
+								},
+								"why": {
+									"en": "Nothing saves on its own: unsaved changes are lost when you close the tab.",
+									"zh": "不会自动保存：关掉标签页时，未保存的修改就丢失了。"
+								}
+							},
+							{
+								"id": "official",
+								"label": {
+									"en": "The changes, on the official recipe",
+									"zh": "这些修改，落在官方 Recipe 上"
+								},
+								"why": {
+									"en": "The official recipe is never edited, saved or not. Your unsaved changes are simply gone.",
+									"zh": "无论是否保存，官方 Recipe 都不会被修改。你未保存的修改直接没了。"
+								}
+							}
+						],
+						"accepted": ["nothing"],
+						"explanation": {
+							"en": "Only Save keeps a recipe, and the header shows Saved when it has; a fork never edits the official recipe.",
+							"zh": "只有 Save 才会保留 Recipe，保存后页眉会显示 Saved；分叉从不修改官方 Recipe。"
+						}
+					},
+					{
+						"id": "share",
+						"prompt": {
+							"en": "A colleague asks for your saved recipe. What does TradingFlow let you do?",
+							"zh": "同事想要你保存的 Recipe。TradingFlow 允许你做什么？"
+						},
+						"choices": [
+							{
+								"id": "link",
+								"label": { "en": "Send a share link", "zh": "发送分享链接" },
+								"why": {
+									"en": "There are no share links: saved recipes are owner-only.",
+									"zh": "没有分享链接：保存的 Recipe 只属于你自己。"
+								}
+							},
+							{
+								"id": "org",
+								"label": {
+									"en": "Publish it to your organization",
+									"zh": "发布给你的组织"
+								},
+								"why": {
+									"en": "Saved recipes are owner-only; there's no publishing to an organization.",
+									"zh": "保存的 Recipe 只属于你自己；没有面向组织的发布功能。"
+								}
+							},
+							{
+								"id": "none",
+								"label": {
+									"en": "Nothing: your recipes are owner-only",
+									"zh": "什么都不能：你的 Recipe 只属于你"
+								}
+							}
+						],
+						"accepted": ["none"],
+						"explanation": {
+							"en": "User recipes have no public, organization or share-link state; describe the prompt and checks instead.",
+							"zh": "用户 Recipe 没有公开、组织或分享链接状态；可以改为描述你的提示和检查步骤。"
+						}
+					}
+				],
+				"id": "independent",
+				"kind": "independent",
+				"title": {
+					"en": "Apply the concept to new evidence",
+					"zh": "将概念应用于新证据"
+				},
+				"facts": [],
+				"evidence": [],
+				"requiredEvidence": [],
+				"quote": null,
+				"hint": {
+					"en": "\"The preview looks right, so it's saved.\" A preview is a draft: nothing is kept until Save, and nothing you save is shared.",
+					"zh": "“预览看起来没问题，所以已经保存了。”预览只是草稿：点 Save 之前什么都不会保留，保存的内容也不会被分享。"
+				}
+			}
+		]
+	}
+]
