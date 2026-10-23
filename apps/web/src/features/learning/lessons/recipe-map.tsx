@@ -815,8 +815,19 @@ const scenes = [
 				{
 					id: "nothing",
 					label: ["Nothing: it's written text", "什么也不取决：它是写好的文字"],
+					why: [
+						"The recipe map shows the Bottom line fed by live data, which runs with the session and the thresholds. It isn't fixed text.",
+						"Recipe 地图显示核心结论来自实时数据，而实时数据用交易时段和阈值运行。它不是固定的文字。",
+					],
 				},
-				{ id: "table", label: ["Only the table's rows", "只取决于表格中的行"] },
+				{
+					id: "table",
+					label: ["Only the table's rows", "只取决于表格中的行"],
+					why: [
+						"The table shows only the top rows. The Bottom line draws on the live data behind the whole screen, which depends on the session and every threshold.",
+						"表格只显示前几行。核心结论依据的是整个筛选背后的实时数据，它取决于交易时段和每个阈值。",
+					],
+				},
 			],
 			answer: "inputs",
 			revealAt: 1,
@@ -895,10 +906,18 @@ const scenes = [
 				{
 					id: "ai",
 					label: ["Yes: written from Monday's rows", "是：根据周一的行写出的"],
+					why: [
+						"Put Tuesday's run beside Monday's: the Takeaways don't change by a word. They were written into the recipe, not computed from Monday's rows.",
+						"把周二的运行放在周一旁边：要点一个字都没变。它们是写在 Recipe 里的，而不是根据周一的行算出来的。",
+					],
 				},
 				{
 					id: "top",
 					label: ["Yes: it describes the top row", "是：它描述的是第一行"],
+					why: [
+						"The Takeaways read the same on every run, whatever the top row is. They're recipe content, not a description of the data.",
+						"无论第一行是什么，每次运行的要点都一样。它们是 Recipe 内容，而不是对数据的描述。",
+					],
 				},
 			],
 			answer: "content",
@@ -983,8 +1002,19 @@ const scenes = [
 				{
 					id: "three",
 					label: ["Three: the table shows them all", "三份：表格显示了全部"],
+					why: [
+						"The table loads only the top three by volume/OI. The key figures count every match: five contracts.",
+						"表格只载入成交量/OI 的前三名。关键数字统计了全部匹配：五份合约。",
+					],
 				},
-				{ id: "unknown", label: ["The report can't say", "报告无法说明"] },
+				{
+					id: "unknown",
+					label: ["The report can't say", "报告无法说明"],
+					why: [
+						"The report does say: its key figures count every contract that passed, five, even though the table shows three.",
+						"报告是能说明的：关键数字统计了所有通过的合约，共五份，尽管表格只显示三份。",
+					],
+				},
 			],
 			answer: "five",
 			entry: { answer: 5, unit: [" contracts", " 张"] },

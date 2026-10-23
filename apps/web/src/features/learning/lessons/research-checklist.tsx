@@ -598,12 +598,20 @@ const scenes = [
 						"Compare IV with realized volatility",
 						"比较隐含波动率与已实现波动率",
 					],
+					why: [
+						"Comparing IV with realized volatility is something a tool can show you today, so it belongs. The step that doesn't is a forecast of where ALFA will be.",
+						"比较隐含波动率与已实现波动率是今天工具就能显示的，所以属于清单。不属于的是对 ALFA 未来位置的预测。",
+					],
 				},
 				{
 					id: "trade",
 					label: [
 						"Check the call's spread and open interest",
 						"检查看涨期权的价差与未平仓量",
+					],
+					why: [
+						"A call's spread and open interest are on screen today, so checking them is a proper step. Confirming where ALFA stays is a forecast nothing can check.",
+						"看涨的价差和未平仓量今天就在屏幕上，所以检查它们是合适的步骤。确认 ALFA 停在哪里是无法核查的预测。",
 					],
 				},
 			],
@@ -692,8 +700,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "template", label: ["The original template", "原来的模板"] },
-				{ id: "edited", label: ["Your edited checklist", "你编辑后的清单"] },
-				{ id: "empty", label: ["An empty checklist", "空白清单"] },
+				{
+					id: "edited",
+					label: ["Your edited checklist", "你编辑后的清单"],
+					why: [
+						"Home doesn't save checklist edits; a refresh brings back the template. Copy the steps you settle on into your notes first.",
+						"Home 不会保存清单的修改；刷新会恢复模板。先把你确定的步骤抄进笔记。",
+					],
+				},
+				{
+					id: "empty",
+					label: ["An empty checklist", "空白清单"],
+					why: [
+						"A refresh doesn't clear the checklist; it restores the template, and your edits are lost.",
+						"刷新不会清空清单；它会恢复模板，你的修改会丢失。",
+					],
+				},
 			],
 			answer: "template",
 			revealAt: 2,
@@ -783,10 +805,18 @@ const scenes = [
 				{
 					id: "rewrite",
 					label: ["Rewrites the checklist at once", "立即改写清单"],
+					why: [
+						"It doesn't change anything straight away: it asks one clarifying question first, then proposes a change for you to accept.",
+						"它不会立即改动任何东西：先问一个澄清问题，再提出修改供你接受。",
+					],
 				},
 				{
 					id: "recipe",
 					label: ["Builds and saves a recipe", "构建并保存一个 Recipe"],
+					why: [
+						"Nothing is saved. A recipe is built only if your account has the feature and you confirm, after it has asked and proposed.",
+						"不会保存任何内容。只有你的账户有该功能并且你确认后才会构建 Recipe，而且要在它提问和提出建议之后。",
+					],
 				},
 			],
 			answer: "ask",

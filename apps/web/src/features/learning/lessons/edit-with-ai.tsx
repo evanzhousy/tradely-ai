@@ -768,12 +768,20 @@ const scenes = [
 						"Only Spotlight, where a symbol appears",
 						"只有 Spotlight，那里才出现标的",
 					],
+					why: [
+						"Without a boundary the assistant decides what to change, so any block may differ, not just the one with a symbol. Check them all, or name what must stay.",
+						"没有范围，助手会自己决定改什么，所以任何区块都可能不同，而不只是有标的的那个。要么全部检查，要么写明哪些必须保留。",
+					],
 				},
 				{
 					id: "none",
 					label: [
 						"None: the edit confirmation covers it",
 						"都不用：修改确认已经说明了",
+					],
+					why: [
+						"A confirmation says an edit was applied, not what it changed. With no boundary in the prompt, every block needs a look.",
+						"确认只说明修改已应用，并不说明改了什么。提示里没有范围，每个区块都需要检查。",
 					],
 				},
 			],
@@ -857,10 +865,18 @@ const scenes = [
 						"Ask the assistant to put the block back",
 						"让助手把这个区块加回来",
 					],
+					why: [
+						"Asking for a repair stacks a second edit on one you haven't checked. Undo returns to the version you reviewed; then ask again with what must stay.",
+						"要求修复是在一个你还没核查的修改上再叠一次修改。撤销会回到你审阅过的版本，然后重发请求并写明要保留什么。",
+					],
 				},
 				{
 					id: "save",
 					label: ["Save now and fix it later", "先保存，之后再修"],
+					why: [
+						"Saving keeps the version with the block missing. Undo first, then repeat the request with what must stay.",
+						"保存会把缺了区块的版本保留下来。先撤销，再重发请求并写明要保留什么。",
+					],
 				},
 			],
 			answer: "undo",
@@ -954,10 +970,18 @@ const scenes = [
 						"Your edited recipe, saved automatically",
 						"你修改后的 Recipe，已自动保存",
 					],
+					why: [
+						"Edits stay in the unsaved preview until you press Save; nothing saves on its own. Closing the tab drops them.",
+						"修改在你点 Save 之前只存在于未保存的预览中，不会自动保存。关掉标签页就没了。",
+					],
 				},
 				{
 					id: "official",
 					label: ["The official recipe, now edited", "官方 Recipe，已被修改"],
+					why: [
+						"Edit with AI forks a private copy; the official recipe is never edited, saved or not.",
+						"Edit with AI 分叉出私有副本；无论是否保存，官方 Recipe 都不会被修改。",
+					],
 				},
 			],
 			answer: "nothing",

@@ -659,8 +659,19 @@ const scenes = [
 						`${raised}: the new floor applies at once`,
 						`${raised} 份：新门槛立刻生效`,
 					],
+					why: [
+						`The new floor applies only when you press Run. Until then the report keeps the last run's ${run({}).length} contracts.`,
+						`新门槛要点“运行”后才生效。在那之前，报告保留上一次运行的 ${run({}).length} 份合约。`,
+					],
 				},
-				{ id: "zero", label: ["None: the table clears", "0 份：表格会清空"] },
+				{
+					id: "zero",
+					label: ["None: the table clears", "0 份：表格会清空"],
+					why: [
+						"An edited input doesn't clear anything. The report keeps the last run until you press Run.",
+						"修改输入不会清空任何东西。在你点“运行”之前，报告保留上一次运行的结果。",
+					],
+				},
 			],
 			answer: "five",
 			entry: { answer: 5, unit: [" contracts", " 张"] },
@@ -743,12 +754,20 @@ const scenes = [
 				{
 					id: "volOi",
 					label: ["Raising Min volume/OI to 2", "把最低成交量/OI 提高到 2"],
+					why: [
+						"A stricter floor re-runs the same question with a different threshold. Ranking by something else is what changes the question.",
+						"更严的门槛是用不同阈值重跑同一个问题。改变排名依据才是改变问题。",
+					],
 				},
 				{
 					id: "date",
 					label: [
 						"Picking Tuesday in the date picker",
 						"在日期选择器中选择周二",
+					],
+					why: [
+						"Another session is an input to the same question, and the answers stay comparable. Ranking by premium instead is what changes the question.",
+						"换一个时段是同一个问题的输入，答案仍可比较。改为按权利金排名才是改变问题。",
 					],
 				},
 			],
@@ -837,12 +856,20 @@ const scenes = [
 						"CRUX Oct 4 60 put, as before",
 						"CRUX 10月4日 60 看跌，和之前一样",
 					],
+					why: [
+						"Removing the floors lets thin contracts in. DUNE's 30 against 5 open interest is 6.00, more than double CRUX's 2.67.",
+						"去掉门槛会让冷门合约进入。DUNE 成交 30、未平仓 5，比率 6.00，是 CRUX 2.67 的两倍多。",
+					],
 				},
 				{
 					id: "alfa",
 					label: [
 						"ALFA Dec 20 110 call: 12 against 3 OI",
 						"ALFA 12月20日 110 看涨：成交 12，未平仓 3",
+					],
+					why: [
+						"ALFA's Dec 20 call is thinner still, but at 95 days it's outside the screen's 60-day limit, so it can't rank.",
+						"ALFA 12月20日 看涨更冷门，但 95 天的期限超出了筛选的 60 天限制，所以不能参与排名。",
 					],
 				},
 			],

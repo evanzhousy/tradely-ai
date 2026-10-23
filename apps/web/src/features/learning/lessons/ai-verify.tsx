@@ -572,10 +572,18 @@ const scenes = [
 						"All of it: 2.67× open interest is a big bet",
 						"全部支持：2.67 倍未平仓量就是大额押注",
 					],
+					why: [
+						"2.67× open interest says the session was big next to the existing book. It can't show who traded, why, or whether anyone opened a position.",
+						"2.67 倍未平仓量说明本时段相对已有持仓很大。它显示不了谁在交易、为什么，或是否有人开仓。",
+					],
 				},
 				{
 					id: "size",
 					label: ["Only that the trade was large", "只支持“交易规模大”这一点"],
+					why: [
+						"The screen measures a session's volume against open interest, not one trade. Even large would describe the session, not a bet.",
+						"筛选衡量的是整个时段的成交量相对未平仓量，而不是某一笔交易。即使说“大”，描述的也是这个时段，而不是一笔押注。",
+					],
 				},
 			],
 			answer: "none",
@@ -663,8 +671,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "four", label: ["4", "4"] },
-				{ id: "three", label: ["3", "3"] },
-				{ id: "six", label: ["6", "6"] },
+				{
+					id: "three",
+					label: ["3", "3"],
+					why: [
+						"A reply with a chart uses 2 credits, not 1. Two plain replies and one with a chart come to 4.",
+						"含图表的回复消耗 2 积分，而不是 1。两条普通回复加一条含图表的回复，共 4 积分。",
+					],
+				},
+				{
+					id: "six",
+					label: ["6", "6"],
+					why: [
+						"Only the reply with a chart costs 2. The two plain replies cost 1 each: 4 in all.",
+						"只有含图表的回复消耗 2 积分。两条普通回复各 1 积分：共 4 积分。",
+					],
+				},
 			],
 			answer: "four",
 			entry: { answer: 4, unit: [" credits", " 积分"] },
@@ -747,10 +769,18 @@ const scenes = [
 						"Its inputs, to match the explanation",
 						"它的输入，以符合解释",
 					],
+					why: [
+						"AI Insight explains one completed run; it doesn't touch the recipe or its inputs.",
+						"AI Insight 只解释一次已完成的运行；它不会改动 Recipe 或其输入。",
+					],
 				},
 				{
 					id: "copy",
 					label: ["A private copy is created", "会创建一份私有副本"],
+					why: [
+						"That's Edit with AI, which opens a private draft. AI Insight only explains a run and creates nothing.",
+						"那是 Edit with AI，它会打开私有草稿。AI Insight 只解释运行，不会创建任何东西。",
+					],
 				},
 			],
 			answer: "nothing",

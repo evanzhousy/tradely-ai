@@ -753,8 +753,19 @@ const scenes = [
 				{
 					id: "snapshot",
 					label: ["Ticker Options Snapshot", "Ticker Options Snapshot"],
+					why: [
+						"A snapshot looks at one symbol. Finding contracts across the market that traded far above open interest is a session screen.",
+						"快照只看一个标的。在整个市场中找出成交远超未平仓量的合约，是一个时段筛选。",
+					],
 				},
-				{ id: "recap", label: ["Daily Market Recap", "Daily Market Recap"] },
+				{
+					id: "recap",
+					label: ["Daily Market Recap", "Daily Market Recap"],
+					why: [
+						"The recap walks through the whole session; it doesn't filter for unusual contracts. That's the screener's job.",
+						"市场回顾是把整个时段讲一遍，并不筛选异常合约。那是筛选器的工作。",
+					],
+				},
 			],
 			answer: "uoa",
 			revealAt: 1,
@@ -841,8 +852,19 @@ const scenes = [
 				{
 					id: "tuesday",
 					label: ["Tuesday Sep 17: today", "9月17日周二：今天"],
+					why: [
+						"Tuesday hasn't traded yet at 8:00. A report opens on the latest completed session, which is Monday.",
+						"8:00 时周二还没有开始交易。报告默认打开最近一个完整的交易时段，也就是周一。",
+					],
 				},
-				{ id: "none", label: ["Nothing until 9:30", "9:30 之前什么也没有"] },
+				{
+					id: "none",
+					label: ["Nothing until 9:30", "9:30 之前什么也没有"],
+					why: [
+						"The report doesn't wait for the open: it shows the latest completed session, Monday, until Tuesday's is complete.",
+						"报告不会等开盘：在周二的时段完成之前，它显示最近一个完整的时段，即周一。",
+					],
+				},
 			],
 			answer: "monday",
 			revealAt: 1,
@@ -915,8 +937,22 @@ const scenes = [
 					id: "official",
 					label: ["The official recipe, unchanged", "未改动的官方 Recipe"],
 				},
-				{ id: "yours", label: ["Your edited version", "你修改后的版本"] },
-				{ id: "both", label: ["Both, side by side", "两个版本并排"] },
+				{
+					id: "yours",
+					label: ["Your edited version", "你修改后的版本"],
+					why: [
+						"Forking makes a private copy only you can see. The official recipe is never edited in place.",
+						"分叉生成的是只有你能看到的私有副本。官方 Recipe 从不被就地修改。",
+					],
+				},
+				{
+					id: "both",
+					label: ["Both, side by side", "两个版本并排"],
+					why: [
+						"Your fork is private, so a colleague sees only the official recipe, unchanged.",
+						"你的分叉是私有的，所以同事只能看到未改动的官方 Recipe。",
+					],
+				},
 			],
 			answer: "official",
 			revealAt: 2,

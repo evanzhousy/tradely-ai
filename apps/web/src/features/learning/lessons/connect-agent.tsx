@@ -902,10 +902,18 @@ const scenes = [
 						"An API key from Manage keys",
 						"Manage keys 里的一把 API 密钥",
 					],
+					why: [
+						"API keys are for agents like Cursor, Codex and OpenClaw. Claude, including Claude Code, signs in with your TradingFlow account instead.",
+						"API 密钥是给 Cursor、Codex 和 OpenClaw 这类智能体用的。Claude（包括 Claude Code）改用你的 TradingFlow 账户登录。",
+					],
 				},
 				{
 					id: "none",
 					label: ["Nothing works yet", "暂时都不行"],
+					why: [
+						"Claude Code can connect today by signing in to TradingFlow's remote MCP server. Hosted chat sites are the ones that can't yet.",
+						"Claude Code 现在就能连接：登录 TradingFlow 的远程 MCP 服务器即可。暂时不能连接的是托管的聊天网站。",
+					],
 				},
 			],
 			answer: "signin",
@@ -985,12 +993,20 @@ const scenes = [
 						"The reply: the agent ran the setup itself",
 						"这条回复：设置是智能体自己完成的",
 					],
+					why: [
+						"An agent can report success while nothing is registered. Prove it with your client's own check, such as /mcp listing the tools.",
+						"智能体可能报告成功，实际却什么都没注册。要用客户端自己的检查来证明，比如 /mcp 列出工具。",
+					],
 				},
 				{
 					id: "get",
 					label: [
 						"A plain request to the endpoint returning status ok",
 						"对端点的普通请求返回 status ok",
+					],
+					why: [
+						"A plain request only shows the endpoint is up, not that your client has registered it or can reach its tools.",
+						"普通请求只能说明端点在线，不能说明你的客户端已注册它或能调用其工具。",
 					],
 				},
 			],
@@ -1076,10 +1092,18 @@ const scenes = [
 				{
 					id: "restart",
 					label: ["When the agent restarts", "智能体重启时"],
+					why: [
+						"Access is re-checked on every call, so the agent loses it on its next tool call, without waiting for a restart.",
+						"访问权限在每次调用时都会重新检查，所以智能体在下一次工具调用时就会失去权限，不用等到重启。",
+					],
 				},
 				{
 					id: "expiry",
 					label: ["When the key would have expired", "密钥原本到期时"],
+					why: [
+						"Revoking takes effect at once: every call re-checks the key, so the next one fails whatever its expiry.",
+						"撤销立即生效：每次调用都会重新检查密钥，所以无论原定何时到期，下一次调用都会失败。",
+					],
 				},
 			],
 			answer: "next",

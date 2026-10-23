@@ -647,8 +647,19 @@ const scenes = [
 				{
 					id: "wed",
 					label: ["Wednesday Oct 2, so far", "10月2日 周三，截至目前"],
+					why: [
+						"At 14:00 Wednesday is still trading, so it isn't a completed session yet. The report opens on the latest completed one, Tuesday.",
+						"14:00 时周三还在交易，还不是完整的交易时段。报告打开的是最近一个完整的时段，即周二。",
+					],
 				},
-				{ id: "mon", label: ["Monday Sep 30", "9月30日 周一"] },
+				{
+					id: "mon",
+					label: ["Monday Sep 30", "9月30日 周一"],
+					why: [
+						"Monday isn't the latest completed session; Tuesday Oct 1 finished after it. The report opens on Tuesday.",
+						"周一不是最近一个完整的交易时段；10月1日 周二在它之后结束。报告打开的是周二。",
+					],
+				},
 			],
 			answer: "tue",
 			revealAt: 1,
@@ -719,8 +730,22 @@ const scenes = [
 			],
 			choices: [
 				{ id: "right", label: [String(PASS), String(PASS)] },
-				{ id: "dte", label: [String(PASS + 1), String(PASS + 1)] },
-				{ id: "ratio", label: [String(PASS + 2), String(PASS + 2)] },
+				{
+					id: "dte",
+					label: [String(PASS + 1), String(PASS + 1)],
+					why: [
+						"That counts ALFA's Dec 20 call, which is 79 days out. The screen keeps only contracts 60 days or less from expiry.",
+						"这把 ALFA 12月20日 看涨也算了进去，它距到期还有 79 天。筛选只保留 60 天以内到期的合约。",
+					],
+				},
+				{
+					id: "ratio",
+					label: [String(PASS + 2), String(PASS + 2)],
+					why: [
+						"That also counts BRDX, which traded less than its open interest, and the Dec 20 call, 79 days out. Every rule has to pass.",
+						"这还把成交量低于未平仓量的 BRDX，以及 79 天后到期的 12月20日 看涨也算了进去。每条规则都必须通过。",
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: PASS, unit: [" contracts", " 份"] },
@@ -801,8 +826,22 @@ const scenes = [
 						`只有 ${ratio(PUT).toFixed(1)} 倍这个数字`,
 					],
 				},
-				{ id: "all", label: ["All of it", "全部"] },
-				{ id: "none", label: ["None of it", "都不支持"] },
+				{
+					id: "all",
+					label: ["All of it", "全部"],
+					why: [
+						"Only the ratio is in the data. Who traded, why, and where CRUX goes next are beyond what flow data can show.",
+						"数据里只有比率。谁在交易、为什么、CRUX 接下来会怎样，都超出了成交流数据能显示的范围。",
+					],
+				},
+				{
+					id: "none",
+					label: ["None of it", "都不支持"],
+					why: [
+						`The ratio is supported: ${count(PUT.volume)} traded on ${PUT.oi} open interest, which you can check from the row. Only the story around it isn't.`,
+						`比率是有依据的：在 ${PUT.oi} 的未平仓量上成交 ${count(PUT.volume)} 张，可以从那一行核对。没有依据的只是围绕它的说法。`,
+					],
+				},
 			],
 			answer: "ratio",
 			revealAt: 2,
@@ -876,8 +915,22 @@ const scenes = [
 						`${LEADER?.symbol}，${usd(LEAD_VALUE * 100, 0)}`,
 					],
 				},
-				{ id: "thin", label: ["GLYN, $24,000", "GLYN，$24,000"] },
-				{ id: "total", label: ["ALFA, $4,000", "ALFA，$4,000"] },
+				{
+					id: "thin",
+					label: ["GLYN, $24,000", "GLYN，$24,000"],
+					why: [
+						"GLYN has only 4 trades, under the floor, so its cell is N/A: a blank, not a value. It can't lead the column.",
+						"GLYN 只有 4 笔成交，低于门槛，所以它的单元格是 N/A：是空白而不是数值。它不能在这一列排第一。",
+					],
+				},
+				{
+					id: "total",
+					label: ["ALFA, $4,000", "ALFA，$4,000"],
+					why: [
+						`ALFA's average per trade is lower. The column ranks premium per trade among names with ${FLOOR} or more trades, and DUNE leads at ${usd(LEAD_VALUE * 100, 0)}.`,
+						`ALFA 的每笔平均更低。这一列在成交 ${FLOOR} 笔以上的标的中按每笔权利金排名，DUNE 以 ${usd(LEAD_VALUE * 100, 0)} 居首。`,
+					],
+				},
 			],
 			answer: "right",
 			entry: { answer: LEAD_VALUE, prefix: "$" },

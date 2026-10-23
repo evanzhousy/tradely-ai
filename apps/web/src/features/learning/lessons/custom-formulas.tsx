@@ -799,10 +799,18 @@ const scenes = [
 						`${dollars(ALFA.totalPremium + ALFA.trades)}: the two added`,
 						`${dollars(ALFA.totalPremium + ALFA.trades)}：两者相加`,
 					],
+					why: [
+						"Total Premium is in dollars and Trades is a count, so they can't be added. The editor refuses the formula before it computes any row.",
+						"Total Premium 以美元计，Trades 是计数，两者不能相加。编辑器在计算任何一行之前就拒绝了这个公式。",
+					],
 				},
 				{
 					id: "na",
 					label: ["N/A, like any invalid math", "N/A，和任何无效运算一样"],
+					why: [
+						"N/A is for rows where valid math fails, such as dividing by zero. Mixed units are caught earlier: the editor refuses the formula itself.",
+						"N/A 用于合法运算在某一行失败的情况，比如除以零。单位混用会更早被发现：编辑器直接拒绝这个公式。",
+					],
 				},
 			],
 			answer: "refused",
@@ -879,12 +887,20 @@ const scenes = [
 				{
 					id: "crux",
 					label: ["CRUX, with the most premium", "CRUX，权利金最多"],
+					why: [
+						"Most premium isn't most premium per trade. Spread over many trades, CRUX's average falls behind GLYN's few large prints.",
+						"权利金最多不等于每笔权利金最多。CRUX 的权利金分散在很多笔成交中，平均值落后于 GLYN 的几笔大单。",
+					],
 				},
 				{
 					id: "alfa",
 					label: [
 						"ALFA, with Monday's 500-contract block",
 						"ALFA，周一有一笔 500 张的大宗交易",
+					],
+					why: [
+						"In the average, one 500-contract block is spread over all of ALFA's trades. GLYN, with only three trades, comes out on top.",
+						"在平均值里，一笔 500 张的大单被分摊到 ALFA 的全部成交上。只有三笔成交的 GLYN 排在最前。",
 					],
 				},
 			],
@@ -968,10 +984,18 @@ const scenes = [
 						"Monday's values, saved with the view",
 						"周一的值，随视图保存",
 					],
+					why: [
+						"A Rank View saves the column's definition, not its values. Tuesday's session recomputes them from Tuesday's snapshot.",
+						"Rank View 保存的是列的定义，而不是它的值。周二的时段会基于周二的快照重新计算。",
+					],
 				},
 				{
 					id: "empty",
 					label: ["Nothing until you rebuild it", "什么都没有，直到你重建它"],
+					why: [
+						"The column's definition is saved with the view, so it's there on Tuesday, recomputed for that session.",
+						"列的定义随视图一起保存，所以周二它仍在，并按那个时段重新计算。",
+					],
 				},
 			],
 			answer: "recompute",
