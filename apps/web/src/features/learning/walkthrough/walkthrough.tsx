@@ -573,6 +573,9 @@ export function Walkthrough({
 									? `${t(copy.youChose)}${t(choice.label)}`
 									: null}
 						</p>
+						{!verdict.correct && choice?.why ? (
+							<p className="wt-panel-why">{t(choice.why)}</p>
+						) : null}
 						{verdict.typed !== undefined && !verdict.correct && entry ? (
 							<p className="wt-panel-note">
 								{t(copy.answerWas)}

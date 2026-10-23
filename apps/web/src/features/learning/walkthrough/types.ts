@@ -20,10 +20,18 @@ export type PredictionEntry = {
 	unit?: Copy;
 };
 
+/** One option of a prediction. */
+export type PredictionChoice = {
+	id: string;
+	label: Copy;
+	/** Why this choice misses; shown in the reveal when the learner picked it and it is not the answer. */
+	why?: Copy;
+};
+
 /** One question asked before a scene plays, answered by a choice or a typed number. */
 export type Prediction = {
 	prompt: Copy;
-	choices: readonly { id: string; label: Copy }[];
+	choices: readonly PredictionChoice[];
 	answer: string;
 	/** Shown once the beat that answers it is on screen. */
 	explain: Copy;

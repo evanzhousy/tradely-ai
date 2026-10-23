@@ -1,4 +1,5 @@
 import type {
+	LearningChoice,
 	LearningCopy,
 	LearningEvidence,
 	LearningFact,
@@ -7,7 +8,10 @@ import type {
 } from "./types";
 
 /** Definitions and rubrics are imported only by server code and tests. */
-export type ScenarioQuestion = LearningQuestion & {
+/** A choice and, optionally, why picking it misses. `why` reaches the client only in feedback. */
+export type ScenarioChoice = LearningChoice & { why?: LearningCopy };
+export type ScenarioQuestion = Omit<LearningQuestion, "choices"> & {
+	choices: ScenarioChoice[];
 	accepted: string[];
 	explanation: LearningCopy;
 	tolerance?: number;

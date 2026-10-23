@@ -228,6 +228,8 @@ export type CriterionFeedback = {
 	selected: LearningCopy;
 	met: boolean;
 	explanation: LearningCopy;
+	/** Why the chosen answer misses, when the question says so for that choice. */
+	why?: LearningCopy;
 	reviewRequired?: boolean;
 };
 export const learningResultSchema = z

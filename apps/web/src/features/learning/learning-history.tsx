@@ -81,6 +81,7 @@ export function LearningHistory({
 				>
 					<p className="font-medium">{item.prompt[locale]}</p>
 					<p>{item.selected[locale]}</p>
+					{item.why ? <p className="text-sm">{item.why[locale]}</p> : null}
 					<p className="text-muted-foreground text-sm">
 						{item.explanation[locale]}
 					</p>

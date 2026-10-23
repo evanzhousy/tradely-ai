@@ -55,11 +55,15 @@ export function numberQuestion(
 		explanation: t(why, whyZh),
 	};
 }
+/** A choice: id, label in both languages, and optionally why picking it misses, in both. */
+export type ChoiceSpec =
+	| [string, string, string]
+	| [string, string, string, string, string];
 export function choose(
 	id: string,
 	en: string,
 	zh: string,
-	choices: [string, string, string][],
+	choices: ChoiceSpec[],
 	accepted: string,
 	why: string,
 	whyZh: string,
@@ -67,7 +71,11 @@ export function choose(
 	return {
 		id,
 		prompt: t(en, zh),
-		choices: choices.map(([id, en, zh]) => ({ id, label: t(en, zh) })),
+		choices: choices.map((choice) => ({
+			id: choice[0],
+			label: t(choice[1], choice[2]),
+			...(choice.length === 5 ? { why: t(choice[3], choice[4]) } : {}),
+		})),
 		accepted: [accepted],
 		explanation: t(why, whyZh),
 	};

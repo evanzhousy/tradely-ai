@@ -604,6 +604,11 @@
 	color: var(--muted-foreground);
 	font-size: 0.8rem;
 }
+.wt-panel-why {
+	padding-left: 0.625rem;
+	border-left: 2px solid
+		color-mix(in oklab, var(--diagram-unknown) 70%, var(--border));
+}
 .wt-choices {
 	display: flex;
 	flex-direction: column;

@@ -684,6 +684,11 @@ function LearningScreenContent({
 										<p className="text-muted-foreground text-sm">
 											{text("yourAnswer")}: {local(criterion.selected)}
 										</p>
+										{criterion.why ? (
+											<p className="border-border border-l-2 pl-3 text-sm leading-relaxed">
+												{local(criterion.why)}
+											</p>
+										) : null}
 										<p className="whitespace-pre-line text-sm leading-relaxed">
 											{local(criterion.explanation)}
 										</p>

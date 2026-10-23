@@ -165,12 +165,14 @@ export function evaluateStep(
 			(item) => item.id === state.answers[step.id]?.[question.id],
 		);
 		if (!choice) throw new InvalidLearningAction();
+		const met = question.accepted.includes(choice.id);
 		return {
 			questionId: question.id,
 			prompt: question.prompt,
 			selected: choice.label,
-			met: question.accepted.includes(choice.id),
+			met,
 			explanation: question.explanation,
+			...(!met && choice.why ? { why: choice.why } : {}),
 		};
 	});
 }
@@ -249,7 +251,8 @@ export function projectAttempt(
 			questions: step.questions.map((question) => ({
 				id: question.id,
 				prompt: question.prompt,
-				choices: question.choices,
+				// Only id and label: a choice's `why` would say which choices are wrong.
+				choices: question.choices.map(({ id, label }) => ({ id, label })),
 				...(question.input ? { input: question.input } : {}),
 			})),
 			hint: state.hinted.includes(step.id) ? step.hint : null,
