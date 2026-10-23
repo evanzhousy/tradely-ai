@@ -92,15 +92,13 @@ export const orientationUnits: TeachingUnit[] = [
 						`What will an immediate ${buy ? "buy most likely pay" : "sale most likely receive"} per share?`,
 						`立即${buy ? "买入最可能支付" : "卖出最可能收回"}的每股价格是多少？`,
 						[
-							buy
-								? ["ask", `The ask, $${dollars(ask)}`, `卖价 $${dollars(ask)}`]
-								: [
-										"ask",
-										`The ask, $${dollars(ask)}`,
-										`卖价 $${dollars(ask)}`,
-										"The ask is what sellers want. You are selling, so you get what buyers bid.",
-										"卖价是卖方的要价。你是卖方，所以只能拿到买方的出价。",
-									],
+							[
+								"ask",
+								`The ask, $${dollars(ask)}`,
+								`卖价 $${dollars(ask)}`,
+								"The ask is what sellers want. You are selling, so you get what buyers bid.",
+								"卖价是卖方的要价。你是卖方，所以只能拿到买方的出价。",
+							],
 							[
 								"last",
 								`The last price, $${dollars(last)}`,
@@ -108,15 +106,13 @@ export const orientationUnits: TeachingUnit[] = [
 								`$${dollars(last)} is where the last trade happened, not a price anyone is offering now.`,
 								`$${dollars(last)} 是上一笔成交的价格，不是现在有人提供的价格。`,
 							],
-							buy
-								? [
-										"bid",
-										`The bid, $${dollars(bid)}`,
-										`买价 $${dollars(bid)}`,
-										"The bid is what buyers offer. You are buying, so you pay what sellers ask.",
-										"买价是买方的出价。你是买方，所以要付卖方的要价。",
-									]
-								: ["bid", `The bid, $${dollars(bid)}`, `买价 $${dollars(bid)}`],
+							[
+								"bid",
+								`The bid, $${dollars(bid)}`,
+								`买价 $${dollars(bid)}`,
+								"The bid is what buyers offer. You are buying, so you pay what sellers ask.",
+								"买价是买方的出价。你是买方，所以要付卖方的要价。",
+							],
 						],
 						buy ? "ask" : "bid",
 						"The last price is a past trade. Right now you can buy at the ask or sell at the bid.",

@@ -55,7 +55,11 @@ export function numberQuestion(
 		explanation: t(why, whyZh),
 	};
 }
-/** A choice: id, label in both languages, and optionally why picking it misses, in both. */
+/**
+ * A choice: id, label in both languages, and optionally why picking it misses, in both.
+ * The accepted choice's why is dropped, so a question whose answer changes by variant can
+ * give every choice a why and each variant shows only the wrong ones'.
+ */
 export type ChoiceSpec =
 	| [string, string, string]
 	| [string, string, string, string, string];
@@ -74,7 +78,9 @@ export function choose(
 		choices: choices.map((choice) => ({
 			id: choice[0],
 			label: t(choice[1], choice[2]),
-			...(choice.length === 5 ? { why: t(choice[3], choice[4]) } : {}),
+			...(choice.length === 5 && choice[0] !== accepted
+				? { why: t(choice[3], choice[4]) }
+				: {}),
 		})),
 		accepted: [accepted],
 		explanation: t(why, whyZh),
