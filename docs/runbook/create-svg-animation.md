@@ -411,7 +411,8 @@ The film hands the learner to the playground's explore tasks and then to the les
 - **No answer in the prompt.** Read each prompt beside its choices and take out wording that gives the answer away, such as describing the setup in the right choice's own words.
 - **No result from a guess or a reveal.** Explore tasks are practice: solving one sends an analytics event and nothing else. A checkpoint's review judges each scene's first answer, so restarting a scene after its reveal and picking again doesn't turn a miss into a result. A case is demonstrated only when every independent check is met with no hint and no unreviewed text.
 - **Term help only where the learner isn't being checked.** `TermText` (apps/web/src/features/learning/term-text.tsx) turns the first use of each term in `apps/web/src/content/glossary.ts` into a dashed-underline button with a short meaning. It is on the lesson playground's prompts and tasks, a scene's captions and reveal after the learner commits, the case's teaching briefs and every debrief; never on a prediction's question, the independent case while it is being answered, inside a button or label, or in an `aria-live` region (those announce a plain copy). A meaning explains the word, never a question's answer or method. English words with a second everyday sense (call, put, bid, ask, spread, block) stay out of the glossary; check-concepts fails on them.
-- **A fresh case changes the problem, not only its numbers.** The independent case should change at least one condition the idea depends on (the side, the right, a stale quote, a missing field) so the learner applies the idea instead of recalling the guided answer. A case rotates through `practiceCaseCount` practice cases (three since October 23, 2026, when the held-out evaluation variant joined the rotation), each new attempt taking the next, so an independent case repeats only on a fourth attempt. On the same day 20 of the 53 units still kept every multiple-choice answer of the guided case in their independent cases.
+- **A fresh case changes the problem, not only its numbers.** Every independent case (each practice case 1 to `practiceCaseCount`) changes at least one condition the idea depends on (the side, the right, a stale quote, a missing field, whether the evidence supports the claim) so that at least one multiple-choice answer differs from the guided case, and the learner applies the idea instead of recalling the guided debrief. Where a question can't honestly change, add a second one (asked in the guided case too) and let different cases change different questions, so the guided answer is still right somewhere. A case rotates through the practice cases (three since October 23, 2026), so an independent case repeats only on a fourth attempt.
+- **New questions mean a new case version.** Saved attempts are reviewed against their scenario's `version`. When a unit's questions, choices or accepted answers change, raise the unit's `version` and freeze its old practice cases as data in `apps/web/src/content/units/archive/*.json`, listed first among the archived scenarios in `apps/web/src/content/scenarios/index.server.ts`, so a saved attempt still opens with the rubric it was graded on. A frozen copy also protects an archived unit rebuilt from a case builder that current content shares. Edits to whys and explanations alone need no new version.
 
 Then run the static check:
 
@@ -419,7 +420,7 @@ Then run the static check:
 pnpm -C apps/web check-concepts
 ```
 
-It fails on a wrong choice without a why, a right choice with one, a concept the syllabus uses but the register doesn't define, and a broken lesson or concept graph. It lists, without failing, the units whose independent cases keep every choice answer of their guided case, and any prediction on a lesson scene without an explore task, which the player never shows.
+It fails on a wrong choice without a why, a right choice with one, an independent case that keeps every choice answer of its guided case, a concept the syllabus uses but the register doesn't define, and a broken lesson or concept graph. It lists, without failing, any prediction on a lesson scene without an explore task, which the player never shows.
 
 ## 8. Mistakes we have already made
 
@@ -565,6 +566,7 @@ In October 2026 we reviewed [mg-styles-15](https://github.com/Vincentwei1021/mg-
 - [ ] Numbers carry across shots; nothing that happened un-happens
 - [ ] Next card matches the syllabus (or "the module checkpoint")
 - [ ] Every wrong choice in the lesson's predictions and case questions explains itself in both languages; no right choice has a why; `pnpm -C apps/web check-concepts` passes
+- [ ] Each independent case changes at least one multiple-choice answer of the guided case, and a change to the case's questions or answers raised the unit's `version` with its old practice cases frozen in `units/archive/`
 - [ ] No prompt gives its answer away, and no re-answer after a reveal counts as a result
 - [ ] The independent case changes a condition the idea depends on, not only its numbers
 - [ ] `tsc` and `biome` clean

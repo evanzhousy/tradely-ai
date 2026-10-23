@@ -12,10 +12,10 @@
  * checkpoint `revisit` that names a lesson outside its module; a teaching unit whose id is not a
  * lesson; and, wherever a question gives per-choice feedback (`why`), a wrong choice without it
  * or a right choice with it, in the units' case questions (run) and in the lessons' predict
- * blocks (read from the source). Soft prerequisites that are not taught earlier, lessons
- * without a teaching unit, predict blocks whose choices are not literals, and units whose
- * independent cases keep every choice answer of the guided case are listed as notes and do not
- * fail.
+ * blocks (read from the source); and a practice case whose independent step keeps every choice
+ * answer of the unit's guided case. Soft prerequisites that are not taught earlier, lessons
+ * without a teaching unit, predict blocks whose choices are not literals and predictions a
+ * learner never sees are listed as notes and do not fail.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -262,8 +262,9 @@ for (const unit of teachingUnits) {
 	}
 }
 
-// --- Fresh independent cases: a unit whose independent cases keep every choice answer of its
-// guided case lets a learner answer from memory of the guided feedback. Listed, not failed. ---
+// --- Fresh independent cases: an independent case that keeps every choice answer of its unit's
+// guided case lets a learner answer from memory of the guided feedback, so each practice case
+// must change at least one. Fails by unit and case number. ---
 const repeatsGuided: string[] = [];
 for (const unit of teachingUnits) {
 	const practice = unitScenarios(unit);
@@ -271,22 +272,25 @@ for (const unit of teachingUnits) {
 	if (!guided) continue;
 	const choiceQuestions = guided.questions.filter((q) => q.choices.length > 0);
 	if (choiceQuestions.length === 0) continue;
-	const changes = choiceQuestions.some((question) =>
-		practice.some((scenario) => {
-			const independent = scenario.steps
-				.find((step) => step.id === "independent")
-				?.questions.find((q) => q.id === question.id);
+	const stale = practice.flatMap((scenario, index) => {
+		const independent = scenario.steps.find(
+			(step) => step.id === "independent",
+		);
+		const changes = choiceQuestions.some((question) => {
+			const asked = independent?.questions.find((q) => q.id === question.id);
 			return (
-				independent !== undefined &&
-				independent.accepted.join() !== question.accepted.join()
+				asked !== undefined &&
+				asked.accepted.join() !== question.accepted.join()
 			);
-		}),
-	);
-	if (!changes) repeatsGuided.push(unit.id);
+		});
+		return changes ? [] : [index + 1];
+	});
+	if (stale.length > 0)
+		repeatsGuided.push(`${unit.id} (case ${stale.join(", ")})`);
 }
-if (repeatsGuided.length > 0)
-	notes.push(
-		`${repeatsGuided.length} units' independent cases keep every choice answer of the guided case: ${repeatsGuided.join(", ")}`,
+for (const unit of repeatsGuided)
+	fail(
+		`${unit}: the independent case keeps every choice answer of the guided case; change a condition so at least one answer differs`,
 	);
 
 // --- Predict blocks with a why give one to every wrong choice (read from the lesson source) ---
