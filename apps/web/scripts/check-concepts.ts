@@ -292,8 +292,9 @@ if (repeatsGuided.length > 0)
 	);
 
 // --- Predict blocks with a why give one to every wrong choice (read from the lesson source) ---
-/** Predictions render only where a lesson plays its scenes through `Walkthrough` (the module
- * checkpoints). Lessons play a film and explore tasks through `Player`, which never reads them. */
+/** A checkpoint plays every scene through `Walkthrough`, which asks each prediction. A lesson
+ * plays a film, then its playground through `Player`, which asks a scene's prediction before
+ * its explore task; a prediction on a lesson scene with no explore is never shown. */
 const predictionCount = {
 	shown: 0,
 	shownWithWhy: 0,
@@ -324,7 +325,8 @@ for (const name of readdirSync(lessonsDir)) {
 	if (!name.endsWith(".tsx")) continue;
 	const path = `${lessonsDir}${name}`;
 	const text = readFileSync(path, "utf8");
-	const shown = text.includes("<Walkthrough");
+	const walkthrough = text.includes("<Walkthrough");
+	const player = text.includes("<Player");
 	const source = ts.createSourceFile(
 		path,
 		text,
@@ -339,6 +341,11 @@ for (const name of readdirSync(lessonsDir)) {
 			node.name.text === "predict" &&
 			ts.isObjectLiteralExpression(node.initializer)
 		) {
+			const shown =
+				walkthrough ||
+				(player &&
+					ts.isObjectLiteralExpression(node.parent) &&
+					property(node.parent, "explore") !== undefined);
 			if (shown) predictionCount.shown++;
 			else {
 				predictionCount.hidden++;
@@ -396,7 +403,7 @@ for (const name of readdirSync(lessonsDir)) {
 
 if (predictionCount.hidden > 0)
 	notes.push(
-		`${predictionCount.hidden} predictions in ${hiddenFiles.size} lesson files are never shown: those lessons play a film and explore tasks through Player, which doesn't read a scene's predict block`,
+		`${predictionCount.hidden} predictions in ${hiddenFiles.size} lesson files are never shown: Player asks a scene's prediction only before its explore task, and these scenes have none (${[...hiddenFiles].join(", ")})`,
 	);
 
 // --- Glossary: one entry per term and form, both languages, a real concept, no ambiguous words ---

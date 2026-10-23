@@ -1,7 +1,5 @@
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
-import { Field, FieldLabel } from "@tradely/ui/components/field";
-import { Input } from "@tradely/ui/components/input";
 import {
 	Tabs,
 	TabsContent,
@@ -16,7 +14,6 @@ import {
 	PauseIcon,
 	PlayIcon,
 	RotateCcwIcon,
-	XIcon,
 } from "lucide-react";
 import * as m from "motion/react-m";
 import {
@@ -46,8 +43,9 @@ import {
 	useVisualBookmarks,
 } from "../visual-bookmark";
 import { VisualLessonIdentity } from "../visual-lesson-identity";
-import { formatEntry, judge, parseEntry, seededOrder } from "./answers";
+import { judge } from "./answers";
 import { TaskPanel } from "./explore-task";
+import { PredictionFeedback, PredictPanel, predictionCopy } from "./prediction";
 import { ReviewSummary } from "./review-summary";
 import {
 	CountTo,
@@ -79,11 +77,8 @@ export const copy = {
 	play: ["Play", "自动播放"],
 	pause: ["Pause", "暂停"],
 	restart: ["Restart", "重新开始"],
-	predictFirst: ["Predict first", "先预测"],
+	predictFirst: predictionCopy.predictFirst,
 	skip: ["Skip and watch", "跳过，直接观看"],
-	right: ["You predicted it", "预测正确"],
-	wrong: ["Not quite", "与预测不同"],
-	youChose: ["You chose: ", "你的选择："],
 	tryIt: ["Try it yourself", "自己试一试"],
 	backToSteps: ["Back to the steps", "回到步骤"],
 	nextScene: ["Next scene", "下一场景"],
@@ -95,20 +90,6 @@ export const copy = {
 	scenes: ["Lesson scenes", "课程场景"],
 	controls: ["Walkthrough controls", "演示控制"],
 	keyResult: ["Key result", "关键结果"],
-	yourAnswer: ["Your answer", "你的答案"],
-	check: ["Check my answer", "核对答案"],
-	entryHelp: [
-		"One number, such as 1260 or -2.5.",
-		"填一个数值，例如 1260 或 -2.5。",
-	],
-	notNumber: [
-		"That isn't one number. Try, for example, 1260 or -2.5.",
-		"这不是一个数值。例如可以填 1260 或 -2.5。",
-	],
-	pickInstead: ["Choose from options instead", "改为从选项中选择"],
-	typeInstead: ["Type a number instead", "改为填写数值"],
-	youEntered: ["You entered: ", "你填写的是："],
-	answerWas: ["The answer: ", "答案："],
 } as const satisfies Record<string, Copy>;
 
 /**
@@ -151,10 +132,6 @@ export function Walkthrough({
 	const [autoplay, setAutoplay] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [completed, setCompleted] = useState<ReadonlySet<string>>(new Set());
-	/** Scenes where the learner asked for the choices instead of typing a number. */
-	const [choosing, setChoosing] = useState<ReadonlySet<string>>(new Set());
-	const [draft, setDraft] = useState("");
-	const [invalid, setInvalid] = useState(false);
 	const [solved, setSolved] = useState<ReadonlySet<string>>(new Set());
 	const {
 		following,
@@ -162,7 +139,6 @@ export function Walkthrough({
 		noteChange: noteExploreChange,
 		setPointerDragging,
 	} = useMotionFollow();
-	const entryId = useId();
 	const restored = useRef(false);
 	/**
 	 * Where focus goes after a control removes itself, such as "Try it yourself" or
@@ -208,8 +184,6 @@ export function Walkthrough({
 			setPhase(next.predict && !predictions[next.id] ? "predict" : "watch");
 			setExplore(null);
 			setAutoplay(false);
-			setDraft("");
-			setInvalid(false);
 			if (lessonId) saveVisualBookmark(lessonId, next.id);
 		},
 		[lessonId, predictions, resetMotionFollow],
@@ -298,8 +272,6 @@ export function Walkthrough({
 
 	const restart = () => {
 		resetMotionFollow();
-		setDraft("");
-		setInvalid(false);
 		setPredictions((all) => {
 			const next = { ...all };
 			delete next[scene.id];
@@ -437,165 +409,32 @@ export function Walkthrough({
 			: phase === "explore" && scene.explore
 				? scene.explore.prompt
 				: current.caption;
-	const choice = scene.predict?.choices.find((item) => item.id === prediction);
-	const verdict =
-		scene.predict && prediction ? judge(scene.predict, prediction) : null;
-	const entry = scene.predict?.entry;
-	const typing = !!entry && !choosing.has(scene.id);
-	const asEntry = (value: number) =>
-		formatEntry(value, {
-			prefix: entry?.prefix,
-			suffix: entry?.unit ? t(entry.unit) : undefined,
-		});
 	const panel =
 		phase === "predict" && scene.predict ? (
-			<div className="wt-panel" data-kind="predict">
-				<p className="wt-panel-title">{t(copy.predictFirst)}</p>
-				{typing && entry ? (
-					<form
-						className="wt-entry"
-						noValidate
-						onSubmit={(event) => {
-							event.preventDefault();
-							const value = parseEntry(draft);
-							setInvalid(value === null);
-							if (value !== null) choose(`entry:${value}`);
-						}}
-					>
-						<Field data-invalid={invalid || undefined}>
-							<FieldLabel htmlFor={entryId}>{t(copy.yourAnswer)}</FieldLabel>
-							<div className="wt-entry-row">
-								{entry.prefix ? (
-									<span className="wt-entry-unit">{entry.prefix}</span>
-								) : null}
-								<Input
-									id={entryId}
-									inputMode="decimal"
-									autoComplete="off"
-									maxLength={24}
-									value={draft}
-									aria-invalid={invalid || undefined}
-									aria-describedby={`${entryId}-help`}
-									onChange={(event) => {
-										setDraft(event.target.value);
-										setInvalid(false);
-									}}
-								/>
-								{entry.unit ? (
-									<span className="wt-entry-unit">{t(entry.unit).trim()}</span>
-								) : null}
-							</div>
-							<p
-								id={`${entryId}-help`}
-								className="wt-panel-note"
-								role={invalid ? "alert" : undefined}
-							>
-								{invalid ? t(copy.notNumber) : t(copy.entryHelp)}
-							</p>
-						</Field>
-						<Button type="submit" size="sm" className="self-start">
-							{t(copy.check)}
-						</Button>
-					</form>
-				) : (
-					<div className="wt-choices">
-						{/* A fixed shuffle per scene: the right answer isn't always first. */}
-						{seededOrder(scene.predict.choices, scene.id).map((item) => (
-							<Button
-								key={item.id}
-								variant="outline"
-								className="wt-choice"
-								data-choice={item.id}
-								onClick={() => choose(item.id)}
-							>
-								{t(item.label)}
-							</Button>
-						))}
-					</div>
-				)}
-				{entry ? (
-					<button
-						type="button"
-						className="wt-link"
-						onClick={() =>
-							setChoosing((all) => {
-								const next = new Set(all);
-								if (typing) next.add(scene.id);
-								else next.delete(scene.id);
-								return next;
-							})
-						}
-					>
-						{typing ? t(copy.pickInstead) : t(copy.typeInstead)}
-					</button>
-				) : null}
-				<button
-					type="button"
-					className="wt-link"
-					onClick={() => {
-						focusNext.current = "heading";
-						setPhase("watch");
-						record("visual_lesson_scene_started", "manual");
-					}}
-				>
-					{t(copy.skip)}
-				</button>
-			</div>
+			<PredictPanel
+				key={scene.id}
+				prediction={scene.predict}
+				seed={scene.id}
+				locale={locale}
+				skip={copy.skip}
+				onChoose={choose}
+				onSkip={() => {
+					focusNext.current = "heading";
+					setPhase("watch");
+					record("visual_lesson_scene_started", "manual");
+				}}
+			/>
 		) : (
 			<>
-				{phase === "watch" && scene.predict && verdict && beat >= revealAt ? (
-					<m.div
-						className="wt-panel"
-						data-kind={verdict.correct ? "right" : "wrong"}
-						data-focus="feedback"
-						style={
-							verdict.correct
-								? undefined
-								: {
-										borderColor:
-											"color-mix(in oklab, var(--tone-down) 60%, var(--border))",
-									}
-						}
-						tabIndex={-1}
-						initial={motion.enabled ? { opacity: 0, y: 6 } : false}
-						animate={{ opacity: 1, y: 0 }}
-						transition={motion.fade}
-					>
-						<p
-							className="wt-panel-title flex items-center gap-1.5"
-							style={{
-								color: verdict.correct ? "var(--tone-up)" : "var(--tone-down)",
-							}}
-						>
-							{verdict.correct ? (
-								<CheckIcon className="size-4" aria-hidden="true" />
-							) : (
-								<XIcon className="size-4" aria-hidden="true" />
-							)}
-							{verdict.correct ? t(copy.right) : t(copy.wrong)}
-						</p>
-						<p className="wt-panel-note">
-							{verdict.typed !== undefined
-								? `${t(copy.youEntered)}${asEntry(verdict.typed)}`
-								: choice
-									? `${t(copy.youChose)}${t(choice.label)}`
-									: null}
-						</p>
-						{!verdict.correct && choice?.why ? (
-							<p className="wt-panel-why">
-								<TermText text={t(choice.why)} locale={locale} />
-							</p>
-						) : null}
-						{verdict.typed !== undefined && !verdict.correct && entry ? (
-							<p className="wt-panel-note">
-								{t(copy.answerWas)}
-								{asEntry(entry.answer)}
-							</p>
-						) : null}
-						<p>
-							<TermText text={t(scene.predict.explain)} locale={locale} />
-						</p>
-					</m.div>
+				{phase === "watch" &&
+				scene.predict &&
+				prediction &&
+				beat >= revealAt ? (
+					<PredictionFeedback
+						prediction={scene.predict}
+						answer={prediction}
+						locale={locale}
+					/>
 				) : null}
 				{phase === "watch" && beat === last ? (
 					<div className="wt-panel-actions">

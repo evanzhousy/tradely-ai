@@ -17,7 +17,8 @@ export const playerCopy = {
 	],
 	ended: ["That's the whole idea", "这就是全部要点"],
 	endedNote: [
-		"Change the example yourself in the interactive scenes.",
-		"切换到互动场景，自己调整示例。",
+		"Predict what each scene will show, then change the example yourself.",
+		"先预测每个场景会显示什么，再自己调整示例。",
 	],
+	skipPrediction: ["Skip to the playground", "跳过，直接动手"],
 } as const satisfies Record<string, Copy>;

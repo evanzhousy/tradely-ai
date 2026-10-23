@@ -40,15 +40,17 @@ import {
 	saveVisualBookmark,
 } from "../visual-bookmark";
 import { VisualLessonIdentity } from "../visual-lesson-identity";
+import { judge } from "./answers";
 import { TaskPanel } from "./explore-task";
 import { type Film, FilmStage } from "./film";
 import { playerCopy as copy } from "./player-copy";
+import { PredictionFeedback, PredictPanel } from "./prediction";
 import {
 	TeachMotionProvider,
 	useMotionFollow,
 	usePrefersReducedMotion,
 } from "./stage";
-import type { ExploreTask, WalkthroughScene } from "./types";
+import type { ExploreTask, Phase, WalkthroughScene } from "./types";
 import { FrameContext, copy as walkthroughCopy } from "./walkthrough";
 
 const RATES = [1, 1.5, 2] as const;
@@ -119,9 +121,13 @@ export function Player({
 	const [playScene, setPlayScene] = useState(0);
 	const [explore, setExplore] = useState<unknown>(null);
 	const [solved, setSolved] = useState<ReadonlySet<string>>(new Set());
+	/** Each scene's committed prediction: a choice id or "entry:<number>". */
+	const [predictions, setPredictions] = useState<Record<string, string>>({});
+	/** Scenes the learner has moved on to explore, after the verdict or by skipping the question. */
+	const [exploring, setExploring] = useState<ReadonlySet<string>>(new Set());
 	// The playground's marker and its readout keep one pace (stage.tsx).
 	const motionFollow = useMotionFollow();
-	const focusNext = useRef<"heading" | "play" | null>(null);
+	const focusNext = useRef<"heading" | "play" | "feedback" | null>(null);
 	const shots = film.shots;
 	const last = shots.length - 1;
 	/** Scenes the learner can drive. */
@@ -130,6 +136,16 @@ export function Player({
 		[scenes],
 	);
 	const active = mode === "watch" && playing && visible && !hidden && !ended;
+	/**
+	 * Where a playground scene is: asking its prediction, showing the verdict on the step that
+	 * answers it, or open to explore.
+	 */
+	const stepOf = (item: WalkthroughScene): "predict" | "reveal" | "explore" =>
+		!item.predict || exploring.has(item.id)
+			? "explore"
+			: Object.hasOwn(predictions, item.id)
+				? "reveal"
+				: "predict";
 
 	useEffect(() => {
 		const stored = readRate();
@@ -358,7 +374,9 @@ export function Player({
 		const wanted =
 			target === "play"
 				? element.querySelector<HTMLElement>('[data-nav="play"]')
-				: element.querySelector<HTMLElement>(`[id="${headingId}"]`);
+				: target === "feedback"
+					? element.querySelector<HTMLElement>("[data-focus=feedback]")
+					: element.querySelector<HTMLElement>(`[id="${headingId}"]`);
 		wanted?.focus({ preventScroll: true });
 	});
 
@@ -383,8 +401,39 @@ export function Player({
 		);
 		setMode("play");
 		record("visual_lesson_scene_started", chosen.id, "manual", "playground");
-		record("visual_lesson_explored", chosen.id, undefined, "playground");
+		if (stepOf(chosen) === "explore")
+			record("visual_lesson_explored", chosen.id, undefined, "playground");
 		if (lessonId) saveVisualBookmark(lessonId, chosen.id);
+		focusNext.current = "heading";
+	};
+
+	/** The learner commits a prediction: the scene shows the step that answers it, with the verdict. */
+	const predict = (answer: string) => {
+		const chosen = scenes[playScene];
+		if (!chosen.predict) return;
+		setPredictions((all) => ({ ...all, [chosen.id]: answer }));
+		if (lessonId)
+			capture("visual_lesson_predicted", {
+				lesson_id: lessonId,
+				scene_id: chosen.id,
+				locale,
+				surface: "playground",
+				kind: answer.startsWith("entry:") ? "entry" : "choice",
+				correct: judge(chosen.predict, answer).correct,
+			});
+		focusNext.current = "feedback";
+	};
+
+	/** From the question (skipped) or the verdict, on to the scene's task. */
+	const startExplore = () => {
+		const chosen = scenes[playScene];
+		if (!chosen.explore) return;
+		motionFollow.reset();
+		setExplore(
+			chosen.explore.start(chosen.beats[chosen.beats.length - 1].state),
+		);
+		setExploring((all) => new Set(all).add(chosen.id));
+		record("visual_lesson_explored", chosen.id, undefined, "playground");
 		focusNext.current = "heading";
 	};
 
@@ -439,6 +488,31 @@ export function Player({
 		const allDone =
 			tasks.length > 0 && tasks.every((index) => solved.has(scenes[index].id));
 		const View = chosen.View;
+		const step = stepOf(chosen);
+		const asking = step === "predict";
+		const phase: Phase = asking
+			? "predict"
+			: step === "reveal"
+				? "watch"
+				: "explore";
+		const answer = predictions[chosen.id];
+		/** The step that answers the prediction, which the verdict shows the scene at. */
+		const revealBeat = Math.min(
+			chosen.predict?.revealAt ?? 1,
+			chosen.beats.length - 1,
+		);
+		const shown =
+			step === "predict"
+				? chosen.beats[0]
+				: step === "reveal"
+					? chosen.beats[revealBeat]
+					: lastBeat;
+		const captionText =
+			step === "predict" && chosen.predict
+				? chosen.predict.prompt
+				: step === "reveal"
+					? shown.caption
+					: chosen.explore?.prompt;
 		const playTask = chosen.explore?.task as ExploreTask<unknown> | undefined;
 		// A reach task just solved sends one ring out from the drag handle (axis-drag.tsx).
 		const reachSolved =
@@ -483,26 +557,44 @@ export function Player({
 							{t(chosen.title)}
 						</h2>
 						<div className="wt-caption-stack">
+							{/* A question stays plain text: a term's meaning could hint at its answer. */}
 							<p className="wt-caption">
-								{chosen.explore ? (
-									<TermText text={t(chosen.explore.prompt)} locale={locale} />
-								) : null}
+								{captionText === undefined ? null : asking ? (
+									t(captionText)
+								) : (
+									<TermText text={t(captionText)} locale={locale} />
+								)}
 							</p>
 							<p className="sr-only" aria-live="polite">
-								{chosen.explore ? t(chosen.explore.prompt) : null}
+								{captionText === undefined ? null : t(captionText)}
 							</p>
-							{playable.map((index) => {
-								const prompt = scenes[index].explore?.prompt;
-								return prompt ? (
+							{playable
+								.flatMap((index) => {
+									const item = scenes[index];
+									const reveal = item.predict
+										? item.beats[
+												Math.min(
+													item.predict.revealAt ?? 1,
+													item.beats.length - 1,
+												)
+											].caption
+										: undefined;
+									return [
+										[`${item.id}-predict`, item.predict?.prompt],
+										[`${item.id}-reveal`, reveal],
+										[`${item.id}-explore`, item.explore?.prompt],
+									];
+								})
+								.filter((pair): pair is [string, Copy] => Boolean(pair[1]))
+								.map(([key, prompt]) => (
 									<p
-										key={scenes[index].id}
+										key={key}
 										className="wt-caption wt-caption-reserve"
 										aria-hidden="true"
 									>
 										{t(prompt)}
 									</p>
-								) : null;
-							})}
+								))}
 						</div>
 					</div>
 					<TeachMotionProvider
@@ -513,36 +605,67 @@ export function Player({
 						<FrameContext
 							value={{
 								locale,
-								phase: "explore",
-								panel: allDone ? (
-									<div className="wt-panel wt-done" data-kind="right">
-										<p className="wt-panel-title flex items-center gap-1.5">
-											<CheckIcon className="size-4" aria-hidden="true" />
-											{t(copy.allDone)}
-										</p>
-										<p className="wt-panel-note">{t(copy.allDoneNote)}</p>
-										<div className="wt-panel-actions">{checkYourself}</div>
-									</div>
-								) : null,
-								task: chosen.explore?.task ? (
-									<TaskPanel
-										key={chosen.id}
-										task={chosen.explore.task as ExploreTask<unknown>}
-										explore={explore}
-										locale={locale}
-										seed={chosen.id}
-										solved={solved.has(chosen.id)}
-										onSolved={onSolved}
-									/>
-								) : null,
+								phase,
+								panel:
+									asking && chosen.predict ? (
+										<PredictPanel
+											key={chosen.id}
+											prediction={chosen.predict}
+											seed={chosen.id}
+											locale={locale}
+											skip={copy.skipPrediction}
+											onChoose={predict}
+											onSkip={startExplore}
+										/>
+									) : step === "reveal" &&
+										chosen.predict &&
+										answer !== undefined ? (
+										<>
+											<PredictionFeedback
+												prediction={chosen.predict}
+												answer={answer}
+												locale={locale}
+											/>
+											<div className="wt-panel-actions">
+												<Button size="sm" onClick={startExplore}>
+													{t(copy.openPlayground)}
+													<ArrowRightIcon
+														data-icon="inline-end"
+														aria-hidden="true"
+													/>
+												</Button>
+											</div>
+										</>
+									) : allDone ? (
+										<div className="wt-panel wt-done" data-kind="right">
+											<p className="wt-panel-title flex items-center gap-1.5">
+												<CheckIcon className="size-4" aria-hidden="true" />
+												{t(copy.allDone)}
+											</p>
+											<p className="wt-panel-note">{t(copy.allDoneNote)}</p>
+											<div className="wt-panel-actions">{checkYourself}</div>
+										</div>
+									) : null,
+								task:
+									step === "explore" && chosen.explore?.task ? (
+										<TaskPanel
+											key={chosen.id}
+											task={chosen.explore.task as ExploreTask<unknown>}
+											explore={explore}
+											locale={locale}
+											seed={chosen.id}
+											solved={solved.has(chosen.id)}
+											onSolved={onSolved}
+										/>
+									) : null,
 							}}
 						>
 							<View
 								locale={locale}
-								phase="explore"
-								beat={chosen.beats.length - 1}
-								state={lastBeat.state}
-								explore={explore}
+								phase={phase}
+								beat={chosen.beats.indexOf(shown)}
+								state={shown.state}
+								explore={step === "explore" ? explore : null}
 								setExplore={(next: unknown) => {
 									recordVisual(
 										"visual_lesson_interacted",
@@ -686,7 +809,14 @@ export function Player({
 			data-walkthrough-ready="true"
 			data-player-mode={mode}
 			data-scene-id={mode === "play" ? scenes[playScene].id : shots[shot].id}
-			data-phase={mode === "play" ? "explore" : "watch"}
+			data-phase={
+				mode === "play"
+					? { predict: "predict", reveal: "watch", explore: "explore" }[
+							stepOf(scenes[playScene])
+						]
+					: "watch"
+			}
+			data-play-step={mode === "play" ? stepOf(scenes[playScene]) : undefined}
 			data-shot={shot}
 			data-playing={active || undefined}
 			data-ended={ended || undefined}
