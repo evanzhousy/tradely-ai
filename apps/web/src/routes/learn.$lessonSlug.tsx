@@ -294,7 +294,14 @@ function LessonPage() {
 										</Link>
 									</span>
 								))}
-								{locale === "zh" ? "。" : ". "}
+								{/* A title that ends in its own mark, such as "compared with what?", takes no period. */}
+								{/[?？!！.。]$/.test(earlierLessons.at(-1)?.title ?? "")
+									? locale === "zh"
+										? ""
+										: " "
+									: locale === "zh"
+										? "。"
+										: ". "}
 								{builds[locale]}
 							</p>
 						) : null}

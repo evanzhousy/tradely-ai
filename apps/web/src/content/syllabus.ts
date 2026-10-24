@@ -84,6 +84,8 @@ export type CoursePathId = keyof typeof coursePaths;
 /**
  * Lessons 5–8 are also where experienced learners start, so they teach their ideas in full.
  * For learners coming from Start here, each names the earlier lesson and what it adds to it.
+ * A lesson that leans on an idea taught in another module names that lesson too, and its
+ * sentence restates the idea, so a learner who arrives directly isn't missing it.
  */
 export const buildsOn: Record<
 	string,
@@ -108,6 +110,21 @@ export const buildsOn: Record<
 		lessons: ["trading-options"],
 		en: "That lesson listed the ways a position ends; this one shows what exercising early gives up, how share and cash settlement differ, and what can surprise you on expiry day.",
 		zh: "那一课列出了持仓结束的几种方式；本课说明提前行权会放弃什么、股票交割与现金交割有何不同，以及到期日可能出现的意外。",
+	},
+	"rank-symbols": {
+		lessons: ["unusual-activity"],
+		en: "That lesson measured activity against the right baseline: the same name's usual volume over complete, comparable sessions, not a tiny or mismatched one. This one ranks several names by such a measure, and shows how a rank can move when only the peers change.",
+		zh: "那一课用正确的基准衡量成交活跃度：同一标的在完整、可比的交易时段里的平常成交量，而不是过小或不匹配的分母。本课用这样的指标给多个标的排名，并说明仅仅同组标的变化，排名也会改变。",
+	},
+	"expected-move": {
+		lessons: ["implied-realized-volatility", "multi-leg-structures"],
+		en: "Those lessons priced a straddle, one call and one put at the same strike, with its two break-evens, and introduced implied volatility. This one turns implied volatility into a one-standard-deviation move and shows why the at-the-money straddle costs about 0.8 of it.",
+		zh: "那两课给跨式（同一行权价的一张看涨加一张看跌）定价、找出它的两个盈亏平衡点，并介绍了隐含波动率。本课把隐含波动率换算成一个标准差的变动，并说明平值跨式的价格为何约为它的 0.8。",
+	},
+	"iv-rank-percentile": {
+		lessons: ["implied-realized-volatility", "unusual-activity"],
+		en: "Those lessons judged a reading against a baseline built from complete, comparable periods, and introduced implied volatility. This one places today's implied volatility within a stated window of its own history in two ways, rank and percentile, and shows why one outlier splits them.",
+		zh: "那两课用由完整、可比时段构成的基准来判断一个读数，并介绍了隐含波动率。本课用两种方式把今天的隐含波动率放进它自身历史的一段明确窗口中衡量，即 IV Rank 与 IV 百分位，并说明一个极端值为何让两者分歧。",
 	},
 };
 export type ModuleId = (typeof courseModules)[number]["id"];
@@ -431,7 +448,7 @@ export const syllabus: readonly Entry[] = [
 		"Pick a ranking metric for your question, and see how peers can move a rank without new activity.",
 		"为问题选择排名指标，并看同组变化如何在没有新成交时改变排名。",
 		["C12", "C23"],
-		["symbol-universe"],
+		["symbol-universe", "unusual-activity"],
 	),
 	lesson(
 		"rank-contracts",
@@ -557,7 +574,7 @@ export const syllabus: readonly Entry[] = [
 		"Turn implied volatility into a one-standard-deviation move, see why the straddle prices about 0.8 of it, and how often a stock ends outside the range.",
 		"把隐含波动率换算成一个标准差的变动，理解为何跨式价格约为它的 0.8，以及股价收在区间之外有多常见。",
 		["C41"],
-		["implied-realized-volatility"],
+		["implied-realized-volatility", "multi-leg-structures"],
 	),
 	lesson(
 		"volatility-surface",
@@ -577,7 +594,7 @@ export const syllabus: readonly Entry[] = [
 		"Compute IV rank and IV percentile on the same history, and see why one outlier splits them.",
 		"在同一历史上计算 IV Rank 与 IV 百分位，并看一个极端值为何让两者分歧。",
 		["C16"],
-		["implied-realized-volatility"],
+		["implied-realized-volatility", "unusual-activity"],
 	),
 	lesson(
 		"dex-dei-gex",
