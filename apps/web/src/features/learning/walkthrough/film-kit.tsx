@@ -535,6 +535,94 @@ export function Brackets({
 	);
 }
 
+/**
+ * One term of a `Formula`: its text in each state of the formula (a symbol, then its value),
+ * an optional text per state that sets the term's room when its value will change in place
+ * (the widest value it will show), and a tone class.
+ */
+export type FormulaTerm = {
+	id: string;
+	texts: readonly string[];
+	room?: readonly (string | undefined)[];
+	className?: string;
+};
+
+/**
+ * Where each term of a formula is centred in each state, and the span of its sides. A
+ * formula is set in the film's mono figures, so widths are exact: in every state the terms
+ * sit side by side, centred on `x` as one line.
+ */
+export function formulaLayout(
+	terms: readonly FormulaTerm[],
+	size: number,
+	x: number,
+) {
+	const states = Math.max(...terms.map((term) => term.texts.length));
+	return Array.from({ length: states }, (_, state) => {
+		const widths = terms.map((term) =>
+			textWidth(term.room?.[state] ?? term.texts[state] ?? "", size),
+		);
+		const total = widths.reduce((sum, width) => sum + width, 0);
+		let left = x - total / 2;
+		const centres = widths.map((width) => {
+			const centre = left + width / 2;
+			left += width;
+			return centre;
+		});
+		/** The span from one term's left edge to another's right edge, and its centre. */
+		const span = (fromId: string, toId: string) => {
+			const i = terms.findIndex((term) => term.id === fromId);
+			const j = terms.findIndex((term) => term.id === toId);
+			const from = centres[i] - widths[i] / 2;
+			const to = centres[j] + widths[j] / 2;
+			return { from, to, centre: (from + to) / 2 };
+		};
+		return { centres, widths, total, span };
+	});
+}
+export type FormulaLayout = ReturnType<typeof formulaLayout>;
+
+/**
+ * A formula set term by term, so one term can turn into its value in place while the rest of
+ * the line makes room (`director.formula`), and a value can change during a move without the
+ * line shifting. Each term is its own text, named `<name>-<id>`, drawn in its first state.
+ */
+export function Formula({
+	name,
+	terms,
+	layout,
+	y,
+	size,
+	className = "wt-film-num",
+}: {
+	name: string;
+	terms: readonly FormulaTerm[];
+	layout: FormulaLayout;
+	y: number;
+	size: number;
+	className?: string;
+}) {
+	return (
+		<g data-f={name}>
+			{terms.map((term, i) => (
+				<text
+					key={term.id}
+					data-f={`${name}-${term.id}`}
+					x={layout[0].centres[i]}
+					y={y}
+					textAnchor="middle"
+					className={
+						term.className ? `${className} ${term.className}` : className
+					}
+					style={{ fontSize: size, whiteSpace: "pre" }}
+				>
+					{term.texts[0]}
+				</text>
+			))}
+		</g>
+	);
+}
+
 type Point = { x: number; y: number };
 type Targets = Element | Element[];
 
@@ -1020,6 +1108,97 @@ export function createDirector(
 			at,
 		);
 	/**
+	 * A `Formula` goes from one state to another. A term whose text changes fades out where it
+	 * stands and its new text rises a little into the same place, so a symbol visibly becomes
+	 * its value, and its room grows or shrinks with it: the line is laid out again from every
+	 * term's current room at each step, so its neighbours make way and no term crosses
+	 * another. `order` lists term ids in the order they turn (one side, then the other), each
+	 * `stagger` seconds after the last; a term not listed turns with the first. One tween
+	 * drives it all, so scrubbing either way lands on the same frames. `with` moves other
+	 * marks (a term's label) to their term's place.
+	 */
+	const formula = (
+		name: string,
+		terms: readonly FormulaTerm[],
+		layout: FormulaLayout,
+		from: number,
+		to: number,
+		at: number,
+		{
+			duration = 0.6,
+			stagger = 0.12,
+			order = [],
+			size,
+			with: followers = {},
+		}: {
+			duration?: number;
+			stagger?: number;
+			order?: readonly string[];
+			/** The formula's font size: a new text rises from just under its place. */
+			size: number;
+			with?: Record<string, Element[]>;
+		},
+	) => {
+		const ease = gsap.parseEase("power2.inOut");
+		const delays = terms.map(
+			(term) => Math.max(0, order.indexOf(term.id)) * stagger,
+		);
+		const total = duration + Math.max(0, ...delays);
+		const marks = terms.map((term) =>
+			one<SVGTextElement>(`${name}-${term.id}`),
+		);
+		const start = layout[from];
+		const centre = start.centres[0] - start.widths[0] / 2 + start.total / 2;
+		const proxy = { t: 0 };
+		const render = () => {
+			const progress = terms.map((_, i) =>
+				clamp(0, (proxy.t - delays[i]) / duration, 1),
+			);
+			// A term makes room while its old text fades, so the new text arrives in a room already
+			// its size; a term that narrows gives room back once its new text is in.
+			const rooms = progress.map((q, i) => {
+				const a = layout[from].widths[i];
+				const b = layout[to].widths[i];
+				const k = b > a ? clamp(0, q * 2, 1) : clamp(0, q * 2 - 1, 1);
+				return a + (b - a) * ease(k);
+			});
+			let left = centre - rooms.reduce((sum, room) => sum + room, 0) / 2;
+			terms.forEach((term, i) => {
+				const mark = marks[i];
+				const q = progress[i];
+				const x = left + rooms[i] / 2;
+				left += rooms[i];
+				if (!mark) return;
+				mark.setAttribute("x", String(x));
+				for (const follower of followers[term.id] ?? [])
+					follower.setAttribute("x", String(x));
+				const before = term.texts[from] ?? "";
+				const after = term.texts[to] ?? "";
+				if (before === after) return;
+				const text = q < 0.5 ? before : after;
+				if (mark.textContent !== text) mark.textContent = text;
+				// The old text is gone by the middle of the move; the new one fades in as it rises.
+				const opacity = q < 0.5 ? 1 - 2 * q : 2 * q - 1;
+				const rise = q < 0.5 ? 0 : (1 - opacity) * size * 0.12;
+				mark.setAttribute("opacity", String(opacity));
+				mark.setAttribute("transform", rise ? `translate(0 ${rise})` : "");
+			});
+		};
+		tl.fromTo(
+			proxy,
+			{ t: 0 },
+			{
+				t: total,
+				duration: total,
+				ease: "none",
+				immediateRender: false,
+				onUpdate: render,
+			},
+			at,
+		);
+	};
+
+	/**
 	 * One shape becomes the next. Both paths need the same commands, so every number in one
 	 * has a partner in the other: draw curves through the same knots.
 	 */
@@ -1165,6 +1344,7 @@ export function createDirector(
 		carry,
 		mirror,
 		morph,
+		formula,
 		rise,
 		sink,
 		cam,
