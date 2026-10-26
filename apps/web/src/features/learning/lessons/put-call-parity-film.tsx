@@ -6,7 +6,10 @@ import {
 	Brackets,
 	createDirector,
 	EndCard,
+	Formula,
+	type FormulaTerm,
 	filmFrame,
+	formulaLayout,
 	Lines,
 	lineCount,
 	PenTip,
@@ -48,7 +51,8 @@ import {
  *   legs      8.8–13.6   $0 and −$1,000 at $90, then one second of rest
  *   sum       13.6–22.55  combine the legs, then subtract the premium debit
  *   debit     17.6–22.55  $4.20 − $4.05 = $0.15/share; zero moves to $100.15
- *   identity  22.55–30.3 hero: read $97 for 1.25 seconds, then walk to $102
+ *   identity  22.55–30.3 hero: rows C − P and S − K; each letter turns into its price at $97
+ *             and each row grows its result, −$3.00; then ALFA walks to $102
  *   prints    30.3–34.3      a 14:12 print looks $0.65 off
  *   late      34.3–39.5    it executed at 13:58: in line
  *   claim     39.5–43.9  parity links prices from the same moment
@@ -63,6 +67,81 @@ const share = (dollars: number) => usd(Math.round(dollars * 100));
 const signedShare = (dollars: number) => signedUsd(Math.round(dollars * 100));
 /** Where the identity's walk ends, and so how it is drawn at rest. */
 const BAL = [102] as const;
+/** Where the identity's walk starts: each letter turns into its price there. */
+const WALK_FROM = 97;
+/**
+ * The widest text a value shows over the walk, so it changes in place without moving the line.
+ * Every value here moves one way as ALFA walks, so the widest is at one end of the walk; the
+ * model is slow enough that sampling the whole walk on each render stalled the film.
+ */
+const widest = (format: (spot: number) => string) =>
+	[WALK_FROM, BAL[0]]
+		.map(format)
+		.reduce((wide, text) => (text.length > wide.length ? text : wide));
+/**
+ * The identity as two rows, C − P and S − K, set term by term: each letter turns into its
+ * price at the walk's start, and the row then grows its own "= result". On a phone the letters
+ * stand further apart, so each one's name fits over it.
+ */
+const parityRows = (narrow: boolean) => {
+	const op = (sign: string) => (narrow ? `  ${sign}  ` : ` ${sign} `);
+	const result = (format: (spot: number) => string): FormulaTerm => ({
+		id: "r",
+		texts: ["", format(WALK_FROM)],
+		room: [undefined, widest(format)],
+		className: signTone(WALK_FROM - STRIKE),
+	});
+	const equals: FormulaTerm = { id: "e", texts: ["", " = "] };
+	const rows = {
+		call: [
+			{
+				id: "c",
+				texts: ["C", share(callMid(WALK_FROM))],
+				room: [undefined, widest((s) => share(callMid(s)))],
+				className: toneClass.call,
+			},
+			{ id: "m", texts: [op("−"), " − "] },
+			{
+				id: "p",
+				texts: ["P", share(putMid(WALK_FROM))],
+				room: [undefined, widest((s) => share(putMid(s)))],
+				className: toneClass.put,
+			},
+			equals,
+			result((s) => signedShare(callMid(s) - putMid(s))),
+		],
+		stock: [
+			{
+				id: "s",
+				texts: ["S", `$${WALK_FROM.toFixed(2)}`],
+				room: [undefined, `$${BAL[0].toFixed(2)}`],
+			},
+			{ id: "m", texts: [op("−"), " − "] },
+			{ id: "k", texts: ["K", `$${STRIKE}`] },
+			equals,
+			result((s) => signedShare(s - STRIKE)),
+		],
+	} satisfies Record<string, readonly FormulaTerm[]>;
+	// The rows share their columns: C stands over S and P over K, and the two = and results
+	// line up, so the matching results read as one column.
+	const column = (i: number, state: number) =>
+		[rows.call[i], rows.stock[i]]
+			.map((term) => term.room?.[state] ?? term.texts[state] ?? "")
+			.reduce((wide, text) => (text.length > wide.length ? text : wide));
+	const aligned = (terms: readonly FormulaTerm[]) =>
+		terms.map((term, i) => ({
+			...term,
+			room: term.texts.map((_, state) => column(i, state)),
+		}));
+	return { call: aligned(rows.call), stock: aligned(rows.stock) };
+};
+/** The letters and the copy that names each one, in the formula's order. */
+const LETTERS = [
+	["call", "c", "call"],
+	["call", "p", "put"],
+	["stock", "s", "stock"],
+	["stock", "k", "strike"],
+] as const;
 const LATE_TIME = "13:58";
 const ZOOM_RANGE = NET_DEBIT * 2;
 
@@ -160,7 +239,8 @@ const copy = {
 	modelPut: ["model P", "模型 P"],
 	off: ["off", "偏离"],
 	parity: ["parity", "平价"],
-	skLabel: ["stock − strike", "股价 − 行权价"],
+	stock: ["stock", "股价"],
+	strike: ["strike", "行权价"],
 	claimBig: [
 		"Parity links prices from the same moment.",
 		"平价连接的是同一时刻的价格。",
@@ -225,6 +305,45 @@ const PRINTS = [
 	},
 ] as const;
 
+/**
+ * The identity's formula on this frame: one line of mono figures, as large as the frame
+ * allows up to the title size; the letters' names above it and the two results below.
+ */
+function parity(L: ReturnType<typeof layout>) {
+	const { height: H, type: T, room, narrow } = L;
+	const rows = parityRows(narrow);
+	const widestRow = Math.max(
+		...Object.values(rows).flatMap((terms) =>
+			formulaLayout(terms, 1, 0).map((state) => state.total),
+		),
+	);
+	const size = Math.min(
+		narrow ? T.head * 1.2 : T.title,
+		(room * 0.96) / widestRow,
+	);
+	const y = H * (narrow ? 0.42 : 0.5);
+	const row = (key: keyof typeof rows, at: number) => ({
+		terms: rows[key],
+		y: at,
+		tagY: at - size * 0.95,
+		layout: formulaLayout(rows[key], size, L.width / 2),
+		index: (id: string) => rows[key].findIndex((term) => term.id === id),
+	});
+	const call = row("call", y);
+	const stock = row("stock", y + size * 2.4);
+	// Where the rows end, names included: the lock fits this, as the letters are narrower.
+	const ends = [call, stock].map((r) => r.layout[1].span(r.terms[0].id, "r"));
+	const end = {
+		x: Math.min(...ends.map((span) => span.from)),
+		y: call.tagY - T.small,
+		width:
+			Math.max(...ends.map((span) => span.to)) -
+			Math.min(...ends.map((span) => span.from)),
+		height: stock.y + size * 0.3 - (call.tagY - T.small),
+	};
+	return { size, call, stock, end };
+}
+
 function Scene({
 	width,
 	locale,
@@ -249,9 +368,7 @@ function Scene({
 		/>
 	);
 	const text = T.body;
-	const eq = narrow ? T.head * 1.2 : T.title;
-	const eqY = H * (narrow ? 0.42 : 0.5);
-	const eqY2 = eqY + eq * 2.4;
+	const par = parity(L);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -520,58 +637,44 @@ function Scene({
 				>
 					{`ALFA $${BAL[0].toFixed(2)}`}
 				</text>
-				<Word
-					name="b-c"
-					x={W / 2}
-					y={eqY - eq * 1.2}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{`${t(copy.call).toUpperCase()} − ${t(copy.put).toUpperCase()}`}
-				</Word>
-				<text
-					data-f="eq-cp"
-					x={W / 2}
-					y={eqY}
-					textAnchor="middle"
-					className="wt-film-num"
-					style={{ fontSize: eq }}
-				>
-					<tspan data-f="cp-c" className={toneClass.call}>
-						{share(callMid(BAL[0]))}
-					</tspan>
-					{" − "}
-					<tspan data-f="cp-p" className={toneClass.put}>
-						{share(putMid(BAL[0]))}
-					</tspan>
-					{" = "}
-					<tspan data-f="cp-r" className={signTone(BAL[0] - STRIKE)}>
-						{signedShare(callMid(BAL[0]) - putMid(BAL[0]))}
-					</tspan>
-				</text>
-				<Word
-					name="b-s"
-					x={W / 2}
-					y={eqY2 - eq * 1.2}
-					size={T.small}
-					className="wt-film-tag"
-				>
-					{t(copy.skLabel).toUpperCase()}
-				</Word>
-				<text
-					data-f="eq-sk"
-					x={W / 2}
-					y={eqY2}
-					textAnchor="middle"
-					className="wt-film-num"
-					style={{ fontSize: eq }}
-				>
-					<tspan data-f="sk-s">{`$${BAL[0].toFixed(2)}`}</tspan>
-					{` − $${STRIKE} = `}
-					<tspan data-f="sk-r" className={signTone(BAL[0] - STRIKE)}>
-						{signedShare(BAL[0] - STRIKE)}
-					</tspan>
-				</text>
+				{/* Each letter's name sits over it and moves with it as the letters turn into prices. */}
+				<g data-f="par-tags">
+					{LETTERS.map(([row, id, name]) => (
+						<text
+							key={id}
+							data-f={`par-tag-${id}`}
+							x={par[row].layout[0].centres[par[row].index(id)]}
+							y={par[row].tagY}
+							textAnchor="middle"
+							className="wt-film-tag"
+							style={{ fontSize: T.small }}
+						>
+							{t(copy[name]).toUpperCase()}
+						</text>
+					))}
+				</g>
+				<Formula
+					name="par-call"
+					terms={par.call.terms}
+					layout={par.call.layout}
+					y={par.call.y}
+					size={par.size}
+				/>
+				<Formula
+					name="par-stock"
+					terms={par.stock.terms}
+					layout={par.stock.layout}
+					y={par.stock.y}
+					size={par.size}
+				/>
+				<rect
+					data-f="par-end"
+					x={par.end.x}
+					y={par.end.y}
+					width={par.end.width}
+					height={par.end.height}
+					fill="none"
+				/>
 			</g>
 			<Brackets name="lock-eq" glow />
 
@@ -756,27 +859,37 @@ function build(context: FilmContext) {
 	const rows = ["row-morning", "row-afternoon"].map((name) => one(name));
 	const callLine = one("call-line");
 	const putLine = one("put-line");
-	// The identity, live: ALFA, the call and the put at a price, and both sides.
+	// The identity, live: ALFA, the call and the put at a price, and both rows' results. The
+	// formula's values change in place; until its letters have turned, a walk sets only ALFA.
+	const par = parity(L);
 	const spot = one("b-spot");
-	const cpC = one("cp-c");
-	const cpP = one("cp-p");
-	const cpR = one("cp-r");
-	const skS = one("sk-s");
-	const skR = one("sk-r");
-	const place = (at: number) => {
+	const parC = one("par-call-c");
+	const parP = one("par-call-p");
+	const parS = one("par-stock-s");
+	const resL = one("par-call-r");
+	const resR = one("par-stock-r");
+	const place = (at: number, letters: boolean) => {
 		const s = Math.round(at * 100) / 100;
 		const c = callMid(s);
 		const p = putMid(s);
 		spot.textContent = `ALFA $${s.toFixed(2)}`;
-		cpC.textContent = share(c);
-		cpP.textContent = share(p);
-		cpR.textContent = signedShare(c - p);
-		skS.textContent = `$${s.toFixed(2)}`;
-		skR.textContent = signedShare(s - STRIKE);
-		for (const result of [cpR, skR])
-			result.setAttribute("class", signTone(s - STRIKE));
+		// The formula's terms, results included, are the formula move's until its letters turn.
+		if (!letters) return;
+		parC.textContent = share(c);
+		parP.textContent = share(p);
+		parS.textContent = `$${s.toFixed(2)}`;
+		resL.textContent = signedShare(c - p);
+		resR.textContent = signedShare(s - STRIKE);
+		for (const result of [resL, resR])
+			result.setAttribute("class", `wt-film-num ${signTone(s - STRIKE)}`);
 	};
-	const walk = (from: number, to: number, at: number, duration: number) => {
+	const walk = (
+		from: number,
+		to: number,
+		at: number,
+		duration: number,
+		letters = true,
+	) => {
 		const state = { at: from };
 		tl.fromTo(
 			state,
@@ -786,7 +899,7 @@ function build(context: FilmContext) {
 				duration,
 				ease: "power2.inOut",
 				immediateRender: false,
-				onUpdate: () => place(state.at),
+				onUpdate: () => place(state.at, letters),
 			},
 			at,
 		);
@@ -954,16 +1067,36 @@ function build(context: FilmContext) {
 	hide(heads[1], 22.55);
 	sink(22.55);
 	show(heads[2], 22.9);
-	walk(97, 97, 23.15, 0.01);
-	show([one("b-alfa"), spot], 23.25);
-	show(one("b-c"), 23.45);
-	word(one("eq-cp"), 23.55);
-	show(one("b-s"), 23.6);
-	word(one("eq-sk"), 23.7);
-	// The initial equations settle at 24.25; give them 1.25 quiet seconds before walking.
-	walk(97, 102, 25.5, 1.8);
-	d.lock(g("lock-eq"), 27.4, { around: [g("eq-cp"), g("eq-sk")], pad: 12 });
-	tl.addLabel("hero-lock", 27.4);
+	walk(WALK_FROM, WALK_FROM, 22.95, 0.01, false);
+	show([one("b-alfa"), spot], 23.05);
+	// The identity as letters, each named; then, row by row, each letter turns into its price
+	// at $97 and the row grows its own result.
+	show([g("par-call"), g("par-stock")], 23.15);
+	show(g("par-tags"), 23.25, "above");
+	const tags = (ids: readonly string[]) =>
+		Object.fromEntries(ids.map((id) => [id, [one(`par-tag-${id}`)]]));
+	d.formula("par-call", par.call.terms, par.call.layout, 0, 1, 24.15, {
+		size: par.size,
+		order: ["c", "p", "e", "r"],
+		stagger: 0.14,
+		duration: 0.6,
+		with: tags(["c", "p"]),
+	});
+	d.formula("par-stock", par.stock.terms, par.stock.layout, 0, 1, 24.3, {
+		size: par.size,
+		order: ["s", "k", "e", "r"],
+		stagger: 0.14,
+		duration: 0.6,
+		with: tags(["s", "k"]),
+	});
+	// Each letter is read before it turns; the $97 example is whole by 25.32 and holds 1.6
+	// seconds, so both −$3.00 results can be compared, then ALFA walks.
+	walk(WALK_FROM, BAL[0], 26.9, 1.4);
+	d.lock(g("lock-eq"), 28.4, {
+		around: g("par-end"),
+		pad: 12,
+	});
+	tl.addLabel("hero-lock", 28.4);
 
 	// ——— prints: one looks off ———
 	tl.addLabel("prints", 30.3);
