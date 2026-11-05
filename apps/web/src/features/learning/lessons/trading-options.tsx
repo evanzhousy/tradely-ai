@@ -106,6 +106,7 @@ function ChainView({
 					label: t(["Bid / ask", "买价 / 卖价"]),
 					value: `${usd(quote.bid)} / ${usd(quote.ask)}`,
 					note: t(["per share", "每股"]),
+					evidence: "observed",
 				},
 				{
 					id: "cost",
@@ -115,6 +116,7 @@ function ChainView({
 						`${usd(quote.ask)} × 100 shares`,
 						`${usd(quote.ask)} × 100 股`,
 					]),
+					evidence: "calculated",
 				},
 			]}
 			controls={
@@ -253,13 +255,18 @@ function OrderView({
 					: outcome.resting
 						? t(["may never fill", "可能永远不成交"])
 						: undefined,
-			evidence: outcome.resting ? "unknown" : undefined,
+			evidence: outcome.resting
+				? "unknown"
+				: outcome.fill !== null
+					? "observed"
+					: undefined,
 		},
 		{
 			id: "spread",
 			label: t(["Spread", "价差"]),
 			value: usd(thinBook.asks[0].price - thinBook.bids[0].price),
 			note: t(["$45 on one contract", "一张合约 $45"]),
+			evidence: "calculated",
 		},
 	];
 	return (
@@ -457,6 +464,7 @@ function EndView({
 					label: t(["You paid", "你支付"]),
 					value: usd(paid),
 					note: t(["$3.25 ask + $0.65 fee", "卖价 $3.25 + 费用 $0.65"]),
+					evidence: "calculated",
 				},
 				{
 					id: "result",
@@ -468,6 +476,7 @@ function EndView({
 							: facts.result > 0
 								? "gain"
 								: "loss",
+					evidence: shown.route === "hold" ? undefined : "calculated",
 				},
 				{
 					id: "route",

@@ -574,6 +574,63 @@
 .wt-result[data-evidence="unknown"] .wt-result-value {
 	color: var(--diagram-unknown);
 }
+/* Where a result comes from. No hue: as on the films, evidence is drawn by line. */
+.wt-result-evidence {
+	align-self: flex-start;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin-top: 0.3rem;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--muted-foreground);
+	font-size: 0.68rem;
+	line-height: 1.3;
+	cursor: help;
+	text-decoration: underline dashed
+		color-mix(in oklab, currentColor 40%, transparent);
+	text-underline-offset: 3px;
+}
+.wt-result-evidence:hover {
+	color: var(--foreground);
+}
+.wt-result-evidence:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 2px;
+	border-radius: 0.125rem;
+}
+.wt-result-evidence-mark {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 0.6rem;
+	height: 0.6rem;
+	border: 1.25px solid currentColor;
+	border-radius: 999px;
+	font: 600 0.6rem / 1 var(--font-mono);
+}
+.wt-result-evidence[data-kind="observed"] .wt-result-evidence-mark {
+	background: currentColor;
+}
+.wt-result-evidence[data-kind="modeled"] .wt-result-evidence-mark {
+	border-style: dashed;
+}
+.wt-result-evidence[data-kind="calculated"] .wt-result-evidence-mark,
+.wt-result-evidence[data-kind="unknown"] .wt-result-evidence-mark {
+	border: 0;
+}
+.wt-result-evidence[data-kind="calculated"] .wt-result-evidence-mark::before {
+	content: "=";
+}
+.wt-result-evidence[data-kind="unknown"] .wt-result-evidence-mark::before {
+	content: "?";
+}
+.wt-results-scope {
+	color: var(--muted-foreground);
+	font-size: 0.75rem;
+	line-height: 1.45;
+}
 .wt-panel {
 	display: flex;
 	flex-direction: column;

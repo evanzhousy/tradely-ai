@@ -212,6 +212,7 @@ function SliceView({
 			label: t(["Your position", "你的持仓价值"]),
 			value: usd(shown.shares * shown.price),
 			note: `${count(shown.shares)} × ${usd(shown.price)}`,
+			evidence: "calculated",
 		},
 		{
 			id: "change",
@@ -222,12 +223,14 @@ function SliceView({
 				shown.before === undefined
 					? t(["price unchanged", "价格未变"])
 					: t([`from ${usd(shown.before)}`, `相对 ${usd(shown.before)}`]),
+			evidence: change === 0 ? undefined : "calculated",
 		},
 		{
 			id: "per-dollar",
 			label: t(["Each $1 move", "每变动 $1"]),
 			value: `±${usd(shown.shares * 100, 0)}`,
 			note: t(["one dollar per share", "每股一美元"]),
+			evidence: "calculated",
 		},
 	];
 	return (
@@ -328,6 +331,7 @@ function QuoteView({
 						`${count(trade.filled)} shares, before fees`,
 						`${count(trade.filled)} 股，不含费用`,
 					]),
+					evidence: "calculated",
 				},
 				{
 					id: "average",
@@ -340,6 +344,7 @@ function QuoteView({
 									`${trade.fills.length} 个价位`,
 								])
 							: t(["one price level", "一个价位"]),
+					evidence: "calculated",
 				},
 				{
 					id: "last",
@@ -349,6 +354,7 @@ function QuoteView({
 							(trade.notional - alfaStockBook.last * trade.filled),
 					),
 					note: usd(alfaStockBook.last),
+					evidence: "calculated",
 				},
 			]
 		: [
@@ -357,18 +363,21 @@ function QuoteView({
 					label: t(["Bid", "买价"]),
 					value: usd(alfaStockBook.bids[0].price),
 					note: t(["best price to sell into", "立即卖出可得"]),
+					evidence: "observed",
 				},
 				{
 					id: "ask",
 					label: t(["Ask", "卖价"]),
 					value: usd(alfaStockBook.asks[0].price),
 					note: t(["best price to buy at", "立即买入需付"]),
+					evidence: "observed",
 				},
 				{
 					id: "last",
 					label: t(["Last trade", "最新成交"]),
 					value: usd(alfaStockBook.last),
 					note: t(["history, not an offer", "历史价格，不是报价"]),
+					evidence: "observed",
 				},
 			];
 	return (

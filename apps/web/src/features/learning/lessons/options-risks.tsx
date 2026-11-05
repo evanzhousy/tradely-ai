@@ -163,6 +163,7 @@ function DecayView({
 					tween: { to: shown.spot, format: stockMove },
 					tone:
 						shown.spot > 100 ? "gain" : shown.spot < 100 ? "loss" : undefined,
+					evidence: "calculated",
 				},
 				{
 					id: "value",
@@ -178,8 +179,13 @@ function DecayView({
 					tween: { to: result, format: perContract },
 					tone: result > 0 ? "gain" : result < 0 ? "loss" : undefined,
 					note: t([`paid ${usd(PAID)}`, `已付 ${usd(PAID)}`]),
+					evidence: "modeled",
 				},
 			]}
+			scope={t([
+				"Before fees. The call's value is a model's estimate, not a market price.",
+				"未计费用。看涨期权价值是模型估算，并非市场价格。",
+			])}
 			controls={
 				explore ? (
 					<FieldGroup>
@@ -311,6 +317,7 @@ function TailView({
 					value: signedUsd(result * 100, 0),
 					tween: { to: result, format: (v) => signedUsd(v * 100, 0) },
 					tone: result > 0 ? "gain" : result < 0 ? "loss" : undefined,
+					evidence: "calculated",
 				},
 				{
 					id: "premium",
@@ -322,6 +329,7 @@ function TailView({
 									`collected ${usd(PAID * 100, 0)}`,
 									`收取 ${usd(PAID * 100, 0)}`,
 								]),
+					evidence: "calculated",
 				},
 				{
 					id: "worst",
@@ -336,6 +344,10 @@ function TailView({
 					tone: shown.side === "buyer" ? "loss" : undefined,
 				},
 			]}
+			scope={t([
+				"One contract held to expiry, before trading fees and taxes.",
+				"一张合约持有至到期，未计交易费用和税费。",
+			])}
 			controls={
 				explore ? (
 					<FieldGroup>
@@ -397,11 +409,13 @@ function CostView({
 			id: "spread",
 			label: t(["Lost to the spread", "价差损失"]),
 			value: usd(facts.spread),
+			evidence: "calculated",
 		},
 		{
 			id: "fees",
 			label: t(["Fees on 2 trades", "两笔交易费用"]),
 			value: usd(facts.fees),
+			evidence: "calculated",
 		},
 		shown.breakeven
 			? {
@@ -412,6 +426,7 @@ function CostView({
 						`${percent(facts.breakeven / facts.quote.bid - 1)} above ${usd(facts.quote.bid)}`,
 						`比 ${usd(facts.quote.bid)} 高 ${percent(facts.breakeven / facts.quote.bid - 1)}`,
 					]),
+					evidence: "calculated",
 				}
 			: {
 					id: "loss",
@@ -422,6 +437,7 @@ function CostView({
 						`${percent(facts.loss / facts.paid)} of ${usd(facts.paid, 0)} paid`,
 						`占所付 ${usd(facts.paid, 0)} 的 ${percent(facts.loss / facts.paid)}`,
 					]),
+					evidence: "calculated",
 				},
 	];
 	return (

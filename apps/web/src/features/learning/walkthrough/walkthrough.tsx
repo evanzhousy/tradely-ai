@@ -1,6 +1,12 @@
 import { Button, buttonVariants } from "@tradely/ui/components/button";
 import { DisclosurePanel } from "@tradely/ui/components/disclosure";
 import {
+	Popover,
+	PopoverContent,
+	PopoverDialog,
+	PopoverTrigger,
+} from "@tradely/ui/components/popover";
+import {
 	Tabs,
 	TabsContent,
 	TabsList,
@@ -54,7 +60,13 @@ import {
 	useMotionFollow,
 	useTeachMotion,
 } from "./stage";
-import type { ExploreTask, Phase, ResultItem, WalkthroughScene } from "./types";
+import type {
+	EvidenceKind,
+	ExploreTask,
+	Phase,
+	ResultItem,
+	WalkthroughScene,
+} from "./types";
 
 /** Reading time at about 200 words a minute, plus time to look at the diagram. */
 export function readingHoldMs(caption: string) {
@@ -692,11 +704,14 @@ export function Walkthrough({
 export function SceneFrame({
 	stage,
 	result,
+	scope,
 	controls,
 	details,
 }: {
 	stage: ReactNode;
 	result?: readonly ResultItem[];
+	/** What the result leaves out, where its numbers could be taken for the whole story. */
+	scope?: string;
 	controls?: ReactNode;
 	details?: ReactNode;
 }) {
@@ -737,9 +752,10 @@ export function SceneFrame({
 						<section className="wt-results" aria-label={t(copy.keyResult)}>
 							<dl>
 								{result.map((item) => (
-									<ResultCard key={item.id} item={item} />
+									<ResultCard key={item.id} item={item} locale={locale} />
 								))}
 							</dl>
+							{scope ? <p className="wt-results-scope">{scope}</p> : null}
 						</section>
 					) : null}
 					{frame?.panel}
@@ -766,7 +782,78 @@ export function SceneFrame({
 	);
 }
 
-function ResultCard({ item }: { item: ResultItem }) {
+const evidenceCopy: Record<EvidenceKind, { name: Copy; meaning: Copy }> = {
+	observed: {
+		name: ["Observed", "观测"],
+		meaning: [
+			"Read directly from a quote or a record.",
+			"直接读自报价或记录。",
+		],
+	},
+	calculated: {
+		name: ["Calculated", "计算"],
+		meaning: [
+			"Worked out from other numbers, with no assumption beyond the arithmetic.",
+			"由其他数字算出，除了算术之外没有其他假设。",
+		],
+	},
+	modeled: {
+		name: ["Modeled", "模型"],
+		meaning: [
+			"An estimate. Different assumptions would give a different number.",
+			"这是估算。换一组假设，数字就会不同。",
+		],
+	},
+	inferred: {
+		name: ["Inferred", "推断"],
+		meaning: [
+			"A reading of the evidence, not something the record states.",
+			"这是对证据的解读，记录本身并没有这样写。",
+		],
+	},
+	unknown: {
+		name: ["Unknown", "未知"],
+		meaning: [
+			"What's shown here can't settle this.",
+			"仅凭这里显示的内容无法确定。",
+		],
+	},
+};
+
+/** Where a result comes from, drawn by line as on the films; its meaning opens on demand. */
+function EvidenceTag({ kind, locale }: { kind: EvidenceKind; locale: Locale }) {
+	const name = pick(evidenceCopy[kind].name, locale);
+	return (
+		<Popover>
+			<PopoverTrigger
+				render={(props) => (
+					<button
+						{...(props as React.ComponentProps<"button">)}
+						type="button"
+						className="wt-result-evidence min-h-0!"
+						data-kind={kind}
+					/>
+				)}
+			>
+				<span className="wt-result-evidence-mark" aria-hidden="true" />
+				{name}
+			</PopoverTrigger>
+			<PopoverContent
+				placement="top"
+				className="max-w-[min(18rem,calc(100vw-2rem))]"
+			>
+				<PopoverDialog aria-label={name} className="flex flex-col gap-1 p-3">
+					<p className="font-medium text-sm">{name}</p>
+					<p className="text-muted-foreground text-sm leading-relaxed">
+						{pick(evidenceCopy[kind].meaning, locale)}
+					</p>
+				</PopoverDialog>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+function ResultCard({ item, locale }: { item: ResultItem; locale: Locale }) {
 	const motion = useTeachMotion();
 	return (
 		<div
@@ -792,6 +879,9 @@ function ResultCard({ item }: { item: ResultItem }) {
 					)}
 				</m.span>
 				{item.note ? <span className="wt-result-note">{item.note}</span> : null}
+				{item.evidence ? (
+					<EvidenceTag kind={item.evidence} locale={locale} />
+				) : null}
 			</dd>
 		</div>
 	);

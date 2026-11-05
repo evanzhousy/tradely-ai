@@ -82,7 +82,7 @@ function RightView({
 							`ALFA ${usd(spot * 100, 0)} on Oct 18`,
 							`10月18日 ALFA ${usd(spot * 100, 0)}`,
 						]),
-			evidence: value === null ? "unknown" : undefined,
+			evidence: value === null ? "unknown" : "calculated",
 		},
 		{
 			id: "paid",
@@ -92,6 +92,7 @@ function RightView({
 				`${usd(optionQuote(contract).ask)} × 100 shares`,
 				`${usd(optionQuote(contract).ask)} × 100 股`,
 			]),
+			evidence: "calculated",
 		},
 		{
 			id: "result",
@@ -110,6 +111,7 @@ function RightView({
 							? "loss"
 							: "neutral",
 			note: t(["value minus premium", "价值减权利金"]),
+			evidence: value === null ? undefined : "calculated",
 		},
 	];
 	const worth =
@@ -172,6 +174,10 @@ function RightView({
 				</Stage>
 			}
 			result={result}
+			scope={t([
+				"Held to expiry, before trading fees and taxes.",
+				"持有至到期，未计交易费用和税费。",
+			])}
 			controls={
 				explore ? (
 					<FieldGroup>
@@ -380,6 +386,7 @@ function UsesView({
 					id: "premium",
 					label: t(["Premium", "权利金"]),
 					value: facts.premium,
+					evidence: "calculated",
 				},
 				{
 					id: "worst",
@@ -553,6 +560,7 @@ function SidesView({
 							: signedUsd(net, 0),
 					tone:
 						shown.stage === "exercise" ? undefined : net > 0 ? "gain" : "loss",
+					evidence: shown.stage === "exercise" ? undefined : "calculated",
 				},
 				{
 					id: "ben",
@@ -563,6 +571,7 @@ function SidesView({
 							: signedUsd(-net, 0),
 					tone:
 						shown.stage === "exercise" ? undefined : -net > 0 ? "gain" : "loss",
+					evidence: shown.stage === "exercise" ? undefined : "calculated",
 				},
 				{
 					id: "decides",
@@ -570,6 +579,10 @@ function SidesView({
 					value: t(["The holder", "持有人"]),
 				},
 			]}
+			scope={t([
+				"Held to expiry, before trading fees and taxes.",
+				"持有至到期，未计交易费用和税费。",
+			])}
 			controls={
 				explore ? (
 					<FieldGroup>

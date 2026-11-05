@@ -398,6 +398,10 @@ function ProfitView({
 				},
 				...result3,
 			]}
+			scope={t([
+				"Held to expiry, before trading fees and taxes.",
+				"持有至到期，未计交易费用和税费。",
+			])}
 			controls={
 				explore ? (
 					<FieldGroup>
@@ -570,6 +574,10 @@ function WriterView({
 					tone: put ? "loss" : undefined,
 				},
 			]}
+			scope={t([
+				"Held to expiry, before trading fees and taxes.",
+				"持有至到期，未计交易费用和税费。",
+			])}
 			controls={
 				explore ? (
 					<FieldGroup>
