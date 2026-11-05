@@ -5,6 +5,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@tradely/ui/components/tabs";
+import { Tooltip, TooltipContent } from "@tradely/ui/components/tooltip";
 import {
 	ArrowDownIcon,
 	ArrowRightIcon,
@@ -12,6 +13,7 @@ import {
 	PauseIcon,
 	PlayIcon,
 	RotateCcwIcon,
+	StepForwardIcon,
 } from "lucide-react";
 import {
 	type CSSProperties,
@@ -77,12 +79,33 @@ function writeRate(rate: Rate) {
 	}
 }
 
+const stepKey = "tradely:player-step:v1";
+function readStep() {
+	try {
+		return localStorage.getItem(stepKey) === "1";
+	} catch {
+		return false;
+	}
+}
+function writeStep(on: boolean) {
+	try {
+		if (on) localStorage.setItem(stepKey, "1");
+		else localStorage.removeItem(stepKey);
+	} catch {
+		/* Storage is optional. */
+	}
+}
+/** A shot's last frame, just short of the next shot's label. Reduced motion shows the same still. */
+const LAST_FRAME = 0.01;
+
 type Mode = "watch" | "play";
 
 /**
  * Plays a lesson's film, then opens its playground. The film runs by itself once it is on
  * screen, pauses off screen or in a hidden tab, and is scrubbed by shot. With reduced
  * motion it steps from the end of one shot to the next instead of moving between them.
+ * A learner can have it stop at the end of each shot, and drive it with Space and the left
+ * and right arrows while it is on screen and focus isn't on something else in the page.
  */
 export function Player({
 	locale,
@@ -111,13 +134,19 @@ export function Player({
 	const time = useRef(0);
 	const shotRef = useRef(0);
 	const rateRef = useRef<Rate>(DEFAULT_RATE);
+	const stepRef = useRef(false);
 	const [ready, setReady] = useState(0);
+	/** Counts seeks, so a seek within the shot on screen starts the film again too. */
+	const [seeks, setSeeks] = useState(0);
 	const [shot, setShot] = useState(0);
 	const [playing, setPlaying] = useState(true);
 	const [ended, setEnded] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [hidden, setHidden] = useState(false);
 	const [rate, setRate] = useState<Rate>(DEFAULT_RATE);
+	const [step, setStep] = useState(false);
+	/** Stopped on a shot's last frame by `step`: playing on goes to the next shot. */
+	const [held, setHeld] = useState(false);
 	const [mode, setMode] = useState<Mode>("watch");
 	const [playScene, setPlayScene] = useState(0);
 	const [explore, setExplore] = useState<unknown>(null);
@@ -152,6 +181,9 @@ export function Player({
 		const stored = readRate();
 		rateRef.current = stored;
 		setRate(stored);
+		const stepping = readStep();
+		stepRef.current = stepping;
+		setStep(stepping);
 		if (lessonId) initializeVisualBookmark(lessonId, shots[0].id);
 	}, [lessonId, shots]);
 
@@ -231,6 +263,17 @@ export function Player({
 			tl.timeScale(rateRef.current);
 			tl.seek(Math.min(time.current, tl.duration()), false);
 			tl.eventCallback("onUpdate", () => {
+				// Stopping at the end of a shot is the learner's setting, not a pause they made,
+				// so it stays out of the pacing events.
+				if (stepRef.current && shotRef.current < last) {
+					const stop = bounds(tl, shotRef.current).end - LAST_FRAME;
+					if (tl.time() >= stop) {
+						tl.pause();
+						tl.seek(stop, true);
+						setHeld(true);
+						setPlaying(false);
+					}
+				}
 				time.current = tl.time();
 				paint(tl, tl.time());
 			});
@@ -244,7 +287,7 @@ export function Player({
 				(window as Window & { __tradelyFilm?: unknown }).__tradelyFilm = tl;
 			setReady((value) => value + 1);
 		},
-		[last, paint, record, shots],
+		[bounds, last, paint, record, shots],
 	);
 
 	// The film runs while most of it is on screen and the page is visible.
@@ -301,6 +344,8 @@ export function Player({
 			shotRef.current = next;
 			setShot(next);
 			setEnded(false);
+			setHeld(false);
+			setSeeks((count) => count + 1);
 			record("visual_lesson_scene_started", shots[next].id, how);
 			if (!tl) return;
 			const { start } = bounds(tl, next);
@@ -314,6 +359,7 @@ export function Player({
 
 	// Playing: the timeline runs. Reduced motion: each shot shows its last frame for as
 	// long as the shot would have taken, then the next.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `seeks` plays the film again after a seek within the shot on screen, which pauses it and changes nothing else here.
 	useEffect(() => {
 		const tl = timeline.current;
 		if (!ready || !tl) return;
@@ -334,12 +380,15 @@ export function Player({
 		}
 		const { start, end } = bounds(tl, shot);
 		tl.pause();
-		tl.seek(Math.max(start, end - 0.01), false);
+		tl.seek(Math.max(start, end - LAST_FRAME), false);
 		time.current = tl.time();
 		if (fill.current) fill.current.style.transform = "scaleX(1)";
 		const timer = window.setTimeout(
 			() => {
-				if (shot < last) seekShot(shot + 1, "autoplay");
+				if (shot < last && stepRef.current) {
+					setHeld(true);
+					setPlaying(false);
+				} else if (shot < last) seekShot(shot + 1, "autoplay");
 				else {
 					record("visual_lesson_scene_completed", shots[last].id, "autoplay");
 					setEnded(true);
@@ -357,6 +406,7 @@ export function Player({
 		record,
 		reduced,
 		seekShot,
+		seeks,
 		shot,
 		shots,
 		ready,
@@ -387,6 +437,74 @@ export function Player({
 		seekShot(0, "manual");
 		setPlaying(true);
 	};
+
+	const togglePlay = () => {
+		if (ended) replay();
+		else if (held) {
+			seekShot(shotRef.current + 1, "manual");
+			setPlaying(true);
+		} else {
+			if (playing && lessonId)
+				pace(
+					"visual_lesson_film_paused",
+					{
+						lesson_id: lessonId,
+						scene_id: shots[shot].id,
+						locale,
+						surface: "film",
+						rate,
+					},
+					shots[shot].id,
+				);
+			setPlaying((value) => !value);
+		}
+	};
+
+	/** Back: to the start of this shot, or from its first moment to the shot before. */
+	const stepBack = () => {
+		const tl = timeline.current;
+		if (!tl) return;
+		const current = shotRef.current;
+		// With reduced motion a shot is one still, so there is no start of it to go back to.
+		const restart = !reduced && time.current - bounds(tl, current).start > 1;
+		seekShot(restart ? current : current - 1, "manual");
+		setPlaying(true);
+	};
+
+	const stepForward = () => {
+		if (shotRef.current >= last) return;
+		seekShot(shotRef.current + 1, "manual");
+		setPlaying(true);
+	};
+
+	const onKey = (event: KeyboardEvent) => {
+		if (mode !== "watch" || !visible || event.repeat) return;
+		if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+			return;
+		const space = event.key === " ";
+		if (!space && event.key !== "ArrowLeft" && event.key !== "ArrowRight")
+			return;
+		// Focus on anything else in the page keeps that thing's own keys, as do the player's
+		// tabs, and Space on a control presses that control.
+		const target = event.target;
+		if (!(target instanceof Element)) return;
+		if (target !== document.body && !root.current?.contains(target)) return;
+		if (target.closest('input, textarea, select, [role="tab"]')) return;
+		if (space && target.closest("button, a")) return;
+		event.preventDefault();
+		if (space) togglePlay();
+		else if (event.key === "ArrowLeft") stepBack();
+		else stepForward();
+	};
+	const latestKey = useRef(onKey);
+	useEffect(() => {
+		latestKey.current = onKey;
+	});
+	useEffect(() => {
+		const listen = (event: KeyboardEvent) => latestKey.current(event);
+		document.addEventListener("keydown", listen);
+		return () => document.removeEventListener("keydown", listen);
+	}, []);
 
 	const openPlayground = (index?: number) => {
 		const target =
@@ -451,6 +569,13 @@ export function Player({
 			});
 		setRate(next);
 		writeRate(next);
+	};
+
+	const toggleStep = () => {
+		const next = !step;
+		stepRef.current = next;
+		setStep(next);
+		writeStep(next);
 	};
 
 	const onSolved = useCallback(
@@ -684,6 +809,13 @@ export function Player({
 		);
 	} else {
 		const tl = timeline.current;
+		const playLabel = ended
+			? t(copy.replay)
+			: playing
+				? t(wc.pause)
+				: held
+					? t(copy.nextShot)
+					: t(wc.play);
 		const durations = shots.map((_, i) => {
 			if (!tl) return 1;
 			const { start, end } = bounds(tl, i);
@@ -696,45 +828,31 @@ export function Player({
 				</h2>
 				<FilmStage film={film} locale={locale} onTimeline={onTimeline} />
 				<fieldset className="wt-nav wt-player-nav">
-					<legend className="sr-only">{t(wc.controls)}</legend>
-					<Button
-						size="sm"
-						variant="ghost"
-						data-nav="play"
-						aria-label={
-							ended ? t(copy.replay) : playing ? t(wc.pause) : t(wc.play)
-						}
-						aria-pressed={!ended && playing}
-						onClick={() => {
-							if (ended) replay();
-							else {
-								if (playing && lessonId)
-									pace(
-										"visual_lesson_film_paused",
-										{
-											lesson_id: lessonId,
-											scene_id: shots[shot].id,
-											locale,
-											surface: "film",
-											rate,
-										},
-										shots[shot].id,
-									);
-								setPlaying((value) => !value);
-							}
-						}}
-					>
-						{ended ? (
-							<RotateCcwIcon data-icon="inline-start" aria-hidden="true" />
-						) : playing ? (
-							<PauseIcon data-icon="inline-start" aria-hidden="true" />
-						) : (
-							<PlayIcon data-icon="inline-start" aria-hidden="true" />
-						)}
-						<span className="wt-nav-text">
-							{ended ? t(copy.replay) : playing ? t(wc.pause) : t(wc.play)}
-						</span>
-					</Button>
+					<legend className="sr-only">
+						{`${t(wc.controls)}. ${t(copy.keys)}`}
+					</legend>
+					<Tooltip>
+						<Button
+							size="sm"
+							variant="ghost"
+							data-nav="play"
+							aria-label={playLabel}
+							aria-pressed={!ended && playing}
+							onClick={togglePlay}
+						>
+							{ended ? (
+								<RotateCcwIcon data-icon="inline-start" aria-hidden="true" />
+							) : playing ? (
+								<PauseIcon data-icon="inline-start" aria-hidden="true" />
+							) : held ? (
+								<StepForwardIcon data-icon="inline-start" aria-hidden="true" />
+							) : (
+								<PlayIcon data-icon="inline-start" aria-hidden="true" />
+							)}
+							<span className="wt-nav-text">{playLabel}</span>
+						</Button>
+						<TooltipContent>{t(copy.spaceKey)}</TooltipContent>
+					</Tooltip>
 					<ol className="wt-timeline" aria-label={t(copy.timeline)}>
 						{shots.map((item, k) => (
 							<li
@@ -750,6 +868,8 @@ export function Player({
 									}
 									aria-current={k === shot ? "step" : undefined}
 									aria-label={`${t(copy.shot)} ${k + 1}: ${t(item.label)}`}
+									// A click leaves focus where it was, so Space still plays and pauses after it.
+									onMouseDown={(event) => event.preventDefault()}
 									onClick={() => {
 										seekShot(k, "manual");
 										setPlaying(true);
@@ -765,6 +885,22 @@ export function Player({
 					<span className="wt-step-label">
 						{`${shot + 1}/${shots.length} · ${t(shots[shot].label)}`}
 					</span>
+					<Tooltip>
+						<Button
+							size="icon-sm"
+							variant="ghost"
+							className="wt-step-toggle"
+							aria-label={t(copy.stepMode)}
+							aria-pressed={step}
+							onClick={toggleStep}
+						>
+							<StepForwardIcon aria-hidden="true" />
+						</Button>
+						<TooltipContent>
+							<p>{t(copy.stepMode)}</p>
+							<p className="text-muted-foreground">{t(copy.arrowKeys)}</p>
+						</TooltipContent>
+					</Tooltip>
 					<Button
 						size="sm"
 						variant="ghost"
@@ -821,6 +957,7 @@ export function Player({
 			data-shot={shot}
 			data-playing={active || undefined}
 			data-ended={ended || undefined}
+			data-held={held || undefined}
 		>
 			<Tabs
 				className="gap-[inherit]"
@@ -830,7 +967,7 @@ export function Player({
 					if (value === "play") openPlayground();
 					else {
 						setMode("watch");
-						if (!ended) setPlaying(true);
+						if (!ended && !held) setPlaying(true);
 						focusNext.current = "heading";
 					}
 				}}

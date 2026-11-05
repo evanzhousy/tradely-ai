@@ -211,6 +211,10 @@
 	min-width: 3rem;
 	font-family: var(--font-mono);
 }
+.walkthrough .wt-step-toggle[aria-pressed="true"] {
+	color: var(--primary);
+	background: color-mix(in oklab, var(--primary) 14%, transparent);
+}
 
 /* Film: a fixed-aspect frame that is its own stage. A dark stage brings its own tokens, so
    the diagram classes draw on it the same way whatever the page's theme. */
@@ -939,6 +943,13 @@
 	}
 	.wt-dot {
 		width: 1.4rem;
+	}
+}
+/* The narrowest phones: the timeline gives up its gaps so the controls keep one row. */
+@media (max-width: 360px) {
+	.wt-timeline {
+		gap: 0.125rem;
+		min-width: 5rem;
 	}
 }
 

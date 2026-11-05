@@ -29,6 +29,7 @@ for (const lesson of lessons) {
 			// biome-ignore lint/suspicious/noDocumentCookie: the page sets the app's locale cookie, as its switcher does
 			document.cookie = `tradely.locale=${loc}; Path=/; Max-Age=31536000; SameSite=Lax`;
 			localStorage.removeItem("tradely:player-rate:v1");
+			localStorage.removeItem("tradely:player-step:v1");
 			localStorage.removeItem("tradely:visual-scenes:v1");
 		}, env.LOCALE);
 		await page.reload();
