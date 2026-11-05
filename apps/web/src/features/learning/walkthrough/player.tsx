@@ -45,7 +45,7 @@ import { VisualLessonIdentity } from "../visual-lesson-identity";
 import { Announce } from "./announce";
 import { judge } from "./answers";
 import { TaskPanel } from "./explore-task";
-import { type Film, FilmStage } from "./film";
+import { type Film, FilmStage, shotStill } from "./film";
 import { playerCopy as copy } from "./player-copy";
 import { PredictionFeedback, PredictPanel } from "./prediction";
 import {
@@ -95,9 +95,6 @@ function writeStep(on: boolean) {
 		/* Storage is optional. */
 	}
 }
-/** A shot's last frame, just short of the next shot's label. Reduced motion shows the same still. */
-const LAST_FRAME = 0.01;
-
 type Mode = "watch" | "play";
 
 /**
@@ -135,6 +132,8 @@ export function Player({
 	const shotRef = useRef(0);
 	const rateRef = useRef<Rate>(DEFAULT_RATE);
 	const stepRef = useRef(false);
+	/** Each timeline's shot stills, worked out once a shot. */
+	const stills = useRef(new WeakMap<gsap.core.Timeline, Map<number, number>>());
 	const [ready, setReady] = useState(0);
 	/** Counts seeks, so a seek within the shot on screen starts the film again too. */
 	const [seeks, setSeeks] = useState(0);
@@ -238,6 +237,25 @@ export function Player({
 		[last, shots],
 	);
 
+	/** The frame a shot stands on when the film stops there, and with reduced motion. */
+	const stillOf = useCallback(
+		(tl: gsap.core.Timeline, index: number) => {
+			let known = stills.current.get(tl);
+			if (!known) {
+				known = new Map();
+				stills.current.set(tl, known);
+			}
+			const found = known.get(index);
+			if (found !== undefined) return found;
+			const { start, end } = bounds(tl, index);
+			const svg = root.current?.querySelector<SVGSVGElement>(".wt-film-svg");
+			const still = svg ? shotStill(tl, svg, start, end) : end - 0.01;
+			known.set(index, still);
+			return still;
+		},
+		[bounds],
+	);
+
 	const paint = useCallback(
 		(tl: gsap.core.Timeline, now: number) => {
 			let index = 0;
@@ -266,12 +284,17 @@ export function Player({
 				// Stopping at the end of a shot is the learner's setting, not a pause they made,
 				// so it stays out of the pacing events.
 				if (stepRef.current && shotRef.current < last) {
-					const stop = bounds(tl, shotRef.current).end - LAST_FRAME;
-					if (tl.time() >= stop) {
+					const still = stillOf(tl, shotRef.current);
+					// GSAP rounds its time, so a seek to the still can land a hair short of it.
+					if (tl.time() >= still - 0.001) {
 						tl.pause();
-						tl.seek(stop, true);
+						tl.seek(still, true);
 						setHeld(true);
 						setPlaying(false);
+						time.current = still;
+						paint(tl, still);
+						if (fill.current) fill.current.style.transform = "scaleX(1)";
+						return;
 					}
 				}
 				time.current = tl.time();
@@ -287,7 +310,7 @@ export function Player({
 				(window as Window & { __tradelyFilm?: unknown }).__tradelyFilm = tl;
 			setReady((value) => value + 1);
 		},
-		[bounds, last, paint, record, shots],
+		[last, paint, record, shots, stillOf],
 	);
 
 	// The film runs while most of it is on screen and the page is visible.
@@ -380,7 +403,7 @@ export function Player({
 		}
 		const { start, end } = bounds(tl, shot);
 		tl.pause();
-		tl.seek(Math.max(start, end - LAST_FRAME), false);
+		tl.seek(stillOf(tl, shot), false);
 		time.current = tl.time();
 		if (fill.current) fill.current.style.transform = "scaleX(1)";
 		const timer = window.setTimeout(
@@ -409,6 +432,7 @@ export function Player({
 		seeks,
 		shot,
 		shots,
+		stillOf,
 		ready,
 	]);
 
