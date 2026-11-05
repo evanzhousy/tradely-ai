@@ -25,6 +25,8 @@ const FRESHNESS_PAGE = "3f491446-9b98-81ce-a18c-f1bcd36518b0";
 const REQUEST_SPACING_MS = 350;
 /** A 21-day window of about 80 rows a day takes around 17 pages. */
 const READ_TIMEOUT_MS = 60_000;
+/** Between reads, so a CDN miss on every region or a burst of visitors shares one read. */
+const READ_COOLDOWN_MS = 60_000;
 const MAX_ROWS = 5_000;
 /** The same window and author cap the saved snapshot uses, so both look alike. */
 const WINDOW_DAYS = 21;
@@ -41,6 +43,7 @@ class SourceUnavailable extends Error {
 	constructor(
 		readonly health: Health,
 		readonly code: string,
+		readonly retryAfterMs = 0,
 	) {
 		super(code);
 	}
@@ -180,9 +183,11 @@ export function createNotionReader(
 				...(body ? { body: JSON.stringify(body) } : {}),
 			});
 			if (!response.ok) {
+				const retryAfter = Number(response.headers.get("retry-after"));
 				throw new SourceUnavailable(
 					"failed",
 					response.status === 429 ? "rate_limited" : "notion_unavailable",
+					Number.isFinite(retryAfter) ? retryAfter * 1000 : 0,
 				);
 			}
 			return response.json();
@@ -476,13 +481,16 @@ const reviewedHandles = new Set(
 		.map((profile) => profile.handle.toLowerCase()),
 );
 
-let lastGood = savedSnapshot;
-let pending: Promise<{ snapshot: PostSnapshot; fresh: boolean }> | undefined;
+type FeedResult = { snapshot: PostSnapshot; fresh: boolean };
 
-async function refresh(
-	token: string,
-): Promise<{ snapshot: PostSnapshot; fresh: boolean }> {
+let lastGood = savedSnapshot;
+let latest: FeedResult = { snapshot: savedSnapshot, fresh: false };
+let pending: Promise<FeedResult> | undefined;
+let nextReadAt = 0;
+
+async function refresh(token: string): Promise<FeedResult> {
 	const attemptedAt = new Date().toISOString();
+	let cooldown = READ_COOLDOWN_MS;
 	try {
 		const read = await createNotionReader(token)(
 			reviewedHandles,
@@ -493,14 +501,15 @@ async function refresh(
 			throw new SourceUnavailable("partial", "source_regressed");
 		}
 		lastGood = buildLiveSnapshot(lastGood, read, attemptedAt);
-		return { snapshot: lastGood, fresh: true };
+		latest = { snapshot: lastGood, fresh: true };
 	} catch (error) {
 		const unavailable = error instanceof SourceUnavailable ? error : undefined;
 		const invalid = error instanceof z.ZodError;
+		cooldown = Math.max(cooldown, unavailable?.retryAfterMs ?? 0);
 		const code =
 			unavailable?.code ?? (invalid ? "invalid_source" : "read_failed");
 		console.error(`Options traders feed kept its last good data: ${code}`);
-		return {
+		latest = {
 			fresh: false,
 			snapshot: {
 				...lastGood,
@@ -512,6 +521,8 @@ async function refresh(
 			},
 		};
 	}
+	nextReadAt = Date.now() + cooldown;
+	return latest;
 }
 
 /** Without a token the saved snapshot is final: 204 tells the page there is nothing newer to ask for. */
@@ -523,10 +534,12 @@ export async function optionsTradersFeedResponse(): Promise<Response> {
 			headers: { "Cache-Control": DELAYED_CACHE },
 		});
 	}
-	pending ??= refresh(token).finally(() => {
-		pending = undefined;
-	});
-	const { snapshot, fresh } = await pending;
+	if (!pending && Date.now() >= nextReadAt) {
+		pending = refresh(token).finally(() => {
+			pending = undefined;
+		});
+	}
+	const { snapshot, fresh } = pending ? await pending : latest;
 	return Response.json(snapshot, {
 		headers: { "Cache-Control": fresh ? FRESH_CACHE : DELAYED_CACHE },
 	});
