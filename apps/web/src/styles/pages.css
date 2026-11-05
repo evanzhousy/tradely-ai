@@ -1057,3 +1057,15 @@
 		padding-inline: 14px;
 	}
 }
+@media (pointer: coarse) {
+	.options-traders-page a.button,
+	.options-traders-page [data-trader-controls] button,
+	.options-traders-page [data-trader-controls] input {
+		min-height: 44px;
+	}
+	.trader-link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 24px;
+	}
+}

@@ -319,7 +319,7 @@ export function TraderDirectory({
 					<noscript>
 						<style>
 							{
-								"[data-trader-profile][hidden]{display:flex!important}[data-trader-controls]{display:none}"
+								"@layer base{[data-trader-profile][hidden]{display:flex!important}}[data-trader-controls]{display:none}"
 							}
 						</style>
 						<p className="text-muted-foreground text-sm">
