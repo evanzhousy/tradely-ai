@@ -322,6 +322,7 @@ apps/web/scripts/film-audit/film-audit.sh check <id> <END>     # scan + flight c
 apps/web/scripts/film-audit/film-audit.sh timing <id> rows     # every headline's hold
 apps/web/scripts/film-audit/film-audit.sh frames <id> <prefix> 12.5,20 1440x900x1 en
 apps/web/scripts/film-audit/film-audit.sh play <id>...          # real-time playback; FILM_AUDIT_THROTTLE=4 slows the CPU
+apps/web/scripts/film-audit/film-audit.sh cards <id>...         # the lesson's link-preview card, from the frame at its hero-lock label; a new film or a moved hero needs this, and the card is committed
 ```
 
 A film is done when `check` prints nothing but its stamp, warnings included, or each warning has been read and judged deliberate.

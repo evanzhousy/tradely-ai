@@ -2,6 +2,7 @@ import { getLesson, tradingFlowCourse } from "@/content/course";
 import { getGuide, guides } from "@/content/guides";
 import { getLocalizedCourse } from "@/i18n/course";
 import type { Locale } from "@/i18n/messages";
+import { shareCards } from "./share-cards";
 import { canonicalUrl, SITE_NAME, SITE_ORIGIN } from "./site";
 
 export type SeoPage = {
@@ -12,6 +13,8 @@ export type SeoPage = {
 	sitemap: boolean;
 	updated?: string;
 	article?: boolean;
+	/** The link-preview card, 1200×630; a page without one shows the site's. */
+	image?: string;
 };
 
 const staticPages: SeoPage[] = [
@@ -182,6 +185,9 @@ export function seoPage(path: string): SeoPage | undefined {
 				description: lesson.summary,
 				index: true,
 				sitemap: true,
+				image: shareCards.has(lesson.slug)
+					? `/brand/share/${lesson.slug}.png`
+					: undefined,
 			};
 	}
 	return undefined;
@@ -227,6 +233,7 @@ export function pageHead(path: string) {
 		};
 	const index = page.index && import.meta.env.VITE_DEPLOYMENT_ENV !== "preview";
 	const url = canonicalUrl(page.path);
+	const image = canonicalUrl(page.image ?? "/brand/share/tradely.png");
 	return {
 		meta: [
 			{ title: page.title },
@@ -237,17 +244,14 @@ export function pageHead(path: string) {
 			{ property: "og:title", content: page.title },
 			{ property: "og:description", content: page.description },
 			{ property: "og:url", content: url },
-			{
-				property: "og:image",
-				content: canonicalUrl("/brand/tradely-mark.png"),
-			},
-			{ name: "twitter:card", content: "summary" },
+			{ property: "og:image", content: image },
+			{ property: "og:image:width", content: "1200" },
+			{ property: "og:image:height", content: "630" },
+			{ property: "og:image:alt", content: page.title },
+			{ name: "twitter:card", content: "summary_large_image" },
 			{ name: "twitter:title", content: page.title },
 			{ name: "twitter:description", content: page.description },
-			{
-				name: "twitter:image",
-				content: canonicalUrl("/brand/tradely-mark.png"),
-			},
+			{ name: "twitter:image", content: image },
 		],
 		links: [{ rel: "canonical", href: url }],
 	};

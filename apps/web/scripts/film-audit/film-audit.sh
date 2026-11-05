@@ -8,12 +8,13 @@
 #   film-audit.sh frames LESSON PREFIX TIMES SIZE LOCALE    screenshots at given times
 #   film-audit.sh play LESSON...            real-time playback at the default rate
 #   film-audit.sh evidence DIR "lesson:end:heroStart:heroEnd ..."   frames, GIFs and results for a review
+#   film-audit.sh cards [LESSON...]         link-preview cards from each film's hero, into the repository
 #
 # END is the film's END constant (its timeline runs to END − 2). TIMES is "a,b,c" or
 # "start:end:step" in timeline seconds; SIZE is 1440x900x1 or 390x844x2m.
 #
-# Pages run in ego-browser against a vite dev server on port 8262, started here if it is not
-# already up and stopped afterwards. Reports, frames and GIFs go to $FILM_AUDIT_OUT (default
+# Pages run in ego-browser against a vite dev server on port 8262 (or $FILM_AUDIT_PORT), started
+# here if it is not already up and stopped afterwards. Reports, frames and GIFs go to $FILM_AUDIT_OUT (default
 # $TMPDIR/tradely-film-audit), never into the repository.
 set -o pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -21,7 +22,7 @@ WEB="$(cd "$HERE/../.." && pwd)"
 REPO="$(cd "$WEB/../.." && pwd)"
 OUT="${FILM_AUDIT_OUT:-${TMPDIR:-/tmp}/tradely-film-audit}"
 OUT="${OUT%/}"
-PORT=8262
+PORT="${FILM_AUDIT_PORT:-8262}"
 mkdir -p "$OUT"
 
 # One ego-browser task space for every run; a browser restart loses it, so make a new one then.
@@ -174,9 +175,34 @@ cmd_evidence() { # DIR "lesson:end:heroStart:heroEnd ..."
 	ls "$J/gifs"
 }
 
+# Rerun for a new film or a moved hero. The cards go to public/brand/share, and the list of them
+# to src/seo/share-cards.ts; a lesson not on the list keeps the site's card.
+cmd_cards() { # [LESSON...]
+	local dir="$OUT/share-cards" pub="$WEB/public/brand/share" lessons
+	mkdir -p "$dir" "$pub"
+	if [ $# -gt 0 ]; then lessons="$(printf '%s\n' "$@")"
+	else lessons="$(cd "$WEB/src/features/learning/lessons" && ls -- *-film.tsx | sed 's/-film\.tsx$//')"; fi
+	run share-cards.mjs SPACE="$(space)" LESSONS="$lessons" OUT="$dir" PORT="$PORT" \
+		SITE_TITLE="Learn options research for free." SITE_FILM="what-options-are"
+	# Flat frames keep their detail in a small palette, at a fraction of the size.
+	for card in $lessons tradely; do
+		[ -f "$dir/$card.png" ] && magick "$dir/$card.png" -strip -colors 128 "PNG8:$pub/$card.png"
+	done
+	{
+		echo '/** Lessons with a card in public/brand/share. Written by film-audit.sh cards. */'
+		echo 'export const shareCards: ReadonlySet<string> = new Set(['
+		for card in "$pub"/*.png; do
+			card="$(basename "$card" .png)"
+			[ "$card" = tradely ] || printf '\t"%s",\n' "$card"
+		done
+		echo ']);'
+	} > "$WEB/src/seo/share-cards.ts"
+	du -sh "$pub"
+}
+
 [ $# -ge 1 ] || { sed -n '2,20p' "$0"; exit 1; }
 sub=$1; shift
 case "$sub" in
-	check | scan | flight | timing | frames | play | evidence) server_up; "cmd_$sub" "$@" ;;
+	check | scan | flight | timing | frames | play | evidence | cards) server_up; "cmd_$sub" "$@" ;;
 	*) sed -n '2,20p' "$0"; exit 1 ;;
 esac
