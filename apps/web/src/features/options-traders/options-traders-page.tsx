@@ -1,7 +1,7 @@
 import { buttonVariants } from "@tradely/ui/components/button";
 import { Link as HeroLink } from "@tradely/ui/components/link";
 import { ArrowDownIcon, ExternalLinkIcon } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
@@ -13,6 +13,7 @@ import {
 	formatRecordedTime,
 	latestPostAt,
 	PLATFORMS,
+	type PostSnapshot,
 	profileAnchor,
 	withObservedLanguages,
 } from "./model";
@@ -21,6 +22,7 @@ import { TopTraders } from "./top-traders";
 import { TraderDirectory } from "./trader-directory";
 
 const FIRST_SCREEN_TRADERS = 5;
+const FEED_PATH = "/api/options-traders";
 const OPTION_TRADES_URL =
 	"https://app.tradingflow.com/app/option-trades/live?utm_source=tradely&utm_medium=options_traders";
 
@@ -47,14 +49,50 @@ function OpenOptionTrades({ surface }: { surface: "hero" | "closing" }) {
 	);
 }
 
+/**
+ * The page renders the saved snapshot at once, then asks the feed for newer posts once per load, so
+ * a slow or failing read never delays or empties the page. Filters are untouched by the swap.
+ */
+function useLatestSnapshot(saved: PostSnapshot): PostSnapshot {
+	const [snapshot, setSnapshot] = useState(saved);
+	useEffect(() => {
+		const controller = new AbortController();
+		async function checkForNewerPosts() {
+			try {
+				const response = await fetch(FEED_PATH, { signal: controller.signal });
+				// No feed is configured here, so the saved snapshot is final and nothing is late.
+				if (response.status === 204) return;
+				if (!response.ok) throw new Error("Feed unavailable");
+				setSnapshot((await response.json()) as PostSnapshot);
+			} catch {
+				if (controller.signal.aborted) return;
+				setSnapshot((current) => ({
+					...current,
+					freshness: {
+						...current.freshness,
+						status: "failed",
+						lastAttemptedAt: new Date().toISOString(),
+					},
+				}));
+			}
+		}
+		void checkForNewerPosts();
+		return () => controller.abort();
+	}, []);
+	return snapshot;
+}
+
 function Freshness({
 	snapshot,
 	postsThrough,
 }: {
-	snapshot: typeof savedSnapshot;
+	snapshot: PostSnapshot;
 	postsThrough: string | null;
 }) {
 	const { freshness, metricsCapturedAt } = snapshot;
+	const delayed =
+		freshness.status === "failed" || freshness.status === "partial";
+	const live = snapshot !== savedSnapshot && freshness.status === "success";
 	const dates = [
 		// A sync that was never recorded is not a date to show.
 		...(freshness.dataSyncedAt
@@ -85,16 +123,32 @@ function Freshness({
 					</div>
 				))}
 			</dl>
+			{delayed ? (
+				<p role="status" className="text-sm">
+					<strong>Refresh delayed.</strong> Showing the last saved data.
+					{freshness.lastAttemptedAt ? (
+						<>
+							{" "}
+							Last attempt:{" "}
+							<time dateTime={freshness.lastAttemptedAt}>
+								{formatRecordedTime(freshness.lastAttemptedAt)}
+							</time>
+							.
+						</>
+					) : null}
+				</p>
+			) : null}
 			<p className="text-muted-foreground text-xs leading-relaxed">
 				These dates describe the saved posts across all languages. Follower
 				counts have separate as-of dates.
+				{live ? " Newer digest posts were added when this page loaded." : ""}
 			</p>
 		</div>
 	);
 }
 
 export function OptionsTradersPage() {
-	const snapshot = savedSnapshot;
+	const snapshot = useLatestSnapshot(savedSnapshot);
 	const profiles = useMemo(
 		() => withObservedLanguages(savedProfiles, snapshot.posts),
 		[snapshot.posts],
