@@ -40,6 +40,14 @@ const staticPages: SeoPage[] = [
 		sitemap: true,
 	},
 	{
+		path: "/options-traders",
+		title: "Options Traders to Follow: X, YouTube & Reddit | Tradely",
+		description:
+			"Explore options traders on X, YouTube and Reddit. Start with a top 30 on X, search the full directory and compare their focus and saved posts.",
+		index: true,
+		sitemap: true,
+	},
+	{
 		path: "/courses/tradingflow-foundations",
 		title: "Options Research Course: Visual Lessons | Tradely",
 		description:

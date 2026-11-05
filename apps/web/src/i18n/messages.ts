@@ -157,6 +157,7 @@ const messages = {
 		"nav.learn": "Home",
 		"nav.course": "Curriculum",
 		"nav.guides": "Guides",
+		"nav.optionsTraders": "Options traders",
 		"nav.changelog": "Changelog",
 		"home.guidesTitle": "Start with a question about options.",
 		"home.guidesDescription":
@@ -485,6 +486,7 @@ const messages = {
 		"nav.learn": "首页",
 		"nav.course": "课程目录",
 		"nav.guides": "知识指南",
+		"nav.optionsTraders": "期权交易者",
 		"nav.changelog": "更新日志",
 		"home.guidesTitle": "从一个期权问题开始。",
 		"home.guidesDescription":

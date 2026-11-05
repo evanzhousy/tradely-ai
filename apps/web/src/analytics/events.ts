@@ -51,6 +51,7 @@ type VisualLessonEventProperties = {
 export type AnalyticsRouteName =
 	| "guides"
 	| "guide"
+	| "options_traders"
 	| "home"
 	| "course"
 	| "lesson"
@@ -205,7 +206,12 @@ export type AnalyticsEventMap = {
 		to_rate: number;
 	};
 	tradingflow_link_opened: Partial<LabEventProperties> & {
-		surface: "header" | "home_hero" | "lesson_practice" | "lesson_lab";
+		surface:
+			| "header"
+			| "home_hero"
+			| "lesson_practice"
+			| "lesson_lab"
+			| "options_traders";
 		lesson_id?: string;
 		tool?: TradingFlowPractice["tool"];
 	};
@@ -505,6 +511,7 @@ export function analyticsRouteName(pathname: string): AnalyticsRouteName {
 	if (pathname === "/guides" || pathname === "/guides/") return "guides";
 	if (pathname.startsWith("/guides/")) return "guide";
 	if (pathname === "/") return "home";
+	if (pathname === "/options-traders") return "options_traders";
 	if (pathname === "/courses/tradingflow-foundations") return "course";
 	if (pathname.startsWith("/learn/")) return "lesson";
 	if (pathname === "/pricing") return "pricing";

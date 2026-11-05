@@ -37,7 +37,7 @@ export function Footer() {
 	});
 	const { isConfigured, openPreferences } = useAnalytics();
 	const year = new Date().getFullYear();
-	// Guides and the changelog are written in English only.
+	// Guides, the trader directory and the changelog are written in English only.
 	const inEnglish =
 		locale === "zh" ? <span className="ms-1 text-xs">（英文）</span> : null;
 	return (
@@ -69,6 +69,12 @@ export function Footer() {
 					<li>
 						<AppLink to="/guides" className={footerLink}>
 							{t("nav.guides")}
+							{inEnglish}
+						</AppLink>
+					</li>
+					<li>
+						<AppLink to="/options-traders" className={footerLink}>
+							{t("nav.optionsTraders")}
 							{inEnglish}
 						</AppLink>
 					</li>

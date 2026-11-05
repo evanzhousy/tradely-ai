@@ -28,7 +28,9 @@ export function RouteAnalytics() {
 				route_name: analyticsRouteName(path),
 				path,
 				locale:
-					path === "/guides" || path.startsWith("/guides/")
+					path === "/guides" ||
+					path.startsWith("/guides/") ||
+					path === "/options-traders"
 						? "en"
 						: localeRef.current,
 			})
