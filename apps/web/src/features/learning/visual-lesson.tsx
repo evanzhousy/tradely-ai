@@ -393,6 +393,37 @@ export function preloadVisualLesson(lessonId: string) {
 	void lessons[lessonId as keyof typeof lessons]?.preload();
 }
 
+/**
+ * A lesson shown outside its own page, as the home page's sample. Without the lesson's identity
+ * the player records nothing, so a visitor sampling it doesn't count as having opened the lesson.
+ */
+export function VisualLessonSample({
+	lessonId,
+	locale,
+}: {
+	lessonId: string;
+	locale: Locale;
+}) {
+	const Lesson = lessons[lessonId as keyof typeof lessons]?.Component;
+	if (!Lesson) return null;
+	return (
+		<LessonSurfaceBoundary lessonId={lessonId} locale={locale} surface="visual">
+			<div
+				className="visual-color-system"
+				data-visual-palette={getDiagramPalette(lessonId)}
+			>
+				<LessonMotion>
+					<Suspense
+						fallback={<LessonLoading locale={locale} checkpoint={false} />}
+					>
+						<Lesson locale={locale} />
+					</Suspense>
+				</LessonMotion>
+			</div>
+		</LessonSurfaceBoundary>
+	);
+}
+
 export function VisualLesson({
 	lessonId,
 	locale,

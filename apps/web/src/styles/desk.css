@@ -1155,6 +1155,28 @@
 	font-size: 11px;
 	line-height: 1.7;
 }
+/* A working lesson under the hero. It reserves its height while its code loads. */
+.landing-lesson {
+	padding-block: 72px 56px;
+}
+/* The lesson's own width, so the film and its controls fit a laptop's screen together. */
+.landing-lesson-stage {
+	max-width: 1000px;
+	margin-inline: auto;
+	scroll-margin-top: 84px;
+}
+.landing-lesson-loading {
+	aspect-ratio: 16 / 10;
+	width: 100%;
+	overflow: hidden;
+	border-radius: 1rem;
+}
+.landing-lesson-more {
+	display: flex;
+	justify-content: center;
+	margin-top: 28px;
+	scroll-margin-top: 96px;
+}
 .landing-materials {
 	position: absolute;
 	inset: 0;

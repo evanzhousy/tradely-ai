@@ -12,6 +12,7 @@ import {
 import { AppLink } from "@/components/app-link";
 import { GuideCards } from "@/components/guide-cards";
 import { LandingCurriculum } from "@/components/landing-curriculum";
+import { LandingLessonSample } from "@/components/landing-lesson-sample";
 import { useLandingMotion } from "@/components/landing-motion";
 import { LandingPlatformFeatures } from "@/components/landing-platform-features";
 import { LandingStudyMaterials } from "@/components/landing-study-materials";
@@ -100,7 +101,10 @@ function HomeComponent() {
 									{t("home.startFree")}
 								</InteractiveHoverLink>
 							) : null}
-							<HeroLink href="#research-demo" className="observatory-text-link">
+							<HeroLink
+								href="#lesson-sample-stage"
+								className="observatory-text-link"
+							>
 								<BookOpenIcon size={16} aria-hidden="true" />
 								{t("home.seeInside")}
 							</HeroLink>
@@ -170,6 +174,7 @@ function HomeComponent() {
 					<p className="landing-partner-note">{t("home.partnerDisclosure")}</p>
 				</div>
 			</section>
+			<LandingLessonSample />
 			<section
 				className="observatory-container flex flex-col gap-6 py-12"
 				aria-labelledby="home-guides-title"
