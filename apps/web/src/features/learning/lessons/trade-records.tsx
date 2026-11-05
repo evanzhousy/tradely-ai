@@ -1,4 +1,5 @@
 import * as m from "motion/react-m";
+import { useRef, useState } from "react";
 import {
 	applyMessages,
 	type Copy,
@@ -10,6 +11,11 @@ import {
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
+import { Announce } from "../walkthrough/announce";
+import {
+	type PrintField,
+	PrintInspector,
+} from "../walkthrough/instruments/print-inspector";
 import {
 	type TapeRow,
 	TradeTape,
@@ -19,10 +25,13 @@ import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame } from "../walkthrough/walkthrough";
+import { symbolParts } from "./option-contracts-model";
 import { tradeRecordsFilm } from "./trade-records-film";
 import {
 	aggregate,
+	premiumContribution,
 	price4,
+	records,
 	type SourceId,
 	sources,
 } from "./trade-records-model";
@@ -162,6 +171,152 @@ function AggregateCard({
 	);
 }
 
+/** The print behind one tape row, field by field. */
+function printFields(id: SourceId, locale: Locale): PrintField[] {
+	const t = tr(locale);
+	const source = sources[id];
+	const record = records[id];
+	const { quote } = record;
+	const parts = symbolParts(record.contract);
+	const atAsk = quote !== null && source.price === quote.ask;
+	return [
+		{
+			id: "contract",
+			label: t(["Contract", "合约"]),
+			value: t([
+				`ALFA Oct 18 ${t(source.contract)}`,
+				`ALFA 10月18日 ${t(source.contract)}`,
+			]),
+			parts: [
+				{ text: parts.root.trim(), names: t(["underlying", "标的"]) },
+				{ text: parts.date, names: t(["expiry", "到期日"]) },
+				{ text: parts.right, names: t(["call", "看涨"]) },
+				{
+					text: parts.strike,
+					names: t([`strike $${source.strike}`, `行权价 $${source.strike}`]),
+				},
+			],
+			why: t([
+				"The standard symbol names one contract exactly.",
+				"标准代码精确指明一张合约。",
+			]),
+			evidence: "observed",
+		},
+		{
+			id: "size",
+			label: t(["Size and price", "数量与价格"]),
+			value: t([
+				`${count(source.quantity)} contracts at ${usd(source.price)}`,
+				`${count(source.quantity)} 张，每股 ${usd(source.price)}`,
+			]),
+			why: t([
+				"The price is per share; one contract covers 100 shares.",
+				"价格按每股计；一张合约代表 100 股。",
+			]),
+			evidence: "observed",
+		},
+		{
+			id: "premium",
+			label: t(["Premium", "权利金"]),
+			value: usd(premiumContribution(id), 0),
+			why: t([
+				`${usd(source.price)} × ${count(source.quantity)} × 100, worked out from the print.`,
+				`${usd(source.price)} × ${count(source.quantity)} × 100，由这笔成交算出。`,
+			]),
+			evidence: "calculated",
+		},
+		quote
+			? {
+					id: "quote",
+					label: t(["Quote at that moment", "当时的报价"]),
+					value: `${usd(quote.bid)} / ${usd(quote.ask)}`,
+					why: t([
+						`Bid and ask at ${quote.time}, just before the print.`,
+						`${quote.time} 的买价和卖价，就在这笔成交之前。`,
+					]),
+					evidence: "observed",
+				}
+			: {
+					id: "quote",
+					label: t(["Quote at that moment", "当时的报价"]),
+					value: t(["Not kept", "没有保存"]),
+					why: t([
+						`No quote from ${record.time} is on record to compare the price with.`,
+						`没有保存 ${record.time} 的报价，无从比较这个价格。`,
+					]),
+					evidence: "unknown",
+				},
+		quote
+			? {
+					id: "side",
+					label: t(["Where it printed", "成交位置"]),
+					value: atAsk
+						? t(["At the ask", "在卖价"])
+						: t(["Inside the spread", "价差之内"]),
+					why: atAsk
+						? t([
+								"A buyer probably started it. That is a reading of the price, not a recorded fact.",
+								"可能是买方发起。这是根据价格作出的判断，并非记录在案的事实。",
+							])
+						: t([
+								"The price alone can't say who started it.",
+								"仅凭价格无法判断谁发起。",
+							]),
+					evidence: "inferred",
+				}
+			: {
+					id: "side",
+					label: t(["Where it printed", "成交位置"]),
+					value: t(["Can't be placed", "无法判断"]),
+					why: t([
+						"Placing a print takes the quote at that moment.",
+						"判断位置需要当时的报价。",
+					]),
+					evidence: "unknown",
+				},
+		{
+			id: "condition",
+			label: t(["Condition", "成交条件"]),
+			value:
+				record.condition === "none"
+					? t(["None marked", "未标记"])
+					: record.condition === "block-leg"
+						? t(["Auction, multi-leg", "竞价、多腿"])
+						: t(["Multi-leg", "多腿"]),
+			why:
+				record.condition === "none"
+					? t([
+							"Nothing on the record about how it was matched.",
+							"记录里没有关于撮合方式的标记。",
+						])
+					: record.condition === "block-leg"
+						? t([
+								"How it was matched: arranged off screen, as one leg of a package. The next lesson reads these.",
+								"撮合方式：在屏幕外安排，是一个组合中的一条腿。下一课会读懂这些条件。",
+							])
+						: t([
+								"How it was matched: as one leg of a package. The next lesson reads these.",
+								"撮合方式：是一个组合中的一条腿。下一课会读懂这些条件。",
+							]),
+			evidence: "observed",
+		},
+		{
+			id: "unknown",
+			label: t(["Not on the record", "记录里没有"]),
+			value: t(["Who, why, opening or closing", "谁、为什么、开仓或平仓"]),
+			why: t([
+				"A print never says who traded, why, or whether a position opened or closed.",
+				"一笔成交不会说明谁在交易、为什么交易，也不说明是开仓还是平仓。",
+			]),
+			evidence: "unknown",
+		},
+	];
+}
+
+/** A finger needs more than the usual tape row; a mouse doesn't. */
+const PICK_ROW = 48;
+const PHONE_WIDTH = 520;
+
 function AggregateView({
 	locale,
 	phase,
@@ -178,10 +333,28 @@ function AggregateView({
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
 	const result = aggregate(shown.include);
-	const rows: TapeRow[] = (["t1", "t3", "leg"] as const).map((id) => {
+	// The prints open up only in the playground: their fields could answer the prediction.
+	const inspecting = phase === "explore";
+	const [picked, setPicked] = useState<SourceId | null>(null);
+	const inspected = inspecting ? picked : null;
+	const box = useRef<HTMLDivElement>(null);
+	const closeInspector = () => {
+		const row = picked;
+		setPicked(null);
+		if (row)
+			box.current
+				?.querySelector<SVGGElement>(`[data-row="${sources[row].trade}"]`)
+				?.focus({ preventScroll: true });
+	};
+	const printTitle = inspected
+		? `${sources[inspected].trade} · ${records[inspected].time}`
+		: "";
+	const printIds = ["t1", "t3", "leg"] as const;
+	const rows: TapeRow[] = printIds.map((id) => {
 		const source = sources[id];
 		return {
-			key: id,
+			// The trade ID sorts in the order shown, as the tape's selectable rows need.
+			key: source.trade,
 			cells: [
 				source.trade,
 				source.time,
@@ -190,10 +363,17 @@ function AggregateView({
 				usd(source.price),
 			],
 			muted: !shown.include.includes(id),
+			name: t([
+				`${source.trade}, ${t(source.contract)}, ${count(source.quantity)} contracts at ${usd(source.price)}. Show this print's details.`,
+				`${source.trade}，${t(source.contract)}，${count(source.quantity)} 张，每股 ${usd(source.price)}。查看这笔成交的详情。`,
+			]),
 		};
 	});
+	const rowHeight = (width: number) =>
+		inspecting && width < PHONE_WIDTH ? PICK_ROW : undefined;
+	const cardTop = (width: number) =>
+		tapeHeight(3, 1, false, rowHeight(width)) + 12;
 	const tapeTop = 0;
-	const cardTop = tapeHeight(3) + 12;
 	const outcome: ResultItem[] = !result.valid
 		? [
 				{
@@ -236,43 +416,76 @@ function AggregateView({
 	return (
 		<SceneFrame
 			stage={
-				<Stage
-					label={t([
-						"Source prints of the Oct 18 105 call and the aggregate row built from them",
-						"10月18日 105 看涨的原始成交，以及由它们建立的聚合行",
-					])}
-					height={cardTop + CARD_ROWS * CARD_ROW + 44}
-				>
-					{(width) => (
-						<g>
-							<TradeTape
-								x={8}
-								y={tapeTop}
-								width={width - 16}
-								title={t([
-									"Source prints · Oct 18 calls",
-									"原始成交 · 10月18日 看涨",
-								])}
-								columns={[
-									{ label: t(["Trade", "成交"]), share: 0.16 },
-									{ label: t(["Time", "时间"]), share: 0.18 },
-									{ label: t(["Contract", "合约"]), share: 0.24 },
-									{ label: t(["Qty", "张数"]), share: 0.18, align: "end" },
-									{ label: t(["Price", "价格"]), share: 0.24, align: "end" },
-								]}
-								rows={rows}
-								maxRows={3}
-								empty=""
-							/>
-							<AggregateCard
-								width={width}
-								y={cardTop}
-								state={shown}
-								locale={locale}
-							/>
-						</g>
-					)}
-				</Stage>
+				<div ref={box}>
+					<Stage
+						label={t([
+							"Source prints of the Oct 18 105 call and the aggregate row built from them",
+							"10月18日 105 看涨的原始成交，以及由它们建立的聚合行",
+						])}
+						height={(width) => cardTop(width) + CARD_ROWS * CARD_ROW + 44}
+						interactive={inspecting}
+					>
+						{(width) => (
+							<g>
+								<TradeTape
+									x={8}
+									y={tapeTop}
+									width={width - 16}
+									title={t([
+										"Source prints · Oct 18 calls",
+										"原始成交 · 10月18日 看涨",
+									])}
+									columns={[
+										{ label: t(["Trade", "成交"]), share: 0.16 },
+										{ label: t(["Time", "时间"]), share: 0.18 },
+										{ label: t(["Contract", "合约"]), share: 0.24 },
+										{ label: t(["Qty", "张数"]), share: 0.18, align: "end" },
+										{ label: t(["Price", "价格"]), share: 0.24, align: "end" },
+									]}
+									rows={rows}
+									maxRows={3}
+									empty=""
+									rowHeight={rowHeight(width)}
+									selected={inspected ? sources[inspected].trade : null}
+									onSelect={
+										inspecting
+											? (key) => {
+													const id =
+														printIds.find(
+															(item) => sources[item].trade === key,
+														) ?? null;
+													setPicked((now) => (now === id ? null : id));
+												}
+											: undefined
+									}
+								/>
+								<AggregateCard
+									width={width}
+									y={cardTop(width)}
+									state={shown}
+									locale={locale}
+								/>
+							</g>
+						)}
+					</Stage>
+					{inspecting ? <Announce text={printTitle} /> : null}
+					{inspected ? (
+						<PrintInspector
+							title={printTitle}
+							fields={printFields(inspected, locale)}
+							locale={locale}
+							closeLabel={t(["Close this print", "关闭这笔成交"])}
+							onClose={closeInspector}
+						/>
+					) : inspecting ? (
+						<p className="wt-print-hint">
+							{t([
+								"Select a print on the tape to see what its record says.",
+								"选择一笔成交，看看它的记录说了什么。",
+							])}
+						</p>
+					) : null}
+				</div>
 			}
 			result={outcome}
 			controls={

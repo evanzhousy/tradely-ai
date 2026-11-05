@@ -301,10 +301,13 @@ export function Appear({
 export function Stage({
 	label,
 	height,
+	interactive = false,
 	children,
 }: {
 	label: string;
 	height: number | ((width: number) => number);
+	/** The drawing holds controls, so assistive technology must reach inside it. */
+	interactive?: boolean;
 	children: (width: number) => ReactNode;
 }) {
 	const box = useRef<HTMLDivElement>(null);
@@ -353,7 +356,7 @@ export function Stage({
 				viewBox={`0 0 ${width} ${h}`}
 				width={width}
 				height={h}
-				role="img"
+				role={interactive ? "group" : "img"}
 				aria-label={label}
 			>
 				<defs>

@@ -1,4 +1,10 @@
-import { type Copy, oct105CallBlock, oct105CallLast } from "@/content/world";
+import {
+	type Contract,
+	type Copy,
+	oct105BlockLegs,
+	oct105CallBlock,
+	oct105CallLast,
+} from "@/content/world";
 
 export type SourceId = "t1" | "t3" | "leg";
 export const BLOCK_TIME = oct105CallBlock.time.slice(0, 5);
@@ -38,6 +44,47 @@ export const sources: Record<
 		strike: oct105CallBlock.pairedLeg.strike,
 		quantity: oct105CallBlock.pairedLeg.quantity,
 		price: oct105CallBlock.pairedLeg.price,
+	},
+};
+
+/**
+ * What the feed holds on each row beyond the tape's columns. T-1 is the contract's first print
+ * of the day and no quote from 10:12 is kept. T-3 and T-4 are the two legs of the 10:50 block.
+ */
+export const records: Record<
+	SourceId,
+	{
+		time: string;
+		contract: Contract;
+		quote: { time: string; bid: number; ask: number } | null;
+		condition: "none" | "block-leg" | "leg";
+	}
+> = {
+	t1: {
+		time: oct105CallLast.time,
+		contract: { expiry: "oct18", strike: 105, right: "call" },
+		quote: null,
+		condition: "none",
+	},
+	t3: {
+		time: oct105CallBlock.time,
+		contract: { expiry: "oct18", strike: 105, right: "call" },
+		quote: oct105CallBlock.quote,
+		condition: "block-leg",
+	},
+	leg: {
+		time: oct105CallBlock.time,
+		contract: {
+			expiry: "oct18",
+			strike: oct105CallBlock.pairedLeg.strike,
+			right: "call",
+		},
+		quote: {
+			time: oct105CallBlock.quote.time,
+			bid: oct105BlockLegs.sell.bid,
+			ask: oct105BlockLegs.sell.ask,
+		},
+		condition: "leg",
 	},
 };
 

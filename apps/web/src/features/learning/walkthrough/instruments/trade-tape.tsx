@@ -1,5 +1,6 @@
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
+import type { ReactNode } from "react";
 import { Label, useTeachMotion } from "../stage";
 import { textWidth, twoRows } from "../text-measure";
 
@@ -14,6 +15,8 @@ export type TapeRow = {
 	/** A class per cell, for a cell that carries a role: a signed value's up or down, an unknown's caution. */
 	cellClass?: readonly (string | undefined)[];
 	muted?: boolean;
+	/** What a screen reader calls the row, on a tape whose rows can be selected. */
+	name?: string;
 };
 
 const ROW = 26;
@@ -42,12 +45,47 @@ export function tapeTitle(title: string, width: number): string[] {
 }
 
 /** Height of a tape of `maxRows` rows whose title takes `titleLines` lines. */
-export function tapeHeight(maxRows: number, titleLines = 1, stacked = false) {
+export function tapeHeight(
+	maxRows: number,
+	titleLines = 1,
+	stacked = false,
+	rowHeight = stacked ? STACKED_ROW : ROW,
+) {
+	return HEAD + (titleLines - 1) * TITLE_LINE + maxRows * rowHeight + 10;
+}
+
+/** A row as a button: an SVG group has no button element to use, so it takes both keys itself. */
+function SelectableRow({
+	rowKey,
+	name,
+	pressed,
+	onSelect,
+	children,
+}: {
+	rowKey: string;
+	name?: string;
+	pressed: boolean;
+	onSelect: (key: string) => void;
+	children: ReactNode;
+}) {
 	return (
-		HEAD +
-		(titleLines - 1) * TITLE_LINE +
-		maxRows * (stacked ? STACKED_ROW : ROW) +
-		10
+		// biome-ignore lint/a11y/useSemanticElements: an SVG group can't be a <button>, and an SVG drawing can't hold one.
+		<g
+			role="button"
+			tabIndex={0}
+			aria-label={name}
+			aria-pressed={pressed}
+			className="wt-tape-row"
+			data-row={rowKey}
+			onClick={() => onSelect(rowKey)}
+			onKeyDown={(event) => {
+				if (event.key !== "Enter" && event.key !== " ") return;
+				event.preventDefault();
+				onSelect(rowKey);
+			}}
+		>
+			{children}
+		</g>
 	);
 }
 
@@ -62,6 +100,9 @@ export function TradeTape({
 	maxRows = 4,
 	empty,
 	stacked = false,
+	rowHeight: tallRow,
+	selected,
+	onSelect,
 }: {
 	x: number;
 	y: number;
@@ -73,12 +114,22 @@ export function TradeTape({
 	empty: string;
 	/** Each row's first cell takes a line of its own, for long names on a phone. */
 	stacked?: boolean;
+	/** A taller row than usual, as a finger needs on a tape whose rows can be selected. */
+	rowHeight?: number;
+	selected?: string | null;
+	/**
+	 * Makes each row a button. The Stage around the tape must be `interactive`, and the rows' keys
+	 * must sort in the order they're shown, since that is the order Tab reaches them in.
+	 */
+	onSelect?: (key: string) => void;
 }) {
 	const motion = useTeachMotion();
 	const inner = width - 24;
 	const titleLines = tapeTitle(title, width);
 	const head = HEAD + (titleLines.length - 1) * TITLE_LINE;
-	const rowHeight = stacked ? STACKED_ROW : ROW;
+	const rowHeight = tallRow ?? (stacked ? STACKED_ROW : ROW);
+	/** Keeps a row's text centred when the row is taller than usual. */
+	const rowInset = tallRow ? (tallRow - ROW) / 2 : 0;
 	// Columns share a line's width: all of them, or when stacked the first alone and the
 	// rest on the line under it.
 	const lineOf = (i: number) => (stacked && i > 0 ? 1 : 0);
@@ -107,6 +158,19 @@ export function TradeTape({
 		const spare = shareOf(n) * inner - textWidth(cells[n] ?? "", CELL_SIZE) - 8;
 		return own + Math.max(0, spare);
 	};
+	const cells = (row: TapeRow) =>
+		row.cells.map((cell, i) => (
+			<Label
+				key={columns[i].label}
+				x={cellX(i)}
+				y={y + head + 18 + rowInset + lineOf(i) * STACKED_LINE}
+				anchor={columns[i].align === "end" ? "end" : "start"}
+				maxWidth={room(row.cells, i)}
+				className={row.cellClass?.[i]}
+			>
+				{cell}
+			</Label>
+		));
 	const visible = rows.slice(0, maxRows);
 	// Rows render in a fixed key order and take their place from `index`: a row that React
 	// moves in the DOM never starts its motion, so a reordered row would stay where it was.
@@ -121,7 +185,7 @@ export function TradeTape({
 				x={x}
 				y={y}
 				width={width}
-				height={tapeHeight(maxRows, titleLines.length, stacked)}
+				height={tapeHeight(maxRows, titleLines.length, stacked, rowHeight)}
 				rx={10}
 				className="wt-panel-shape"
 			/>
@@ -159,18 +223,26 @@ export function TradeTape({
 						exit={{ opacity: 0 }}
 						transition={motion.move}
 					>
-						{row.cells.map((cell, i) => (
-							<Label
-								key={columns[i].label}
-								x={cellX(i)}
-								y={y + head + 18 + lineOf(i) * STACKED_LINE}
-								anchor={columns[i].align === "end" ? "end" : "start"}
-								maxWidth={room(row.cells, i)}
-								className={row.cellClass?.[i]}
+						{onSelect ? (
+							<SelectableRow
+								rowKey={row.key}
+								name={row.name}
+								pressed={selected === row.key}
+								onSelect={onSelect}
 							>
-								{cell}
-							</Label>
-						))}
+								<rect
+									x={x + 4}
+									y={y + head + 0.5}
+									width={width - 8}
+									height={rowHeight - 1}
+									rx={6}
+									className="wt-tape-hit"
+								/>
+								{cells(row)}
+							</SelectableRow>
+						) : (
+							cells(row)
+						)}
 					</m.g>
 				))}
 			</AnimatePresence>

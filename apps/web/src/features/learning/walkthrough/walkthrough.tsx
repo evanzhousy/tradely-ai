@@ -821,7 +821,13 @@ const evidenceCopy: Record<EvidenceKind, { name: Copy; meaning: Copy }> = {
 };
 
 /** Where a result comes from, drawn by line as on the films; its meaning opens on demand. */
-function EvidenceTag({ kind, locale }: { kind: EvidenceKind; locale: Locale }) {
+export function EvidenceTag({
+	kind,
+	locale,
+}: {
+	kind: EvidenceKind;
+	locale: Locale;
+}) {
 	const name = pick(evidenceCopy[kind].name, locale);
 	return (
 		<Popover>
