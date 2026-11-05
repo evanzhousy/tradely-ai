@@ -1,5 +1,4 @@
 import {
-	type Contract,
 	type Copy,
 	oct105BlockLegs,
 	oct105CallBlock,
@@ -48,43 +47,25 @@ export const sources: Record<
 };
 
 /**
- * What the feed holds on each row beyond the tape's columns. T-1 is the contract's first print
- * of the day and no quote from 10:12 is kept. T-3 and T-4 are the two legs of the 10:50 block.
+ * Each print's exact time and the quote just before it. T-1 is the contract's first print of the
+ * day and no quote from 10:12 is kept. T-3 and T-4 are the two legs of the 10:50 block.
  */
 export const records: Record<
 	SourceId,
 	{
 		time: string;
-		contract: Contract;
 		quote: { time: string; bid: number; ask: number } | null;
-		condition: "none" | "block-leg" | "leg";
 	}
 > = {
-	t1: {
-		time: oct105CallLast.time,
-		contract: { expiry: "oct18", strike: 105, right: "call" },
-		quote: null,
-		condition: "none",
-	},
-	t3: {
-		time: oct105CallBlock.time,
-		contract: { expiry: "oct18", strike: 105, right: "call" },
-		quote: oct105CallBlock.quote,
-		condition: "block-leg",
-	},
+	t1: { time: oct105CallLast.time, quote: null },
+	t3: { time: oct105CallBlock.time, quote: oct105CallBlock.quote },
 	leg: {
 		time: oct105CallBlock.time,
-		contract: {
-			expiry: "oct18",
-			strike: oct105CallBlock.pairedLeg.strike,
-			right: "call",
-		},
 		quote: {
 			time: oct105CallBlock.quote.time,
 			bid: oct105BlockLegs.sell.bid,
 			ask: oct105BlockLegs.sell.ask,
 		},
-		condition: "leg",
 	},
 };
 

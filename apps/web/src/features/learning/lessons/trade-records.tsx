@@ -11,7 +11,6 @@ import {
 } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField } from "../concept-scene";
-import { Announce } from "../walkthrough/announce";
 import {
 	type PrintField,
 	PrintInspector,
@@ -25,7 +24,6 @@ import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame } from "../walkthrough/walkthrough";
-import { symbolParts } from "./option-contracts-model";
 import { tradeRecordsFilm } from "./trade-records-film";
 import {
 	aggregate,
@@ -171,50 +169,13 @@ function AggregateCard({
 	);
 }
 
-/** The print behind one tape row, field by field. */
+/** The print behind one tape row: what it adds up to, where it stands, and what no print says. */
 function printFields(id: SourceId, locale: Locale): PrintField[] {
 	const t = tr(locale);
 	const source = sources[id];
-	const record = records[id];
-	const { quote } = record;
-	const parts = symbolParts(record.contract);
+	const { quote, time } = records[id];
 	const atAsk = quote !== null && source.price === quote.ask;
 	return [
-		{
-			id: "contract",
-			label: t(["Contract", "合约"]),
-			value: t([
-				`ALFA Oct 18 ${t(source.contract)}`,
-				`ALFA 10月18日 ${t(source.contract)}`,
-			]),
-			parts: [
-				{ text: parts.root.trim(), names: t(["underlying", "标的"]) },
-				{ text: parts.date, names: t(["expiry", "到期日"]) },
-				{ text: parts.right, names: t(["call", "看涨"]) },
-				{
-					text: parts.strike,
-					names: t([`strike $${source.strike}`, `行权价 $${source.strike}`]),
-				},
-			],
-			why: t([
-				"The standard symbol names one contract exactly.",
-				"标准代码精确指明一张合约。",
-			]),
-			evidence: "observed",
-		},
-		{
-			id: "size",
-			label: t(["Size and price", "数量与价格"]),
-			value: t([
-				`${count(source.quantity)} contracts at ${usd(source.price)}`,
-				`${count(source.quantity)} 张，每股 ${usd(source.price)}`,
-			]),
-			why: t([
-				"The price is per share; one contract covers 100 shares.",
-				"价格按每股计；一张合约代表 100 股。",
-			]),
-			evidence: "observed",
-		},
 		{
 			id: "premium",
 			label: t(["Premium", "权利金"]),
@@ -225,85 +186,51 @@ function printFields(id: SourceId, locale: Locale): PrintField[] {
 			]),
 			evidence: "calculated",
 		},
-		quote
-			? {
-					id: "quote",
-					label: t(["Quote at that moment", "当时的报价"]),
-					value: `${usd(quote.bid)} / ${usd(quote.ask)}`,
-					why: t([
-						`Bid and ask at ${quote.time}, just before the print.`,
-						`${quote.time} 的买价和卖价，就在这笔成交之前。`,
+		{
+			id: "quote",
+			label: t(["Quote then", "当时的报价"]),
+			value: quote
+				? `${usd(quote.bid)} / ${usd(quote.ask)}`
+				: t(["Not kept", "没有保存"]),
+			why: quote
+				? t([
+						"Bid and ask just before the print.",
+						"就在这笔成交之前的买价和卖价。",
+					])
+				: t([
+						`No quote from ${time} is on record.`,
+						`没有保存 ${time} 的报价。`,
 					]),
-					evidence: "observed",
-				}
-			: {
-					id: "quote",
-					label: t(["Quote at that moment", "当时的报价"]),
-					value: t(["Not kept", "没有保存"]),
-					why: t([
-						`No quote from ${record.time} is on record to compare the price with.`,
-						`没有保存 ${record.time} 的报价，无从比较这个价格。`,
-					]),
-					evidence: "unknown",
-				},
-		quote
-			? {
-					id: "side",
-					label: t(["Where it printed", "成交位置"]),
-					value: atAsk
-						? t(["At the ask", "在卖价"])
-						: t(["Inside the spread", "价差之内"]),
-					why: atAsk
-						? t([
-								"A buyer probably started it. That is a reading of the price, not a recorded fact.",
-								"可能是买方发起。这是根据价格作出的判断，并非记录在案的事实。",
-							])
-						: t([
-								"The price alone can't say who started it.",
-								"仅凭价格无法判断谁发起。",
-							]),
-					evidence: "inferred",
-				}
-			: {
-					id: "side",
-					label: t(["Where it printed", "成交位置"]),
-					value: t(["Can't be placed", "无法判断"]),
-					why: t([
+			evidence: quote ? "observed" : "unknown",
+		},
+		{
+			id: "side",
+			label: t(["Where it printed", "成交位置"]),
+			value: !quote
+				? t(["Can't be placed", "无法判断"])
+				: atAsk
+					? t(["At the ask", "在卖价"])
+					: t(["Inside the spread", "价差之内"]),
+			why: !quote
+				? t([
 						"Placing a print takes the quote at that moment.",
 						"判断位置需要当时的报价。",
-					]),
-					evidence: "unknown",
-				},
-		{
-			id: "condition",
-			label: t(["Condition", "成交条件"]),
-			value:
-				record.condition === "none"
-					? t(["None marked", "未标记"])
-					: record.condition === "block-leg"
-						? t(["Auction, multi-leg", "竞价、多腿"])
-						: t(["Multi-leg", "多腿"]),
-			why:
-				record.condition === "none"
+					])
+				: atAsk
 					? t([
-							"Nothing on the record about how it was matched.",
-							"记录里没有关于撮合方式的标记。",
+							"A buyer probably started it. That is a reading of the price, not a recorded fact.",
+							"可能是买方发起。这是根据价格作出的判断，并非记录在案的事实。",
 						])
-					: record.condition === "block-leg"
-						? t([
-								"How it was matched: arranged off screen, as one leg of a package. The next lesson reads these.",
-								"撮合方式：在屏幕外安排，是一个组合中的一条腿。下一课会读懂这些条件。",
-							])
-						: t([
-								"How it was matched: as one leg of a package. The next lesson reads these.",
-								"撮合方式：是一个组合中的一条腿。下一课会读懂这些条件。",
-							]),
-			evidence: "observed",
+					: t([
+							"The price alone can't say who started it.",
+							"仅凭价格无法判断谁发起。",
+						]),
+			evidence: quote ? "inferred" : "unknown",
 		},
 		{
 			id: "unknown",
 			label: t(["Not on the record", "记录里没有"]),
-			value: t(["Who, why, opening or closing", "谁、为什么、开仓或平仓"]),
+			value: t(["Who, why, open or close", "谁、为何、开仓或平仓"]),
 			why: t([
 				"A print never says who traded, why, or whether a position opened or closed.",
 				"一笔成交不会说明谁在交易、为什么交易，也不说明是开仓还是平仓。",
@@ -338,6 +265,8 @@ function AggregateView({
 	const [picked, setPicked] = useState<SourceId | null>(null);
 	const inspected = inspecting ? picked : null;
 	const box = useRef<HTMLDivElement>(null);
+	/** The tape, which the inspector opens under so that every row stays in reach. */
+	const anchor = useRef<Element | null>(null);
 	const closeInspector = () => {
 		const row = picked;
 		setPicked(null);
@@ -347,7 +276,10 @@ function AggregateView({
 				?.focus({ preventScroll: true });
 	};
 	const printTitle = inspected
-		? `${sources[inspected].trade} · ${records[inspected].time}`
+		? t([
+				`${sources[inspected].trade} · ALFA Oct 18 ${t(sources[inspected].contract)}`,
+				`${sources[inspected].trade} · ALFA 10月18日 ${t(sources[inspected].contract)}`,
+			])
 		: "";
 	const printIds = ["t1", "t3", "leg"] as const;
 	const rows: TapeRow[] = printIds.map((id) => {
@@ -454,6 +386,8 @@ function AggregateView({
 														printIds.find(
 															(item) => sources[item].trade === key,
 														) ?? null;
+													anchor.current =
+														box.current?.querySelector("[data-tape]") ?? null;
 													setPicked((now) => (now === id ? null : id));
 												}
 											: undefined
@@ -468,22 +402,16 @@ function AggregateView({
 							</g>
 						)}
 					</Stage>
-					{inspecting ? <Announce text={printTitle} /> : null}
 					{inspected ? (
 						<PrintInspector
+							key={inspected}
 							title={printTitle}
 							fields={printFields(inspected, locale)}
 							locale={locale}
 							closeLabel={t(["Close this print", "关闭这笔成交"])}
+							anchor={anchor}
 							onClose={closeInspector}
 						/>
-					) : inspecting ? (
-						<p className="wt-print-hint">
-							{t([
-								"Select a print on the tape to see what its record says.",
-								"选择一笔成交，看看它的记录说了什么。",
-							])}
-						</p>
 					) : null}
 				</div>
 			}

@@ -27,6 +27,7 @@ const HEAD = 44;
 const TITLE_LINE = 15;
 const TITLE_SIZE = 12;
 const CELL_SIZE = 13;
+const CHEVRON = 14;
 
 /**
  * The title's lines in a tape `width` wide: one when it fits, else two, broken at a " · "
@@ -124,7 +125,8 @@ export function TradeTape({
 	onSelect?: (key: string) => void;
 }) {
 	const motion = useTeachMotion();
-	const inner = width - 24;
+	// A selectable row keeps room for its chevron.
+	const inner = width - 24 - (onSelect ? CHEVRON : 0);
 	const titleLines = tapeTitle(title, width);
 	const head = HEAD + (titleLines.length - 1) * TITLE_LINE;
 	const rowHeight = tallRow ?? (stacked ? STACKED_ROW : ROW);
@@ -180,7 +182,7 @@ export function TradeTape({
 			a.row.key < b.row.key ? -1 : a.row.key > b.row.key ? 1 : 0,
 		);
 	return (
-		<g>
+		<g data-tape={onSelect ? "" : undefined}>
 			<rect
 				x={x}
 				y={y}
@@ -239,6 +241,14 @@ export function TradeTape({
 									className="wt-tape-hit"
 								/>
 								{cells(row)}
+								<Label
+									x={x + width - 10}
+									y={y + head + 18 + rowInset}
+									anchor="end"
+									tone="small"
+								>
+									›
+								</Label>
 							</SelectableRow>
 						) : (
 							cells(row)
