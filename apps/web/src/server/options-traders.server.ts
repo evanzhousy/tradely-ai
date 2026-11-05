@@ -279,8 +279,9 @@ export function createNotionReader(
 			throw new SourceUnavailable("partial", "invalid_source_times");
 		}
 
+		// Starts on a whole minute, as `Posted at` does, so the query and the check below agree on that minute's rows.
 		const from = new Date(
-			through - WINDOW_DAYS * 24 * 60 * 60 * 1000,
+			toMinute(through - WINDOW_DAYS * 24 * 60 * 60 * 1000) * 60_000,
 		).toISOString();
 		const fields = Object.keys(PROPERTY_TYPES)
 			.map((name) => `filter_properties=${encodeURIComponent(name)}`)
