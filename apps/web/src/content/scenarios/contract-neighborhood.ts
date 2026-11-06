@@ -144,7 +144,7 @@ const first: ScenarioStep = {
 				choice(
 					"direction",
 					"Keep a bullish forecast because these are calls.",
-					"因为这些是看涨期权，所以保持看涨预测。",
+					"因为这些是看涨期权，所以保持看多预测。",
 				),
 			],
 			accepted: ["scope"],
@@ -253,7 +253,7 @@ const investigation: ScenarioStep = {
 				choice(
 					"position",
 					"Proof that a new bullish position was opened.",
-					"证明有人建立了新的看涨仓位。",
+					"证明有人建立了新的看多仓位。",
 				),
 			],
 			accepted: ["priority"],

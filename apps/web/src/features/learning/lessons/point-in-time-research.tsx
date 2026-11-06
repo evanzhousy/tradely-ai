@@ -1012,7 +1012,7 @@ const scenes = [
 					id: "traders",
 					label: [
 						`${PERCENTILE}% of traders are bullish`,
-						`${PERCENTILE}% 的交易者看涨`,
+						`${PERCENTILE}% 的交易者看多`,
 					],
 					why: [
 						"Volume counts contracts, not people or their views. The percentile ranks today's volume against recent sessions.",

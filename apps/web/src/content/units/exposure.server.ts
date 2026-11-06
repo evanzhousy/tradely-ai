@@ -33,7 +33,7 @@ export const exposureUnits: TeachingUnit[] = [
 		),
 		misconception: t(
 			"Multiply by 100 once, for the shares in a contract, and flip the sign for a short position. Delta is the model's price slope; it says nothing about whether a trade was bullish.",
-			"只乘一次 100（一张合约的股数），空头要把符号反过来。Delta 是模型的价格斜率，与一笔成交是否看涨无关。",
+			"只乘一次 100（一张合约的股数），空头要把符号反过来。Delta 是模型的价格斜率，与一笔成交是否看多无关。",
 		),
 		case: (v) => {
 			const delta = [0.4, -0.35, 0.6, -0.25][v];
@@ -494,7 +494,7 @@ export const exposureUnits: TeachingUnit[] = [
 		sources: [greeks],
 		explanation: t(
 			"A trade's delta-equivalent magnitude can be |delta|×contracts×multiplier. This lesson signs that magnitude by a stated inferred-flow convention: bullish positive, bearish negative, neutral excluded from directional net but retained in coverage. Net DEX is classified flow, not the dealer's inventory or the buyer's entire portfolio. Net classified premium instead subtracts bearish dollars from bullish dollars; it has money units, not share equivalents. Opposite signed contributions can cancel while gross activity remains large. DEI here is |net DEX| divided by a positive effective typical share-volume denominator ×100. Direction stays in Net DEX. Index proxies need an explicit scale and methodology because an index itself has no ordinary share volume. ΔOI-based impact changes the numerator's lineage to reported position change; it does not inherit today's tape direction. Missing denominators remain unavailable. A naming caution: on many other platforms, DEX means delta exposure computed from open interest under assumed dealer positions, a positioning model like the GEX in the next lesson. Check which definition a source uses before comparing numbers.",
-			"单笔 Delta 等价幅度可用 |Delta|×张数×乘数。本课按推断成交流约定赋符号：看涨正、看跌负，中性不计方向净值，但保留覆盖信息。净 DEX 是分类成交流，不是做市商库存或买方完整组合。分类净权利金则用看涨金额减看跌金额，单位是美元，不是股等价量。相反贡献可抵消，即使总活动很大。本课 DEI=|净 DEX|÷正的有效典型股票成交量×100，方向保留在 DEX。指数本身没有普通股票成交量，代理分母需明确比例与方法。ΔOI 型影响的分子来自报告持仓变化，不能继承今天成交方向。缺失分母应保持不可用。命名提示：在许多其他平台上，DEX 指基于未平仓量、按假设做市商持仓计算的 Delta 敞口，是与下一课 GEX 类似的持仓模型。比较数字前，先确认来源使用哪种定义。",
+			"单笔 Delta 等价幅度可用 |Delta|×张数×乘数。本课按推断成交流约定赋符号：看多正、看空负，中性不计方向净值，但保留覆盖信息。净 DEX 是分类成交流，不是做市商库存或买方完整组合。分类净权利金则用看多金额减看空金额，单位是美元，不是股等价量。相反贡献可抵消，即使总活动很大。本课 DEI=|净 DEX|÷正的有效典型股票成交量×100，方向保留在 DEX。指数本身没有普通股票成交量，代理分母需明确比例与方法。ΔOI 型影响的分子来自报告持仓变化，不能继承今天成交方向。缺失分母应保持不可用。命名提示：在许多其他平台上，DEX 指基于未平仓量、按假设做市商持仓计算的 Delta 敞口，是与下一课 GEX 类似的持仓模型。比较数字前，先确认来源使用哪种定义。",
 		),
 		example: t(
 			"Monday's Oct 18 call prints come to 27,425 delta share-equivalents: 17,740 bought at the ask, 208 sold at the bid and 9,477 at mid or without a quote. Net flow DEX is +17,532; counting the 10:50 105/110 spread as one trade makes it +8,532. Against a 1,200,000-share 20-day average that is a DEI of 1.46%, or 2.92% against 600,000 shares by noon. Another platform's open-interest “DEX” of −89,800 is a different measure.",
@@ -515,13 +515,13 @@ export const exposureUnits: TeachingUnit[] = [
 			return {
 				brief: t(
 					`Classifying Monday's ALFA option prints gives ${plain(bull)} bullish delta share-equivalents, ${plain(bear)} bearish and 10,000 neutral. The bullish prints paid ${money(bp, 0)} of premium and the bearish ones ${money(sp, 0)}. ALFA usually trades ${plain(den)} shares a day. Neutral prints carry no direction.`,
-					`对周一 ALFA 期权成交分类后，看涨为 ${plain(bull)} 个 Delta 股等价，看跌为 ${plain(bear)}，中性为 10,000。看涨成交支付了 ${money(bp, 0)} 权利金，看跌成交支付了 ${money(sp, 0)}。ALFA 平常每天成交 ${plain(den)} 股。中性成交不带方向。`,
+					`对周一 ALFA 期权成交分类后，看多为 ${plain(bull)} 个 Delta 股等价，看空为 ${plain(bear)}，中性为 10,000。看多成交支付了 ${money(bp, 0)} 权利金，看空成交支付了 ${money(sp, 0)}。ALFA 平常每天成交 ${plain(den)} 股。中性成交不带方向。`,
 				),
 				questions: [
 					n(
 						"net-premium",
 						"What is the net classified premium, bullish minus bearish? Use a minus sign if bearish is larger.",
-						"分类净权利金是多少（看涨减看跌）？如果看跌更多，请用负号。",
+						"分类净权利金是多少（看多减看空）？如果看空更多，请用负号。",
 						bp - sp,
 						"dollars",
 						"美元",
@@ -531,7 +531,7 @@ export const exposureUnits: TeachingUnit[] = [
 					n(
 						"net",
 						"What is the net DEX, in share-equivalents? Use a minus sign if bearish is larger.",
-						"净 DEX 是多少股等价？如果看跌更多，请用负号。",
+						"净 DEX 是多少股等价？如果看空更多，请用负号。",
 						net,
 						"share-equivalents",
 						"股等价",

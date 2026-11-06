@@ -176,7 +176,7 @@ const investigate: ScenarioStep = {
 				choice(
 					"bearish",
 					"A confirmed bearish position held by one trader.",
-					"某交易者持有已证实的看跌仓位。",
+					"某交易者持有已证实的看空仓位。",
 				),
 			],
 			accepted: ["reports"],

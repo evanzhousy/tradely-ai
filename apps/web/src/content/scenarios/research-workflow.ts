@@ -405,7 +405,7 @@ function drawerSteps(alternate: boolean): ScenarioStep[] {
 							"Identity, source dates, and required coverage.",
 							"对象身份、来源日期和必需覆盖。",
 						],
-						["color", "Whether the chart looks bullish.", "图表是否看涨。"],
+						["color", "Whether the chart looks bullish.", "图表是否看多。"],
 						["price", "Tomorrow's closing price.", "明天的收盘价。"],
 					],
 					"source",

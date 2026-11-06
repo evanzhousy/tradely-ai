@@ -463,4 +463,26 @@ export const glossary: readonly GlossaryEntry[] = [
 		],
 		"C28",
 	),
+	entry(
+		"bullish",
+		["Bullish", "看多"],
+		["bullish"],
+		["看多"],
+		[
+			"Gains if the stock rises. A bullish label on a trade doesn't make it a call.",
+			"在股价上涨时获利。一笔成交被标为看多，不等于它是看涨期权。",
+		],
+		"C07",
+	),
+	entry(
+		"bearish",
+		["Bearish", "看空"],
+		["bearish"],
+		["看空"],
+		[
+			"Gains if the stock falls. A bearish label on a trade doesn't make it a put.",
+			"在股价下跌时获利。一笔成交被标为看空，不等于它是看跌期权。",
+		],
+		"C07",
+	),
 ];

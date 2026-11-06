@@ -270,7 +270,7 @@ export const concepts: Record<ConceptId, Concept> = {
 		name: t("Sentiment classification", "情绪分类"),
 		description: t(
 			"A flow feed labels a trade bullish or bearish by a stated rule on its isolated leg: under this course's convention, call buying and put selling are bullish, call selling and put buying bearish, and an unknown side is neutral. The label describes the leg's directional effect, not the trader's belief, their whole position or a forecast.",
-			"成交流数据按既定规则给一笔成交的单条腿贴上看涨或看跌标签：按本课程约定，买入看涨与卖出看跌为看涨，卖出看涨与买入看跌为看跌，方向未知则为中性。标签描述的是这条腿的方向性效果，不是交易者的看法、完整持仓或预测。",
+			"成交流数据按既定规则给一笔成交的单条腿贴上看多或看空标签：按本课程约定，买入看涨与卖出看跌为看多，卖出看涨与买入看跌为看空，方向未知则为中性。标签描述的是这条腿的方向性效果，不是交易者的看法、完整持仓或预测。",
 		),
 		evidence: [
 			t(
@@ -283,7 +283,7 @@ export const concepts: Record<ConceptId, Concept> = {
 			),
 			t(
 				"Give a position in which a bullish-labelled trade is not a bullish bet",
-				"举出一个持仓例子，其中被标为看涨的成交并不是看涨押注",
+				"举出一个持仓例子，其中被标为看多的成交并不是看多押注",
 			),
 		],
 		prerequisites: [

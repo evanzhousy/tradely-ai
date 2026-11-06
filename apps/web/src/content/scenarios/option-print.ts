@@ -61,7 +61,7 @@ const initial: ScenarioStep = {
 				choice(
 					"bullish",
 					"A trader opened a bullish position.",
-					"有人建立了看涨仓位。",
+					"有人建立了看多仓位。",
 				),
 				choice(
 					"execution",

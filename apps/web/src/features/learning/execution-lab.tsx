@@ -307,8 +307,8 @@ export function ExecutionLab({
 							? "—"
 							: mode === "sentiment"
 								? (type === "CALL") === buyer
-									? text("Bullish", "看涨")
-									: text("Bearish", "看跌")
+									? text("Bullish", "看多")
+									: text("Bearish", "看空")
 								: mode === "side"
 									? buyer
 										? "ASK"

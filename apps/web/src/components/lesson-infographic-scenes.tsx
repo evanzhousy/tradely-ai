@@ -474,8 +474,8 @@ function Sentiment({ l }: Props) {
 								/>
 								<Label x={173 + col * 108} y={84 + row * 66}>
 									{positive
-										? l("+ Bullish", "+ 看涨")
-										: l("− Bearish", "− 看跌")}
+										? l("+ Bullish", "+ 看多")
+										: l("− Bearish", "− 看空")}
 								</Label>
 							</g>
 						);

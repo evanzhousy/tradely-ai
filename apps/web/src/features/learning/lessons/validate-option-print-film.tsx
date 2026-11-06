@@ -132,7 +132,7 @@ const copy = {
 	],
 	qBig: [
 		`A ${usd(PREMIUM, 0)} bet that ALFA rises?`,
-		`一笔 ${usd(PREMIUM, 0)} 的看涨押注？`,
+		`一笔 ${usd(PREMIUM, 0)} 的看多押注？`,
 	],
 	mHead: ["The amount comes from the record.", "金额直接来自记录。"],
 	perShare: ["per share", "每股"],

@@ -643,7 +643,7 @@ const scenes = [
 						id: "bet",
 						label: [
 							"Someone opened a large bearish bet on CRUX",
-							"有人在 CRUX 上开了一笔大额看跌押注",
+							"有人在 CRUX 上开了一笔大额看空押注",
 						],
 					},
 					{

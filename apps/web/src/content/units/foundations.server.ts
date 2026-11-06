@@ -562,15 +562,15 @@ export const foundationUnits: TeachingUnit[] = [
 		sources: [quotes, basics],
 		explanation: t(
 			"Bullish can describe an upward price view or positive directional exposure; bearish can describe a downward view or negative exposure. Name whose view or which exposure. A flow feed's sentiment is a separate rule-based classification. Under the convention used here: likely call buying is bullish, call selling bearish, put buying bearish, and put selling bullish. The mapping follows the isolated leg's directional effect from the likely aggressor's perspective. A trade has another party with the opposite leg. Do not count each print twice. Neutral means the available execution evidence does not establish direction, not that the investor expects a flat market or owns a neutral portfolio.",
-			"看涨可指向上价格观点或正向敞口，看跌可指向下观点或负向敞口，要说明谁的观点或哪项敞口。成交流情绪是另一种规则分类。本课约定：推断买入看涨为看涨，卖出看涨为看跌，买入看跌为看跌，卖出看跌为看涨。该映射从推断主动方角度描述孤立期权腿的方向影响。对手持相反腿，但每笔成交不能重复计数。中性表示现有执行证据不能确定方向，不代表投资者预期横盘或组合中性。",
+			"看多可指向上价格观点或正向敞口，看空可指向下观点或负向敞口，要说明谁的观点或哪项敞口。成交流情绪是另一种规则分类。本课约定：推断买入看涨为看多，卖出看涨为看空，买入看跌为看空，卖出看跌为看多。该映射从推断主动方角度描述孤立期权腿的方向影响。对手持相反腿，但每笔成交不能重复计数。中性表示现有执行证据不能确定方向，不代表投资者预期横盘或组合中性。",
 		),
 		example: t(
 			"A buyer takes the ask on a put. The print receives a bearish flow label under this convention. The same investor may own stock and use that put as protection. A buy-to-close on an existing short put is also possible. The flow label alone cannot identify the complete strategy, portfolio, or expected future return.",
-			"买方主动接受看跌期权卖价，本约定标为看跌成交流。但该投资者可能持有股票，用看跌作保护，也可能买入平掉原有空头看跌。单一标签不能确定完整策略、组合或未来收益预期。",
+			"买方主动接受看跌期权卖价，本约定标为看空成交流。但该投资者可能持有股票，用看跌作保护，也可能买入平掉原有空头看跌。单一标签不能确定完整策略、组合或未来收益预期。",
 		),
 		misconception: t(
 			"A call isn't bullish by itself and a put isn't bearish by itself; it depends on who started the trade. Even then, a flow label doesn't show the trader's belief, whether they opened, or their whole portfolio.",
-			"看涨期权本身不代表看涨，看跌期权本身也不代表看跌，要看谁发起了成交。即便如此，成交流标签也不能说明交易者的看法、是否开仓，或其完整组合。",
+			"看涨期权本身不代表看多，看跌期权本身也不代表看空，要看谁发起了成交。即便如此，成交流标签也不能说明交易者的看法、是否开仓，或其完整组合。",
 		),
 		case: (v) => {
 			const rows = [
@@ -580,11 +580,11 @@ export const foundationUnits: TeachingUnit[] = [
 					answer: "bull",
 					why: t(
 						"A call bought at the ask: the buyer who started it gains if ALFA rises, so bullish flow.",
-						"在卖价买入看涨：发起的买方在 ALFA 上涨时获利，所以是看涨成交流。",
+						"在卖价买入看涨：发起的买方在 ALFA 上涨时获利，所以是看多成交流。",
 					),
 					opposite: t(
 						"Bearish would fit a call sold at the bid. This call was bought at the ask, and a bought call gains if ALFA rises.",
-						"看跌标签适用于在买价卖出的看涨。这张看涨是在卖价买入的，买入的看涨在 ALFA 上涨时获利。",
+						"看空标签适用于在买价卖出的看涨。这张看涨是在卖价买入的，买入的看涨在 ALFA 上涨时获利。",
 					),
 				},
 				{
@@ -593,11 +593,11 @@ export const foundationUnits: TeachingUnit[] = [
 					answer: "bear",
 					why: t(
 						"A call sold at the bid: the seller who started it gives up ALFA's upside, so bearish flow.",
-						"在买价卖出看涨：发起的卖方放弃了 ALFA 的上涨空间，所以是看跌成交流。",
+						"在买价卖出看涨：发起的卖方放弃了 ALFA 的上涨空间，所以是看空成交流。",
 					),
 					opposite: t(
 						"A call isn't bullish by itself. This one was sold at the bid, and its seller gives up ALFA's upside.",
-						"看涨期权本身并不代表看涨。这张是在买价卖出的，卖方放弃了 ALFA 的上涨空间。",
+						"看涨期权本身并不代表看多。这张是在买价卖出的，卖方放弃了 ALFA 的上涨空间。",
 					),
 				},
 				{
@@ -606,11 +606,11 @@ export const foundationUnits: TeachingUnit[] = [
 					answer: "bear",
 					why: t(
 						"A put bought at the ask: the buyer who started it gains if ALFA falls, so bearish flow.",
-						"在卖价买入看跌：发起的买方在 ALFA 下跌时获利，所以是看跌成交流。",
+						"在卖价买入看跌：发起的买方在 ALFA 下跌时获利，所以是看空成交流。",
 					),
 					opposite: t(
 						"Buying isn't bullish by itself. A put bought at the ask gains if ALFA falls.",
-						"买入本身并不代表看涨。在卖价买入的看跌在 ALFA 下跌时获利。",
+						"买入本身并不代表看多。在卖价买入的看跌在 ALFA 下跌时获利。",
 					),
 				},
 				{
@@ -619,11 +619,11 @@ export const foundationUnits: TeachingUnit[] = [
 					answer: "bull",
 					why: t(
 						"A put sold at the bid: the seller who started it collects premium and loses if ALFA falls, so bullish flow.",
-						"在买价卖出看跌：发起的卖方收取权利金、在 ALFA 下跌时亏损，所以是看涨成交流。",
+						"在买价卖出看跌：发起的卖方收取权利金、在 ALFA 下跌时亏损，所以是看多成交流。",
 					),
 					opposite: t(
 						"A put isn't bearish by itself. This one was sold at the bid, and its seller loses if ALFA falls.",
-						"看跌期权本身并不代表看跌。这张是在买价卖出的，卖方在 ALFA 下跌时亏损。",
+						"看跌期权本身并不代表看空。这张是在买价卖出的，卖方在 ALFA 下跌时亏损。",
 					),
 				},
 			];
@@ -659,14 +659,14 @@ export const foundationUnits: TeachingUnit[] = [
 								[
 									"bull",
 									"Bullish flow",
-									"看涨成交流",
+									"看多成交流",
 									row.opposite.en,
 									row.opposite.zh,
 								],
 								[
 									"bear",
 									"Bearish flow",
-									"看跌成交流",
+									"看空成交流",
 									row.opposite.en,
 									row.opposite.zh,
 								],
@@ -715,14 +715,14 @@ export const foundationUnits: TeachingUnit[] = [
 					c(
 						"portfolio",
 						"Does the put-buying print show the trader's whole portfolio is bearish?",
-						"买入看跌的那笔成交，能说明交易者的整个组合看跌吗？",
+						"买入看跌的那笔成交，能说明交易者的整个组合看空吗？",
 						[
 							[
 								"yes",
 								"Yes: a put buyer must be bearish overall",
-								"能：买看跌的人整体上必然看跌",
+								"能：买看跌的人整体上必然看空",
 								"A put buyer isn't necessarily bearish overall: a shareholder buying protection, or someone closing a short put, prints the same way.",
-								"买看跌的人整体上不一定看跌：买保护的持股者、平掉看跌空头的人，成交记录都一样。",
+								"买看跌的人整体上不一定看空：买保护的持股者、平掉看跌空头的人，成交记录都一样。",
 							],
 							[
 								"no",
@@ -732,7 +732,7 @@ export const foundationUnits: TeachingUnit[] = [
 						],
 						"no",
 						"Nothing links this put to the trader's other positions. A shareholder buying protection gets the same bearish flow label.",
-						"没有任何信息把这张看跌和交易者的其他持仓联系起来。一位买保护的持股者，也会得到同样的看跌成交流标签。",
+						"没有任何信息把这张看跌和交易者的其他持仓联系起来。一位买保护的持股者，也会得到同样的看空成交流标签。",
 					),
 				],
 			};

@@ -296,7 +296,7 @@ export const productionUnits: TeachingUnit[] = [
 			return {
 				brief: t(
 					`${p.brief.en}\n\nA colleague's recap says: "Total premium ${money(p.premium / 100)}; all ${p.volume} contracts were new bullish positions. Strike 110 had zero activity." Another sentence in it correctly gives R1's price as $1.80.`,
-					`${p.brief.zh}\n\n一位同事的复盘写道：“总权利金 ${money(p.premium / 100)}；全部 ${p.volume} 张都是新开的看涨仓位。110 行权价没有任何成交。”其中另一句正确地写出了 R1 的价格 $1.80。`,
+					`${p.brief.zh}\n\n一位同事的复盘写道：“总权利金 ${money(p.premium / 100)}；全部 ${p.volume} 张都是新开的看多仓位。110 行权价没有任何成交。”其中另一句正确地写出了 R1 的价格 $1.80。`,
 				),
 				worksheet: p.worksheet,
 				questions: [
@@ -315,7 +315,7 @@ export const productionUnits: TeachingUnit[] = [
 						"Name at least three defects in the recap and the repair for each, citing the source rows.",
 						"指出复盘中至少三处缺陷，并为每处给出修复，引用来源行。",
 						'For example: 1) R1 and R2: the premium leaves out × 100; restore it. 2) "New bullish positions": nothing links these trades to positions, and R1 printed at its bid, so call them observed trades. 3) R3: missing, not zero; say there\'s no data. Keep the correctly reported R1 price.',
-						"例如：1）R1 和 R2：权利金漏了 × 100，补回来。2）“新开的看涨仓位”：没有任何信息把这些成交与持仓联系起来，而且 R1 成交在买价，所以只能称为已观测的成交。3）R3：是缺失，不是零，要写明没有数据。保留正确写出的 R1 价格。",
+						"例如：1）R1 和 R2：权利金漏了 × 100，补回来。2）“新开的看多仓位”：没有任何信息把这些成交与持仓联系起来，而且 R1 成交在买价，所以只能称为已观测的成交。3）R3：是缺失，不是零，要写明没有数据。保留正确写出的 R1 价格。",
 						60,
 					),
 					write(

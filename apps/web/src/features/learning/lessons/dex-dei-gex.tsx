@@ -84,10 +84,10 @@ function FlowRows({
 			{state.signed ? (
 				<>
 					<Label x={center - 6} y={FLOW_TOP - 8} anchor="end" tone="small">
-						{t(["← bearish", "← 看跌"])}
+						{t(["← bearish", "← 看空"])}
 					</Label>
 					<Label x={center + 6} y={FLOW_TOP - 8} tone="small">
-						{t(["bullish →", "看涨 →"])}
+						{t(["bullish →", "看多 →"])}
 					</Label>
 				</>
 			) : null}
@@ -197,7 +197,7 @@ function FlowView({
 		result.push(
 			{
 				id: "sides",
-				label: t(["Bullish − bearish", "看涨 − 看跌"]),
+				label: t(["Bullish − bearish", "看多 − 看空"]),
 				value: `${count(totals.bullish)} − ${count(totals.bearish)}`,
 				note: t([
 					`${count(totals.neutral)} left out: mid or no quote`,
@@ -257,7 +257,7 @@ function FlowView({
 				<p>
 					{t([
 						"A flow DEX weights each print by delta so contracts at different strikes add up in shares, then signs it by an inferred side: a call bought at the ask counts bullish, one sold at the bid bearish, and mid-priced or unquoted prints are left out of the net but stay in the gross. The sign is a convention about the tape, not anyone's position. Classifying print by print also splits strategies: the 110 leg sold at mid was half of a bullish spread.",
-						"成交流 DEX 用 Delta 给每笔成交加权，让不同行权价的合约能以股数相加，再按推断的方向赋予符号：按卖价买入的看涨计为看涨，按买价卖出的计为看跌，中间价或无报价的成交不计入净值，但保留在总量中。这个符号是关于成交记录的约定，而不是任何人的持仓。逐笔分类还会拆散策略：以中间价卖出的 110 那条腿，是一个看涨价差的一半。",
+						"成交流 DEX 用 Delta 给每笔成交加权，让不同行权价的合约能以股数相加，再按推断的方向赋予符号：按卖价买入的看涨计为看多，按买价卖出的计为看空，中间价或无报价的成交不计入净值，但保留在总量中。这个符号是关于成交记录的约定，而不是任何人的持仓。逐笔分类还会拆散策略：以中间价卖出的 110 那条腿，是一个看涨价差的一半。",
 					])}
 				</p>
 			}
@@ -624,7 +624,7 @@ const scenes = [
 					id: "net",
 					label: [
 						`${signedCount(printwise.net)}: bullish minus bearish`,
-						`${signedCount(printwise.net)}：看涨减看跌`,
+						`${signedCount(printwise.net)}：看多减看空`,
 					],
 				},
 				{
@@ -635,7 +635,7 @@ const scenes = [
 					],
 					why: [
 						`${signedCount(printwise.gross)} adds every print with the same sign. Net DEX signs each by side and subtracts bearish from bullish, leaving neutral prints out.`,
-						`${signedCount(printwise.gross)} 是把每笔成交按同一符号相加。净 DEX 要按方向给每笔赋号，用看涨减看跌，中性成交不计入。`,
+						`${signedCount(printwise.gross)} 是把每笔成交按同一符号相加。净 DEX 要按方向给每笔赋号，用看多减看空，中性成交不计入。`,
 					],
 				},
 				{
@@ -646,7 +646,7 @@ const scenes = [
 					],
 					why: [
 						"Buyers and sellers always match, but DEX signs each print by who crossed the spread. Bullish and bearish flow needn't balance.",
-						"买方和卖方总是相等，但 DEX 按谁跨过了价差给每笔成交赋号。看涨和看跌成交流不必相等。",
+						"买方和卖方总是相等，但 DEX 按谁跨过了价差给每笔成交赋号。看多和看空成交流不必相等。",
 					],
 				},
 			],
@@ -654,7 +654,7 @@ const scenes = [
 			revealAt: 1,
 			explain: [
 				`Signed by side: ${count(printwise.bullish)} bullish minus ${count(printwise.bearish)} bearish = ${signedCount(printwise.net)}. The ${count(printwise.neutral)} traded at mid or without a quote stay out of the net. Buyers and sellers always match; the sign comes from a convention about who crossed the spread.`,
-				`按方向赋号：看涨 ${count(printwise.bullish)} 减看跌 ${count(printwise.bearish)} = ${signedCount(printwise.net)}。以中间价或无报价成交的 ${count(printwise.neutral)} 不计入净值。买方和卖方总是相等；符号来自“谁跨过了价差”的约定。`,
+				`按方向赋号：看多 ${count(printwise.bullish)} 减看空 ${count(printwise.bearish)} = ${signedCount(printwise.net)}。以中间价或无报价成交的 ${count(printwise.neutral)} 不计入净值。买方和卖方总是相等；符号来自“谁跨过了价差”的约定。`,
 			],
 		},
 		beats: [

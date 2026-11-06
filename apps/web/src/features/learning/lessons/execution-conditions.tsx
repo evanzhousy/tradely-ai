@@ -560,7 +560,7 @@ function PackageView({
 				`bought @ ${usd(LEGS.buy.price)}`,
 				`以 ${usd(LEGS.buy.price)} 买入`,
 			]),
-			note: t(["at its ask; alone it reads bullish", "在卖价；单看像看涨"]),
+			note: t(["at its ask; alone it reads bullish", "在卖价；单看像看多"]),
 		},
 	];
 	if (shown.shown >= 2)
@@ -876,11 +876,11 @@ const scenes = [
 					id: "bullish",
 					label: [
 						"500 calls bought: very bullish",
-						"买入 500 张看涨：非常看涨",
+						"买入 500 张看涨：非常看多",
 					],
 					why: [
 						"Read alone the leg looks bullish, but the multi-leg code and the matching 110 call sale make it a call spread, with its value capped at $5.00 a share.",
-						"单看这条腿像看涨，但多腿代码和同时卖出的 110 看涨说明它是看涨价差，价值上限为每股 $5.00。",
+						"单看这条腿像看多，但多腿代码和同时卖出的 110 看涨说明它是看涨价差，价值上限为每股 $5.00。",
 					],
 				},
 				{

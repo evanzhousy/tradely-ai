@@ -61,8 +61,8 @@ const flowLabel = (code: Code): Copy =>
 	code === "MID"
 		? ["neutral", "中性"]
 		: code === "BID"
-			? ["bearish", "看跌"]
-			: ["bullish", "看涨"];
+			? ["bearish", "看空"]
+			: ["bullish", "看多"];
 
 const tapeColumns = (
 	t: (value: Copy) => string,
@@ -127,7 +127,7 @@ function PrintsView({
 			text: labels
 				? t([
 						`bullish ${AT_OR_ABOVE} · bearish ${BID_SIDE} · neutral 5`,
-						`看涨 ${AT_OR_ABOVE} · 看跌 ${BID_SIDE} · 中性 5`,
+						`看多 ${AT_OR_ABOVE} · 看空 ${BID_SIDE} · 中性 5`,
 					])
 				: t([
 						`at the ask: 20 · above it: 3 · at the bid: ${BID_SIDE} · inside: 5`,
@@ -176,7 +176,7 @@ function PrintsView({
 				labels
 					? {
 							id: "net",
-							label: t(["Bullish − bearish", "看涨 − 看跌"]),
+							label: t(["Bullish − bearish", "看多 − 看空"]),
 							value: `+${NET}`,
 							// The playground's task asks what an inside print adds.
 							note: t(
@@ -592,7 +592,7 @@ const scenes = [
 		predict: {
 			prompt: [
 				"Label those four call prints the way a flow feed does. Counting contracts, what is bullish minus bearish?",
-				"像成交流数据那样给这四笔看涨成交贴标签。按张数计，看涨减看跌是多少？",
+				"像成交流数据那样给这四笔看涨成交贴标签。按张数计，看多减看空是多少？",
 			],
 			choices: [
 				{ id: "right", label: [`+${NET}`, `+${NET}`] },
@@ -601,7 +601,7 @@ const scenes = [
 					label: [`+${AT_OR_ABOVE + 5}`, `+${AT_OR_ABOVE + 5}`],
 					why: [
 						`+${AT_OR_ABOVE + 5} adds the 5 neutral contracts to the bullish ones and never subtracts the ${BID_SIDE} sold at the bid. Neutral prints stay out of the net; bearish ones come off it.`,
-						`+${AT_OR_ABOVE + 5} 把 5 张中性成交加进了看涨，却没有减去在买价卖出的 ${BID_SIDE} 张。中性成交不计入净额，看跌成交要从中减去。`,
+						`+${AT_OR_ABOVE + 5} 把 5 张中性成交加进了看多，却没有减去在买价卖出的 ${BID_SIDE} 张。中性成交不计入净额，看空成交要从中减去。`,
 					],
 				},
 				{
@@ -609,7 +609,7 @@ const scenes = [
 					label: ["0", "0"],
 					why: [
 						`The labels don't cancel out: ${AT_OR_ABOVE} contracts are bullish and ${BID_SIDE} bearish, so the net is +${NET}.`,
-						`标签并没有相互抵消：看涨 ${AT_OR_ABOVE} 张，看跌 ${BID_SIDE} 张，所以净额是 +${NET}。`,
+						`标签并没有相互抵消：看多 ${AT_OR_ABOVE} 张，看空 ${BID_SIDE} 张，所以净额是 +${NET}。`,
 					],
 				},
 			],
@@ -618,7 +618,7 @@ const scenes = [
 			revealAt: 2,
 			explain: [
 				`Calls bought at or above the ask are bullish (${AT_OR_ABOVE}), sold at the bid bearish (${BID_SIDE}), and the 5 inside are neutral: ${AT_OR_ABOVE} − ${BID_SIDE} = +${NET}.`,
-				`在卖价及以上买入的看涨为看涨（${AT_OR_ABOVE} 张），在买价卖出的为看跌（${BID_SIDE} 张），价差内的 5 张为中性：${AT_OR_ABOVE} − ${BID_SIDE} = +${NET}。`,
+				`在卖价及以上买入的看涨为看多（${AT_OR_ABOVE} 张），在买价卖出的为看空（${BID_SIDE} 张），价差内的 5 张为中性：${AT_OR_ABOVE} − ${BID_SIDE} = +${NET}。`,
 			],
 		},
 		beats: [
@@ -627,7 +627,7 @@ const scenes = [
 				label: ["The tape", "成交"],
 				caption: [
 					"The same four prints. A call bought at the ask is bullish flow; a call sold at the bid is bearish.",
-					"同样的四笔成交。在卖价买入看涨是看涨成交流；在买价卖出看涨是看跌成交流。",
+					"同样的四笔成交。在卖价买入看涨是看多成交流；在买价卖出看涨是看空成交流。",
 				],
 				state: { stage: 0, show: "all" },
 			},
@@ -636,7 +636,7 @@ const scenes = [
 				label: ["Label", "贴标签"],
 				caption: [
 					`Bullish: ${AT_OR_ABOVE}. Bearish: ${BID_SIDE}. The 5 inside the spread are neutral and count for neither.`,
-					`看涨：${AT_OR_ABOVE} 张。看跌：${BID_SIDE} 张。价差内的 5 张为中性，两边都不计。`,
+					`看多：${AT_OR_ABOVE} 张。看空：${BID_SIDE} 张。价差内的 5 张为中性，两边都不计。`,
 				],
 				state: { stage: 1, show: "all" },
 			},

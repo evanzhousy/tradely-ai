@@ -465,7 +465,7 @@ function RollView({
 				t(["Nov 15 100 c", "11月15日 100 看涨"]),
 				count(ROLL_QUANTITY),
 				usd(BUY_NOV),
-				t(["bullish", "看涨"]),
+				t(["bullish", "看多"]),
 			],
 		});
 	if (shown.step >= 1)
@@ -476,7 +476,7 @@ function RollView({
 				t(["Oct 18 100 c", "10月18日 100 看涨"]),
 				count(ROLL_QUANTITY),
 				usd(SELL_OCT),
-				t(["bearish", "看跌"]),
+				t(["bearish", "看空"]),
 			],
 		});
 	const positionsHeight = POSITION_TOP + 2 * POSITION_ROW + 8;
@@ -621,7 +621,7 @@ function RollView({
 				<p>
 					{t([
 						"A roll closes one contract and opens another, here the same strike a month later. It usually goes in as one order, but it prints as two separate trades, so a feed that labels each print alone sees one bearish sale and one bullish purchase. Linked-leg records, or your own blotter, show they were one decision.",
-						"移仓是平掉一张合约、再开另一张，这里是同一行权价、晚一个月到期。它通常作为一张订单下达，但会打印成两笔独立成交，所以逐笔贴标签的数据会看到一笔看跌的卖出和一笔看涨的买入。关联腿记录或你自己的交易记录会显示它们是同一个决定。",
+						"移仓是平掉一张合约、再开另一张，这里是同一行权价、晚一个月到期。它通常作为一张订单下达，但会打印成两笔独立成交，所以逐笔贴标签的数据会看到一笔看空的卖出和一笔看多的买入。关联腿记录或你自己的交易记录会显示它们是同一个决定。",
 					])}
 				</p>
 			}
@@ -654,10 +654,10 @@ const scenes = [
 				},
 				{
 					id: "bearish",
-					label: ["Yes: short calls are bearish", "是的：看涨空头就是看跌"],
+					label: ["Yes: short calls are bearish", "是的：看涨空头就是看空"],
 					why: [
 						"A short call can be one leg of a bullish plan: written against shares it's a covered call, and paired with a long call it's a bull spread.",
-						"看涨空头可以是看涨计划中的一条腿：对着股票卖出是备兑看涨，与看涨多头搭配是看涨价差。",
+						"看涨空头可以是看多计划中的一条腿：对着股票卖出是备兑看涨，与看涨多头搭配是看涨价差。",
 					],
 				},
 				{
@@ -836,7 +836,7 @@ const scenes = [
 		predict: {
 			prompt: [
 				"A trader sells 16 Oct 18 100 calls and a second later buys 16 Nov 15 100 calls. A feed labels them bearish and bullish. What happened?",
-				"一位交易者卖出 16 张 10月18日 100 看涨，一秒后买入 16 张 11月15日 100 看涨。数据分别标为看跌和看涨。发生了什么？",
+				"一位交易者卖出 16 张 10月18日 100 看涨，一秒后买入 16 张 11月15日 100 看涨。数据分别标为看空和看多。发生了什么？",
 			],
 			choices: [
 				{

@@ -440,7 +440,7 @@ export const flowUnits: TeachingUnit[] = [
 							[
 								"opening",
 								"The buyer opened a new bullish position",
-								"买方新开了一个看涨仓位",
+								"买方新开了一个看多仓位",
 								flag === "opening"
 									? "The opening flag, not the sweep code, says the buyer opened, and neither shows a bullish view. The sweep code says only how the order was routed."
 									: flag === "closing"
@@ -910,11 +910,11 @@ export const flowUnits: TeachingUnit[] = [
 		sources: [basics],
 		explanation: t(
 			"A long straddle buys a call and a put at one strike: it pays on a big move either way, and its break-evens sit the total premium above and below the strike. A strangle buys them at different strikes, which is cheaper but needs a bigger move. An iron condor sells a put spread below the stock and a call spread above it: it keeps the credit if the stock stays between the short strikes, and because at most one side can finish in the money, its worst case is one spread's width minus the credit. Each of these is one decision priced as a package, but the tape prints every leg separately, and a feed that labels legs one at a time can call the same trade bullish, bearish or neutral. Same-second prints with a multi-leg condition and matching sizes suggest a package; linked-leg records confirm it.",
-			"跨式多头在同一行权价买入一张看涨和一张看跌：任一方向的大幅变动都能赚钱，盈亏平衡点在行权价上下各相差总权利金。宽跨式在不同行权价买入两者，更便宜，但需要更大的变动。铁鹰在股价下方卖出一个看跌价差、上方卖出一个看涨价差：股价留在两个卖出行权价之间就能保留收入；由于到期时最多只有一侧是实值，最坏情况是一个价差的宽度减去收入。每一种都是作为整体定价的一个决定，但逐笔成交会把每条腿分开打印，逐腿贴标签的数据可能把同一笔交易标为看涨、看跌或中性。同一秒、带多腿条件、数量一致的成交提示这是一个整体；关联腿记录才能证实。",
+			"跨式多头在同一行权价买入一张看涨和一张看跌：任一方向的大幅变动都能赚钱，盈亏平衡点在行权价上下各相差总权利金。宽跨式在不同行权价买入两者，更便宜，但需要更大的变动。铁鹰在股价下方卖出一个看跌价差、上方卖出一个看涨价差：股价留在两个卖出行权价之间就能保留收入；由于到期时最多只有一侧是实值，最坏情况是一个价差的宽度减去收入。每一种都是作为整体定价的一个决定，但逐笔成交会把每条腿分开打印，逐腿贴标签的数据可能把同一笔交易标为看多、看空或中性。同一秒、带多腿条件、数量一致的成交提示这是一个整体；关联腿记录才能证实。",
 		),
 		example: t(
 			'Buying the Oct 18 100 call and put at $4.20 each costs $8.40 a share, so ALFA must end above $108.40 or below $91.60 to make money. Selling the 95 put and 105 call at $2.05 and buying the 90 put at $1.00 and the 110 call at $0.93 collects $2.17; the worst case is $5.00 − $2.17 = $2.83 a share. Two hundred of those condors print as four legs that a leg-by-leg feed tallies to −$1,400 of "bearish" premium, though the trade is a $43,400 bet that ALFA stays between $95 and $105.',
-			"以每股 $4.20 分别买入 10月18日 100 看涨和看跌，每股成本 $8.40，所以 ALFA 要收在 $108.40 以上或 $91.60 以下才赚钱。以 $2.05 卖出 95 看跌和 105 看涨、以 $1.00 买入 90 看跌、以 $0.93 买入 110 看涨，收入 $2.17；最坏情况是每股 $5.00 − $2.17 = $2.83。两百组这样的铁鹰打印为四条腿，逐腿贴标签的数据会把它们加总为 −$1,400 的“看跌”权利金，而这笔交易其实是押注 ALFA 留在 $95 到 $105 之间、收入 $43,400 的交易。",
+			"以每股 $4.20 分别买入 10月18日 100 看涨和看跌，每股成本 $8.40，所以 ALFA 要收在 $108.40 以上或 $91.60 以下才赚钱。以 $2.05 卖出 95 看跌和 105 看涨、以 $1.00 买入 90 看跌、以 $0.93 买入 110 看涨，收入 $2.17；最坏情况是每股 $5.00 − $2.17 = $2.83。两百组这样的铁鹰打印为四条腿，逐腿贴标签的数据会把它们加总为 −$1,400 的“看空”权利金，而这笔交易其实是押注 ALFA 留在 $95 到 $105 之间、收入 $43,400 的交易。",
 		),
 		misconception: t(
 			"A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",

@@ -446,8 +446,8 @@ function PackageView({
 				shown.view === "package"
 					? t(["multi-leg", "多腿"])
 					: leg.label === "bullish"
-						? t(["bullish", "看涨"])
-						: t(["bearish", "看跌"]),
+						? t(["bullish", "看多"])
+						: t(["bearish", "看空"]),
 			],
 		}));
 	const lines: string[] =
@@ -459,18 +459,18 @@ function PackageView({
 					]),
 					t([
 						"labelled one by one: 2 bullish, 2 bearish",
-						"逐笔贴标签：2 笔看涨，2 笔看跌",
+						"逐笔贴标签：2 笔看多，2 笔看空",
 					]),
 				]
 			: shown.view === "tally"
 				? [
 						t([
 							`bullish premium ${usd(BULLISH, 0)} · bearish ${usd(BEARISH, 0)}`,
-							`看涨权利金 ${usd(BULLISH, 0)} · 看跌 ${usd(BEARISH, 0)}`,
+							`看多权利金 ${usd(BULLISH, 0)} · 看空 ${usd(BEARISH, 0)}`,
 						]),
 						t([
 							`net ${signedUsd(BULLISH - BEARISH, 0)}: "slightly bearish"`,
-							`净额 ${signedUsd(BULLISH - BEARISH, 0)}：“略偏看跌”`,
+							`净额 ${signedUsd(BULLISH - BEARISH, 0)}：“略偏看空”`,
 						]),
 					]
 				: [
@@ -513,7 +513,7 @@ function PackageView({
 					{
 						id: "labels",
 						label: t(["Leg labels", "单腿标签"]),
-						value: t(["2 bullish · 2 bearish", "2 看涨 · 2 看跌"]),
+						value: t(["2 bullish · 2 bearish", "2 看多 · 2 看空"]),
 					},
 					...(shown.view === "tally"
 						? [
@@ -619,7 +619,7 @@ function PackageView({
 				<p>
 					{t([
 						"A multi-leg order is priced and executed as one package, but the tape prints each leg separately. A feed that labels prints one at a time will call some legs bullish and others bearish, and adding premium by label can even produce a direction the trader never had. Prints in the same second with a multi-leg condition, matching sizes and strikes that fit a known structure are the clues to read them together; only linked-leg records prove it.",
-						"多腿订单作为一个整体定价和执行，但逐笔成交会把每条腿分开打印。逐笔贴标签的数据会把一些腿标为看涨、另一些标为看跌，按标签加总权利金甚至会得出交易者从未有过的方向。同一秒内、带多腿条件、数量一致、行权价符合某种已知结构，这些都是把它们合起来解读的线索；只有关联腿记录才能证明。",
+						"多腿订单作为一个整体定价和执行，但逐笔成交会把每条腿分开打印。逐笔贴标签的数据会把一些腿标为看多、另一些标为看空，按标签加总权利金甚至会得出交易者从未有过的方向。同一秒内、带多腿条件、数量一致、行权价符合某种已知结构，这些都是把它们合起来解读的线索；只有关联腿记录才能证明。",
 					])}
 				</p>
 			}
@@ -848,15 +848,15 @@ const scenes = [
 				},
 				{
 					id: "bullish",
-					label: ["Bullish: two legs are bullish", "看涨：有两条腿是看涨的"],
+					label: ["Bullish: two legs are bullish", "看多：有两条腿是看多的"],
 					why: [
 						"Counting legs misreads a package. Two of the four labels look bullish, but together the legs are a short iron condor that profits if ALFA stays in a range.",
-						"数腿会误读组合单。四个标签中有两个看似看涨，但合起来是铁鹰空头，ALFA 留在区间内才获利。",
+						"数腿会误读组合单。四个标签中有两个看似看多，但合起来是铁鹰空头，ALFA 留在区间内才获利。",
 					],
 				},
 				{
 					id: "bearish",
-					label: ["Slightly bearish, by premium", "按权利金算，略偏看跌"],
+					label: ["Slightly bearish, by premium", "按权利金算，略偏看空"],
 					why: [
 						"Weighing labels by premium still reads the legs one by one. Together they are a short iron condor: a bet on ALFA staying between $95 and $105.",
 						"按权利金加权标签，仍然是逐腿解读。合起来它们是铁鹰空头：押注 ALFA 留在 $95 到 $105 之间。",
@@ -876,7 +876,7 @@ const scenes = [
 				label: ["Leg by leg", "逐腿"],
 				caption: [
 					"A feed that labels each print alone calls the sold 95 put and bought 110 call bullish, and the bought 90 put and sold 105 call bearish.",
-					"逐笔贴标签的数据会把卖出的 95 看跌和买入的 110 看涨标为看涨，把买入的 90 看跌和卖出的 105 看涨标为看跌。",
+					"逐笔贴标签的数据会把卖出的 95 看跌和买入的 110 看涨标为看多，把买入的 90 看跌和卖出的 105 看涨标为看空。",
 				],
 				state: { view: "legs" },
 			},
@@ -885,7 +885,7 @@ const scenes = [
 				label: ["By premium", "按权利金"],
 				caption: [
 					'Add premium by label and it\'s $59,600 bullish against $61,000 bearish: net −$1,400, "slightly bearish". A direction nobody chose.',
-					"按标签加总权利金：看涨 $59,600，看跌 $61,000，净额 −$1,400，“略偏看跌”。一个没人选择过的方向。",
+					"按标签加总权利金：看多 $59,600，看空 $61,000，净额 −$1,400，“略偏看空”。一个没人选择过的方向。",
 				],
 				state: { view: "tally" },
 			},
@@ -914,15 +914,15 @@ const scenes = [
 				choices: [
 					{
 						id: "bearish",
-						label: ["Slightly bearish: −$1,400", "略偏看跌：−$1,400"],
+						label: ["Slightly bearish: −$1,400", "略偏看空：−$1,400"],
 					},
 					{ id: "neutral", label: ["Neutral: $0", "中性：$0"] },
-					{ id: "bullish", label: ["Bullish: +$43,400", "看涨：+$43,400"] },
+					{ id: "bullish", label: ["Bullish: +$43,400", "看多：+$43,400"] },
 				],
 				answer: "bearish",
 				done: [
 					"The tally says −$1,400, a slight bearish lean, because the sold 105 calls and the bought 90 puts carry a little more premium. The trader's real view is a range, and the $43,400 credit only shows up when the legs are read as one package.",
-					"加总结果是 −$1,400，略偏看跌，因为卖出的 105 看涨和买入的 90 看跌权利金稍多。交易者真正的看法是一个区间，而 $43,400 的收入只有把各腿作为整体来读时才会出现。",
+					"加总结果是 −$1,400，略偏看空，因为卖出的 105 看涨和买入的 90 看跌权利金稍多。交易者真正的看法是一个区间，而 $43,400 的收入只有把各腿作为整体来读时才会出现。",
 				],
 			},
 		},

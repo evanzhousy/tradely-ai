@@ -271,7 +271,7 @@ function AuditView({
 		},
 		{
 			key: "b",
-			text: [`${CONTRACTS} new bullish positions`, `${CONTRACTS} 个新看涨仓位`],
+			text: [`${CONTRACTS} new bullish positions`, `${CONTRACTS} 个新看多仓位`],
 			defect: ["volume ≠ positions", "成交 ≠ 持仓"],
 			repair: [`${CONTRACTS} contracts traded`, `成交 ${CONTRACTS} 张`],
 		},
@@ -536,7 +536,7 @@ const scenes = [
 		predict: {
 			prompt: [
 				`A colleague's recap of the packet says: "Premium ${usd(SUBTOTAL / 100)}. ${CONTRACTS} new bullish positions. The 115 call traded 0." What should the last claim say?`,
-				`同事根据研究包写的复盘说：“权利金 ${usd(SUBTOTAL / 100)}。${CONTRACTS} 个新看涨仓位。115 看涨成交 0 张。”最后一条应该怎么写？`,
+				`同事根据研究包写的复盘说：“权利金 ${usd(SUBTOTAL / 100)}。${CONTRACTS} 个新看多仓位。115 看涨成交 0 张。”最后一条应该怎么写？`,
 			],
 			choices: [
 				{
@@ -609,7 +609,7 @@ const scenes = [
 				kind: "answer",
 				prompt: [
 					`What should "${CONTRACTS} new bullish positions" become?`,
-					`“${CONTRACTS} 个新看涨仓位”应该改成什么？`,
+					`“${CONTRACTS} 个新看多仓位”应该改成什么？`,
 				],
 				choices: [
 					{
@@ -620,7 +620,7 @@ const scenes = [
 						id: "bearish",
 						label: [
 							`${CONTRACTS} new bearish positions`,
-							`${CONTRACTS} 个新看跌仓位`,
+							`${CONTRACTS} 个新看空仓位`,
 						],
 					},
 					{ id: "keep", label: ["Keep it as written", "保持原样"] },

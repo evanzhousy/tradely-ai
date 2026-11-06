@@ -447,7 +447,7 @@ const scenes = [
 				},
 				{
 					id: "two",
-					label: ["Yes: two bullish crowds", "是的：两群看涨的人"],
+					label: ["Yes: two bullish crowds", "是的：两群看多的人"],
 					why: [
 						"Two busy strikes can be one trader: the 10:50 block bought the 105 and sold the 110, 500 each. That's one spread, not two crowds.",
 						"两个活跃的行权价可能是同一个交易者：10:50 的大单买入 105、卖出 110，各 500 张。这是一笔价差，不是两群人。",
