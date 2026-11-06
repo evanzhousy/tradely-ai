@@ -46,15 +46,13 @@ export const R2 = WEEK_END / AFTER_DEPOSIT - 1;
 export const TWR = (1 + R1) * (1 + R2) - 1;
 export const GROWTH = WEEK_END / OPEN - 1;
 
-export const SALE_REALIZED =
-	6 * (oct100CallCloseQuote.bid - yours[0].price) * 100;
-/** Your last five closed trades, in cents: the call sale from the P&L lesson and four others. */
+/** Your last five closed trades, in cents. */
 export const trades: readonly { id: string; label: Copy; pnl: number }[] = [
 	{ id: "a", label: ["Aug 22", "8月22日"], pnl: 9_500 },
 	{ id: "b", label: ["Aug 29", "8月29日"], pnl: 8_000 },
 	{ id: "c", label: ["Sep 5", "9月5日"], pnl: -78_000 },
 	{ id: "d", label: ["Sep 10", "9月10日"], pnl: 12_000 },
-	{ id: "e", label: ["Sep 16", "9月16日"], pnl: SALE_REALIZED },
+	{ id: "e", label: ["Sep 16", "9月16日"], pnl: 33_000 },
 ];
 export const WINS = trades.filter((trade) => trade.pnl > 0);
 export const LOSSES = trades.filter((trade) => trade.pnl < 0);

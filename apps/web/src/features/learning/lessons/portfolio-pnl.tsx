@@ -162,8 +162,8 @@ function LotSquares({
 			{state.sold ? (
 				<Label x={left} y={legendY + 20} tone="small">
 					{t([
-						`dashed: ${SOLD} sold at the ${price(SALE)} bid, 15:59`,
-						`虚线：15:59 以买价 ${price(SALE)} 卖出 ${SOLD} 张`,
+						`dashed: if ${SOLD} sold at the ${price(SALE)} bid, 15:59`,
+						`虚线：假如 15:59 以买价 ${price(SALE)} 卖出 ${SOLD} 张`,
 					])}
 				</Label>
 			) : null}
@@ -685,8 +685,8 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				`At 15:59 you sell ${SOLD} of your ${HELD} calls at the ${price(SALE)} bid. First in, first out, what's your realized P&L?`,
-				`15:59 你以买价 ${price(SALE)} 卖出 ${HELD} 张看涨中的 ${SOLD} 张。按先进先出，已实现盈亏是多少？`,
+				`Suppose that at 15:59 you sell ${SOLD} of your ${HELD} calls at the ${price(SALE)} bid. First in, first out, what's your realized P&L?`,
+				`假设 15:59 你以买价 ${price(SALE)} 卖出 ${HELD} 张看涨中的 ${SOLD} 张。按先进先出，已实现盈亏是多少？`,
 			],
 			choices: [
 				{
@@ -741,8 +741,8 @@ const scenes = [
 				id: "fifo",
 				label: ["Sell, FIFO", "卖出，先进先出"],
 				caption: [
-					`Sell ${SOLD} at the ${price(SALE)} bid. First in, first out: realized ${signed(fifo.realized)}, and ${signed(fifo.unrealized)} still open.`,
-					`以买价 ${price(SALE)} 卖出 ${SOLD} 张。先进先出：已实现 ${signed(fifo.realized)}，未平仓 ${signed(fifo.unrealized)}。`,
+					`Suppose you sell ${SOLD} at the ${price(SALE)} bid. First in, first out: realized ${signed(fifo.realized)}, and ${signed(fifo.unrealized)} still open.`,
+					`假设以买价 ${price(SALE)} 卖出 ${SOLD} 张。先进先出：已实现 ${signed(fifo.realized)}，未平仓 ${signed(fifo.unrealized)}。`,
 				],
 				state: { sold: true, method: "fifo" },
 			},
@@ -835,8 +835,8 @@ const scenes = [
 				id: "close",
 				label: ["Monday close", "周一收盘"],
 				caption: [
-					`By the close cash paid for the calls and fees; ALFA is $${(CLOSE_SPOT / 100).toFixed(2)} and the calls mark at ${price(MARK)}. Trading P&L: ${signed(PNL)}.`,
-					`到收盘，现金用于买看涨和付费用；ALFA 为 $${(CLOSE_SPOT / 100).toFixed(2)}，看涨估值 ${price(MARK)}。交易盈亏：${signed(PNL)}。`,
+					`You keep all ${HELD} calls. By the close cash paid for them and fees; ALFA is $${(CLOSE_SPOT / 100).toFixed(2)} and the calls mark at ${price(MARK)}. Trading P&L: ${signed(PNL)}.`,
+					`${HELD} 张看涨全部持有。到收盘，现金用于买看涨和付费用；ALFA 为 $${(CLOSE_SPOT / 100).toFixed(2)}，看涨估值 ${price(MARK)}。交易盈亏：${signed(PNL)}。`,
 				],
 				state: { stage: 1 },
 			},

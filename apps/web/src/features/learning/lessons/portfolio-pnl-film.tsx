@@ -175,8 +175,8 @@ const copy = {
 	],
 	bpTag: ["buying power", "购买力"],
 	lotsHead: [
-		`Sell ${SOLD} at the bid: still ${signed(held.unrealized)}?`,
-		`以买价卖出 ${SOLD} 张：还是 ${signed(held.unrealized)} 吗？`,
+		`Sell ${SOLD} at the bid instead: still ${signed(held.unrealized)}?`,
+		`如果以买价卖出 ${SOLD} 张：还是 ${signed(held.unrealized)} 吗？`,
 	],
 	lotsHeadShort: [
 		`Sell ${SOLD} at the bid: ${signed(held.unrealized)}?`,

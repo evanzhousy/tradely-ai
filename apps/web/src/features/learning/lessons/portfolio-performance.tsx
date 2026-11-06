@@ -29,7 +29,6 @@ import {
 	pct,
 	R1,
 	R2,
-	SALE_REALIZED,
 	signed,
 	steady,
 	TOTAL,
@@ -619,8 +618,8 @@ const scenes = [
 				id: "trades",
 				label: ["Trades", "交易"],
 				caption: [
-					`Your last ${trades.length} closed trades, including the ${signed(SALE_REALIZED)} from selling 6 calls on Monday.`,
-					`你最近 ${trades.length} 笔已平仓交易，包括周一卖出 6 张看涨得到的 ${signed(SALE_REALIZED)}。`,
+					`Your last ${trades.length} closed trades.`,
+					`你最近 ${trades.length} 笔已平仓交易。`,
 				],
 				state: { stage: 0 },
 			},
