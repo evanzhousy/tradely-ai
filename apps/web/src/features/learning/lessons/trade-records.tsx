@@ -617,8 +617,8 @@ const scenes = [
 		title: ["One row can stand for several prints", "一行可以代表多笔成交"],
 		predict: {
 			prompt: [
-				"The Oct 18 105 call printed 5 contracts at $2.00 and 500 at $2.15. What was the average price paid per contract?",
-				"10月18日 105 看涨成交了 5 张 $2.00 和 500 张 $2.15。每张合约的平均成交价是多少？",
+				"The Oct 18 105 call printed 5 contracts at $2.00 and 500 at $2.15. What was the average price paid per share?",
+				"10月18日 105 看涨成交了 5 张 $2.00 和 500 张 $2.15。每股平均成交价是多少？",
 			],
 			choices: [
 				{
@@ -632,8 +632,8 @@ const scenes = [
 					id: "simple",
 					label: ["$2.075, halfway between", "$2.075，两者中间"],
 					why: [
-						"Halfway between the prices treats 5 contracts like 500. Weighting by size gives $108,500 ÷ 505 = $2.1485.",
-						"取两个价格的中点，是把 5 张和 500 张看得一样重。按数量加权是 $108,500 ÷ 505 = $2.1485。",
+						"Halfway between the prices treats 5 contracts like 500. Weighting by size gives $108,500 ÷ 50,500 shares = $2.1485.",
+						"取两个价格的中点，是把 5 张和 500 张看得一样重。按数量加权是 $108,500 ÷ 50,500 股 = $2.1485。",
 					],
 				},
 				{
@@ -649,8 +649,8 @@ const scenes = [
 			entry: { answer: 2.1485, prefix: "$", tolerance: 0.005 },
 			revealAt: 3,
 			explain: [
-				"Weight each price by its size: $108,500 of premium over 505 contracts is $2.1485. The simple average treats 5 contracts as if they counted as much as 500.",
-				"按数量给价格加权：$108,500 权利金除以 505 张，为 $2.1485。简单平均把 5 张和 500 张看得一样重。",
+				"Weight each price by its size: $108,500 of premium over 505 contracts, or 50,500 shares, is $2.1485. The simple average treats 5 contracts as if they counted as much as 500.",
+				"按数量给价格加权：$108,500 权利金除以 505 张，即 50,500 股，为 $2.1485。简单平均把 5 张和 500 张看得一样重。",
 			],
 		},
 		beats: [

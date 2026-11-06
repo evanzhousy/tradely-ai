@@ -879,8 +879,8 @@ const scenes = [
 						"买入 500 张看涨：非常看涨",
 					],
 					why: [
-						"Read alone the leg looks bullish, but the multi-leg code and the matching 110 call sale make it a call spread, with gains capped at $5.00 a share.",
-						"单看这条腿像看涨，但多腿代码和同时卖出的 110 看涨说明它是看涨价差，收益上限为每股 $5.00。",
+						"Read alone the leg looks bullish, but the multi-leg code and the matching 110 call sale make it a call spread, with its value capped at $5.00 a share.",
+						"单看这条腿像看涨，但多腿代码和同时卖出的 110 看涨说明它是看涨价差，价值上限为每股 $5.00。",
 					],
 				},
 				{

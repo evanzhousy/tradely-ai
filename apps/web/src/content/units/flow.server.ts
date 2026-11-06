@@ -914,7 +914,7 @@ export const flowUnits: TeachingUnit[] = [
 		),
 		example: t(
 			'Buying the Oct 18 100 call and put at $4.20 each costs $8.40 a share, so ALFA must end above $108.40 or below $91.60 to make money. Selling the 95 put and 105 call at $2.05 and buying the 90 put at $1.00 and the 110 call at $0.93 collects $2.17; the worst case is $5.00 − $2.17 = $2.83 a share. Two hundred of those condors print as four legs that a leg-by-leg feed tallies to −$1,400 of "bearish" premium, though the trade is a $43,400 bet that ALFA stays between $95 and $105.',
-			"以每张 $4.20 买入 10月18日 100 看涨和看跌，每股成本 $8.40，所以 ALFA 要收在 $108.40 以上或 $91.60 以下才赚钱。以 $2.05 卖出 95 看跌和 105 看涨、以 $1.00 买入 90 看跌、以 $0.93 买入 110 看涨，收入 $2.17；最坏情况是每股 $5.00 − $2.17 = $2.83。两百组这样的铁鹰打印为四条腿，逐腿贴标签的数据会把它们加总为 −$1,400 的“看跌”权利金，而这笔交易其实是押注 ALFA 留在 $95 到 $105 之间、收入 $43,400 的交易。",
+			"以每股 $4.20 分别买入 10月18日 100 看涨和看跌，每股成本 $8.40，所以 ALFA 要收在 $108.40 以上或 $91.60 以下才赚钱。以 $2.05 卖出 95 看跌和 105 看涨、以 $1.00 买入 90 看跌、以 $0.93 买入 110 看涨，收入 $2.17；最坏情况是每股 $5.00 − $2.17 = $2.83。两百组这样的铁鹰打印为四条腿，逐腿贴标签的数据会把它们加总为 −$1,400 的“看跌”权利金，而这笔交易其实是押注 ALFA 留在 $95 到 $105 之间、收入 $43,400 的交易。",
 		),
 		misconception: t(
 			"A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",

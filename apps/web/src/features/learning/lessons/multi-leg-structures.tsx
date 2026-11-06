@@ -211,7 +211,7 @@ function StraddleView({
 							xLabel={t(["ALFA on Oct 18", "10月18日 ALFA"])}
 							title={t([
 								`Buy the 100 call and 100 put · ${share(STRADDLE_COST / 2)} each · per straddle`,
-								`买入 100 看涨和 100 看跌 · 每张 ${share(STRADDLE_COST / 2)} · 每组跨式`,
+								`买入 100 看涨和 100 看跌 · 每股各 ${share(STRADDLE_COST / 2)} · 每组跨式`,
 							])}
 						/>
 					)}
@@ -640,7 +640,7 @@ const scenes = [
 		predict: {
 			prompt: [
 				"You buy the Oct 18 100 call and the Oct 18 100 put at $4.20 each. Above $100, where does the pair break even at expiry?",
-				"你以每张 $4.20 买入 10月18日 100 看涨和 10月18日 100 看跌。在 $100 以上，这一组到期的盈亏平衡点在哪里？",
+				"你以每股 $4.20 分别买入 10月18日 100 看涨和 10月18日 100 看跌。在 $100 以上，这一组到期的盈亏平衡点在哪里？",
 			],
 			choices: [
 				{ id: "both", label: ["$108.40", "$108.40"] },
@@ -773,7 +773,7 @@ const scenes = [
 				label: ["Put spread", "看跌价差"],
 				caption: [
 					"Sell the 95 put at $2.05 and buy the 90 put at $1.00: a put spread for a $1.05 credit. Below $90 it can cost no more than $5.00 a share.",
-					"以 $2.05 卖出 95 看跌，以 $1.00 买入 90 看跌：一个收入 $1.05 的看跌价差。低于 $90 时，每股损失最多 $5.00。",
+					"以 $2.05 卖出 95 看跌，以 $1.00 买入 90 看跌：一个收入 $1.05 的看跌价差。低于 $90 时，每股最多需付 $5.00。",
 				],
 				state: { stage: 0, spot: 100 },
 			},
@@ -782,7 +782,7 @@ const scenes = [
 				label: ["Call spread", "看涨价差"],
 				caption: [
 					"Sell the 105 call at $2.05 and buy the 110 call at $0.93: a call spread for $1.12. Above $110 it costs at most $5.00.",
-					"以 $2.05 卖出 105 看涨，以 $0.93 买入 110 看涨：一个收入 $1.12 的看涨价差。高于 $110 时最多损失 $5.00。",
+					"以 $2.05 卖出 105 看涨，以 $0.93 买入 110 看涨：一个收入 $1.12 的看涨价差。高于 $110 时，每股最多需付 $5.00。",
 				],
 				state: { stage: 1, spot: 100 },
 			},

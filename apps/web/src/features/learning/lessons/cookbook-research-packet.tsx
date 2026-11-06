@@ -903,8 +903,8 @@ const scenes = [
 				],
 				reached: (e) => e.row === "R5",
 				done: [
-					"R5, the 120 call, has no trades at the cutoff: missing, not zero. That is why the packet's $165,520 is an observed subtotal over 4 of 5 series.",
-					"R5（120 看涨）在截止时间没有成交：是缺失，不是零。所以资料包里的 $165,520 只是 5 个序列中 4 个的已观测小计。",
+					"R5, the 120 call, has no data at the cutoff: missing, not zero. That is why the packet's $165,520 is an observed subtotal over 4 of 5 series.",
+					"R5（120 看涨）在截止时间没有数据：是缺失，不是零。所以研究包里的 $165,520 只是 5 个序列中 4 个的已观测小计。",
 				],
 			},
 		},
@@ -1002,8 +1002,8 @@ const scenes = [
 				],
 				answer: "formula",
 				done: [
-					"Without the formula a reader multiplies price by contracts and misses × 100: a hundredth of the true figure. Missing exclusions or as-of times shift it by a few hundred dollars.",
-					"没有公式，读者会用价格乘张数而漏掉 × 100：只得到真实数字的百分之一。缺少排除项或截至时间，只会让结果相差几百美元。",
+					`Without the formula a reader multiplies price by contracts and misses × 100: a hundredth of the true figure. Missing exclusions add ${dollars(reruns.exclusions.cents - MONDAY)}; a missing as-of time adds ${dollars(reruns.asof.cents - MONDAY)}.`,
+					`没有公式，读者会用价格乘张数而漏掉 × 100：只得到真实数字的百分之一。缺少排除项多算 ${dollars(reruns.exclusions.cents - MONDAY)}；缺少截至时间多算 ${dollars(reruns.asof.cents - MONDAY)}。`,
 				],
 			},
 		},

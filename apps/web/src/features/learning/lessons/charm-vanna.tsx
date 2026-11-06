@@ -982,8 +982,8 @@ const scenes = [
 				],
 				answer: "short",
 				done: [
-					"The 110 call is further out of the money, so its delta decays faster. Short that leg, the decay adds delta, more than the long 105 leg loses: the spread's delta rises without a trade.",
-					"110 看涨更加虚值，所以它的 Delta 衰减更快。对这条空头腿来说，衰减会增加 Delta，增加的比 105 多头腿减少的还多：没有交易，价差的 Delta 也上升了。",
+					"Here the 110 call's delta decays faster: it sits about one standard deviation out of the money, where decay peaks, and the 105 sits closer to the money. Short that leg, the decay adds delta, more than the long 105 leg loses: the spread's delta rises without a trade.",
+					"这里 110 看涨的 Delta 衰减更快：它距现价约一个标准差，正是衰减最快的位置，而 105 更接近平值。对这条空头腿来说，衰减会增加 Delta，增加的比 105 多头腿减少的还多：没有交易，价差的 Delta 也上升了。",
 				],
 			},
 		},

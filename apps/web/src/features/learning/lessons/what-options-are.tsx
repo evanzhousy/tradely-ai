@@ -778,7 +778,7 @@ const scenes = [
 				id: "view",
 				label: ["Take a view", "表达看法"],
 				caption: [
-					"Take a view without shares: buy an Oct 18 105 call for $2.15. It pays above $107.15; the most you can lose is $215.",
+					"Take a view without shares: buy an Oct 18 105 call for $2.15. It profits above $107.15; the most you can lose is $215.",
 					"不持股表达看法：买入 10月18日 105 看涨，$2.15。股价高于 $107.15 才盈利，最多亏 $215。",
 				],
 				state: { use: "view" },
