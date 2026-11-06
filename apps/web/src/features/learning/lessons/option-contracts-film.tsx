@@ -552,7 +552,6 @@ function build(context: FilmContext) {
 			time,
 		);
 	const blocks = [0, 1, 2].map((i) => one(`block-${i}`));
-	const notional = one<SVGTextElement>("f-notional-num");
 	const heads = [
 		"s-head",
 		"n-head",
@@ -658,10 +657,9 @@ function build(context: FilmContext) {
 	// stays with the share label; the subtotal settles as the standalone hero.
 	d.swap(heads[3], heads[4], 26.1);
 	tl.to(one("f-three"), { opacity: 0.45, duration: 0.4 }, 26.3);
-	show(one("f-notional"), 26.7);
-	// The figure appears only once all three blocks are lit, never before its basis.
-	tl.set(notional, { opacity: 0 }, 26.7);
-	tl.to(notional, { opacity: 1, duration: 0.3 }, 28.3);
+	// The figure and its tag appear once all three blocks are lit, never before their basis:
+	// alone, "not what you pay" would read as a label on the premium above it.
+	show(one("f-notional"), 28.3);
 	blocks.forEach((block, i) => {
 		const at = i === 2 ? 28.0 : 26.7 + i * 0.6;
 		tl.to(block.children, { opacity: 0, duration: 0.3 }, at - 0.3);

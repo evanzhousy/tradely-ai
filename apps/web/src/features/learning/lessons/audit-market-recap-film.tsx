@@ -1051,7 +1051,7 @@ function build(context: FilmContext) {
 	d.swap([heads[2], heads[3]], heads[4], 34.2);
 	hide([...claimRows, ...tags, ...fixes, positionsEvidence, lockCut], 34.2);
 	secs.forEach((sec, i) => {
-		show(sec, 35.0 + i * 0.6, "right");
+		show(sec, 35.0 + i * 0.35, "right");
 	});
 
 	// ——— claim ———

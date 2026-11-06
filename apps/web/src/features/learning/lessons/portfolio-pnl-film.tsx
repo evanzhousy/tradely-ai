@@ -1205,8 +1205,8 @@ function build(context: FilmContext) {
 	);
 	settleContribution("deposit", 16.0);
 	show(one("deposited"), 15.5);
-	// The deposit headline settles at 16.1; read the whole beat for a quiet second.
-	show(one("bp"), 17.1, "below", 0.3);
+	// The deposit headline settles at 16.1; buying power then reads for 2 s before the cut.
+	show(one("bp"), 16.35, "below", 0.3);
 
 	// ——— calls: realized and unrealized ———
 	tl.addLabel("calls", 19.0);

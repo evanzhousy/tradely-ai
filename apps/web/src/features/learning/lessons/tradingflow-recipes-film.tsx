@@ -1284,14 +1284,14 @@ function build(context: FilmContext) {
 	tl.addLabel("fork", 33.95);
 	// One deliberate beat cut replaces the session calendar with the whole
 	// official baseline after the 16:30 proof's 2.25 s settled interval. The
-	// official card gets 1.45 s before the colleague caption and action chip
-	// fade in. Both settle at 35.7, then read quietly for a full second before
-	// the action activates and provenance draws through the empty gutter.
+	// official card gets 1.45 s before the fork caption and action chip fade in.
+	// Both settle at 35.7, then read quietly for a full second before the action
+	// activates and provenance draws through the empty gutter.
 	tl.set(one("calendar"), { opacity: 0 }, 33.95);
 	tl.set(one("fork"), { opacity: 1 }, 33.95);
 	tl.set(one("fork-official"), { opacity: 1 }, 33.95);
 	tl.to(
-		[one("edit-chip"), one("c-head")],
+		[one("edit-chip"), one("f-head")],
 		{ opacity: 1, duration: 0.3, ease: "power3.out" },
 		35.4,
 	);
@@ -1314,9 +1314,8 @@ function build(context: FilmContext) {
 		{ opacity: 1, duration: 0.45, ease: "power2.inOut" },
 		36.7,
 	);
-	// Ownership is part of the populated copy's existing fade, rather than
-	// another construction step after it. The caption lands with the copy.
-	show(one("f-head"), 36.85, "above", 0.3);
+	// With the copy in place, what a colleague sees: the consequence after its cause.
+	tl.to(one("c-head"), { opacity: 1, duration: 0.3, ease: "power3.out" }, 37.7);
 	// All inherited-copy marks settle at 37.15; keep Spotlight legible for
 	// 2.25 s before it flips. ALFA settles at 40.05, then holds for 1.35 s.
 	d.flip(one("spot-copy-was"), one("spot-copy"), 39.4);
