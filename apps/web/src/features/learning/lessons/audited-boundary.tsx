@@ -698,27 +698,18 @@ const scenes = [
 			task: {
 				kind: "answer",
 				prompt: [
-					"Which of these is an interpretation, not an observation or a calculation?",
-					"以下哪一项是解读，而不是观测或计算？",
+					'A colleague adds: "The 110 is where the smart money went." What kind of statement is that?',
+					"同事补了一句：“聪明钱都去了 110。”这是哪一类陈述？",
 				],
 				choices: [
-					{
-						id: "story",
-						label: ["Traders favor the 110 strike", "交易者青睐 110 行权价"],
-					},
-					{
-						id: "seen",
-						label: ["540 traded in the 110 call", "110 看涨成交了 540 张"],
-					},
-					{
-						id: "share",
-						label: ["51% of covered volume", "占已覆盖成交量的 51%"],
-					},
+					{ id: "story", label: ["An interpretation", "解读"] },
+					{ id: "seen", label: ["An observation", "观测"] },
+					{ id: "share", label: ["A calculation", "计算"] },
 				],
 				answer: "story",
 				done: [
-					"540 is on the tape and 51% is arithmetic anyone can redo. 'Traders favor it' is a story laid over them, and 500 of the 540 being one spread leg cuts against it.",
-					"540 张在成交记录里，51% 是任何人都能重算的。“交易者青睐”是叠加在数字上的说法，而 540 张中有 500 张是同一价差的一条腿，这正好与之相悖。",
+					"Nothing on the tape says whose money it was or how smart it is. It's a story laid over the 540, and 500 of those being one spread leg cuts against it.",
+					"成交记录里没有哪一条说明这是谁的钱、聪不聪明。这是叠加在 540 张之上的说法，而其中 500 张是同一价差的一条腿，这正好与之相悖。",
 				],
 			},
 		},

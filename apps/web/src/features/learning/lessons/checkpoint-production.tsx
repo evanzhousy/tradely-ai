@@ -250,7 +250,9 @@ type AuditState = { stage: 0 | 1 | 2 };
 
 function AuditView({
 	locale,
+	phase,
 	state,
+	explore,
 }: {
 	locale: Locale;
 	phase: Phase;
@@ -259,7 +261,7 @@ function AuditView({
 	setExplore: (next: AuditState) => void;
 }) {
 	const t = tr(locale);
-	const shown = state;
+	const shown = phase === "explore" && explore ? explore : state;
 	const claims: { key: string; text: Copy; defect: Copy; repair: Copy }[] = [
 		{
 			key: "a",
@@ -599,10 +601,10 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Step back through the audit to compare each claim with its repair.",
-				"回看审核过程，比较每条结论和它的修复。",
+				"Use each claim's defect to work out its repair.",
+				"根据每条结论的缺陷，想想该怎么修复。",
 			],
-			start: (last) => last,
+			start: () => ({ stage: 1 }),
 			task: {
 				kind: "answer",
 				prompt: [

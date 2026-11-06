@@ -324,11 +324,20 @@ function SizeCompare({
 	);
 }
 
-function BlockView({ locale, state }: { locale: Locale; state: BlockState }) {
+function BlockView({
+	locale,
+	phase,
+	state,
+}: {
+	locale: Locale;
+	phase: Phase;
+	state: BlockState;
+}) {
 	const t = tr(locale);
 	const printed = state.step !== "displayed";
+	// The playground's task asks what the condition tells you: there the cards keep to the facts.
 	const result: ResultItem[] =
-		state.step === "meaning"
+		state.step === "meaning" && phase !== "explore"
 			? [
 					{
 						id: "shows",
