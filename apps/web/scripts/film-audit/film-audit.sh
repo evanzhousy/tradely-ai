@@ -61,8 +61,9 @@ server_down() { if [ -n "$VITE" ]; then pkill -P "$VITE" 2>/dev/null; kill "$VIT
 trap server_down EXIT
 
 # run SCRIPT KEY=VALUE... : one page script in ego-browser with an `env` object in front of it,
-# SPACE included. A page that returns nothing gets one retry; the raw output of a failed attempt is
-# kept in $OUT/run-failed.txt.
+# SPACE included. A page that returns nothing gets one retry; if that returns nothing too, its raw
+# output goes in $OUT/run-failed.txt, which fails the whole run. A file, because run() is usually in
+# a pipeline's subshell, and the loops around it keep only their last status.
 run() {
 	local script="$1" raw out; shift
 	set -- SPACE="$SPACE_ID" "$@"
@@ -77,8 +78,8 @@ run() {
 		# even with a warning printed in front of one.
 		out="$(sed -En 's/^[^{]*(\{(\}|").*)$/\1/p' <<< "$raw")"
 		[ -n "$out" ] && break
-		printf '%s %s\n%s\n' "$script" "$*" "$raw" > "$OUT/run-failed.txt"
 	done
+	[ -n "$out" ] || printf '%s %s\n%s\n' "$script" "$*" "$raw" >> "$OUT/run-failed.txt"
 	echo "$out"
 }
 
@@ -213,6 +214,16 @@ cmd_cards() { # [LESSON...]
 [ $# -ge 1 ] || { sed -n '2,20p' "$0"; exit 1; }
 sub=$1; shift
 case "$sub" in
-	check | scan | flight | timing | frames | play | evidence | cards) space; server_up; "cmd_$sub" "$@" ;;
+	check | scan | flight | timing | frames | play | evidence | cards)
+		space
+		server_up
+		rm -f "$OUT/run-failed.txt"
+		"cmd_$sub" "$@"
+		status=$?
+		if [ -s "$OUT/run-failed.txt" ]; then
+			echo "film-audit: a page script returned nothing; see $OUT/run-failed.txt" >&2
+			status=1
+		fi
+		exit "$status" ;;
 	*) sed -n '2,20p' "$0"; exit 1 ;;
 esac
