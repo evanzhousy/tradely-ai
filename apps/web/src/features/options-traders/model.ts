@@ -79,7 +79,6 @@ export type SnapshotFreshness = {
 export type PostSnapshot = {
 	version: 1;
 	digestWindow: { from: string; to: string };
-	metricsCapturedAt: string | null;
 	freshness: SnapshotFreshness;
 	posts: SavedPost[];
 };
@@ -309,6 +308,20 @@ export function formatRecordedTime(value: string | null): string {
 
 export const formatDateRange = (from: string, to: string) =>
 	utcDate.formatRange(new Date(from), new Date(to)).replace(/\s/gu, " ");
+
+/** The days these posts' metrics were read, or null when any post has no recorded reading. */
+export function formatMetricsChecked(
+	posts: readonly SavedPost[],
+): string | null {
+	const readings = posts.flatMap((post) =>
+		post.metricsCapturedAt ? [Date.parse(post.metricsCapturedAt)] : [],
+	);
+	if (readings.length === 0 || readings.length < posts.length) return null;
+	return formatDateRange(
+		new Date(Math.min(...readings)).toISOString(),
+		new Date(Math.max(...readings)).toISOString(),
+	);
+}
 
 export function latestPostAt(posts: readonly SavedPost[]): string | null {
 	return posts.reduce<string | null>(

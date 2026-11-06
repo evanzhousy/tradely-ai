@@ -441,15 +441,6 @@ export function mergeLivePosts(
 		});
 }
 
-/** The earliest measurement is the conservative page-level date; each post keeps its own. */
-function oldestMetricsAt(posts: readonly SavedPost[]): string | null {
-	const times = posts.map((post) => post.metricsCapturedAt);
-	if (times.length === 0 || times.some((time) => !time)) return null;
-	return times.reduce((oldest, time) =>
-		time && oldest && Date.parse(time) < Date.parse(oldest) ? time : oldest,
-	);
-}
-
 export function buildLiveSnapshot(
 	saved: PostSnapshot,
 	read: NotionRead,
@@ -465,7 +456,6 @@ export function buildLiveSnapshot(
 					: read.from.slice(0, 10),
 			to: read.coverageThrough.slice(0, 10),
 		},
-		metricsCapturedAt: oldestMetricsAt(posts),
 		freshness: {
 			dataSyncedAt: syncedAt,
 			sourceUpdatedAt: read.sourceUpdatedAt,

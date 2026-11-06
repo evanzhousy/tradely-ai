@@ -24,6 +24,7 @@ import {
 	type DirectoryFilters,
 	FEATURED_VIEW_THRESHOLD,
 	formatCompact,
+	formatMetricsChecked,
 	languageLabel,
 	PLATFORMS,
 	type PostWithAuthor,
@@ -69,12 +70,10 @@ export function TraderDirectory({
 	profiles,
 	posts,
 	windowLabel,
-	metricsLabel,
 }: {
 	profiles: readonly TraderProfile[];
 	posts: readonly PostWithAuthor[];
 	windowLabel: string;
-	metricsLabel: string;
 }) {
 	const id = useId();
 	const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -373,9 +372,11 @@ export function TraderDirectory({
 										: ""
 								}. `
 							: "No view counts are recorded for this selection. "}
-						Metrics were checked {metricsLabel}. This recorded selection follows
-						the profile and language filters; it is not every post by these
-						accounts.
+						{selected.posts.length > 0
+							? `Metrics were checked ${formatMetricsChecked(selected.posts) ?? "at the per-post times below"}. `
+							: ""}
+						This recorded selection follows the profile and language filters; it
+						is not every post by these accounts.
 					</p>
 				</div>
 				{featured.length > 0 ? (

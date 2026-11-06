@@ -10,6 +10,7 @@ import {
 	attachAuthors,
 	formatDate,
 	formatDateRange,
+	formatMetricsChecked,
 	formatRecordedTime,
 	latestPostAt,
 	PLATFORMS,
@@ -89,19 +90,28 @@ function Freshness({
 	snapshot: PostSnapshot;
 	postsThrough: string | null;
 }) {
-	const { freshness, metricsCapturedAt } = snapshot;
+	const { freshness } = snapshot;
 	const delayed =
 		freshness.status === "failed" || freshness.status === "partial";
 	const live = snapshot !== savedSnapshot && freshness.status === "success";
+	const recorded = (label: string, dateTime: string | null) => ({
+		label,
+		dateTime,
+		text: formatRecordedTime(dateTime),
+	});
 	const dates = [
 		// A sync that was never recorded is not a date to show.
 		...(freshness.dataSyncedAt
-			? [{ label: "Data synced", value: freshness.dataSyncedAt }]
+			? [recorded("Data synced", freshness.dataSyncedAt)]
 			: []),
-		{ label: "Posts through", value: postsThrough },
-		{ label: "Metrics checked", value: metricsCapturedAt },
+		recorded("Posts through", postsThrough),
+		{
+			label: "Metrics checked",
+			dateTime: null,
+			text: formatMetricsChecked(snapshot.posts) ?? "Not recorded",
+		},
 		...(freshness.sourceUpdatedAt
-			? [{ label: "Source updated", value: freshness.sourceUpdatedAt }]
+			? [recorded("Source updated", freshness.sourceUpdatedAt)]
 			: []),
 	];
 	return (
@@ -110,15 +120,11 @@ function Freshness({
 				aria-label="Saved-post data freshness"
 				className="flex flex-wrap gap-x-10 gap-y-4"
 			>
-				{dates.map(({ label, value }) => (
+				{dates.map(({ label, dateTime, text }) => (
 					<div key={label} className="min-w-0">
 						<dt className="font-mono text-muted-foreground text-xs">{label}</dt>
 						<dd className="mt-1 font-medium text-sm">
-							{value ? (
-								<time dateTime={value}>{formatRecordedTime(value)}</time>
-							) : (
-								"Not recorded"
-							)}
+							{dateTime ? <time dateTime={dateTime}>{text}</time> : text}
 						</dd>
 					</div>
 				))}
@@ -249,11 +255,6 @@ export function OptionsTradersPage() {
 					snapshot.digestWindow.from,
 					snapshot.digestWindow.to,
 				)}
-				metricsLabel={
-					snapshot.metricsCapturedAt
-						? `on or after ${formatDate(snapshot.metricsCapturedAt)}`
-						: "at the per-post times below"
-				}
 			/>
 
 			<section
