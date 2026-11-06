@@ -26,17 +26,26 @@ PORT="${FILM_AUDIT_PORT:-8262}"
 mkdir -p "$OUT"
 
 # One ego-browser task space for every run; a browser restart loses it, so make a new one then.
+# Sets SPACE_ID or stops the script: a page takes Number(SPACE), and Number("") is space 0, the
+# user's own. Call it in the main shell, not in $(...), where its exit would stop only the subshell.
+SPACE_ID=""
 space() {
-	local id
+	local id raw
 	id="$(cat "$OUT/space.txt" 2>/dev/null)"
 	# stdin closed: with -e, ego-browser otherwise waits on it.
-	if [ -n "$id" ] && ego-browser nodejs -e "await taskSpace(Number($id));" </dev/null >/dev/null 2>&1; then
-		echo "$id"
+	if [[ "$id" =~ ^[1-9][0-9]*$ ]] && ego-browser nodejs -e "await taskSpace(Number($id));" </dev/null >/dev/null 2>&1; then
+		SPACE_ID="$id"
 		return
 	fi
-	id="$(ego-browser nodejs -e 'const t = await taskSpace("tradely film audit"); console.log("SPACE " + t.spaceId);' </dev/null 2>/dev/null | sed -n 's/^SPACE //p')"
+	# A script's output comes back on stderr, so read both, as run() does.
+	raw="$(ego-browser nodejs -e 'const t = await taskSpace("tradely film audit"); console.log("SPACE " + t.spaceId);' </dev/null 2>&1)"
+	id="$(sed -En 's/^.*SPACE ([0-9]+)$/\1/p' <<< "$raw")"
+	if ! [[ "$id" =~ ^[1-9][0-9]*$ ]]; then
+		printf 'film-audit: no ego-browser task space, so no page script was run.\nego-browser printed: %s\n' "${raw:-nothing}" >&2
+		exit 1
+	fi
 	echo "$id" > "$OUT/space.txt"
-	echo "$id"
+	SPACE_ID="$id"
 }
 
 VITE=""
@@ -51,11 +60,12 @@ server_up() {
 server_down() { if [ -n "$VITE" ]; then pkill -P "$VITE" 2>/dev/null; kill "$VITE" 2>/dev/null; wait "$VITE" 2>/dev/null; fi; }
 trap server_down EXIT
 
-# run SCRIPT KEY=VALUE... : one page script in ego-browser with an `env` object in front of it.
-# A page that returns nothing gets one retry; the raw output of a failed attempt is kept in
-# $OUT/run-failed.txt.
+# run SCRIPT KEY=VALUE... : one page script in ego-browser with an `env` object in front of it,
+# SPACE included. A page that returns nothing gets one retry; the raw output of a failed attempt is
+# kept in $OUT/run-failed.txt.
 run() {
 	local script="$1" raw out; shift
+	set -- SPACE="$SPACE_ID" "$@"
 	for _ in 1 2; do
 		raw="$({
 			printf 'const env = {'
@@ -103,7 +113,7 @@ sheets() { # DIR PREFIX PERROW ROWSPERSHEET WIDTH STAMP
 cmd_frames() { # LESSON PREFIX TIMES SIZE LOCALE [DIR]
 	local dir="${6:-$OUT/frames-$1}"
 	mkdir -p "$dir"
-	run frame-scan.mjs SPACE="$(space)" LESSON="$1" OUT="$dir" PREFIX="$2" TIMES="$3" SIZE="$4" LOCALE="$5" PORT="$PORT"
+	run frame-scan.mjs LESSON="$1" OUT="$dir" PREFIX="$2" TIMES="$3" SIZE="$4" LOCALE="$5" PORT="$PORT"
 }
 
 cmd_scan() { # LESSON END
@@ -122,13 +132,13 @@ cmd_scan() { # LESSON END
 
 cmd_flight() { # LESSON END
 	for c in $CONFIGS; do
-		run flight.mjs SPACE="$(space)" LESSON="$1" END="$2" SIZE="${c%%:*}" LOCALE="${c##*:}" PORT="$PORT" | python3 "$HERE/report.py" flight "$1 $c"
+		run flight.mjs LESSON="$1" END="$2" SIZE="${c%%:*}" LOCALE="${c##*:}" PORT="$PORT" | python3 "$HERE/report.py" flight "$1 $c"
 	done
 }
 
 cmd_timing() { # LESSON [rows]
 	for c in $CONFIGS; do
-		run timing.mjs SPACE="$(space)" LESSON="$1" SIZE="${c%%:*}" LOCALE="${c##*:}" PORT="$PORT" | python3 "$HERE/report.py" timing "$1 $c" "${2:-}"
+		run timing.mjs LESSON="$1" SIZE="${c%%:*}" LOCALE="${c##*:}" PORT="$PORT" | python3 "$HERE/report.py" timing "$1 $c" "${2:-}"
 	done
 }
 
@@ -140,7 +150,7 @@ cmd_play() { # LESSON...
 	printf '%s\n' "$@" > "$OUT/play-list.txt"
 	for c in 1440x900x1:en 390x844x2m:zh; do
 		echo "# $c"
-		run playthrough.mjs SPACE="$(space)" LIST="$OUT/play-list.txt" SIZE="${c%%:*}" LOCALE="${c##*:}" PORT="$PORT" THROTTLE="${FILM_AUDIT_THROTTLE:-1}" | python3 "$HERE/report.py" play "$c"
+		run playthrough.mjs LIST="$OUT/play-list.txt" SIZE="${c%%:*}" LOCALE="${c##*:}" PORT="$PORT" THROTTLE="${FILM_AUDIT_THROTTLE:-1}" | python3 "$HERE/report.py" play "$c"
 	done
 }
 
@@ -182,7 +192,7 @@ cmd_cards() { # [LESSON...]
 	mkdir -p "$dir" "$pub"
 	if [ $# -gt 0 ]; then lessons="$(printf '%s\n' "$@")"
 	else lessons="$(cd "$WEB/src/features/learning/lessons" && ls -- *-film.tsx | sed 's/-film\.tsx$//')"; fi
-	run share-cards.mjs SPACE="$(space)" LESSONS="$lessons" OUT="$dir" PORT="$PORT" \
+	run share-cards.mjs LESSONS="$lessons" OUT="$dir" PORT="$PORT" \
 		SITE_TITLE="Learn options research for free." SITE_FILM="what-options-are"
 	# Flat frames keep their detail in a small palette, at a fraction of the size.
 	for card in $lessons tradely; do
@@ -203,6 +213,6 @@ cmd_cards() { # [LESSON...]
 [ $# -ge 1 ] || { sed -n '2,20p' "$0"; exit 1; }
 sub=$1; shift
 case "$sub" in
-	check | scan | flight | timing | frames | play | evidence | cards) server_up; "cmd_$sub" "$@" ;;
+	check | scan | flight | timing | frames | play | evidence | cards) space; server_up; "cmd_$sub" "$@" ;;
 	*) sed -n '2,20p' "$0"; exit 1 ;;
 esac
