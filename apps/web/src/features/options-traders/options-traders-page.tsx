@@ -1,9 +1,7 @@
 import { buttonVariants } from "@tradely/ui/components/button";
-import { Link as HeroLink } from "@tradely/ui/components/link";
-import { ArrowDownIcon, ExternalLinkIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ArrowDownIcon } from "lucide-react";
+import { useMemo } from "react";
 
-import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
 import { PageIntro } from "@/components/page-intro";
 import {
@@ -11,7 +9,6 @@ import {
 	formatDate,
 	formatDateRange,
 	formatMetricsChecked,
-	formatRecordedTime,
 	latestPostAt,
 	PLATFORMS,
 	type PostSnapshot,
@@ -19,69 +16,17 @@ import {
 	withObservedLanguages,
 } from "./model";
 import { savedProfiles, savedSnapshot } from "./saved-data";
+import {
+	FreshnessPanel,
+	OpenOptionTrades,
+	recordedDate,
+	useLatestSnapshot,
+} from "./snapshot-ui";
 import { TopTraders } from "./top-traders";
 import { TraderDirectory } from "./trader-directory";
 
 const FIRST_SCREEN_TRADERS = 5;
 const FEED_PATH = "/api/options-traders";
-const OPTION_TRADES_URL =
-	"https://app.tradingflow.com/app/option-trades/live?utm_source=tradely&utm_medium=options_traders";
-
-function OpenOptionTrades({ surface }: { surface: "hero" | "closing" }) {
-	const { capture } = useAnalytics();
-	return (
-		<HeroLink
-			href={OPTION_TRADES_URL}
-			target="_blank"
-			rel="noopener noreferrer"
-			onClick={() =>
-				capture("tradingflow_link_opened", {
-					surface: "options_traders",
-					tool: "Option Trades",
-				})
-			}
-			className={buttonVariants({
-				variant: surface === "hero" ? "outline" : "default",
-			})}
-		>
-			Open Option Trades
-			<ExternalLinkIcon aria-hidden="true" size={14} className="ms-1.5" />
-		</HeroLink>
-	);
-}
-
-/**
- * The page renders the saved snapshot at once, then asks the feed for newer posts once per load, so
- * a slow or failing read never delays or empties the page. Filters are untouched by the swap.
- */
-function useLatestSnapshot(saved: PostSnapshot): PostSnapshot {
-	const [snapshot, setSnapshot] = useState(saved);
-	useEffect(() => {
-		const controller = new AbortController();
-		async function checkForNewerPosts() {
-			try {
-				const response = await fetch(FEED_PATH, { signal: controller.signal });
-				// No feed is configured here, so the saved snapshot is final and nothing is late.
-				if (response.status === 204) return;
-				if (!response.ok) throw new Error("Feed unavailable");
-				setSnapshot((await response.json()) as PostSnapshot);
-			} catch {
-				if (controller.signal.aborted) return;
-				setSnapshot((current) => ({
-					...current,
-					freshness: {
-						...current.freshness,
-						status: "failed",
-						lastAttemptedAt: new Date().toISOString(),
-					},
-				}));
-			}
-		}
-		void checkForNewerPosts();
-		return () => controller.abort();
-	}, []);
-	return snapshot;
-}
 
 function Freshness({
 	snapshot,
@@ -91,70 +36,35 @@ function Freshness({
 	postsThrough: string | null;
 }) {
 	const { freshness } = snapshot;
-	const delayed =
-		freshness.status === "failed" || freshness.status === "partial";
 	const live = snapshot !== savedSnapshot && freshness.status === "success";
-	const recorded = (label: string, dateTime: string | null) => ({
-		label,
-		dateTime,
-		text: formatRecordedTime(dateTime),
-	});
-	const dates = [
-		// A sync that was never recorded is not a date to show.
-		...(freshness.dataSyncedAt
-			? [recorded("Data synced", freshness.dataSyncedAt)]
-			: []),
-		recorded("Posts through", postsThrough),
-		{
-			label: "Metrics checked",
-			dateTime: null,
-			text: formatMetricsChecked(snapshot.posts) ?? "Not recorded",
-		},
-		...(freshness.sourceUpdatedAt
-			? [recorded("Source updated", freshness.sourceUpdatedAt)]
-			: []),
-	];
 	return (
-		<div className="flex flex-col gap-2">
-			<dl
-				aria-label="Saved-post data freshness"
-				className="flex flex-wrap gap-x-10 gap-y-4"
-			>
-				{dates.map(({ label, dateTime, text }) => (
-					<div key={label} className="min-w-0">
-						<dt className="font-mono text-muted-foreground text-xs">{label}</dt>
-						<dd className="mt-1 font-medium text-sm">
-							{dateTime ? <time dateTime={dateTime}>{text}</time> : text}
-						</dd>
-					</div>
-				))}
-			</dl>
-			{delayed ? (
-				<p role="status" className="text-sm">
-					<strong>Refresh delayed.</strong> Showing the last saved data.
-					{freshness.lastAttemptedAt ? (
-						<>
-							{" "}
-							Last attempt:{" "}
-							<time dateTime={freshness.lastAttemptedAt}>
-								{formatRecordedTime(freshness.lastAttemptedAt)}
-							</time>
-							.
-						</>
-					) : null}
-				</p>
-			) : null}
-			<p className="text-muted-foreground text-xs leading-relaxed">
-				These dates describe the saved posts across all languages. Follower
-				counts have separate as-of dates.
-				{live ? " Newer digest posts were added when this page loaded." : ""}
-			</p>
-		</div>
+		<FreshnessPanel
+			freshness={freshness}
+			dates={[
+				// A sync that was never recorded is not a date to show.
+				...(freshness.dataSyncedAt
+					? [recordedDate("Data synced", freshness.dataSyncedAt)]
+					: []),
+				recordedDate("Posts through", postsThrough),
+				{
+					label: "Metrics checked",
+					dateTime: null,
+					text: formatMetricsChecked(snapshot.posts) ?? "Not recorded",
+				},
+				...(freshness.sourceUpdatedAt
+					? [recordedDate("Source updated", freshness.sourceUpdatedAt)]
+					: []),
+			]}
+		>
+			These dates describe the saved posts across all languages. Follower counts
+			have separate as-of dates.
+			{live ? " Newer digest posts were added when this page loaded." : ""}
+		</FreshnessPanel>
 	);
 }
 
 export function OptionsTradersPage() {
-	const snapshot = useLatestSnapshot(savedSnapshot);
+	const snapshot = useLatestSnapshot(savedSnapshot, FEED_PATH);
 	const profiles = useMemo(
 		() => withObservedLanguages(savedProfiles, snapshot.posts),
 		[snapshot.posts],
@@ -216,7 +126,7 @@ export function OptionsTradersPage() {
 							<ArrowDownIcon aria-hidden="true" size={16} />
 						</a>
 					) : null}
-					<OpenOptionTrades surface="hero" />
+					<OpenOptionTrades surface="options_traders" variant="outline" />
 				</div>
 				<p className="max-w-[65ch] text-muted-foreground text-xs leading-relaxed">
 					Followers read{" "}
@@ -300,7 +210,7 @@ export function OptionsTradersPage() {
 					>
 						Explore the curriculum
 					</AppLink>
-					<OpenOptionTrades surface="closing" />
+					<OpenOptionTrades surface="options_traders" variant="default" />
 				</div>
 			</section>
 

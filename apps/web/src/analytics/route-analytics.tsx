@@ -30,7 +30,8 @@ export function RouteAnalytics() {
 				locale:
 					path === "/guides" ||
 					path.startsWith("/guides/") ||
-					path === "/options-traders"
+					path === "/options-traders" ||
+					path === "/options-traders/reddit"
 						? "en"
 						: localeRef.current,
 			})

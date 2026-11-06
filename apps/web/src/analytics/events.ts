@@ -52,6 +52,7 @@ export type AnalyticsRouteName =
 	| "guides"
 	| "guide"
 	| "options_traders"
+	| "options_traders_reddit"
 	| "home"
 	| "course"
 	| "lesson"
@@ -211,7 +212,8 @@ export type AnalyticsEventMap = {
 			| "home_hero"
 			| "lesson_practice"
 			| "lesson_lab"
-			| "options_traders";
+			| "options_traders"
+			| "options_traders_reddit";
 		lesson_id?: string;
 		tool?: TradingFlowPractice["tool"];
 	};
@@ -512,6 +514,7 @@ export function analyticsRouteName(pathname: string): AnalyticsRouteName {
 	if (pathname.startsWith("/guides/")) return "guide";
 	if (pathname === "/") return "home";
 	if (pathname === "/options-traders") return "options_traders";
+	if (pathname === "/options-traders/reddit") return "options_traders_reddit";
 	if (pathname === "/courses/tradingflow-foundations") return "course";
 	if (pathname.startsWith("/learn/")) return "lesson";
 	if (pathname === "/pricing") return "pricing";

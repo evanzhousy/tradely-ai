@@ -311,7 +311,7 @@ export const formatDateRange = (from: string, to: string) =>
 
 /** The days these posts' metrics were read, or null when any post has no recorded reading. */
 export function formatMetricsChecked(
-	posts: readonly SavedPost[],
+	posts: readonly Pick<SavedPost, "metricsCapturedAt">[],
 ): string | null {
 	const readings = posts.flatMap((post) =>
 		post.metricsCapturedAt ? [Date.parse(post.metricsCapturedAt)] : [],
@@ -323,7 +323,9 @@ export function formatMetricsChecked(
 	);
 }
 
-export function latestPostAt(posts: readonly SavedPost[]): string | null {
+export function latestPostAt(
+	posts: readonly Pick<SavedPost, "postedAt">[],
+): string | null {
 	return posts.reduce<string | null>(
 		(latest, post) =>
 			!latest || Date.parse(post.postedAt) > Date.parse(latest)

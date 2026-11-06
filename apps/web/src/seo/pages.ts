@@ -51,6 +51,15 @@ const staticPages: SeoPage[] = [
 		sitemap: true,
 	},
 	{
+		// Stays out of search until it has posts and Reddit's data terms have been read.
+		path: "/options-traders/reddit",
+		title: "Options Posts on Reddit Worth Checking | Tradely",
+		description:
+			"Public Reddit posts that name a strike, an open-interest change or a large print you can check against the tape, and the contributors we track.",
+		index: false,
+		sitemap: false,
+	},
+	{
 		path: "/courses/tradingflow-foundations",
 		title: "Options Research Course: Visual Lessons | Tradely",
 		description:
