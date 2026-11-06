@@ -137,7 +137,7 @@ const copy = {
 	crushHeadShort: ["Implied volatility (IV) falls.", "隐含波动率（IV）下降。"],
 	axis: ["modeled call value / share", "看涨模型价值 / 股"],
 	spotAxis: ["ALFA price", "ALFA 股价"],
-	paid: ["paid $4.20", "买价 $4.20"],
+	paid: ["paid $4.20", "已付 $4.20"],
 	today: [
 		`Sep 16 · ${DAYS} days · IV ${START_IV}%`,
 		`9月16日 · ${DAYS} 天 · IV ${START_IV}%`,

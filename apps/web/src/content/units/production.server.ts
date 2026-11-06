@@ -130,7 +130,7 @@ export const productionUnits: TeachingUnit[] = [
 		sources: [oi, quotes],
 		explanation: t(
 			"A recap communicates a research packet's supported findings. Start from the supplied rows or your identified saved packet, not a dramatic headline. Every numerical claim needs a traceable calculation, date, unit, population and coverage boundary. Use a chart of one comparable quantity; different metrics need separate axes or panels with honest units. A truncated axis, missing denominator, or an unmarked missing row can distort interpretation even when the arithmetic is correct. A descriptive claim does not become a forecast through stronger wording. The visual walkthrough compares supplied headlines and assembles a supported caption with its source references.",
-			"复盘传达研究包支持的发现，应从给定行或已标识的保存研究包出发，而非先写夸张标题。每个数字结论都需可追溯计算、日期、单位、人群和覆盖边界。图表宜使用一种可比量，不同指标需明确单位的独立轴或面板。即使算术正确，截断轴、缺少分母或未标缺失行仍会歪曲解读。加强措辞不会把描述变成预测。视觉讲解比较给定标题，并组装带来源引用的有依据图注。",
+			"复盘传达研究包支持的发现，应从给定行或已标识的保存研究包出发，而非先写夸张标题。每个数字结论都需可追溯计算、日期、单位、总体和覆盖边界。图表宜使用一种可比量，不同指标需明确单位的独立轴或面板。即使算术正确，截断轴、缺少分母或未标缺失行仍会歪曲解读。加强措辞不会把描述变成预测。视觉讲解比较给定标题，并组装带来源引用的有依据图注。",
 		),
 		example: t(
 			"Packet P1 shows 540 contracts in ALFA's Oct 18 110 call and 505 in the 105 call, but $108,500 of premium in the 105 call against $48,810 in the 110. 'Most contracts: the 110 call' needs a contracts chart; 'most premium: the 105 call' needs a premium chart. Starting the axis at 500 draws the 110 call's bar 8 times the 105's, though it traded 7% more. With the 120 call missing, 'Monday's busiest call' overstates coverage.",

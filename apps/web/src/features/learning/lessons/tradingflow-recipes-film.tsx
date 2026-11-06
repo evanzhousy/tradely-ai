@@ -151,7 +151,7 @@ const copy = {
 	qBig: ["Which contracts saw volume", "周一哪些合约"],
 	qSignal: ["well above open interest", "成交超未平仓量？"],
 	qTail: ["on Monday?", ""],
-	qLine: ["One official recipe answers it.", "唯一的官方 Recipe 回答。"],
+	qLine: ["One official recipe answers it.", "一份官方 Recipe 就能回答。"],
 	kindsHead: [
 		"Six official recipes, three kinds.",
 		"六个官方 Recipe，三种类型。",

@@ -68,7 +68,10 @@ function previewValue(value: number, unit: Unit, format: FormatId) {
 	return plain(value);
 }
 
-const CURRENCY_WARNING = "Currency format requires a USD or price formula.";
+const CURRENCY_WARNING: Copy = [
+	"Currency format requires a USD or price formula.",
+	"货币格式需要 USD 或价格公式。",
+];
 
 const PAD = 16;
 /** The editor sits flush in the stage so the longest formula fits a phone-width box. */
@@ -104,14 +107,17 @@ function UnitStage({
 	const output = def.output;
 	const warning =
 		state.reveal && output === "ratio" && state.format === "currency"
-			? wrapText(`✗ ${CURRENCY_WARNING}`, inner, 11)
+			? wrapText(`✗ ${t(CURRENCY_WARNING)}`, inner, 11)
 			: [];
 	const preview = !state.reveal
 		? ["ALFA: …"]
 		: output === null
-			? [REFUSED]
+			? [t([REFUSED, "usd 不能与 count 相加。"])]
 			: wrapText(
-					`ALFA: ${previewValue(def.value(ALFA), output, state.format)} · output unit ${output}`,
+					t([
+						`ALFA: ${previewValue(def.value(ALFA), output, state.format)} · output unit ${output}`,
+						`ALFA：${previewValue(def.value(ALFA), output, state.format)} · 输出单位 ${output}`,
+					]),
 					inner,
 					13,
 				);

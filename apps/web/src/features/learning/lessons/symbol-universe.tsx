@@ -435,7 +435,7 @@ function ObservedView({
 				<p>
 					{t([
 						"Keep the intended population apart from the part you actually observed. A measured ranking may have to leave out a candidate with missing data, but that doesn't make the observed leader the largest in the full population. Say which group the claim covers.",
-						"把目标人群与实际观测到的部分分开。有数据缺失的候选可能不得不排除在测量排名之外，但这并不能让观测到的领先者成为全部人群中最大的。要说明结论覆盖的是哪一组。",
+						"把目标总体与实际观测到的部分分开。有数据缺失的候选可能不得不排除在测量排名之外，但这并不能让观测到的领先者成为全部总体中最大的。要说明结论覆盖的是哪一组。",
 					])}
 				</p>
 			}
@@ -594,7 +594,7 @@ const scenes = [
 			revealAt: 3,
 			explain: [
 				"Missing isn't zero and it isn't average. FJOR passes the checks that can be made, so it stays in the intended group as an unknown that no ranking can place.",
-				"缺失既不是零，也不是平均值。FJOR 通过了能做的检查，所以它仍在目标人群中，只是一个任何排名都无法放置的未知项。",
+				"缺失既不是零，也不是平均值。FJOR 通过了能做的检查，所以它仍在目标总体中，只是一个任何排名都无法放置的未知项。",
 			],
 		},
 		beats: [

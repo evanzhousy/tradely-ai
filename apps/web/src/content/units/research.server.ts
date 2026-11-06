@@ -26,7 +26,7 @@ export const researchUnits: TeachingUnit[] = [
 		sources: [oi, quotes],
 		explanation: t(
 			"Start with a question whose subject, quantity, universe, time interval and evidence requirements are explicit. A descriptive question asks what happened; a forecasting question additionally needs a measurable future outcome, horizon and out-of-sample evaluation. 'What will rally?' is underspecified, not inherently untestable. This course does not validate a trading forecast from a single print. Separate observed facts, calculations, interpretations, contradictions and unknowns. An invalidation rule says which failure of evidence or tested hypothesis would require reconsideration. New evidence may test the same question. Changing the population, instrument or method creates a different question; preserve the original record instead of retrofitting it to the interesting result.",
-			"先明确问题的对象、测量量、范围、时间区间与证据要求。描述性问题问发生了什么，预测性问题还需可测未来结果、期限与样本外评价。“什么会上涨”是不够明确，不是本质上不可检验。本课不会从单笔成交验证交易预测。区分观测、计算、解读、反证与未知。失效规则说明哪类证据或假设失败需要重新考虑。新证据可检验同一问题，但更换人群、工具或方法会形成新问题；应保留原记录，避免事后迎合突出结果。",
+			"先明确问题的对象、测量量、范围、时间区间与证据要求。描述性问题问发生了什么，预测性问题还需可测未来结果、期限与样本外评价。“什么会上涨”是不够明确，不是本质上不可检验。本课不会从单笔成交验证交易预测。区分观测、计算、解读、反证与未知。失效规则说明哪类证据或假设失败需要重新考虑。新证据可检验同一问题，但更换总体、工具或方法会形成新问题；应保留原记录，避免事后迎合突出结果。",
 		),
 		example: t(
 			"Question: among ALFA's Oct 18 calls, strikes 100 to 120, where did Monday September 16 session volume concentrate? Record the consolidated tape, the complete-session cutoff and the missing 120 call. Tuesday's delivery of the 120 call tests this question. Replacing calls with puts after seeing the leader changes it. One person can own the note and its revision history.",
@@ -142,7 +142,7 @@ export const researchUnits: TeachingUnit[] = [
 		sources: [oi],
 		explanation: t(
 			"A comparison universe is a declared set of eligible observations. Derive eligibility from source facts rather than trusting a green badge: instrument identity, selected session, required coverage and liquidity threshold. Keep the intended population separate from the subset actually observed. Excluding a missing high-volume candidate may be necessary for a measured comparison, but it does not prove the remaining leader is largest in the unseen full universe. Sector is an industry classification, market capitalization is share price times shares outstanding, and an earnings date marks a scheduled event rather than guaranteed news timing. These can define the question together with underlying type, but they are not interchangeable filters; an index without a sector is not an unknown instrument. Historical membership must be point-in-time to avoid survivorship bias. A reference denominator can mean peer count or a numeric normalization baseline; say which one you are using.",
-			"比较范围是声明的合格观测集合。资格应由来源事实决定，不是只信绿色标签：工具身份、时段、必需覆盖与流动性阈值。区分目标人群与实际观测子集。缺失大成交候选可能需从测量比较中排除，但剩余领先者不因此成为未知完整范围的最大值。行业是产业分类，市值为股价乘流通在外股数，财报日期标识计划事件，不保证消息公布时刻。它们可与标的类型一起定义问题，但不能互换使用；指数没有行业分类，并不代表工具未知。历史成员应按当时确定，避免幸存者偏差。分母可能指同组数量，也可能指归一化基准，需明确。",
+			"比较范围是声明的合格观测集合。资格应由来源事实决定，不是只信绿色标签：工具身份、时段、必需覆盖与流动性阈值。区分目标总体与实际观测子集。缺失大成交候选可能需从测量比较中排除，但剩余领先者不因此成为未知完整范围的最大值。行业是产业分类，市值为股价乘流通在外股数，财报日期标识计划事件，不保证消息公布时刻。它们可与标的类型一起定义问题，但不能互换使用；指数没有行业分类，并不代表工具未知。历史成员应按当时确定，避免幸存者偏差。分母可能指同组数量，也可能指归一化基准，需明确。",
 		),
 		example: t(
 			"Rule: stock options, Monday September 16, data present, at least 500 contracts. DUNE: stock/Monday/900; BRDX: ETF/Monday/4,200; EMBR: stock/Friday/3,100; FJOR: stock/Monday/missing. Only DUNE is a valid observed comparison among these. FJOR is unknown, not zero, and limits full-universe claims.",
@@ -585,7 +585,7 @@ export const researchUnits: TeachingUnit[] = [
 		sources: [oi, quotes],
 		explanation: t(
 			"A historical test must use information available at the decision time. Event time and knowledge/receipt time can differ: a correction received later was not usable earlier. Freeze the question, eligible population, measure and evaluation rule before inspecting outcomes. Hold out a separate period or case; tuning a threshold after seeing that outcome turns it into development data. Recency-weighted activity may decay with a half-life while raw trade count does not; a score can change without a new trade. Percentiles, standardized scores and calibrated probabilities are different quantities. Require a comparable baseline, sufficient samples and source coverage. An unusual score or a pre-move association does not establish causation, ownership or repeatable out-of-sample returns.",
-			"历史检验必须使用决策时已可用的信息。事件时间与获知/接收时间可能不同，后来收到的更正在早先不可用。看结果前固定问题、合格人群、测量与评价规则。保留独立时段或案例；看完结果再调阈值，就把评估集变成开发数据。近期加权活动可按半衰期衰减，而原始笔数不变，因此无新成交时分数也可变化。百分位、标准分与校准概率不同，需可比基准、足够样本与来源覆盖。异常分数或上涨前关联，不证明因果、归属或可重复样本外收益。",
+			"历史检验必须使用决策时已可用的信息。事件时间与获知/接收时间可能不同，后来收到的更正在早先不可用。看结果前固定问题、合格总体、测量与评价规则。保留独立时段或案例；看完结果再调阈值，就把评估集变成开发数据。近期加权活动可按半衰期衰减，而原始笔数不变，因此无新成交时分数也可变化。百分位、标准分与校准概率不同，需可比基准、足够样本与来源覆盖。异常分数或上涨前关联，不证明因果、归属或可重复样本外收益。",
 		),
 		example: t(
 			"ALFA's 500-lot in the Oct 18 105 call happened at 10:50:00.4 and was first reported at $2.51; the $2.15 correction arrived at 10:50:02.8. A 10:50:01 replay must use $2.51. Separately, with a 30-minute half-life and no new trades, the block's weight of 500 falls to 250 by 11:20 and 125 by 11:50, while its 500 contracts stay unchanged. Calling the call's 97th-percentile volume a 97% chance of a rise would change its meaning.",

@@ -445,7 +445,7 @@ export const glossary: readonly GlossaryEntry[] = [
 		"profit-factor",
 		["Profit factor", "盈利因子"],
 		["profit factor"],
-		["盈利因子", "盈亏比"],
+		["盈利因子"],
 		[
 			"Gross gains from winning trades divided by gross losses from losing ones.",
 			"盈利交易的总收益除以亏损交易的总亏损。",

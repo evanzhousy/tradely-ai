@@ -582,7 +582,7 @@ export const flowUnits: TeachingUnit[] = [
 		sources: [oi],
 		explanation: t(
 			"Unusual is relative to a baseline, not synonymous with large. Relative volume compares current activity with a stated historical typical volume; volume/OI compares activity with outstanding contracts. Their denominators answer different questions. Compare complete sessions with complete sessions, or use an explicitly comparable intraday window. A near-zero denominator can make an ordinary numerator look extreme. A missing or non-positive required denominator gives an unavailable ratio, not zero or infinity. Averaging ratios across rows differs from dividing the summed numerators by summed denominators. A threshold such as 2× is a declared screen, not a universal discovery of informed trading. Review liquidity, coverage, event context and the population selected by the screen.",
-			"异常是相对于基准，不等于绝对金额大。相对成交量比较当前活动与历史典型量，成交量/OI 比较活动与未平仓合约，分母回答不同问题。完整时段应与完整时段比较，盘中则需明确可比窗口。接近零的分母可让普通分子显得极端。必需分母缺失或非正时结果不可用，不是零或无穷。平均各行比率不同于总分子除总分母。2× 等阈值是声明的筛选规则，不是普遍有效的知情交易证明，还需检查流动性、覆盖、事件与所选人群。",
+			"异常是相对于基准，不等于绝对金额大。相对成交量比较当前活动与历史典型量，成交量/OI 比较活动与未平仓合约，分母回答不同问题。完整时段应与完整时段比较，盘中则需明确可比窗口。接近零的分母可让普通分子显得极端。必需分母缺失或非正时结果不可用，不是零或无穷。平均各行比率不同于总分子除总分母。2× 等阈值是声明的筛选规则，不是普遍有效的知情交易证明，还需检查流动性、覆盖、事件与所选总体。",
 		),
 		example: t(
 			"The Oct 18 105 call traded 505 against a typical 120 and open interest of 1,200: relative volume 4.2× and volume/OI 0.42×. The Dec 20 110 call traded 12 with open interest of 3: volume/OI 4× despite far less activity. This is a denominator effect, not proof that the second contract matters more.",

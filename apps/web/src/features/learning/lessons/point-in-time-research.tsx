@@ -778,7 +778,7 @@ function HoldoutView({
 				<p>
 					{t([
 						"Trying many specifications on the same data and keeping the best makes the winner look better than it is. Before looking at outcomes, freeze the question, the population, the measure and the rule, keep a later period sealed, and run the frozen rule on it once. Editing the rule after seeing the holdout turns it into more search data.",
-						"在同一份数据上尝试很多种设定并保留最好的那个，会让胜者看起来比实际更好。在看结果之前，固定问题、人群、测量量和规则，封存后面的一段时间，并把冻结的规则在上面只运行一次。看过保留集之后再修改规则，就把它变成了更多的搜索数据。",
+						"在同一份数据上尝试很多种设定并保留最好的那个，会让胜者看起来比实际更好。在看结果之前，固定问题、总体、测量量和规则，封存后面的一段时间，并把冻结的规则在上面只运行一次。看过保留集之后再修改规则，就把它变成了更多的搜索数据。",
 					])}
 				</p>
 			}

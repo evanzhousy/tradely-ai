@@ -414,7 +414,7 @@ function TradesView({
 				<SheetStage
 					label={t([
 						"Five closed trades with their running total, read as profit factor and the worst fall from a peak",
-						"五笔已平仓交易及其累计值，读作盈亏比和从高点的最大回落",
+						"五笔已平仓交易及其累计值，读作盈利因子和从高点的最大回落",
 					])}
 					lineSlots={2}
 					title={t(["Closed trades · this week", "已平仓交易 · 本周"])}
@@ -431,7 +431,7 @@ function TradesView({
 			result={[
 				{
 					id: "pf",
-					label: t(["Profit factor", "盈亏比"]),
+					label: t(["Profit factor", "盈利因子"]),
 					value: shown.stage >= 1 ? (factor ?? "—") : "…",
 					evidence: "calculated",
 				},
@@ -835,16 +835,16 @@ const scenes = [
 	}),
 	defineScene<TradesState, TradesState>({
 		id: "trades",
-		label: ["Profit factor", "盈亏比"],
+		label: ["Profit factor", "盈利因子"],
 		title: [
 			"Win rate counts trades; profit factor weighs them",
-			"胜率数笔数，盈亏比称金额",
+			"胜率数笔数，盈利因子称金额",
 		],
 		revisit: "portfolio-performance",
 		predict: {
 			prompt: [
 				`Your closed trades this week, in order: ${TRADES.map(signedDollars).join(", ")}. What's the profit factor?`,
-				`你本周按顺序平仓的交易：${TRADES.map(signedDollars).join("、")}。盈亏比是多少？`,
+				`你本周按顺序平仓的交易：${TRADES.map(signedDollars).join("、")}。盈利因子是多少？`,
 			],
 			choices: [
 				{
@@ -856,7 +856,7 @@ const scenes = [
 					label: ["4.00", "4.00"],
 					why: [
 						"4.00 counts wins against losses, 4 to 1. Profit factor divides dollars: gross wins over gross losses.",
-						"4.00 是按笔数算的比例，4 比 1。盈亏比要用金额相除：总盈利除以总亏损。",
+						"4.00 是按笔数算的比例，4 比 1。盈利因子要用金额相除：总盈利除以总亏损。",
 					],
 				},
 				{
@@ -864,7 +864,7 @@ const scenes = [
 					label: ["0.80", "0.80"],
 					why: [
 						"0.80 is the win rate, 4 of 5. Profit factor weighs dollars: gross wins over gross losses.",
-						"0.80 是胜率，5 笔中赢 4 笔。盈亏比衡量的是金额：总盈利除以总亏损。",
+						"0.80 是胜率，5 笔中赢 4 笔。盈利因子衡量的是金额：总盈利除以总亏损。",
 					],
 				},
 			],
@@ -888,10 +888,10 @@ const scenes = [
 			},
 			{
 				id: "factor",
-				label: ["Factor", "盈亏比"],
+				label: ["Factor", "盈利因子"],
 				caption: [
 					`Profit factor weighs the money: ${dollars(GROSS_WIN)} won against ${dollars(GROSS_LOSS)} lost.`,
-					`盈亏比称的是金额：赢了 ${dollars(GROSS_WIN)}，亏了 ${dollars(GROSS_LOSS)}。`,
+					`盈利因子称的是金额：赢了 ${dollars(GROSS_WIN)}，亏了 ${dollars(GROSS_LOSS)}。`,
 				],
 				state: { stage: 1, shown: TRADES.length },
 			},
