@@ -127,11 +127,12 @@ function AggregateCard({
 							y={y + 50 + i * CARD_ROW}
 							tone={row.id === "simple" ? "small" : undefined}
 						>
-							{row.id === "weighted" ? (
+							{/* One print has one price: the two averages agree, so neither is wrong. */}
+							{row.id === "weighted" && result.trades > 1 ? (
 								<>
 									{row.label} <tspan className="wt-gain">✓</tspan>
 								</>
-							) : row.id === "simple" ? (
+							) : row.id === "simple" && result.trades > 1 ? (
 								<>
 									{row.label} <tspan className="wt-loss">✗</tspan>
 								</>
@@ -321,7 +322,10 @@ function AggregateView({
 					id: "contracts",
 					label: t(["Contracts", "张数"]),
 					value: count(result.contracts),
-					note: t([`${result.trades} trades`, `${result.trades} 笔成交`]),
+					note: t([
+						result.trades === 1 ? "1 trade" : `${result.trades} trades`,
+						`${result.trades} 笔成交`,
+					]),
 					evidence: "calculated",
 				},
 				{
