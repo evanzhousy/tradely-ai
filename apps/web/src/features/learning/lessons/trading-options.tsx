@@ -263,9 +263,12 @@ function OrderView({
 		},
 		{
 			id: "spread",
-			label: t(["Spread", "价差"]),
+			label: t(["Market spread", "市场价差"]),
 			value: usd(thinBook.asks[0].price - thinBook.bids[0].price),
-			note: t(["$45 on one contract", "一张合约 $45"]),
+			note: t([
+				"before your order · $45 on one contract",
+				"下单前 · 一张合约 $45",
+			]),
 			evidence: "calculated",
 		},
 	];

@@ -468,8 +468,8 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Remove the liquidity floor and watch the relative ranking.",
-				"去掉流动性门槛，观察相对排名。",
+				"The liquidity floor is off. Switch it on and off and watch the relative ranking.",
+				"流动性门槛已关闭。切换它，观察相对排名。",
 			],
 			start: () => ({ columns: "both", floor: false }),
 			task: {

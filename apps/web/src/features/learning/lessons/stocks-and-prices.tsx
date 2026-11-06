@@ -871,8 +871,8 @@ const scenes = [
 			task: {
 				kind: "answer",
 				prompt: [
-					"Your option is exercised. Which underlying leaves you holding shares or fund units afterwards?",
-					"你的期权被行权。哪种标的会让你之后持有股票或基金份额？",
+					"Some options end with you holding shares or fund units. Options on which of these work that way?",
+					"有些期权结束时，你会持有股票或基金份额。下面哪些产品的期权是这样？",
 				],
 				choices: [
 					{ id: "both", label: ["ALFA or BRDX", "ALFA 或 BRDX"] },

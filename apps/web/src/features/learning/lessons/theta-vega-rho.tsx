@@ -637,7 +637,7 @@ const scenes = [
 				"Let the days pass and watch theta grow.",
 				"让时间流逝，观察 Theta 变大。",
 			],
-			start: () => ({ elapsed: 28 }),
+			start: () => ({ elapsed: 0 }),
 			task: {
 				kind: "reach",
 				prompt: [
