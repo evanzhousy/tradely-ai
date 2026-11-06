@@ -123,6 +123,18 @@ function SlopeScene({
 			tone: "reference",
 		},
 	];
+	// On a phone value and delta + gamma run as one line, so one label names both and neither
+	// lands beside the delta-only line.
+	const phoneValueLines: PayoffLine[] = valueLines.map((line) =>
+		line.id === "value"
+			? {
+					...line,
+					label: t(["value ≈ delta + gamma", "价值 ≈ Delta + Gamma"]),
+				}
+			: line.id === "with-gamma"
+				? { ...line, label: "" }
+				: line,
+	);
 	const markers: PayoffMarker[] =
 		shown.view === "delta"
 			? [
@@ -252,7 +264,7 @@ function SlopeScene({
 								yRange={[-2, 16]}
 								xTicks={[90, 95, 100, 105, 110]}
 								yTicks={[0, 4, 8, 12, 16]}
-								lines={valueLines}
+								lines={width < 420 ? phoneValueLines : valueLines}
 								markers={markers}
 								drag={drag}
 								formatY={(value) => usd(value * 100, 0)}

@@ -299,7 +299,10 @@ function Scene({
 						<g key={`${row.symbol}-${check}`}>
 							<text
 								data-f={`fact-${i}-${c}`}
-								x={L.factX(c)}
+								// On a phone the columns are tight, so a fact sits against its own mark, not
+								// against the mark before it.
+								x={narrow ? L.markX(c) - text * 1.1 - 3 : L.factX(c)}
+								textAnchor={narrow ? "end" : undefined}
 								y={L.rowY(i) + L.rowH / 2 + T.small * 0.36}
 								className="wt-film-num"
 								style={{ fontSize: T.small }}

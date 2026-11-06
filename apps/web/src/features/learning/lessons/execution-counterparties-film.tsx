@@ -85,7 +85,7 @@ function layout(width: number) {
 		chipW: (long: boolean) =>
 			long
 				? narrow
-					? 72
+					? 58
 					: Math.min(bookW * 0.2, 96)
 				: narrow
 					? 64

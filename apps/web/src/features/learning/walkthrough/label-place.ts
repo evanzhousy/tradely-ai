@@ -107,16 +107,26 @@ type PlaceContext = {
 	bounds: Box;
 	/** The line this label names, if any. */
 	own?: readonly Point[];
+	/** The point this label names, and the chart's other points. */
+	point?: { at: Point; others: readonly Point[] };
 };
+
+/** Distance from a point to the nearest edge of a box; 0 inside it. */
+const distanceTo = ([px, py]: Point, box: Box) =>
+	Math.hypot(
+		Math.max(box.x0 - px, 0, px - box.x1),
+		Math.max(box.y0 - py, 0, py - box.y1),
+	);
 
 /**
  * The first candidate that stays inside `bounds` and clears every line and every box
  * already taken, with its cost; with no clear spot, the cheapest. With `own`, a spot
  * nearer another line than its own counts against it: it would label the wrong line.
+ * With `point`, so does a spot nearer another point than its own, or adrift from it.
  */
 export function bestSpot<C extends { box: Box }>(
 	candidates: readonly C[],
-	{ lines, taken, bounds, own }: PlaceContext,
+	{ lines, taken, bounds, own, point }: PlaceContext,
 ): { spot: C; cost: number } {
 	let spot = candidates[0];
 	let best = Number.POSITIVE_INFINITY;
@@ -132,10 +142,17 @@ export function bestSpot<C extends { box: Box }>(
 			lines.some(
 				(line) => line !== own && gapTo(line, box) < gapTo(own, box) - 2,
 			);
-		// Text over text is unreadable; a line through a haloed label is only untidy.
+		const fromPoint = point ? distanceTo(point.at, box) : 0;
+		const wrongPoint =
+			point?.others.some((other) => distanceTo(other, box) < fromPoint - 2) ??
+			false;
+		// Text over text is unreadable, and a label beside the wrong line or point says the
+		// wrong thing; a line through a haloed label is only untidy.
 		const cost =
 			(outside ? 6 : 0) +
-			(misleading ? 1 : 0) +
+			(misleading ? 3 : 0) +
+			(wrongPoint ? 5 : 0) +
+			Math.max(0, fromPoint - 20) / 10 +
 			lines.filter((line) => lineHits(line, box)).length * 2 +
 			taken.filter((other) => overlaps(other, box)).length * 5;
 		if (cost < best) {

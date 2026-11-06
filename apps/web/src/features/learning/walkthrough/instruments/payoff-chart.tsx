@@ -267,7 +267,17 @@ export function PayoffChart({
 			marker.label,
 			marker.shortLabel,
 			keepSlot(`marker:${marker.id}`, around),
-			{ lines: obstacles, taken, bounds },
+			{
+				lines: obstacles,
+				taken,
+				bounds,
+				point: {
+					at: [cx, cy],
+					others: markers
+						.filter((other) => other !== marker)
+						.map((other) => [x(other.x), y(other.y)] as const),
+				},
+			},
 		);
 		slots.current.set(`marker:${marker.id}`, placed.slot);
 		markerLabels.set(marker.id, placed);

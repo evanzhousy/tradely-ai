@@ -454,10 +454,15 @@ function TimeView({
 					{(width) => (
 						<>
 							<Label x={24} y={18} tone="muted">
-								{t([
-									`${contractLabel(call100)[0]} · Mon Sep 16`,
-									`${contractLabel(call100)[1]} · 9月16日 周一`,
-								])}
+								{width < 420
+									? t([
+											`${contractLabel(call100)[0]} · ask · Mon Sep 16`,
+											`${contractLabel(call100)[1]} · 卖价 · 9月16日 周一`,
+										])
+									: t([
+											`${contractLabel(call100)[0]} · Mon Sep 16`,
+											`${contractLabel(call100)[1]} · 9月16日 周一`,
+										])}
 							</Label>
 							<g transform="translate(0 20)">
 								<Timeline
@@ -474,10 +479,14 @@ function TimeView({
 										return {
 											id,
 											at: item.at,
-											label: t([
-												`${item.time} · ask ${usd(item.ask)}`,
-												`${item.time} · 卖价 ${usd(item.ask)}`,
-											]),
+											// On a phone the title says "ask", so the two labels don't run together.
+											label:
+												width < 420
+													? `${item.time} · ${usd(item.ask)}`
+													: t([
+															`${item.time} · ask ${usd(item.ask)}`,
+															`${item.time} · 卖价 ${usd(item.ask)}`,
+														]),
 											sub: t([
 												`ALFA ${usd(item.spot)}`,
 												`ALFA ${usd(item.spot)}`,
