@@ -911,7 +911,7 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				"At 14:12, with ALFA at $102.00, the Oct 18 100 put prints at $3.25 and the 100 call at $5.90. How far above parity is the call print?",
+				"At 14:12, with ALFA at $102.00, the Oct 18 100 put trades at $3.25 and the 100 call at $5.90. How far above parity is that call trade?",
 				"14:12，ALFA 为 $102.00，10月18日 100 看跌成交在 $3.25，100 看涨成交在 $5.90。这笔看涨成交比平价高出多少？",
 			],
 			choices: [
@@ -926,7 +926,7 @@ const scenes = [
 				},
 				{
 					id: "none",
-					label: ["$0: prints can't break parity", "$0：成交不会偏离平价"],
+					label: ["$0: trades can't break parity", "$0：成交不会偏离平价"],
 					why: [
 						"Prints can stray from parity: a late report, a stale quote or a package can put a trade off the line. A gap is a reason to check, not proof of anything.",
 						"成交可能偏离平价：延迟报告、过时报价或组合单都可能让一笔成交偏离。偏离是去核查的理由，而不是任何证据。",

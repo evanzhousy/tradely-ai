@@ -849,7 +849,7 @@ const scenes = [
 				id: "divide",
 				label: ["Divide", "相除"],
 				caption: [
-					`Dividing works: dollars per trade, output unit usd. Currency prints ALFA's row as ${usd(Math.round(perTrade(ALFA) * 100))}.`,
+					`Dividing works: dollars per trade, output unit usd. Currency shows ALFA's row as ${usd(Math.round(perTrade(ALFA) * 100))}.`,
 					`相除是可以的：每笔交易的美元数，输出单位 usd。货币格式把 ALFA 这一行显示为 ${usd(Math.round(perTrade(ALFA) * 100))}。`,
 				],
 				state: { formula: "perTrade", format: "currency", reveal: true },

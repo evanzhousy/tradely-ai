@@ -464,6 +464,17 @@ export const glossary: readonly GlossaryEntry[] = [
 		"C28",
 	),
 	entry(
+		"print",
+		["Print", "成交记录"],
+		["trade print", "prints", "print"],
+		["成交记录"],
+		[
+			"One completed trade as the tape shows it: a price, a size and a time.",
+			"成交明细里的一笔已完成交易：价格、数量和时间。",
+		],
+		"C04",
+	),
+	entry(
 		"bullish",
 		["Bullish", "看多"],
 		["bullish"],
