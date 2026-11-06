@@ -1,0 +1,10 @@
+{
+	"version": 1,
+	"freshness": {
+		"dataSyncedAt": null,
+		"sourceUpdatedAt": null,
+		"lastAttemptedAt": null,
+		"status": "unrecorded"
+	},
+	"posts": []
+}
