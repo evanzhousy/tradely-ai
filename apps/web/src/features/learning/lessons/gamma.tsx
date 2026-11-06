@@ -861,7 +861,7 @@ const scenes = [
 				"Switch holders and step through the hedge.",
 				"切换持有人，逐步查看对冲。",
 			],
-			start: () => ({ holder: "ben", stage: 2 }),
+			start: () => ({ holder: "you", stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

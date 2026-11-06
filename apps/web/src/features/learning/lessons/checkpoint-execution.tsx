@@ -838,7 +838,7 @@ const scenes = [
 				"Choose what happened to the offer.",
 				"选择这张卖单发生了什么。",
 			],
-			start: () => ({ stage: 2, event: "trade" }),
+			start: () => ({ stage: 2, event: "cancel" }),
 			task: {
 				kind: "answer",
 				prompt: [

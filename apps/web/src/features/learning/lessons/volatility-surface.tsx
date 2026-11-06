@@ -535,7 +535,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Switch between the slices.", "在切片之间切换。"],
-			start: () => ({ slice: "smile" }),
+			start: () => ({ slice: "none" }),
 			task: {
 				kind: "answer",
 				prompt: [

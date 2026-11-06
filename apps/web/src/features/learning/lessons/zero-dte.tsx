@@ -718,7 +718,7 @@ const scenes = [
 				"Choose what Friday's buyers did, and see what's left on Monday.",
 				"选择周五的买方做了什么，看看周一还剩下什么。",
 			],
-			start: () => ({ stage: 2, holder: "held" }),
+			start: () => ({ stage: 2, holder: "closed" }),
 			task: {
 				kind: "answer",
 				prompt: [

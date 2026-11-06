@@ -774,7 +774,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Switch the denominator.", "切换分母。"],
-			start: () => ({ stage: 2, base: "typical" }),
+			start: () => ({ stage: 2, base: "oi" }),
 			task: {
 				kind: "answer",
 				prompt: [

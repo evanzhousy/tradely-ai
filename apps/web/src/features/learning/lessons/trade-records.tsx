@@ -705,7 +705,7 @@ const scenes = [
 				"Choose which prints go into the row.",
 				"选择哪些成交并入这一行。",
 			],
-			start: () => ({ include: ["t1", "t3"], step: 3 }),
+			start: () => ({ include: ["t1"], step: 3 }),
 			task: {
 				kind: "answer",
 				prompt: [

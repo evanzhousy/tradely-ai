@@ -577,7 +577,7 @@ const scenes = [
 				"Switch to a forecasting question and see what it adds.",
 				"切换为预测性问题，看看需要补充什么。",
 			],
-			start: () => ({ filled: 9, forecast: true }),
+			start: () => ({ filled: 6, forecast: false }),
 			task: {
 				kind: "answer",
 				prompt: [

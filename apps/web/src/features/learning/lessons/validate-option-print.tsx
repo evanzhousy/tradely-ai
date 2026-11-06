@@ -564,7 +564,7 @@ const scenes = [
 				"Remove the multiplier from the record and see what can still be calculated.",
 				"从记录中去掉乘数，看看还能算出什么。",
 			],
-			start: () => ({ shown: 6, multiplier: false }),
+			start: () => ({ shown: 6, multiplier: true }),
 			task: {
 				kind: "answer",
 				prompt: [

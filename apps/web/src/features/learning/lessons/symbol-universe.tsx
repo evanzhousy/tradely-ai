@@ -649,7 +649,7 @@ const scenes = [
 				"Apply the rules one at a time, in order.",
 				"按顺序逐条应用规则。",
 			],
-			start: () => ({ applied: 4 }),
+			start: () => ({ applied: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -736,7 +736,7 @@ const scenes = [
 				"Let FJOR's volume arrive and see if the leader changes.",
 				"让 FJOR 的成交量到达，看看领先者是否改变。",
 			],
-			start: () => ({ withGap: true, arrived: true }),
+			start: () => ({ withGap: true, arrived: false }),
 			task: {
 				kind: "answer",
 				prompt: [

@@ -503,7 +503,7 @@ const scenes = [
 				"Add the spot line and the context one at a time.",
 				"逐步加入现价线和背景。",
 			],
-			start: (last) => last,
+			start: () => ({ spot: false, focus: false }),
 			task: {
 				kind: "answer",
 				prompt: [

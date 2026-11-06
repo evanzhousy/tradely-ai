@@ -764,7 +764,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Toggle the IV drop.", "切换 IV 下降。"],
-			start: () => ({ elapsed: 14, volDrop: true }),
+			start: () => ({ elapsed: 14, volDrop: false }),
 			task: {
 				kind: "answer",
 				prompt: [

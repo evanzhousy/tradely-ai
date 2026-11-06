@@ -691,7 +691,7 @@ const scenes = [
 				"Count the 10:50 spread as two prints or one trade.",
 				"把 10:50 的价差按两笔成交或一笔交易计算。",
 			],
-			start: (last) => last,
+			start: () => ({ signed: true, spreadAsOne: false }),
 			task: {
 				kind: "answer",
 				prompt: [

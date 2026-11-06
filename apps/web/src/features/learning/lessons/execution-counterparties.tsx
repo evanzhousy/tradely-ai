@@ -715,7 +715,7 @@ const scenes = [
 				"Send a sell instead and see which side is resting.",
 				"改为发送卖单，看看哪一方是挂单。",
 			],
-			start: () => ({ step: "match", side: "sell" }),
+			start: () => ({ step: "match", side: "buy" }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -915,7 +915,7 @@ const scenes = [
 				"Raise record B's limit. Does the print change?",
 				"提高记录 B 的限价。成交记录会变吗？",
 			],
-			start: () => ({ known: 2, limit: 420 }),
+			start: () => ({ known: 2, limit: 410 }),
 			task: {
 				kind: "answer",
 				prompt: [

@@ -914,7 +914,7 @@ const scenes = [
 				"Switch the count date and the same-series view to see which expiries the bucket adds up.",
 				"切换统计日期与同一序列视图，看看到期桶加总了哪些到期日。",
 			],
-			start: (last) => last,
+			start: () => ({ later: false, compare: false }),
 			task: {
 				kind: "answer",
 				prompt: [

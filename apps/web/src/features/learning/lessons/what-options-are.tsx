@@ -893,7 +893,7 @@ const scenes = [
 				"Change ALFA's price on Oct 18 and see what moves between you and Ben.",
 				"改变 10月18日 的 ALFA 价格，看看你和 Ben 之间有什么流动。",
 			],
-			start: () => ({ stage: "net", spot: 95 }),
+			start: () => ({ stage: "net", spot: 110 }),
 			task: {
 				kind: "answer",
 				prompt: [

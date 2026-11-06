@@ -1048,7 +1048,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Revoke the key and look again.", "撤销密钥，再看一次。"],
-			start: () => ({ stage: 2, keyWorks: false }),
+			start: () => ({ stage: 2, keyWorks: true }),
 			task: {
 				kind: "answer",
 				prompt: [

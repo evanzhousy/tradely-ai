@@ -710,7 +710,7 @@ const scenes = [
 				"Pick what else the seller holds and watch the position change.",
 				"选择卖方还持有什么，观察持仓如何变化。",
 			],
-			start: (last) => last,
+			start: () => ({ context: "alone" }),
 			task: {
 				kind: "answer",
 				prompt: [

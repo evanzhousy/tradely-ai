@@ -844,7 +844,7 @@ const scenes = [
 				"Pick what the buyer already held before the trade.",
 				"选择买方在交易前已持有什么。",
 			],
-			start: (last) => last,
+			start: () => ({ context: "alone" }),
 			task: {
 				kind: "answer",
 				prompt: [

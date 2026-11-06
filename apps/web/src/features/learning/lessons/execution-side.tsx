@@ -891,7 +891,7 @@ const scenes = [
 				"Pick another Monday print and read how far its evidence goes.",
 				"选择另一笔周一成交，看看它的证据能走多远。",
 			],
-			start: () => ({ trade: "t1", reached: 3, ledger: true }),
+			start: () => ({ trade: "t2", reached: 3, ledger: true }),
 			task: {
 				kind: "answer",
 				prompt: [

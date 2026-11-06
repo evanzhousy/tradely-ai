@@ -691,7 +691,7 @@ const scenes = [
 				"Switch the denominator for all four calls.",
 				"为四个看涨期权切换分母。",
 			],
-			start: () => ({ base: "oi", rows: ALL }),
+			start: () => ({ base: "typical", rows: ALL }),
 			task: {
 				kind: "answer",
 				prompt: [

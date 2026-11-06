@@ -926,7 +926,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the versions.", "逐个查看版本。"],
-			start: () => ({ step: 1 }),
+			start: () => ({ step: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -1022,7 +1022,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Choose what happens next.", "选择接下来做什么。"],
-			start: () => ({ action: "saved" }),
+			start: () => ({ action: "closed" }),
 			task: {
 				kind: "answer",
 				prompt: [
