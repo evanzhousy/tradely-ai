@@ -309,6 +309,7 @@ Caution turns olive on a light page because a yellow dark enough to read is the 
 **Copy**
 - English verbs agree with their subject ("You buy", "Eli buys").
 - Chinese copy is idiomatic, with full-width punctuation; numbers and tickers stay half-width.
+- Chinese finance terms keep one meaning each: 看涨 and 看跌 name calls and puts, and 看多 and 看空 name bullish and bearish; 买价 is the bid and 卖价 the ask, so a price you paid is 已付; 每张 is per contract and 每股 per share; 盈利因子 is the profit factor, because 盈亏比 usually means average win over average loss; a statistical population is 总体, not 人群.
 - The next card names the next lesson in syllabus order; the last lesson of a module says "Next: the module checkpoint" / "下一步：模块检查点".
 
 ## 7. Verify a film
