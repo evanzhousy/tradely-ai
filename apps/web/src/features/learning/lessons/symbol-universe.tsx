@@ -521,7 +521,7 @@ function MembershipView({
 					value: leader && !shown.pointInTime ? `✗ ${leader}` : (leader ?? "—"),
 					note: shown.pointInTime
 						? t(["HALO left the market on Sep 6", "HALO 于 9月6日 退市"])
-						: t(["HALO silently missing", "HALO 被悄悄遗漏"]),
+						: t(["names that left since are missing", "之后离开的名字缺失"]),
 					tone: shown.pointInTime ? undefined : "loss",
 				},
 			]}
@@ -835,7 +835,7 @@ const scenes = [
 				"Switch where the list of names comes from.",
 				"切换名单的来源。",
 			],
-			start: (last) => last,
+			start: () => ({ pointInTime: false }),
 			task: {
 				kind: "answer",
 				prompt: [

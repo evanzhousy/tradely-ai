@@ -408,10 +408,13 @@ function StraddleView({
 					id: "straddle",
 					label: t(["100 straddle, mid", "100 跨式，中间价"]),
 					value: share(STRADDLE),
-					note: t([
-						`${ratio.toFixed(2)} of one SD`,
-						`一个标准差的 ${ratio.toFixed(2)}`,
-					]),
+					note:
+						shown.show === "both"
+							? t([
+									`${ratio.toFixed(2)} of one SD`,
+									`一个标准差的 ${ratio.toFixed(2)}`,
+								])
+							: undefined,
 					evidence: "modeled",
 				},
 			]}
@@ -803,7 +806,7 @@ const scenes = [
 				"Show the one-SD range, the straddle's range, or both.",
 				"显示一个标准差区间、跨式区间，或两者。",
 			],
-			start: () => ({ show: "both" }),
+			start: () => ({ show: "sd" }),
 			task: {
 				kind: "answer",
 				prompt: [

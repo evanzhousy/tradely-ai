@@ -681,7 +681,8 @@ function ForkView({
 					]),
 		},
 	];
-	if (shown.forked)
+	// The playground's task asks about sharing: this answers it once a colleague opens the recipe.
+	if (shown.forked && (phase !== "explore" || shown.viewer === "colleague"))
 		result.push({
 			id: "share",
 			label: t(["Sharing", "共享"]),
@@ -995,13 +996,25 @@ const scenes = [
 			start: () => ({ forked: true, viewer: "you" }),
 			task: {
 				kind: "answer",
-				prompt: ["Who can open your forked copy?", "谁能打开你分叉出的副本？"],
-				choices: [
-					{ id: "you", label: ["Only you", "只有你"] },
-					{ id: "team", label: ["Your team", "你的团队"] },
-					{ id: "link", label: ["Anyone with the link", "任何拿到链接的人"] },
+				prompt: [
+					"You want a colleague to see your forked copy. How do you share it?",
+					"你想让同事看到你分叉出的副本。怎么分享？",
 				],
-				answer: "you",
+				choices: [
+					{
+						id: "none",
+						label: [
+							"You can't: your recipes don't share",
+							"做不到：你的 Recipe 无法分享",
+						],
+					},
+					{ id: "link", label: ["Send them a link", "发给他们链接"] },
+					{
+						id: "team",
+						label: ["Add them to your team", "把他们加入你的团队"],
+					},
+				],
+				answer: "none",
 				done: [
 					"Your recipes are owner-only, with no public, team or share-link state. A colleague who opens Daily Market Recap gets the official version, unchanged.",
 					"你的 Recipe 只有你自己能看，没有公开、团队或分享链接状态。同事打开 Daily Market Recap 时看到的是官方版本，未被改动。",

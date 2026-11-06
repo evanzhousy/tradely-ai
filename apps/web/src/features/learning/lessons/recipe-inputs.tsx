@@ -318,10 +318,13 @@ const changeHeight = (width: number, locale: Locale) =>
 function ChangeStage({
 	width,
 	state,
+	focusOnly,
 	locale,
 }: {
 	width: number;
 	state: ChangeState;
+	/** Tags only the change in focus: the playground's task asks the learner to sort them. */
+	focusOnly: boolean;
 	locale: Locale;
 }) {
 	const t = tr(locale);
@@ -333,14 +336,15 @@ function ChangeStage({
 				{t(["Four changes to the screener", "对筛选器的四种改动"])}
 			</Label>
 			{changes.map((item) => {
+				const focus = state.focus === item.id;
 				const shown =
-					(item.kind === "input" && state.reveal >= 1) ||
-					(item.kind === "method" && state.reveal >= 2);
+					(!focusOnly || focus) &&
+					((item.kind === "input" && state.reveal >= 1) ||
+						(item.kind === "method" && state.reveal >= 2));
 				const lines = changeLines(t(item.text), width);
 				const h = Math.max(CHANGE_H, lines.length * 16 + 22);
 				const top = y;
 				y += h + 8;
-				const focus = state.focus === item.id;
 				return (
 					<g key={item.id}>
 						<rect
@@ -439,7 +443,12 @@ function ChangeView({
 					height={(width) => changeHeight(width, locale)}
 				>
 					{(width) => (
-						<ChangeStage width={width} state={shown} locale={locale} />
+						<ChangeStage
+							width={width}
+							state={shown}
+							focusOnly={phase === "explore"}
+							locale={locale}
+						/>
 					)}
 				</Stage>
 			}

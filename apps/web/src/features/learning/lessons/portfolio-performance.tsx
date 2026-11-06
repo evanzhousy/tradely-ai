@@ -98,7 +98,11 @@ function FlowView({
 			id: "deposit",
 			label: t(["Deposit, Tuesday", "周二存入"]),
 			value: dollars(yourAccount.deposit),
-			note: t(["your money, not a return", "你自己的钱，不是收益"]),
+			// The playground's task asks why growth outran the return: this answers it at the last step.
+			note:
+				shown.stage >= 2
+					? t(["your money, not a return", "你自己的钱，不是收益"])
+					: undefined,
 			evidence: "observed",
 		},
 	];
@@ -536,7 +540,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the measures.", "逐步查看这些度量。"],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

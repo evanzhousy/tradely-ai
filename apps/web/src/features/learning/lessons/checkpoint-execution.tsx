@@ -178,10 +178,12 @@ function PrintsView({
 							id: "net",
 							label: t(["Bullish − bearish", "看涨 − 看跌"]),
 							value: `+${NET}`,
-							note: t([
-								"contracts, inside prints excluded",
-								"张，价差内成交不计",
-							]),
+							// The playground's task asks what an inside print adds.
+							note: t(
+								phase === "explore"
+									? ["contracts", "张"]
+									: ["contracts, inside prints excluded", "张，价差内成交不计"],
+							),
 							evidence: "inferred",
 							tone: "gain",
 						}
@@ -650,7 +652,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Highlight each side of the quote.", "分别突出显示报价的各侧。"],
-			start: () => ({ stage: 2, show: "inside" }),
+			start: () => ({ stage: 2, show: "all" }),
 			task: {
 				kind: "answer",
 				prompt: [

@@ -126,10 +126,18 @@ function LotView({
 				tone: "strong",
 			},
 			{
-				text: t([
-					`5 left at a $${MARK.toFixed(2)} mark: ${signedDollars(open)}; total ${signedDollars(real + open)}`,
-					`剩余 5 张按 $${MARK.toFixed(2)} 计：${signedDollars(open)}；合计 ${signedDollars(real + open)}`,
-				]),
+				// The playground's task asks for the total, so there the learner adds it up.
+				text: t(
+					phase === "explore"
+						? [
+								`5 left at a $${MARK.toFixed(2)} mark: ${signedDollars(open)}`,
+								`剩余 5 张按 $${MARK.toFixed(2)} 计：${signedDollars(open)}`,
+							]
+						: [
+								`5 left at a $${MARK.toFixed(2)} mark: ${signedDollars(open)}; total ${signedDollars(real + open)}`,
+								`剩余 5 张按 $${MARK.toFixed(2)} 计：${signedDollars(open)}；合计 ${signedDollars(real + open)}`,
+							],
+				),
 			},
 		);
 	return (
