@@ -666,7 +666,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Add the clocks one at a time.", "逐个加入各个时钟。"],
-			start: () => ({ shown: 6 }),
+			start: () => ({ shown: 1 }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -867,7 +867,7 @@ const scenes = [
 				"Step through the rows, their states and the total.",
 				"逐步查看各行、各自的状态以及合计。",
 			],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: ["Which row holds a measured zero?", "哪一行是测量出来的零？"],

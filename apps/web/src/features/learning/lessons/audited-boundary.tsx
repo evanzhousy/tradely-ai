@@ -796,7 +796,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the log.", "逐步查看研究日志。"],
-			start: () => ({ version: 3 }),
+			start: () => ({ version: 1 }),
 			task: {
 				kind: "answer",
 				prompt: [

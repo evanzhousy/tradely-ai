@@ -1081,7 +1081,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the record log.", "逐步查看记录日志。"],
-			start: () => ({ shown: 3 }),
+			start: () => ({ shown: 1 }),
 			task: {
 				kind: "answer",
 				prompt: [

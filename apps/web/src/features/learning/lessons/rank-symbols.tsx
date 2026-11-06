@@ -558,7 +558,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Switch what the ranking shows.", "切换排名所显示的内容。"],
-			start: (last) => last,
+			start: () => ({ signs: false, both: false }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -651,7 +651,7 @@ const scenes = [
 				"Step between Monday, Tuesday and the handoff note.",
 				"在周一、周二和交接说明之间切换。",
 			],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

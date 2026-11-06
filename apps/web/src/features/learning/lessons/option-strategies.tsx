@@ -913,7 +913,7 @@ const scenes = [
 				"Step through the roll one leg at a time.",
 				"逐条腿查看这次移仓。",
 			],
-			start: () => ({ step: 3 }),
+			start: () => ({ step: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

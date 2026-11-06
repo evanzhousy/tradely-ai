@@ -924,7 +924,7 @@ const scenes = [
 				"Switch between one leg, both legs and the package.",
 				"在单腿、两条腿和整体之间切换。",
 			],
-			start: () => ({ shown: 3 }),
+			start: () => ({ shown: 1 }),
 			task: {
 				kind: "answer",
 				prompt: [

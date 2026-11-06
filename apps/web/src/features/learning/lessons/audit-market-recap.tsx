@@ -1022,7 +1022,7 @@ const scenes = [
 				"Step between the recap, the audit and the repairs.",
 				"在复盘、审计和修复之间切换。",
 			],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -1136,7 +1136,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the signoff.", "逐步查看签核。"],
-			start: () => ({ shown: 4 }),
+			start: () => ({ shown: 1 }),
 			task: {
 				kind: "answer",
 				prompt: ["What would reopen the review?", "什么情况会重新打开审核？"],

@@ -895,7 +895,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the two sources.", "逐步查看两个来源。"],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

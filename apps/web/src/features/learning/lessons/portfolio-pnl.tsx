@@ -852,7 +852,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the account.", "逐步查看账户。"],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

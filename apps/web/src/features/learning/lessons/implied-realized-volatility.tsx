@@ -952,7 +952,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the two windows.", "逐步查看两个窗口。"],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

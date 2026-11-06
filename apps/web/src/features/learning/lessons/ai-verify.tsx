@@ -624,7 +624,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the statements.", "逐条查看陈述。"],
-			start: () => ({ stage: 2 }),
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

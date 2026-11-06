@@ -649,7 +649,7 @@ const scenes = [
 				"Switch the history and compare the readings.",
 				"切换历史，比较读数。",
 			],
-			start: (last) => last,
+			start: (last) => ({ ...last, gaps: false, recent: false }),
 			task: {
 				kind: "answer",
 				prompt: [

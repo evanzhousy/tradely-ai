@@ -821,7 +821,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the chain.", "逐步查看这条计算链。"],
-			start: () => ({ rows: 4 }),
+			start: () => ({ rows: 1 }),
 			task: {
 				kind: "answer",
 				prompt: [

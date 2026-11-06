@@ -599,7 +599,7 @@ const scenes = [
 				"Switch between totals, peaks and breadth.",
 				"在合计、峰值与广度之间切换。",
 			],
-			start: (last) => last,
+			start: () => ({ stage: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -704,7 +704,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Apply the checks one at a time.", "逐项应用检查。"],
-			start: () => ({ applied: 3 }),
+			start: () => ({ applied: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [

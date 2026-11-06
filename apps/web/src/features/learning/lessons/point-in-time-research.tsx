@@ -1057,7 +1057,7 @@ const scenes = [
 		],
 		explore: {
 			prompt: ["Step through the reading.", "逐步查看这个解读。"],
-			start: () => ({ reading: 2 }),
+			start: () => ({ reading: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [
@@ -1165,7 +1165,7 @@ const scenes = [
 				"Step through the search, the winner and the holdout.",
 				"逐步查看搜索、胜者与保留集。",
 			],
-			start: () => ({ search: 2 }),
+			start: () => ({ search: 0 }),
 			task: {
 				kind: "answer",
 				prompt: [
