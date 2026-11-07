@@ -107,7 +107,7 @@ export function neighborhoodComparisonStep(
 				],
 				independent ? (alternate ? "itm" : "otm") : "atm",
 				"For these calls, compare strike with the stated spot reference. Moneyness describes the contract, not a future price forecast.",
-				"对这些看涨期权，比较行权价与给定现价即可。价内外状态描述合约，不预测未来价格。",
+				"对这些看涨期权，比较行权价与给定现价即可。实虚值状态描述合约，不预测未来价格。",
 			),
 		],
 	});

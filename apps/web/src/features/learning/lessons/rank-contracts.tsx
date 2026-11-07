@@ -458,7 +458,7 @@ const scenes = [
 					label: ["Yes, and more will follow", "是的，而且还会有更多"],
 					why: [
 						"Activity today doesn't predict more tomorrow, and here most of it was one spread printed as two legs.",
-						"今天的活跃并不预示明天会更多，而且这里大部分是一笔价差打印成的两条腿。",
+						"今天的活跃并不预示明天会更多，而且这里大部分是一笔价差记录成的两条腿。",
 					],
 				},
 			],
@@ -481,7 +481,7 @@ const scenes = [
 			},
 			{
 				id: "spot",
-				label: ["Moneyness", "价内外"],
+				label: ["Moneyness", "实虚值"],
 				caption: [
 					"With ALFA at $100.02, the 95 and 100 calls are in the money and 105 and up are out. That's where they sit, not advice.",
 					"ALFA 为 $100.02 时，95 与 100 看涨是实值，105 及以上是虚值。这只是位置，不是建议。",

@@ -155,7 +155,7 @@ function ChainView({
 				<p>
 					{t([
 						"Shaded cells are in the money with ALFA at $100: calls below the strike, puts above it. Quotes are per share and come from the course's fictional ALFA world.",
-						"阴影单元格在 ALFA 为 $100 时处于价内：行权价低于股价的看涨、高于股价的看跌。报价按每股计，来自课程中虚构的 ALFA 市场。",
+						"阴影单元格在 ALFA 为 $100 时处于实值：行权价低于股价的看涨、高于股价的看跌。报价按每股计，来自课程中虚构的 ALFA 市场。",
 					])}
 				</p>
 			}

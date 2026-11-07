@@ -1015,7 +1015,7 @@ const scenes = [
 				answer: "raises",
 				done: [
 					`The 100 call is in the money: with less volatility it's more likely to stay there, so its delta rises from ${ITM_NOW.toFixed(3)} to ${ITM_DROP.toFixed(3)}, while the 110's falls to ${OTM_DROP.toFixed(3)}. Vanna's sign depends on moneyness.`,
-					`100 看涨是实值：波动率更低时，它更可能保持实值，所以 Delta 从 ${ITM_NOW.toFixed(3)} 升到 ${ITM_DROP.toFixed(3)}，而 110 看涨降到 ${OTM_DROP.toFixed(3)}。Vanna 的方向取决于价内外程度。`,
+					`100 看涨是实值：波动率更低时，它更可能保持实值，所以 Delta 从 ${ITM_NOW.toFixed(3)} 升到 ${ITM_DROP.toFixed(3)}，而 110 看涨降到 ${OTM_DROP.toFixed(3)}。Vanna 的方向取决于实虚值程度。`,
 				],
 			},
 		},

@@ -175,7 +175,7 @@ function DriftView({
 				<p>
 					{t([
 						"Charm is how delta changes as time passes, with price and volatility held still; vanna is how it changes with implied volatility. For an out-of-the-money call both push the same way here: less time and less volatility make $110 less reachable, so delta falls. Nothing traded, yet anyone hedging this call's delta would have to adjust.",
-						"Charm 是价格和波动率不变时，Delta 随时间流逝的变化；Vanna 是 Delta 随隐含波动率的变化。对价外看涨来说，这里两者方向相同：时间更少、波动率更低，$110 更难到达，所以 Delta 下降。没有任何成交，但对这张看涨做 Delta 对冲的人都必须调整。",
+						"Charm 是价格和波动率不变时，Delta 随时间流逝的变化；Vanna 是 Delta 随隐含波动率的变化。对虚值看涨来说，这里两者方向相同：时间更少、波动率更低，$110 更难到达，所以 Delta 下降。没有任何成交，但对这张看涨做 Delta 对冲的人都必须调整。",
 					])}
 				</p>
 			}
@@ -739,7 +739,7 @@ const scenes = [
 				label: ["Today", "今天"],
 				caption: [
 					`The Oct 18 ${STRIKE} call, $${STRIKE - SPOT} out of the money, has a model delta of ${plain3(TODAY)}.`,
-					`10月18日 ${STRIKE} 看涨价外 $${STRIKE - SPOT}，模型 Delta 为 ${plain3(TODAY)}。`,
+					`10月18日 ${STRIKE} 看涨虚值 $${STRIKE - SPOT}，模型 Delta 为 ${plain3(TODAY)}。`,
 				],
 				state: { elapsed: 0, volDrop: false },
 			},

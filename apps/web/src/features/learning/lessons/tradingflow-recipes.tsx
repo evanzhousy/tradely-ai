@@ -236,7 +236,7 @@ function CatalogView({
 				<p>
 					{t([
 						"A recipe, which TradingFlow also calls a cookbook, is a report built from explanations, key figures, tables and charts, each bound to queries against TradingFlow's flow and chain data. It is the research packet from the research lessons, saved so it can run again. Quick lookups answer one focused question about one symbol, session screens filter the whole market for one session, and multi-step reports walk a session chapter by chapter. Start from the question you need answered, then pick the recipe whose card states that question.",
-						"Recipe（TradingFlow 也称其为 Cookbook）是一份由说明、关键数字、表格和图表组成的报告，每一部分都绑定到对 TradingFlow 成交流与期权链数据的查询。它就是研究课里的研究资料包，被保存下来以便再次运行。快速查询回答关于单个标的的一个具体问题，时段筛选在一个时段内筛选整个市场，多步骤报告则按章节逐步讲解一个时段。先明确你要回答的问题，再选卡片上写着这个问题的 Recipe。",
+						"Recipe（TradingFlow 也称其为 Cookbook）是一份由说明、关键数字、表格和图表组成的报告，每一部分都绑定到对 TradingFlow 成交流与期权链数据的查询。它就是研究课里的研究包，被保存下来以便再次运行。快速查询回答关于单个标的的一个具体问题，时段筛选在一个时段内筛选整个市场，多步骤报告则按章节逐步讲解一个时段。先明确你要回答的问题，再选卡片上写着这个问题的 Recipe。",
 					])}
 				</p>
 			}
@@ -447,7 +447,7 @@ function SessionView({
 				<Stage
 					label={t([
 						"Five days from Friday Sep 13 to Tuesday Sep 17 with their trading sessions, a marker for the current time, and the report header naming the session it shows",
-						"从9月13日周五到9月17日周二的五天及其交易时段，一个表示当前时间的标记，以及注明所展示交易时段的报告页眉",
+						"从9月13日 周五到9月17日 周二的五天及其交易时段，一个表示当前时间的标记，以及注明所展示交易时段的报告页眉",
 					])}
 					height={sessionHeight}
 				>
@@ -846,13 +846,13 @@ const scenes = [
 		predict: {
 			prompt: [
 				"You open the screener at 8:00 on Tuesday Sep 17, before the market opens. Which session does it show?",
-				"你在 9月17日周二 8:00、开盘前打开这个筛选器。它显示哪个交易时段？",
+				"你在 9月17日 周二 8:00、开盘前打开这个筛选器。它显示哪个交易时段？",
 			],
 			choices: [
-				{ id: "monday", label: ["Monday Sep 16", "9月16日周一"] },
+				{ id: "monday", label: ["Monday Sep 16", "9月16日 周一"] },
 				{
 					id: "tuesday",
-					label: ["Tuesday Sep 17: today", "9月17日周二：今天"],
+					label: ["Tuesday Sep 17: today", "9月17日 周二：今天"],
 					why: [
 						"Tuesday hasn't traded yet at 8:00. A report opens on the latest completed session, which is Monday.",
 						"8:00 时周二还没有开始交易。报告默认打开最近一个完整的交易时段，也就是周一。",
@@ -880,7 +880,7 @@ const scenes = [
 				label: ["Tue 8:00", "周二 8:00"],
 				caption: [
 					"It's 8:00 on Tuesday Sep 17. Tuesday's session opens at 9:30.",
-					"现在是9月17日周二 8:00，周二的交易时段 9:30 开始。",
+					"现在是9月17日 周二 8:00，周二的交易时段 9:30 开始。",
 				],
 				state: { now: "tue-0800", header: false },
 			},
@@ -889,7 +889,7 @@ const scenes = [
 				label: ["Latest", "最新"],
 				caption: [
 					"The report shows Monday Sep 16, the latest completed session. Its header names that session and when the report ran.",
-					"报告显示9月16日周一，即最近一个完整的交易时段。页眉注明了这个时段以及报告的运行时间。",
+					"报告显示9月16日 周一，即最近一个完整的交易时段。页眉注明了这个时段以及报告的运行时间。",
 				],
 				state: { now: "tue-0800", header: true },
 			},
@@ -898,7 +898,7 @@ const scenes = [
 				label: ["Mon 10:00", "周一 10:00"],
 				caption: [
 					"Open it at 10:00 on Monday instead and it shows Friday Sep 13: Monday's session isn't complete yet. The date picker re-runs it for any earlier session.",
-					"如果在周一 10:00 打开，它显示的是9月13日周五：周一的时段还没结束。日期选择器可以针对任何更早的时段重新运行。",
+					"如果在周一 10:00 打开，它显示的是9月13日 周五：周一的时段还没结束。日期选择器可以针对任何更早的时段重新运行。",
 				],
 				state: { now: "mon-1000", header: true },
 			},
@@ -915,7 +915,7 @@ const scenes = [
 				reached: (e) => moments[e.now].latest === SESSION_DATE,
 				done: [
 					"From Monday's close until Tuesday's session finishes, the latest completed session is Monday's. The header names the session, so check it before you read a single number.",
-					"从周一收盘到周二交易时段结束，最新完成的时段都是周一。标题会写明时段，读任何数字之前先看它。",
+					"从周一收盘到周二交易时段结束，最新完成的时段都是周一。页眉会写明时段，读任何数字之前先看它。",
 				],
 			},
 		},

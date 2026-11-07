@@ -154,7 +154,7 @@ function MetricView({
 				<p>
 					{t([
 						"A ranking orders names under one metric and one scope; it points attention, it doesn't predict. Raw contracts answer 'where is the most trading?'; volume against each name's own normal answers 'what is unusual for this name today?'. Pick the metric from the question, not from whichever makes the most dramatic leader, and disclose any floor that keeps tiny names out.",
-						"排名在一个指标、一个范围下给名字排序；它指引关注，不做预测。原始张数回答“哪里交易最多？”；相对各自平常的成交量回答“今天什么对这个名字来说不寻常？”。按问题选择指标，而不是选能产生最戏剧化领先者的那个，并披露把小名字挡在外面的门槛。",
+						"排名在一个指标、一个范围下给标的排序；它指引关注，不做预测。原始张数回答“哪里交易最多？”；相对各自平常的成交量回答“今天什么对这个名字来说不寻常？”。按问题选择指标，而不是选能产生最戏剧化领先者的那个，并披露把小名字挡在外面的门槛。",
 					])}
 				</p>
 			}
@@ -388,7 +388,7 @@ function MoveView({
 				<p>
 					{t([
 						"A rank depends on everyone else in the set. A name can climb because its peers fell or were excluded, with nothing new of its own. When you pass a candidate on, include its value, the comparison set, why it's worth a look and what would lower its priority.",
-						"排名取决于集合里的其他所有名字。一个名字可能因为同组下降或被排除而上升，自身却没有任何新变化。把候选交给别人时，要写明它的数值、比较集合、为何值得一看，以及什么会降低它的优先级。",
+						"排名取决于集合里的其他所有标的。一个标的可能因为同组下降或被排除而上升，自身却没有任何新变化。把候选交给别人时，要写明它的数值、比较集合、为何值得一看，以及什么会降低它的优先级。",
 					])}
 				</p>
 			}
@@ -584,7 +584,7 @@ const scenes = [
 		label: ["Carry it forward", "交接候选"],
 		title: [
 			"A rank can change while the name stands still",
-			"名字没变，排名也可能变",
+			"标的本身没变，排名也可能变",
 		],
 		predict: {
 			prompt: [

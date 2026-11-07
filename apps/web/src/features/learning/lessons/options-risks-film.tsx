@@ -149,11 +149,11 @@ const copy = {
 	pnl: ["result / contract", "盈亏 / 张"],
 	writerHead: [
 		"Ben writes uncovered: no loss floor.",
-		"Ben 裸卖：亏损无下限。",
+		"Ben 裸卖：亏损无上限。",
 	],
 	writerHeadShort: [
 		"Uncovered writer: no loss floor.",
-		"Ben 裸卖：亏损无下限。",
+		"Ben 裸卖：亏损无上限。",
 	],
 	buyerHead: ["And the buyer?", "那买方呢？"],
 	buyerFloorHead: ["Loss stops at $420.", "最多亏 $420。"],
@@ -179,11 +179,11 @@ const copy = {
 	beHeadShort: ["Thin: a higher bid.", "冷门：买价要更高。"],
 	beOnStageShort: [
 		`break even $${(THIN.breakeven / 100).toFixed(3)}`,
-		`保本 $${(THIN.breakeven / 100).toFixed(3)}`,
+		`盈亏平衡 $${(THIN.breakeven / 100).toFixed(3)}`,
 	],
 	beOnStage: [
 		`break even: bid $${(THIN.breakeven / 100).toFixed(3)}`,
-		`保本：买价 $${(THIN.breakeven / 100).toFixed(3)}`,
+		`盈亏平衡：买价 $${(THIN.breakeven / 100).toFixed(3)}`,
 	],
 	active: ["busy · Oct 18 100", "活跃 · 10月18日 100"],
 	thin: ["thin · Dec 20 110", "冷门 · 12月20日 110"],
@@ -1105,7 +1105,7 @@ export const optionsRisksFilm: Film = {
 	id: "options-risks",
 	label: [
 		`Risk first, as a short film: ALFA up $2 while the call bought at $4.20 is down ${usd(-LOSS_AFTER, 0)}; the call's value sinking as 20 days pass, to ${usd(Math.round(AFTER * 100))} at $${UP}, and again when implied volatility falls to 25%, to ${usd(Math.round(CRUSH * 100))}; the writer, Ben, collecting $420 and losing $1,580 if ALFA ends at $${FAR}, with no floor, while the buyer's loss stops at $420; and round trips of five contracts that cost ${usd(ACTIVE.loss)} in a busy call and ${usd(THIN.loss)} in a thin one`,
-		`先看风险短片：ALFA 上涨 $2，而 $4.20 买入的看涨却亏 ${usd(-LOSS_AFTER, 0)}；随着 20 天过去，看涨价值下沉，在 $${UP} 只值 ${usd(Math.round(AFTER * 100))}，隐含波动率降到 25% 后又降到 ${usd(Math.round(CRUSH * 100))}；义务方 Ben 收取 $420，若 ALFA 收在 $${FAR} 则亏 $1,580，没有下限，而买方最多亏 $420；以及 5 张合约的一来一回，活跃看涨花 ${usd(ACTIVE.loss)}，冷门看涨花 ${usd(THIN.loss)}`,
+		`先看风险短片：ALFA 上涨 $2，而 $4.20 买入的看涨却亏 ${usd(-LOSS_AFTER, 0)}；随着 20 天过去，看涨价值下沉，在 $${UP} 只值 ${usd(Math.round(AFTER * 100))}，隐含波动率降到 25% 后又降到 ${usd(Math.round(CRUSH * 100))}；义务方 Ben 收取 $420，若 ALFA 收在 $${FAR} 则亏 $1,580，没有上限，而买方最多亏 $420；以及 5 张合约的一来一回，活跃看涨花 ${usd(ACTIVE.loss)}，冷门看涨花 ${usd(THIN.loss)}`,
 	],
 	stage: "dark",
 	shots: [

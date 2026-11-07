@@ -162,7 +162,7 @@ const copy = {
 	perYear20: [`RV20 ${points(RV20)}/yr`, `RV20 ${points(RV20)}/年`],
 	sessionsPerYear: ["252 sessions/year", "每年252个交易日"],
 	horizonHead: ["They look in opposite directions.", "它们朝相反的方向看。"],
-	horizonHeadShort: ["Opposite directions.", "方向相反。"],
+	horizonHeadShort: ["One back, one ahead.", "一个回看，一个前瞻。"],
 	rvBlock: [`RV20 ${RV_POINTS}%`, `RV20 ${RV_POINTS}%`],
 	ivBlock: [`IV ${IV_POINTS}%`, `IV ${IV_POINTS}%`],
 	today: ["today", "今天"],

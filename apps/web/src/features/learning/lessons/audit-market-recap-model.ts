@@ -43,7 +43,7 @@ export const claims: readonly {
 		id: "scope",
 		text: [
 			"ALFA Oct 18 calls, strikes 100–120, Mon Sep 16",
-			"ALFA 10月18日 看涨，行权价 100–120，9月16日周一",
+			"ALFA 10月18日 看涨，行权价 100–120，9月16日 周一",
 		],
 		status: "supported",
 	},
@@ -92,7 +92,7 @@ export const sections: readonly {
 		label: ["Supported", "有依据"],
 		text: [
 			`P1 · ALFA Oct 18 calls · Mon Sep 16: ${dollars(PREMIUM)} premium; ${count(CONTRACTS)} traded; 4/5 strikes.`,
-			`P1 · ALFA 10月18日看涨 · 9月16日周一：权利金 ${dollars(PREMIUM)}；成交 ${count(CONTRACTS)} 张；覆盖 4/5 行权价。`,
+			`P1 · ALFA 10月18日看涨 · 9月16日 周一：权利金 ${dollars(PREMIUM)}；成交 ${count(CONTRACTS)} 张；覆盖 4/5 行权价。`,
 		],
 	},
 	{

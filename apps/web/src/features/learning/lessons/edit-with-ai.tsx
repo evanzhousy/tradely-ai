@@ -310,10 +310,7 @@ function reviewPrompt(step: ReviewStep): Copy {
 function reviewMessage(step: ReviewStep): { text: Copy; loss?: Copy } {
 	if (step === 1)
 		return {
-			text: [
-				"AI edit applied to the preview",
-				"AI edit applied to the preview",
-			],
+			text: ["AI edit applied to the preview", "AI 修改已应用到预览"],
 			loss: ["Index GEX is gone ✗", "Index GEX 不见了 ✗"],
 		};
 	if (step === 2)
@@ -322,10 +319,7 @@ function reviewMessage(step: ReviewStep): { text: Copy; loss?: Copy } {
 		};
 	if (step === 3)
 		return {
-			text: [
-				"AI edit applied to the preview",
-				"AI edit applied to the preview",
-			],
+			text: ["AI edit applied to the preview", "AI 修改已应用到预览"],
 		};
 	return {
 		text: [
@@ -828,12 +822,12 @@ const scenes = [
 				kind: "reach",
 				prompt: [
 					"Pick the prompt that leaves only one block for you to review.",
-					"选出只留下一个板块需要你审阅的提示。",
+					"选出只留下一个区块需要你审阅的提示。",
 				],
 				reached: (e) => e.prompt === "bounded",
 				done: [
 					"Naming what may change and what must stay leaves one block to review and four to confirm unchanged. A vague or subjective prompt makes every block suspect.",
-					"说明哪些可以改、哪些必须保留，就只剩一个板块需要审阅，另外四个只需确认未改动。含糊或主观的提示会让每个板块都可疑。",
+					"说明哪些可以改、哪些必须保留，就只剩一个区块需要审阅，另外四个只需确认未改动。含糊或主观的提示会让每个区块都可疑。",
 				],
 			},
 		},
@@ -931,17 +925,17 @@ const scenes = [
 				kind: "answer",
 				prompt: [
 					"At which version is a block missing that you never asked to remove?",
-					"在哪个版本中，少了一个你从未要求删除的板块？",
+					"在哪个版本中，少了一个你从未要求删除的区块？",
 				],
 				choices: [
-					{ id: "edit", label: ["Edit", "编辑"] },
+					{ id: "edit", label: ["Edit", "修改"] },
 					{ id: "undo", label: ["Undo", "撤销"] },
-					{ id: "again", label: ["Edit again", "再次编辑"] },
+					{ id: "again", label: ["Edit again", "再次修改"] },
 				],
 				answer: "edit",
 				done: [
 					"The first edit changed Spotlight as asked and dropped Index GEX. Undo returns to the reviewed draft; the repeated request names what must stay, so only Spotlight differs.",
-					"第一次编辑按要求改了 Spotlight，却删掉了 Index GEX。撤销回到审阅过的草稿；重新提出的请求写明了必须保留的内容，于是只有 Spotlight 不同。",
+					"第一次修改按要求改了 Spotlight，却删掉了 Index GEX。撤销回到审阅过的草稿；重新提出的请求写明了必须保留的内容，于是只有 Spotlight 不同。",
 				],
 			},
 		},

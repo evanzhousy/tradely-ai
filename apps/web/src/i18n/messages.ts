@@ -175,6 +175,7 @@ const messages = {
 		"theme.change": "Change color theme",
 		"auth.localPreview": "Local preview",
 		"auth.signIn": "Sign in",
+		"common.loading": "Loading",
 		"auth.loading": "Loading account",
 		"auth.account": "Account",
 		"auth.signOut": "Sign out",
@@ -396,14 +397,14 @@ const messages = {
 		"home.pathOneDescription":
 			"先认识股票、报价和第一份期权，再理解合约、交易、成交侧与情绪标签，然后解读资金流。",
 		"home.pathTwoDescription":
-			"提出可回答的问题、公平比较，再建立并审核研究资料包。",
+			"提出可回答的问题、公平比较，再建立并审核研究包。",
 		"home.pathThreeDescription":
 			"两个可选分支：希腊值、波动率与市场结构，以及你自己组合的风险与绩效。",
 		"hall.sceneLabel": "走进 Tradely 交易大厅",
 		"hall.simulation": "交易大厅 · 模拟行情",
 		"hall.observeLabel": "读懂数据",
 		"hall.observeTitle": "看见市场背后的数据。",
-		"hall.observeBody": "透过价格表象，读懂期权资金流、持仓与市场结构。",
+		"hall.observeBody": "透过价格表象，读懂期权成交流、持仓与市场结构。",
 		"hall.verifyLabel": "学习数据逻辑",
 		"hall.verifyTitle": "读懂数据逻辑，提升交易判断。",
 		"hall.verifyBody": "通过课程连接证据、检验交易假设，让每一次决策更有依据。",
@@ -415,7 +416,7 @@ const messages = {
 		"home.titleRead": "免费学习期权研究。",
 		"home.titleVerify": "看懂它如何运作。",
 		"home.intro":
-			"从看懂第一个股票报价出发，一路走到期权资金流、市场结构与独立研究。无需任何基础：先学股票与报价，再逐步深入。",
+			"从看懂第一个股票报价出发，一路走到期权成交流、市场结构与独立研究。无需任何基础：先学股票与报价，再逐步深入。",
 		"home.startFree": "开始学习",
 		"home.freeNote": "免费 · 无需账户或付费",
 		"home.explore": "探索课程路径",
@@ -504,6 +505,7 @@ const messages = {
 		"theme.change": "切换颜色主题",
 		"auth.localPreview": "本地预览",
 		"auth.signIn": "登录",
+		"common.loading": "正在加载",
 		"auth.loading": "正在加载账户",
 		"auth.account": "账户",
 		"auth.signOut": "退出登录",

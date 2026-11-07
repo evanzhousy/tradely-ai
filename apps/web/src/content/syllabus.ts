@@ -359,7 +359,7 @@ export const syllabus: readonly Entry[] = [
 		"Checkpoint: quotes, executions and sentiment, on a new day",
 		"检查点：在新的一天里运用“报价、成交与情绪分类”",
 		"Place four prints against their quote, net their flow labels, price a spread printed as two legs, and tell a cancel from a trade, all on a day you haven't seen.",
-		"在你没见过的一天里：对照报价给四笔成交定位、求它们成交流标签的净额、为打印成两条腿的价差定价，并区分撤单与成交。",
+		"在你没见过的一天里：对照报价给四笔成交定位、求它们成交流标签的净额、为记录成两条腿的价差定价，并区分撤单与成交。",
 		["validate-option-print"],
 	),
 	lesson(

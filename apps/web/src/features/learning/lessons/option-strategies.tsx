@@ -621,7 +621,7 @@ function RollView({
 				<p>
 					{t([
 						"A roll closes one contract and opens another, here the same strike a month later. It usually goes in as one order, but it prints as two separate trades, so a feed that labels each print alone sees one bearish sale and one bullish purchase. Linked-leg records, or your own blotter, show they were one decision.",
-						"移仓是平掉一张合约、再开另一张，这里是同一行权价、晚一个月到期。它通常作为一张订单下达，但会打印成两笔独立成交，所以逐笔贴标签的数据会看到一笔看空的卖出和一笔看多的买入。关联腿记录或你自己的交易记录会显示它们是同一个决定。",
+						"移仓是平掉一张合约、再开另一张，这里是同一行权价、晚一个月到期。它通常作为一张订单下达，但会记录成两笔独立成交，所以逐笔贴标签的数据会看到一笔看空的卖出和一笔看多的买入。关联腿记录或你自己的交易记录会显示它们是同一个决定。",
 					])}
 				</p>
 			}
@@ -894,7 +894,7 @@ const scenes = [
 				label: ["Open", "开仓"],
 				caption: [
 					"Second leg: buy to open 16 Nov 15 100 calls at the $5.70 ask. $9,120 goes out, and a purchase at the ask prints.",
-					"第二条腿：以 $5.70 的卖价买入开仓 16 张 11月15日 100 看涨。支出 $9,120，打印出一笔在卖价的买入。",
+					"第二条腿：以 $5.70 的卖价买入开仓 16 张 11月15日 100 看涨。支出 $9,120，留下一笔在卖价买入的记录。",
 				],
 				state: { step: 2 },
 			},

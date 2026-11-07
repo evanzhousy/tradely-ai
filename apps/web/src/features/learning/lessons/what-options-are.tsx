@@ -255,7 +255,7 @@ function useFacts(use: Use, locale: Locale) {
 	return {
 		premium: "—",
 		worst: t(["the whole fall", "全部跌幅"]),
-		worstNote: t(["no floor", "没有下限"]),
+		worstNote: t(["no floor", "没有上限"]),
 		best: t(["uncapped", "不封顶"]),
 	};
 }

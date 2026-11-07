@@ -177,7 +177,7 @@ function Contract({ l }: Props) {
 		<>
 			<Panel x={29} y={40} w={170} h={124} />
 			<Label x={114} y={64} strong>
-				ALFA · CALL
+				{l("ALFA · CALL", "ALFA · 看涨")}
 			</Label>
 			<path d="M43 79h142" className="diagram-faint-line" />
 			<Label x={76} y={101} small>
@@ -445,10 +445,15 @@ function Sentiment({ l }: Props) {
 			<Label x={286} y={36}>
 				{l("Sell", "卖出")}
 			</Label>
-			{["CALL", "PUT"].map((kind, row) => (
+			{(
+				[
+					["CALL", "看涨"],
+					["PUT", "看跌"],
+				] as const
+			).map(([kind, kindZh], row) => (
 				<g key={kind}>
 					<Label x={58} y={83 + row * 66}>
-						{kind}
+						{l(kind, kindZh)}
 					</Label>
 					{[0, 1].map((col) => {
 						const positive = row === col;
@@ -807,10 +812,10 @@ function Strategies({ l }: Props) {
 				$1,000
 			</Label>
 			<Label x={94} y={55}>
-				+ CALL
+				{l("+ CALL", "+ 看涨")}
 			</Label>
 			<Label x={258} y={29}>
-				− CALL
+				{l("− CALL", "− 看涨")}
 			</Label>
 			<Caption>
 				{l(
@@ -1444,7 +1449,7 @@ function Packet({ l }: Props) {
 			))}
 			<Panel x={181} y={33} w={147} h={136} />
 			<Label x={253} y={58} strong>
-				{l("Research packet", "研究资料包")}
+				{l("Research packet", "研究包")}
 			</Label>
 			{[
 				l("Scope", "范围"),
@@ -2362,7 +2367,7 @@ export const courseCardScenes: Record<string, Scene> = {
 		Diagram: Sweep,
 		description: [
 			"One buy order sweeps three venues and prints three times: 20, 15 and 15 contracts.",
-			"一张买单扫过三个场所，打印三笔成交：20、15 与 15 张。",
+			"一张买单扫过三个场所，留下三笔成交记录：20、15 与 15 张。",
 		],
 	},
 	"unusual-activity": {
@@ -2502,7 +2507,7 @@ export const courseCardScenes: Record<string, Scene> = {
 		Diagram: Packet,
 		description: [
 			"A reproducible research packet preserves source rows, scope, formula, units and missing data.",
-			"可复现的研究资料包，保留来源行、范围、公式、单位与缺失数据。",
+			"可复现的研究包，保留来源行、范围、公式、单位与缺失数据。",
 		],
 	},
 	"market-recap": {
@@ -2722,12 +2727,12 @@ export const courseCardScenes: Record<string, Scene> = {
 		Diagram: checkpoint([
 			["Realized P&L", "已实现盈亏"],
 			["Return", "收益率"],
-			["Profit factor", "盈亏比"],
+			["Profit factor", "盈利因子"],
 			["Portfolio delta", "组合 Delta"],
 		]),
 		description: [
 			"A checkpoint on understanding a portfolio: realized P&L, return, profit factor and portfolio delta.",
-			"组合理解检查点：已实现盈亏、收益率、盈亏比与组合 Delta。",
+			"组合理解检查点：已实现盈亏、收益率、盈利因子与组合 Delta。",
 		],
 	},
 	"checkpoint-workflows": {

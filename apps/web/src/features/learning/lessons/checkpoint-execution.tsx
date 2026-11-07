@@ -855,7 +855,7 @@ const scenes = [
 				answer: "trade",
 				done: [
 					"Only a trade prints and counts in volume. A cancel changes the book without anyone trading.",
-					"只有成交会打印并计入成交量。撤单改变的是订单簿，没有人成交。",
+					"只有成交才会留下记录并计入成交量。撤单改变的是订单簿，没有人成交。",
 				],
 			},
 		},

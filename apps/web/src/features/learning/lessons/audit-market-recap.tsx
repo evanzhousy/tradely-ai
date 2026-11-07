@@ -1041,7 +1041,7 @@ const scenes = [
 						id: "positions",
 						label: [
 							"540 new positions in the 110 call",
-							"110 看涨新增 540 个持仓",
+							"110 看涨新增 540 个仓位",
 						],
 					},
 					{ id: "zero", label: ["The 120 call traded 0", "120 看涨成交 0 张"] },
@@ -1049,7 +1049,7 @@ const scenes = [
 				answer: "scope",
 				done: [
 					"The scope matches packet P1, so it stays. Volume isn't new positions, a missing row isn't zero, and the premium needed its × 100 back: those were repaired, and the forecast cut.",
-					"范围与资料包 P1 一致，所以保留。成交量不等于新持仓，缺失的行不等于零，权利金需要补回 × 100：这些都已修复，预测则被删除。",
+					"范围与研究包 P1 一致，所以保留。成交量不等于新持仓，缺失的行不等于零，权利金需要补回 × 100：这些都已修复，预测则被删除。",
 				],
 			},
 		},

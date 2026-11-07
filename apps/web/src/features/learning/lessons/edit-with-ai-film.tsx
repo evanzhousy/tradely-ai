@@ -176,7 +176,7 @@ const copy = {
 	],
 	claimSub: [
 		"Undo unasked edits; official stays.",
-		"撤销未要求的改动；官方配方不变。",
+		"撤销未要求的改动；官方 Recipe 不变。",
 	],
 	nextBig: [
 		"Next: connect your own AI agent",

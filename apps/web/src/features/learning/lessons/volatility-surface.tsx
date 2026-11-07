@@ -141,7 +141,7 @@ function SliceView({
 							focusStrikes={shown.slice === "term" ? [100] : []}
 							title={t([
 								"ALFA implied volatility · Mon Sep 16",
-								"ALFA 隐含波动率 · 9月16日周一",
+								"ALFA 隐含波动率 · 9月16日 周一",
 							])}
 						/>
 					)}

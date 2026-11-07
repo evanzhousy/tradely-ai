@@ -809,7 +809,7 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 	c(
 		"auto-exercise",
 		"No instructions are given for this in-the-money call at expiration. What normally happens?",
-		"到期时未对这张价内看涨发出任何指示，通常会发生什么？",
+		"到期时未对这张实值看涨发出任何指示，通常会发生什么？",
 		[
 			[
 				"auto",
@@ -821,19 +821,19 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 				"It lapses unless you actively submit an exercise notice.",
 				"除非你主动提交行权通知，否则作废。",
 				"It's the other way round: an option 1 cent or more in the money is exercised automatically unless you tell your broker not to.",
-				"正好相反：价内 1 美分或以上的期权会被自动行权，除非你通知券商不要行权。",
+				"正好相反：实值 1 美分或以上的期权会被自动行权，除非你通知券商不要行权。",
 			],
 			[
 				"threshold",
 				"It is exercised only if it is at least 50 points in the money.",
-				"只有价内至少 50 点才会被行权。",
+				"只有实值至少 50 点才会被行权。",
 				"There is no 50-point threshold. The normal rule exercises an option in the money by $0.01 or more.",
-				"没有 50 点的门槛。通常规则是价内 $0.01 或以上就会被行权。",
+				"没有 50 点的门槛。通常规则是实值 $0.01 或以上就会被行权。",
 			],
 		],
 		"auto",
 		"An option in the money by $0.01 or more at expiration is normally exercised automatically unless the holder instructs otherwise. Check your broker's cut-off time and policy.",
-		"到期时价内 $0.01 或以上的期权，除非持有人另行指示，通常会被自动行权。请查看券商的截止时间与政策。",
+		"到期时实值 $0.01 或以上的期权，除非持有人另行指示，通常会被自动行权。请查看券商的截止时间与政策。",
 	),
 	c(
 		"pin-risk",
@@ -848,9 +848,9 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 			[
 				"safe",
 				"That there will be no assignment, because the call is not in the money.",
-				"不会被指派，因为看涨期权不在价内。",
+				"不会被指派，因为看涨期权不是实值。",
 				"At exactly the strike the call isn't in the money, but its holder can still exercise, for example after an after-hours move. The writer can't rule it out.",
-				"恰好在行权价时看涨不在价内，但持有人仍可以行权，例如根据盘后变动。义务方无法排除被指派。",
+				"恰好在行权价时看涨不是实值，但持有人仍可以行权，例如根据盘后变动。义务方无法排除被指派。",
 			],
 			[
 				"certain",
@@ -896,7 +896,7 @@ const expiryRiskQuestions: ScenarioQuestion[] = [
 	c(
 		"early-assignment",
 		"A different, American-style short call on a stock is deep in the money. The stock goes ex-dividend tomorrow with a $0.60 dividend, and the call has $0.05 of time value left. What risk rises today?",
-		"另一张美式股票看涨空头处于深度价内。明天除息、股息 $0.60，而该看涨期权仅剩 $0.05 时间价值。今天哪种风险上升？",
+		"另一张美式股票看涨空头处于深度实值。明天除息、股息 $0.60，而该看涨期权仅剩 $0.05 时间价值。今天哪种风险上升？",
 		[
 			[
 				"early",
@@ -973,7 +973,7 @@ const v5Revisions: Record<string, (unit: TeachingUnit) => TeachingUnit> = {
 		},
 		explanation: t(
 			`${unit.explanation.en} Expiration can also surprise you. A long option in the money by $0.01 or more is normally exercised automatically unless you instruct otherwise. A writer whose option closes near the strike may not know about assignment until after the close (pin risk). American-style short calls can be assigned early, especially the day before an ex-dividend date when the dividend exceeds the call's remaining time value. Some index options are AM-settled: trading stops the day before, and the settlement value comes from opening prices on expiration morning.`,
-			`${unit.explanation.zh}到期还可能带来意外。价内 $0.01 或以上的多头期权，除非另行指示，通常会被自动行权。期权收在行权价附近时，义务方可能要到收盘后才知道是否被指派（钉住风险）。美式空头看涨可能被提前指派，尤其在除息日前一天、股息大于看涨期权剩余时间价值时。部分指数期权为上午结算：前一天停止交易，结算值来自到期日早上的开盘价格。`,
+			`${unit.explanation.zh}到期还可能带来意外。实值 $0.01 或以上的多头期权，除非另行指示，通常会被自动行权。期权收在行权价附近时，义务方可能要到收盘后才知道是否被指派（钉住风险）。美式空头看涨可能被提前指派，尤其在除息日前一天、股息大于看涨期权剩余时间价值时。部分指数期权为上午结算：前一天停止交易，结算值来自到期日早上的开盘价格。`,
 		),
 		example: t(
 			`${unit.example.en} Separately, a long 50 call that closes at $50.02 with no instructions is normally exercised, leaving you with 100 shares bought for $5,000.`,
@@ -981,7 +981,7 @@ const v5Revisions: Record<string, (unit: TeachingUnit) => TeachingUnit> = {
 		),
 		misconception: t(
 			`${unit.misconception.en} A small in-the-money amount does not expire worthless by default, and a short option near the strike can still be assigned after the close.`,
-			`${unit.misconception.zh}小幅价内的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。`,
+			`${unit.misconception.zh}小幅实值的期权不会默认作废；接近行权价的空头期权在收盘后仍可能被指派。`,
 		),
 		case: withQuestion(
 			unit,

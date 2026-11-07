@@ -55,7 +55,7 @@ const lessons: Record<string, CoachingLesson> = {
 			rule(
 				"claim-boundary",
 				"Distinguish peak, total, breadth and moneyness; do not infer ownership, future price or intent from these alone.",
-				"区分峰值、总量、广度与价内外，不能单凭这些断言归属、未来价格或意图。",
+				"区分峰值、总量、广度与实虚值程度，不能单凭这些断言归属、未来价格或意图。",
 			),
 		],
 	},

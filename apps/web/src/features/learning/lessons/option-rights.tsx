@@ -520,8 +520,8 @@ function AssignStage({
 					? t(["bought 100", "买入 100 股"])
 					: t(["sold 100", "卖出 100 股"]);
 			return put
-				? t([`bought 100 at ${strike}`, `按 ${strike} 买入`])
-				: t([`sold 100 at ${strike}`, `按 ${strike} 卖出`]);
+				? t([`bought 100 at ${strike}`, `按 ${strike} 买入 100 股`])
+				: t([`sold 100 at ${strike}`, `按 ${strike} 卖出 100 股`]);
 		}
 		if (id === ASSIGNED && step === 2) return t(["assigned", "被指派"]);
 		if (id === "ben") {

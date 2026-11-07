@@ -912,7 +912,7 @@ const scenes = [
 					},
 					{
 						id: "side",
-						label: ["That trades are signed by side", "成交按位置标记符号"],
+						label: ["That trades are signed by side", "成交按方向赋号"],
 					},
 					{
 						id: "monday",
@@ -922,7 +922,7 @@ const scenes = [
 				answer: "dealers",
 				done: [
 					"Theirs multiplies Friday's open interest by delta and assumes dealers are short the calls: a modeled position. Yours signs Monday's trades by side. Same name, different numerator, sign and question.",
-					"他们的用周五未平仓量乘以 Delta，并假设做市商卖空看涨：这是模型化的持仓。你的按位置给周一的成交标记符号。名字相同，分子、符号和问题都不同。",
+					"他们的用周五未平仓量乘以 Delta，并假设做市商卖空看涨：这是模型化的持仓。你的按方向给周一的成交赋号。名字相同，分子、符号和问题都不同。",
 				],
 			},
 		},

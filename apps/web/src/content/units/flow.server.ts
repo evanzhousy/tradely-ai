@@ -370,11 +370,11 @@ export const flowUnits: TeachingUnit[] = [
 		sources: [orders, quotes],
 		explanation: t(
 			"Execution conditions describe how a trade was executed. A sweep routes one order across several venues at once, often as intermarket sweep orders (ISO); each fill prints separately, and later fills can pay more than the best displayed price. A block is a large trade, often arranged away from the screen and printed through an auction or cross, so its price can sit inside, at or outside the displayed quote. Complex orders price several legs, or options and stock, as one package; individual leg prices can fall outside their own quotes while the package trades inside its market. Each code needs the source's own definition. None of these labels identifies who traded, how informed they were, or whether a position opened.",
-			"成交条件描述一笔交易如何执行。扫单把一张订单同时路由到多个场所，常以跨市场扫单指令（ISO）发出；每次成交分别打印，后面的成交可能高于最优展示价格。大宗交易通常先在屏幕外撮合，再通过竞价或交叉成交打印，因此价格可能在展示报价之内、等于报价或超出报价。复杂订单把多条腿、或期权与股票作为一个整体定价；单腿价格可能超出各自报价，而整体仍在组合市场之内成交。每个代码都需要来源自己的定义。这些标签都不能说明谁在交易、掌握多少信息，或是否开了新仓。",
+			"成交条件描述一笔交易如何执行。扫单把一张订单同时路由到多个场所，常以跨市场扫单指令（ISO）发出；每次成交分别记录，后面的成交可能高于最优展示价格。大宗交易通常先在屏幕外撮合，再通过竞价或交叉成交记录，因此价格可能在展示报价之内、等于报价或超出报价。复杂订单把多条腿、或期权与股票作为一个整体定价；单腿价格可能超出各自报价，而整体仍在组合市场之内成交。每个代码都需要来源自己的定义。这些标签都不能说明谁在交易、掌握多少信息，或是否开了新仓。",
 		),
 		example: t(
 			"A 40-contract buy sweeps three venues: 10 at $0.93, 20 at $0.95 and 10 at $0.98. That is one order and three prints: 40 contracts, $3,810 premium and a $0.9525 average price. Separately, a 105/110 call spread bought for $1.25 net printed its legs at $2.15 and $0.90 while the package traded inside its $1.12–$1.30 market; legs can even print outside their own quotes.",
-			"一张 40 张的买单扫过三个场所：$0.93 成交 10 张、$0.95 成交 20 张、$0.98 成交 10 张。这是一张订单、三笔成交：共 40 张、权利金 $3,810、均价 $0.9525。另外，以净价 $1.25 买入的 105/110 看涨价差，两条腿分别打印在 $2.15 和 $0.90，而整体在 $1.12–$1.30 的组合市场内成交；单腿甚至可以超出各自报价成交。",
+			"一张 40 张的买单扫过三个场所：$0.93 成交 10 张、$0.95 成交 20 张、$0.98 成交 10 张。这是一张订单、三笔成交：共 40 张、权利金 $3,810、均价 $0.9525。另外，以净价 $1.25 买入的 105/110 看涨价差，两条腿分别成交在 $2.15 和 $0.90，而整体在 $1.12–$1.30 的组合市场内成交；单腿甚至可以超出各自报价成交。",
 		),
 		misconception: t(
 			"Urgent routing isn't proof of conviction, and a big block isn't proof of an institution or inside information. Read a complex order's legs as one package.",
@@ -396,7 +396,7 @@ export const flowUnits: TeachingUnit[] = [
 			return {
 				brief: t(
 					`One buy order sweeps three venues within milliseconds: ${a} ALFA calls at $2.10, ${b} at $2.11 and ${d} at $2.12. Each fill prints separately with a sweep condition, and one contract covers 100 shares.${flag === "opening" ? " Each fill also carries the buyer's opening flag." : flag === "closing" ? " Each fill also carries the buyer's closing flag." : ""}`,
-					`一张买单在几毫秒内扫过三个场所：${a} 张 ALFA 看涨成交在 $2.10，${b} 张在 $2.11，${d} 张在 $2.12。每次成交都带扫单条件分别打印，一张合约对应 100 股。${flag === "opening" ? "每次成交还带有买方的开仓标记。" : flag === "closing" ? "每次成交还带有买方的平仓标记。" : ""}`,
+					`一张买单在几毫秒内扫过三个场所：${a} 张 ALFA 看涨成交在 $2.10，${b} 张在 $2.11，${d} 张在 $2.12。每次成交都带扫单条件分别记录，一张合约对应 100 股。${flag === "opening" ? "每次成交还带有买方的开仓标记。" : flag === "closing" ? "每次成交还带有买方的平仓标记。" : ""}`,
 				),
 				questions: [
 					n(
@@ -633,13 +633,13 @@ export const flowUnits: TeachingUnit[] = [
 			kind: "option-strategies",
 			intro: t(
 				"Place one short call inside three different positions, add a spread's signed legs into its payoff, and watch a roll print as two opposite-looking trades.",
-				"把同一张看涨空头放进三种不同持仓，把价差带符号的各腿相加成到期价值，再看一次移仓如何打印成两笔看似相反的成交。",
+				"把同一张看涨空头放进三种不同持仓，把价差带符号的各腿相加成到期价值，再看一次移仓如何记录成两笔看似相反的成交。",
 			),
 		},
 		sources: [basics],
 		explanation: t(
 			"A leg is one position; a strategy combines legs and sometimes underlying shares. A protective put combines stock with a long put. A covered call combines stock with a short call; an uncovered short call lacks that stock and has very different upside risk. A vertical spread combines same-expiry options at different strikes. A straddle combines a call and put at one strike; a collar combines stock, a put and a short call. A roll closes one contract and opens another. These structures can make an isolated print's sentiment misleading about the complete portfolio. Opening/closing and linked-leg records are required to distinguish them. Expiration payoff, entry premium, fees, early assignment and path-dependent management must remain separate.",
-			"一条腿是一项持仓，策略可组合多腿及股票。保护性看跌是股票加多头看跌；备兑看涨是股票加空头看涨，未备兑空头缺少股票，其上涨风险很不同。垂直价差结合同到期不同执行价；跨式结合同执行价看涨与看跌；领口结合股票、看跌与空头看涨。移仓包含平旧合约和开新合约。单笔情绪因此可能误导完整组合解读，识别结构需开平仓和关联腿记录。到期价值、入场权利金、费用、提前指派及持仓管理过程应分别看待。",
+			"一条腿是一项持仓，策略可组合多腿及股票。保护性看跌是股票加多头看跌；备兑看涨是股票加空头看涨，未备兑空头缺少股票，其上涨风险很不同。垂直价差结合同到期不同行权价；跨式结合同行权价看涨与看跌；领口结合股票、看跌与空头看涨。移仓包含平旧合约和开新合约。单笔情绪因此可能误导完整组合解读，识别结构需开平仓和关联腿记录。到期价值、入场权利金、费用、提前指派及持仓管理过程应分别看待。",
 		),
 		example: t(
 			"The 105/110 call spread bought for $1.25 net per share, multiplier 100: at expiration spot $115, the long call pays $10 and the short call costs $5, so net payoff is $500 and profit $375. Reading only the short-call print would miss the capped bullish spread.",
@@ -910,11 +910,11 @@ export const flowUnits: TeachingUnit[] = [
 		sources: [basics],
 		explanation: t(
 			"A long straddle buys a call and a put at one strike: it pays on a big move either way, and its break-evens sit the total premium above and below the strike. A strangle buys them at different strikes, which is cheaper but needs a bigger move. An iron condor sells a put spread below the stock and a call spread above it: it keeps the credit if the stock stays between the short strikes, and because at most one side can finish in the money, its worst case is one spread's width minus the credit. Each of these is one decision priced as a package, but the tape prints every leg separately, and a feed that labels legs one at a time can call the same trade bullish, bearish or neutral. Same-second prints with a multi-leg condition and matching sizes suggest a package; linked-leg records confirm it.",
-			"跨式多头在同一行权价买入一张看涨和一张看跌：任一方向的大幅变动都能赚钱，盈亏平衡点在行权价上下各相差总权利金。宽跨式在不同行权价买入两者，更便宜，但需要更大的变动。铁鹰在股价下方卖出一个看跌价差、上方卖出一个看涨价差：股价留在两个卖出行权价之间就能保留收入；由于到期时最多只有一侧是实值，最坏情况是一个价差的宽度减去收入。每一种都是作为整体定价的一个决定，但逐笔成交会把每条腿分开打印，逐腿贴标签的数据可能把同一笔交易标为看多、看空或中性。同一秒、带多腿条件、数量一致的成交提示这是一个整体；关联腿记录才能证实。",
+			"跨式多头在同一行权价买入一张看涨和一张看跌：任一方向的大幅变动都能赚钱，盈亏平衡点在行权价上下各相差总权利金。宽跨式在不同行权价买入两者，更便宜，但需要更大的变动。铁鹰在股价下方卖出一个看跌价差、上方卖出一个看涨价差：股价留在两个卖出行权价之间就能保留收入；由于到期时最多只有一侧是实值，最坏情况是一个价差的宽度减去收入。每一种都是作为整体定价的一个决定，但逐笔成交会把每条腿分开记录，逐腿贴标签的数据可能把同一笔交易标为看多、看空或中性。同一秒、带多腿条件、数量一致的成交提示这是一个整体；关联腿记录才能证实。",
 		),
 		example: t(
 			'Buying the Oct 18 100 call and put at $4.20 each costs $8.40 a share, so ALFA must end above $108.40 or below $91.60 to make money. Selling the 95 put and 105 call at $2.05 and buying the 90 put at $1.00 and the 110 call at $0.93 collects $2.17; the worst case is $5.00 − $2.17 = $2.83 a share. Two hundred of those condors print as four legs that a leg-by-leg feed tallies to −$1,400 of "bearish" premium, though the trade is a $43,400 bet that ALFA stays between $95 and $105.',
-			"以每股 $4.20 分别买入 10月18日 100 看涨和看跌，每股成本 $8.40，所以 ALFA 要收在 $108.40 以上或 $91.60 以下才赚钱。以 $2.05 卖出 95 看跌和 105 看涨、以 $1.00 买入 90 看跌、以 $0.93 买入 110 看涨，收入 $2.17；最坏情况是每股 $5.00 − $2.17 = $2.83。两百组这样的铁鹰打印为四条腿，逐腿贴标签的数据会把它们加总为 −$1,400 的“看空”权利金，而这笔交易其实是押注 ALFA 留在 $95 到 $105 之间、收入 $43,400 的交易。",
+			"以每股 $4.20 分别买入 10月18日 100 看涨和看跌，每股成本 $8.40，所以 ALFA 要收在 $108.40 以上或 $91.60 以下才赚钱。以 $2.05 卖出 95 看跌和 105 看涨、以 $1.00 买入 90 看跌、以 $0.93 买入 110 看涨，收入 $2.17；最坏情况是每股 $5.00 − $2.17 = $2.83。两百组这样的铁鹰记录为四条腿，逐腿贴标签的数据会把它们加总为 −$1,400 的“看空”权利金，而这笔交易其实是押注 ALFA 留在 $95 到 $105 之间、收入 $43,400 的交易。",
 		),
 		misconception: t(
 			"A multi-leg trade's legs point in different directions on purpose. Read the package's payoff, not each leg's label, and don't add premium across legs as if each were a separate opinion.",

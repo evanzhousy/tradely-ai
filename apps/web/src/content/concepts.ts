@@ -414,7 +414,7 @@ export const concepts: Record<ConceptId, Concept> = {
 		name: t("Execution conditions", "成交条件"),
 		description: t(
 			"Execution conditions describe how a trade executed, not who traded or why. A sweep routes one order across several venues, printing each fill separately; a block is a large trade, often arranged away from the screen; a complex order prints several legs as one package. Each condition changes how price, size and side should be read, and leaves intent unknown.",
-			"成交条件描述一笔成交是如何执行的，而不是谁在交易或为何交易。扫单把一张订单同时送到多个交易场所，每笔成交单独打印；大宗是一笔大额成交，常在屏幕之外协商；复杂订单把多条腿作为一个整体打印。每种条件都会改变价格、数量与方向的解读方式，而意图仍然未知。",
+			"成交条件描述一笔成交是如何执行的，而不是谁在交易或为何交易。扫单把一张订单同时送到多个交易场所，每笔成交单独记录；大宗是一笔大额成交，常在屏幕之外协商；复杂订单把多条腿作为一个整体记录。每种条件都会改变价格、数量与方向的解读方式，而意图仍然未知。",
 		),
 		evidence: [
 			t(
@@ -1413,7 +1413,7 @@ export const concepts: Record<ConceptId, Concept> = {
 		name: t("Multi-leg structures", "多腿结构"),
 		description: t(
 			"A straddle buys a call and a put at one strike and pays on a large move either way, with break-evens the total premium above and below the strike; a strangle uses different strikes; an iron condor sells a put spread and a call spread and keeps the credit if the stock stays between the short strikes, with a worst case of one spread's width minus the credit. Legs that print in the same second are one package to be read together, not several opinions.",
-			"跨式在同一行权价买入看涨与看跌，股价大幅变动时无论方向都能获利，盈亏平衡点在行权价上下各一个总权利金处；宽跨式用不同的行权价；铁鹰卖出一个看跌价差和一个看涨价差，股价停在两个卖出行权价之间就保住权利金，最坏情况是一个价差的宽度减去所收权利金。同一秒内打印的多条腿是一个整体，要一起读，而不是几个观点。",
+			"跨式在同一行权价买入看涨与看跌，股价大幅变动时无论方向都能获利，盈亏平衡点在行权价上下各一个总权利金处；宽跨式用不同的行权价；铁鹰卖出一个看跌价差和一个看涨价差，股价停在两个卖出行权价之间就保住权利金，最坏情况是一个价差的宽度减去所收权利金。同一秒内记录的多条腿是一个整体，要一起读，而不是几个观点。",
 		),
 		evidence: [
 			t(

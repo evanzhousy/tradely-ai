@@ -778,7 +778,7 @@ const scenes = [
 					id: "less",
 					label: [
 						`${signedPrice(scenario.total)}: time and IV outweigh the rise`,
-						`${signedPrice(scenario.total)}：时间和 IV 抵消了上涨`,
+						`${signedPrice(scenario.total)}：时间和 IV 的影响超过了上涨`,
 					],
 				},
 				{

@@ -884,7 +884,7 @@ const scenes = [
 				kind: "answer",
 				prompt: [
 					"What did the first draft claim that packet P1 can't support?",
-					"初稿声称了哪些资料包 P1 无法支持的内容？",
+					"初稿声称了哪些研究包 P1 无法支持的内容？",
 				],
 				choices: [
 					{

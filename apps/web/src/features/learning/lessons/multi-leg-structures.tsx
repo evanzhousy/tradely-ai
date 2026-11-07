@@ -619,7 +619,7 @@ function PackageView({
 				<p>
 					{t([
 						"A multi-leg order is priced and executed as one package, but the tape prints each leg separately. A feed that labels prints one at a time will call some legs bullish and others bearish, and adding premium by label can even produce a direction the trader never had. Prints in the same second with a multi-leg condition, matching sizes and strikes that fit a known structure are the clues to read them together; only linked-leg records prove it.",
-						"多腿订单作为一个整体定价和执行，但逐笔成交会把每条腿分开打印。逐笔贴标签的数据会把一些腿标为看多、另一些标为看空，按标签加总权利金甚至会得出交易者从未有过的方向。同一秒内、带多腿条件、数量一致、行权价符合某种已知结构，这些都是把它们合起来解读的线索；只有关联腿记录才能证明。",
+						"多腿订单作为一个整体定价和执行，但逐笔成交会把每条腿分开记录。逐笔贴标签的数据会把一些腿标为看多、另一些标为看空，按标签加总权利金甚至会得出交易者从未有过的方向。同一秒内、带多腿条件、数量一致、行权价符合某种已知结构，这些都是把它们合起来解读的线索；只有关联腿记录才能证明。",
 					])}
 				</p>
 			}

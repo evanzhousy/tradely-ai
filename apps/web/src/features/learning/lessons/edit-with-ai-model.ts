@@ -6,8 +6,8 @@ import type { Copy } from "@/content/world";
 export type BlockId = "title" | "tone" | "money" | "gex" | "spotlight";
 export const BLOCKS: readonly { id: BlockId; label: Copy }[] = [
 	{ id: "title", label: ["Title and description", "标题与说明"] },
-	{ id: "tone", label: ["Market tone", "Market tone"] },
-	{ id: "money", label: ["Where the money went", "Where the money went"] },
+	{ id: "tone", label: ["Market tone", "市场基调"] },
+	{ id: "money", label: ["Where the money went", "资金流向"] },
 	{ id: "gex", label: ["Index GEX", "Index GEX"] },
 	{ id: "spotlight", label: ["Spotlight", "Spotlight"] },
 ];

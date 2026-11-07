@@ -26,7 +26,7 @@ const chinesePracticeCopy: Record<
 	},
 	"rank-contracts": {
 		title: "缩小范围，但不要改变问题",
-		goal: "选择一个排名合约，说明到期日、行权价、价内外程度和邻近合约如何影响优先级。",
+		goal: "选择一个排名合约，说明到期日、行权价、实虚值程度和邻近合约如何影响优先级。",
 	},
 	"validate-option-print": {
 		title: "写下事实、未知和下一项检查",

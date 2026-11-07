@@ -207,9 +207,9 @@ const copy = {
 	benHeadShort: [`Ben wrote ${BEN} calls.`, `Ben 卖出 ${BEN} 张。`],
 	expiryHead: [
 		"At expiry, his loss has no floor.",
-		"到期时，他的亏损没有下限。",
+		"到期时，他的亏损没有上限。",
 	],
-	expiryHeadShort: ["At expiry: no floor.", "到期：亏损无下限。"],
+	expiryHeadShort: ["At expiry: no floor.", "到期：亏损无上限。"],
 	benAxis: [
 		`Ben · short ${BEN} Oct 18 100 calls`,
 		`Ben · 空头 ${BEN} 张 10月18日 100 看涨`,

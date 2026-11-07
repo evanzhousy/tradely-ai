@@ -886,7 +886,7 @@ const scenes = [
 				label: ["Sep 9", "9月9日"],
 				caption: [
 					"Monday Sep 9. The 14–30 day bucket holds the Sep 27 and Oct 4 calls: open interest 300 + 120 = 420.",
-					"9月9日周一。14–30 天到期桶包含 9月27日 与 10月4日 看涨：未平仓量 300 + 120 = 420。",
+					"9月9日 周一。14–30 天到期桶包含 9月27日 与 10月4日 看涨：未平仓量 300 + 120 = 420。",
 				],
 				state: { later: false, compare: false },
 			},
@@ -925,14 +925,14 @@ const scenes = [
 					{ id: "ten", label: ["+10", "+10"] },
 					{
 						id: "bucket",
-						label: ["+230, like the bucket", "+230，与分组相同"],
+						label: ["+230, like the bucket", "+230，与到期桶相同"],
 					},
 					{ id: "all", label: ["+130", "+130"] },
 				],
 				answer: "ten",
 				done: [
 					"The Oct 4 calls went from 120 to 130: +10. The bucket's +230 is mostly Sep 27 leaving and Oct 11 joining, not new positions.",
-					"10月4日 看涨从 120 变为 130：+10。分组的 +230 主要是 9月27日 移出、10月11日 加入，并不是新的持仓。",
+					"10月4日 看涨从 120 变为 130：+10。到期桶的 +230 主要是 9月27日 移出、10月11日 加入，并不是新的持仓。",
 				],
 			},
 		},

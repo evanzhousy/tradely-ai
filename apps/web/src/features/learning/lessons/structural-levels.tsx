@@ -77,7 +77,7 @@ function MirrorBars({
 						])
 					: t([
 							"ALFA Oct 18 · |GEX| by strike, $ per 1%",
-							"ALFA 10月18日 · 各行权价 |GEX|，每 1% 美元",
+							"ALFA 10月18日 · 各行权价 |GEX|，美元 / 每 1%",
 						])}
 			</Label>
 			<Label x={left - 6} y={MIRROR_TOP + 10} anchor="end" tone="small">
@@ -764,7 +764,7 @@ const scenes = [
 				kind: "answer",
 				prompt: [
 					"What could move the payout minimum before Oct 18?",
-					"10月18日 之前，什么会改变赔付最小值的位置？",
+					"10月18日 之前，什么会改变支付最小值的位置？",
 				],
 				choices: [
 					{

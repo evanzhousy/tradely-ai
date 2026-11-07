@@ -240,7 +240,7 @@ function MatchView({
 			controls={
 				explore ? (
 					<ChoiceField
-						label={t(["Your incoming order", "你到来的订单"])}
+						label={t(["Your incoming order", "你发出的订单"])}
 						value={explore.side}
 						options={[
 							["buy", t(["Buy 10 at market", "市价买入 10 张"])],

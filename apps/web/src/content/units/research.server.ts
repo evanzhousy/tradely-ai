@@ -267,7 +267,7 @@ export const researchUnits: TeachingUnit[] = [
 									? "A missing name isn't zero. Counting IOTA as zero would let the observed leader claim a title it may not hold."
 									: `No name is missing here: IOTA's ${plain(iota)} contracts were observed. The claim holds because all three were measured, not because anything counts as zero.`,
 								iota === null
-									? "缺失的名字不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。"
+									? "缺失的标的不是零。把 IOTA 算作零，会让观测到的领先者拿到它未必配得上的头衔。"
 									: `这里没有缺失的标的：IOTA 的 ${plain(iota)} 张有观测。结论成立是因为三个标的都测量到了，而不是因为把什么当作零。`,
 							],
 							[
@@ -453,7 +453,7 @@ export const researchUnits: TeachingUnit[] = [
 		sources: [oi],
 		explanation: t(
 			"A contract neighborhood locates activity across strikes and expiries while retaining a fixed underlying, option type, session and quality rule. Spot lets you classify moneyness, but moneyness alone does not tell you which contract to buy. An expiry slice changes visible rows; it does not silently admit outside-scope contracts. Compare total activity and concentration separately. Equal peaks can hide different breadth; equal totals can also be distributed differently. Missing observations are not zeros, and prior-session values cannot win a current-session comparison. A selected contract earns a reasoned next inspection with nearby context. Neither a shape nor a cluster establishes a spread, common owner, accumulation or a forecast.",
-			"合约邻域按行权价与到期日定位活动，同时固定标的、期权类型、时段及质量规则。现价可判断价内外状态，但该状态不告诉你该买哪张。到期切片改变可见行，不会自动纳入范围外合约。总活动与集中度需分开看：相同峰值可能广度不同，相同总量也可能分布不同。缺失不是零，前日值不能赢得当日比较。候选需要带邻近上下文进入下一项检查，形状或聚集不能证明价差策略、共同持有、积累或预测。",
+			"合约邻域按行权价与到期日定位活动，同时固定标的、期权类型、时段及质量规则。现价可判断实虚值状态，但该状态不告诉你该买哪张。到期切片改变可见行，不会自动纳入范围外合约。总活动与集中度需分开看：相同峰值可能广度不同，相同总量也可能分布不同。缺失不是零，前日值不能赢得当日比较。候选需要带邻近上下文进入下一项检查，形状或聚集不能证明价差策略、共同持有、积累或预测。",
 		),
 		example: t(
 			"ALFA's Sep 20 and Nov 15 calls both total 695 contracts and peak at 380. Sep 20 traded in two strikes (380 and 315); Nov 15 in five (380, two 95s, 70 and 55). Nov 15 is broader despite identical peak and total. With ALFA at $100.02, a 105 call is out of the money and a 100 call in the money. Both can be research candidates under a stated question.",

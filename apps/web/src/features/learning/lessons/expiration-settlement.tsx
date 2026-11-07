@@ -1021,7 +1021,7 @@ const scenes = [
 		predict: {
 			prompt: [
 				"Fri Oct 4: ALFA is $102 and your Oct 18 95 call bids $7.40, so selling it gets $7.40 a share. How much a share does exercising it get you instead?",
-				"10月4日周五：ALFA 为 $102，你的 10月18日 95 看涨买价 $7.40，卖出可得每股 $7.40。改为行权，每股能得到多少？",
+				"10月4日 周五：ALFA 为 $102，你的 10月18日 95 看涨买价 $7.40，卖出可得每股 $7.40。改为行权，每股能得到多少？",
 			],
 			choices: [
 				{ id: "intrinsic", label: ["$7.00", "$7.00"] },
@@ -1056,7 +1056,7 @@ const scenes = [
 				label: ["Sell to close", "卖出平仓"],
 				caption: [
 					"Fri Oct 4: ALFA is $102 and your 95 call bids $7.40, which is $7.00 intrinsic plus $0.40 time value. Selling gets all of it: $740.",
-					"10月4日周五：ALFA 为 $102，你的 95 看涨买价 $7.40，即 $7.00 内在价值加 $0.40 时间价值。卖出可全部拿到：$740。",
+					"10月4日 周五：ALFA 为 $102，你的 95 看涨买价 $7.40，即 $7.00 内在价值加 $0.40 时间价值。卖出可全部拿到：$740。",
 				],
 				state: { day: "oct4", exercise: false },
 			},

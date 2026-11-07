@@ -521,7 +521,7 @@ function MembershipView({
 					value: leader && !shown.pointInTime ? `✗ ${leader}` : (leader ?? "—"),
 					note: shown.pointInTime
 						? t(["HALO left the market on Sep 6", "HALO 于 9月6日 退市"])
-						: t(["names that left since are missing", "之后离开的名字缺失"]),
+						: t(["names that left since are missing", "之后离开的标的缺失"]),
 					tone: shown.pointInTime ? undefined : "loss",
 				},
 			]}
@@ -542,7 +542,7 @@ function MembershipView({
 				<p>
 					{t([
 						"A historical comparison has to use the membership that existed at that date. Today's list leaves out names that were delisted, merged or dropped since, usually the ones with the most dramatic stories. That's survivorship bias, and it quietly changes the answer.",
-						"历史比较必须使用当时存在的成员名单。今天的名单会漏掉后来退市、合并或被剔除的名字，而这些往往是故事最戏剧化的。这就是幸存者偏差，它会悄悄改变答案。",
+						"历史比较必须使用当时存在的成员名单。今天的名单会漏掉后来退市、合并或被剔除的标的，而这些往往是故事最戏剧化的。这就是幸存者偏差，它会悄悄改变答案。",
 					])}
 				</p>
 			}
@@ -700,7 +700,7 @@ const scenes = [
 					label: ["Yes, by a wide margin", "是，而且遥遥领先"],
 					why: [
 						"A wide margin among the observed names still says nothing about FJOR, which is eligible but unobserved.",
-						"在已观测的名字中遥遥领先，仍然说明不了 FJOR，它合格但未被观测到。",
+						"在已观测的标的中遥遥领先，仍然说明不了 FJOR，它合格但未被观测到。",
 					],
 				},
 			],
@@ -783,7 +783,7 @@ const scenes = [
 					id: "survivors",
 					label: [
 						"Names that left since are silently dropped",
-						"之后离开的名字被悄悄遗漏",
+						"之后离开的标的被悄悄遗漏",
 					],
 				},
 				{
@@ -799,7 +799,7 @@ const scenes = [
 					label: ["The volumes come out wrong", "成交量会算错"],
 					why: [
 						"The volumes you do count are fine. The problem is the names you can't count: today's list leaves out HALO, which led on Sep 2.",
-						"你统计到的成交量没有问题。问题在于统计不到的名字：今天的名单漏掉了 9月2日 领先的 HALO。",
+						"你统计到的成交量没有问题。问题在于统计不到的标的：今天的名单漏掉了 9月2日 领先的 HALO。",
 					],
 				},
 			],

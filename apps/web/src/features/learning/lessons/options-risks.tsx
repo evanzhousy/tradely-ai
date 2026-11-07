@@ -489,7 +489,7 @@ function CostView({
 								],
 								[
 									"thin",
-									t(["Thin: Dec 20 110 call", "清淡：12月20日 110 看涨"]),
+									t(["Thin: Dec 20 110 call", "冷门：12月20日 110 看涨"]),
 								],
 							]}
 							onChange={(kind) => setExplore({ ...explore, kind })}
@@ -713,7 +713,7 @@ const scenes = [
 		predict: {
 			prompt: [
 				"You buy 5 of the thin Dec 20 110 calls at $2.65 and sell them straight back at $2.20, paying $0.65 per contract per trade. What do you lose?",
-				"你以 $2.65 买入 5 张交易清淡的 12月20日 110 看涨，再立即以 $2.20 卖出，每笔每张付 $0.65。你亏多少？",
+				"你以 $2.65 买入 5 张冷门的 12月20日 110 看涨，再立即以 $2.20 卖出，每笔每张付 $0.65。你亏多少？",
 			],
 			choices: [
 				{ id: "full", label: ["$231.50", "$231.50"] },
@@ -754,10 +754,10 @@ const scenes = [
 			},
 			{
 				id: "thin",
-				label: ["Thin contract", "清淡合约"],
+				label: ["Thin contract", "冷门合约"],
 				caption: [
 					"The thin Dec 20 110 call is $2.20 bid, $2.65 ask. The same round trip loses $231.50: 17.5% of what you paid.",
-					"交易清淡的 12月20日 110 看涨为买价 $2.20、卖价 $2.65。同样一买一卖亏损 $231.50：占所付金额的 17.5%。",
+					"冷门的 12月20日 110 看涨为买价 $2.20、卖价 $2.65。同样一买一卖亏损 $231.50：占所付金额的 17.5%。",
 				],
 				state: { kind: "thin", contracts: 5, breakeven: false },
 			},
@@ -781,12 +781,12 @@ const scenes = [
 				kind: "reach",
 				prompt: [
 					"Find how many thin Dec 20 contracts make a round trip cost more than $500.",
-					"找出交易多少张清淡的 12月20日 合约，一买一卖的成本会超过 $500。",
+					"找出交易多少张冷门的 12月20日 合约，一买一卖的成本会超过 $500。",
 				],
 				reached: (e) => e.kind === "thin" && e.contracts >= 11,
 				done: [
 					"Each thin round trip loses $45 of spread plus $1.30 of fees: $46.30. Eleven contracts lose $509.30 before ALFA moves at all.",
-					"每张清淡合约一买一卖损失 $45 价差加 $1.30 费用：$46.30。11 张在 ALFA 还没动之前就亏 $509.30。",
+					"每张冷门合约一买一卖损失 $45 价差加 $1.30 费用：$46.30。11 张在 ALFA 还没动之前就亏 $509.30。",
 				],
 			},
 		},

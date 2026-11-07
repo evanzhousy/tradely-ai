@@ -105,12 +105,12 @@ export const foundationUnits: TeachingUnit[] = [
 			const buyerWhy = {
 				cancelOffer: t(
 					"Had a buyer taken the offer, a trade would have printed at the ask. The offer left without a trade, so nobody bought it.",
-					"如果有买方接受了卖价，就会在卖价打印出一笔成交。这张卖单离开时没有成交，所以没有人买下它。",
+					"如果有买方接受了卖价，就会在卖价留下一笔成交记录。这张卖单离开时没有成交，所以没有人买下它。",
 				),
 				lift: undefined,
 				cancelBid: t(
 					"Had a buyer taken an offer, a trade would have printed at the ask. No trade message followed, and the order that left was a bid, not an offer.",
-					"如果有买方吃掉卖单，就会在卖价打印出一笔成交。之后没有成交消息，而且离开的是一张买单，不是卖单。",
+					"如果有买方吃掉卖单，就会在卖价留下一笔成交记录。之后没有成交消息，而且离开的是一张买单，不是卖单。",
 				),
 				hit: t(
 					`The print is at ${money(bid)}, the bid. A seller sold to resting bids; a buyer taking the offer would have printed at ${money(ask)}.`,
@@ -120,7 +120,7 @@ export const foundationUnits: TeachingUnit[] = [
 			const sellerWhy = {
 				cancelOffer: t(
 					"Had a seller sold to the bid, a trade would have printed at the bid. No trade message followed, and the order that left was an offer, not a bid.",
-					"如果有卖方卖给买单，就会在买价打印出一笔成交。之后没有成交消息，而且离开的是一张卖单，不是买单。",
+					"如果有卖方卖给买单，就会在买价留下一笔成交记录。之后没有成交消息，而且离开的是一张卖单，不是买单。",
 				),
 				lift: t(
 					`The print is at ${money(ask)}, the ask. A buyer took offered contracts; a sale to the bid would have printed at ${money(bid)}.`,
@@ -128,7 +128,7 @@ export const foundationUnits: TeachingUnit[] = [
 				),
 				cancelBid: t(
 					"Had a seller sold to the bid, a trade would have printed at the bid. The bid left without a trade, so nobody sold to it.",
-					"如果有卖方卖给买单，就会在买价打印出一笔成交。这张买单离开时没有成交，所以没有人卖给它。",
+					"如果有卖方卖给买单，就会在买价留下一笔成交记录。这张买单离开时没有成交，所以没有人卖给它。",
 				),
 				hit: undefined,
 			}[event];

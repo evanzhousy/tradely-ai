@@ -32,7 +32,7 @@ export const STATEMENTS: readonly {
 			`The screen flagged ${PASSED.length} contracts across ${NAMES} names on Monday.`,
 			`周一的筛选在 ${NAMES} 个标的中标出了 ${PASSED.length} 份合约。`,
 		],
-		basis: ["the key figures, for Mon Sep 16", "关键数字，9月16日周一"],
+		basis: ["the key figures, for Mon Sep 16", "关键数字，9月16日 周一"],
 		evidence: "observed",
 		at: 0,
 	},

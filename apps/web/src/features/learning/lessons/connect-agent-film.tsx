@@ -141,7 +141,7 @@ const CHECKS = [
 		label: ["Claude Code: /mcp", "Claude Code：/mcp"],
 		line: "tradingflow · connected · tools listed",
 		phoneLine: "connected · tools listed",
-		verdict: ["✓ proof", "✓ 证据"],
+		verdict: ["✓ proof", "✓ 已证实"],
 		tone: toneClass.up,
 	},
 ] as const satisfies readonly {

@@ -890,7 +890,7 @@ const scenes = [
 				label: ["A short call", "看涨空头"],
 				caption: [
 					"Write the Oct 18 105 call instead and the loss has no floor: −$795 at $115, and each $1 higher costs another $100.",
-					"改为卖出 10月18日 105 看涨，亏损就没有下限：$115 时 −$795，之后每涨 $1 再亏 $100。",
+					"改为卖出 10月18日 105 看涨，亏损就没有上限：$115 时 −$795，之后每涨 $1 再亏 $100。",
 				],
 				state: { id: "c105", spot: 115 },
 			},

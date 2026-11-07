@@ -71,7 +71,7 @@ export const drafts: Record<"over" | "bounded", Copy> = {
 };
 export const caption: Copy = [
 	"Contracts by strike, axis from 0. ALFA Oct 18 calls, Mon Sep 16, corrected tape as of 16:05 (packet P1). 120 call: no data yet.",
-	"按行权价的成交张数，轴从 0 开始。ALFA 10月18日 看涨，9月16日周一，截至 16:05 的更正后成交记录（研究包 P1）。120 看涨：尚无数据。",
+	"按行权价的成交张数，轴从 0 开始。ALFA 10月18日 看涨，9月16日 周一，截至 16:05 的更正后成交记录（研究包 P1）。120 看涨：尚无数据。",
 ];
 
 export const premiumLeader = leaderOf("premium");

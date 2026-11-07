@@ -42,7 +42,7 @@ export const workflowUnits: TeachingUnit[] = [
 		),
 		example: t(
 			"On Monday Sep 16 the Unusual Options Activity Screener, at its default thresholds (volume/OI at least 1, volume at least 500, open interest at least 200, at most 60 days to expiry), passes five contracts: the CRUX Oct 4 60 put at 2.67 times its open interest, the DUNE Sep 27 30 call at 2.17, the BRDX Oct 11 25 put at 2.00, the BRDX Oct 18 28 call at 1.25 and the CRUX Nov 15 70 call at 1.20. None of ALFA's calls passes; its busiest, the Oct 18 105 call, traded 505 contracts against 1,200 open interest, 0.42. Opened at 8:00 on Tuesday, the report still shows Monday's session. After Tuesday's close it shows Tuesday's two: the EMBR Oct 4 80 call at 2.75 and the DUNE 30 call at 1.24.",
-			"9月16日周一，Unusual Options Activity Screener 在默认阈值下（成交量/OI 至少 1、成交量至少 500、未平仓量至少 200、最多 60 天到期）筛出五份合约：CRUX 10月4日 60 看跌为其未平仓量的 2.67 倍，DUNE 9月27日 30 看涨 2.17 倍，BRDX 10月11日 25 看跌 2.00 倍，BRDX 10月18日 28 看涨 1.25 倍，CRUX 11月15日 70 看涨 1.20 倍。ALFA 的看涨期权一个也没通过；其中最活跃的 10月18日 105 看涨成交 505 张，未平仓量 1,200，比值 0.42。在周二 8:00 打开时，报告仍显示周一的时段。周二收盘后，它显示周二的两份：EMBR 10月4日 80 看涨 2.75 倍和 DUNE 30 看涨 1.24 倍。",
+			"9月16日 周一，Unusual Options Activity Screener 在默认阈值下（成交量/OI 至少 1、成交量至少 500、未平仓量至少 200、最多 60 天到期）筛出五份合约：CRUX 10月4日 60 看跌为其未平仓量的 2.67 倍，DUNE 9月27日 30 看涨 2.17 倍，BRDX 10月11日 25 看跌 2.00 倍，BRDX 10月18日 28 看涨 1.25 倍，CRUX 11月15日 70 看涨 1.20 倍。ALFA 的看涨期权一个也没通过；其中最活跃的 10月18日 105 看涨成交 505 张，未平仓量 1,200，比值 0.42。在周二 8:00 打开时，报告仍显示周一的时段。周二收盘后，它显示周二的两份：EMBR 10月4日 80 看涨 2.75 倍和 DUNE 30 看涨 1.24 倍。",
 		),
 		misconception: t(
 			'"Latest" isn\'t "today", and a recipe isn\'t a trade signal. Read the session in the header before any number, and remember that a fork is yours alone: it never changes the official recipe.',
@@ -74,22 +74,22 @@ export const workflowUnits: TeachingUnit[] = [
 			const timeCase = [
 				{
 					en: "8:00 on Tuesday Sep 17",
-					zh: "9月17日周二 8:00",
+					zh: "9月17日 周二 8:00",
 					answer: "mon",
 				},
 				{
 					en: "10:00 on Monday Sep 16",
-					zh: "9月16日周一 10:00",
+					zh: "9月16日 周一 10:00",
 					answer: "fri",
 				},
 				{
 					en: "noon on Saturday Sep 14",
-					zh: "9月14日周六中午",
+					zh: "9月14日 周六中午",
 					answer: "fri",
 				},
 				{
 					en: "16:30 on Monday Sep 16",
-					zh: "9月16日周一 16:30",
+					zh: "9月16日 周一 16:30",
 					answer: "mon",
 				},
 			][v];
@@ -145,23 +145,23 @@ export const workflowUnits: TeachingUnit[] = [
 							[
 								"fri",
 								"Friday Sep 13",
-								"9月13日周五",
+								"9月13日 周五",
 								`Friday isn't the latest completed session at ${timeCase.en}: Monday Sep 16 has finished trading since.`,
-								`在${timeCase.zh}，周五不是最近一个完整的交易时段：9月16日周一在它之后已经结束交易。`,
+								`在${timeCase.zh}，周五不是最近一个完整的交易时段：9月16日 周一在它之后已经结束交易。`,
 							],
 							[
 								"mon",
 								"Monday Sep 16",
-								"9月16日周一",
+								"9月16日 周一",
 								`Monday Sep 16 ${timeCase.en.startsWith("noon") ? "hasn't started yet" : "is still trading"}, so it isn't a completed session. The report opens on Friday Sep 13.`,
-								`9月16日周一${timeCase.en.startsWith("noon") ? "还没有开始" : "仍在交易"}，还不是完整的交易时段。报告打开的是 9月13日周五。`,
+								`9月16日 周一${timeCase.en.startsWith("noon") ? "还没有开始" : "仍在交易"}，还不是完整的交易时段。报告打开的是 9月13日 周五。`,
 							],
 							[
 								"tue",
 								"Tuesday Sep 17",
-								"9月17日周二",
+								"9月17日 周二",
 								`${timeCase.en.startsWith("8:00") ? "At 8:00 Tuesday hasn't opened yet" : "Tuesday Sep 17 hasn't happened yet"}; a report shows only completed sessions.`,
-								`${timeCase.en.startsWith("8:00") ? "8:00 时周二还没有开盘" : "9月17日周二还没有到来"}；报告只显示已完成的交易时段。`,
+								`${timeCase.en.startsWith("8:00") ? "8:00 时周二还没有开盘" : "9月17日 周二还没有到来"}；报告只显示已完成的交易时段。`,
 							],
 						],
 						timeCase.answer,
@@ -1306,6 +1306,7 @@ export const workflowUnits: TeachingUnit[] = [
 				"Where the money went",
 				"Index GEX",
 			][v];
+			const removedZh = ["Index GEX", "市场基调", "资金流向", "Index GEX"][v];
 			/** Cases 2 and 3 asked for the removal; cases 0 and 1 didn't. */
 			const askedRemoval = v >= 2;
 			/** Cases 1 and 3 ask the assistant for a new default; cases 0 and 2 type a value in the preview. */
@@ -1351,8 +1352,8 @@ export const workflowUnits: TeachingUnit[] = [
 							? `You asked the assistant: "Remove ${removed}; leave everything else as it is." The preview shows that block is gone. What do you do first?`
 							: `After an edit, the preview shows ${removed} was removed, though you didn't ask for that. What do you do first?`,
 						askedRemoval
-							? `你对助手说：“删除 ${removed}，其他一切保持不变。”预览显示这个区块已被删除。你首先做什么？`
-							: `一次修改之后，预览显示 ${removed} 被删除了，而你并没有要求。你首先做什么？`,
+							? `你对助手说：“删除 ${removedZh}，其他一切保持不变。”预览显示这个区块已被删除。你首先做什么？`
+							: `一次修改之后，预览显示 ${removedZh} 被删除了，而你并没有要求。你首先做什么？`,
 						[
 							[
 								"undo",
@@ -1385,7 +1386,7 @@ export const workflowUnits: TeachingUnit[] = [
 									: `Saving keeps the version without ${removed}. Undo first, then repeat the request with what must stay.`,
 								askedRemoval
 									? "保存之前先检查：报告的其余部分应该仍与上一个版本一致。"
-									: `保存会留下缺了 ${removed} 的版本。先撤销，再重发请求并写明要保留什么。`,
+									: `保存会留下缺了 ${removedZh} 的版本。先撤销，再重发请求并写明要保留什么。`,
 							],
 							[
 								"keep",
@@ -1396,7 +1397,7 @@ export const workflowUnits: TeachingUnit[] = [
 									: `You didn't ask for ${removed} to go, so the edit changed more than you asked. Undo it before anything else.`,
 								askedRemoval
 									? "你要求的删除就是这次修改本身。"
-									: `删除 ${removed} 不是你要求的，这次修改超出了你的要求。先撤销它，再做别的。`,
+									: `删除 ${removedZh} 不是你要求的，这次修改超出了你的要求。先撤销它，再做别的。`,
 							],
 						],
 						askedRemoval ? "keep" : "undo",

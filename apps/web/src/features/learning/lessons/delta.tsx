@@ -664,7 +664,7 @@ const scenes = [
 				},
 				{
 					id: "none",
-					label: ["Nothing until it's in the money", "在价内之前不会变"],
+					label: ["Nothing until it's in the money", "在实值之前不会变"],
 					why: [
 						`An option's value responds to the stock before it is in the money: far out, delta is small, but not zero. This call's delta is ${fixed2(CALL_DELTA)}.`,
 						`期权在进入实值之前就会随股价变动：远离行权价时 Delta 很小，但不是零。这张看涨的 Delta 是 ${fixed2(CALL_DELTA)}。`,

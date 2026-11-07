@@ -232,7 +232,7 @@ function SweepView({
 				<p>
 					{t([
 						"A sweep sends one order to several venues at the same moment, usually as intermarket sweep orders (ISO), so it takes each venue's displayed size without waiting. Every fill prints on its own, and the later fills cost more than the best displayed ask. The ISO code says how the order was routed; it doesn't say who sent it or why.",
-						"扫单在同一时刻把一张订单发往多个场所，通常以跨市场扫单指令（ISO）发出，从而不必等待就吃掉各场所显示的数量。每次成交单独打印，后面的成交比最优展示卖价更贵。ISO 代码说明订单如何路由，并不说明是谁发的、为什么发。",
+						"扫单在同一时刻把一张订单发往多个场所，通常以跨市场扫单指令（ISO）发出，从而不必等待就吃掉各场所显示的数量。每次成交单独记录，后面的成交比最优展示卖价更贵。ISO 代码说明订单如何路由，并不说明是谁发的、为什么发。",
 					])}
 				</p>
 			}
@@ -317,7 +317,7 @@ function SizeCompare({
 			>
 				{t([
 					"arranged away from the screen, then printed",
-					"先在屏幕外撮合，再打印成交",
+					"先在屏幕外撮合，再记录成交",
 				])}
 			</m.text>
 		</g>
@@ -407,7 +407,7 @@ function BlockView({
 				<p>
 					{t([
 						"A block is a large trade usually negotiated away from the screen and then printed through an auction or a cross. Its price can sit at, inside or even outside the displayed quote, and its size can dwarf what was displayed. Large and arranged doesn't prove an institution, inside information or a new position.",
-						"大宗交易通常先在屏幕外协商，再通过竞价或交叉成交打印。它的价格可以等于、位于甚至超出展示报价，数量也可能远超展示的数量。规模大、事先安排，并不能证明是机构、有内幕信息或新开仓位。",
+						"大宗交易通常先在屏幕外协商，再通过竞价或交叉成交记录。它的价格可以等于、位于甚至超出展示报价，数量也可能远超展示的数量。规模大、事先安排，并不能证明是机构、有内幕信息或新开仓位。",
 					])}
 				</p>
 			}
@@ -700,7 +700,7 @@ const scenes = [
 			revealAt: 1,
 			explain: [
 				"Each venue executes its part separately, so one order prints three times: 10, 20 and 10 contracts.",
-				"每个场所分别执行自己那一部分，所以一张订单打印三次：10 张、20 张和 10 张。",
+				"每个场所分别执行自己那一部分，所以一张订单记录三次：10 张、20 张和 10 张。",
 			],
 		},
 		beats: [
@@ -770,7 +770,7 @@ const scenes = [
 					id: "arranged",
 					label: [
 						"It was arranged off-screen, then printed",
-						"先在屏幕外撮合，再打印成交",
+						"先在屏幕外撮合，再记录成交",
 					],
 				},
 				{
@@ -778,7 +778,7 @@ const scenes = [
 					label: ["The feed must be wrong", "数据一定错了"],
 					why: [
 						"A block bigger than the displayed size isn't an error. Large trades are often negotiated off the screen and then printed.",
-						"大于展示数量的大宗交易并不是错误。大额交易常在屏幕外协商，然后再打印成交。",
+						"大于展示数量的大宗交易并不是错误。大额交易常在屏幕外协商，然后再记录成交。",
 					],
 				},
 				{
@@ -794,7 +794,7 @@ const scenes = [
 			revealAt: 1,
 			explain: [
 				"Blocks are usually negotiated away from the screen and printed through an auction or cross, so displayed size doesn't limit them.",
-				"大宗交易通常在屏幕外协商，再通过竞价或交叉成交打印，所以不受展示数量限制。",
+				"大宗交易通常在屏幕外协商，再通过竞价或交叉成交记录，所以不受展示数量限制。",
 			],
 		},
 		beats: [
@@ -812,7 +812,7 @@ const scenes = [
 				label: ["The block", "大宗"],
 				caption: [
 					"Then 500 contracts print at $2.15, marked as an auction. The trade was arranged away from the screen and only printed here.",
-					"随后 500 张在 $2.15 成交，标记为竞价。这笔交易是在屏幕外安排的，只是在这里打印。",
+					"随后 500 张在 $2.15 成交，标记为竞价。这笔交易是在屏幕外安排的，只是在这里记录。",
 				],
 				state: { step: "block" },
 			},
