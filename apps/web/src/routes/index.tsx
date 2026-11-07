@@ -27,7 +27,10 @@ import { pageHead } from "@/seo/pages";
 import { organizationStructuredData } from "@/seo/structured-data";
 
 export const Route = createFileRoute("/")({
-	head: () => ({ ...pageHead("/"), scripts: [organizationStructuredData()] }),
+	head: ({ matches }) => ({
+		...pageHead("/", matches),
+		scripts: [organizationStructuredData()],
+	}),
 	component: HomeComponent,
 });
 

@@ -30,7 +30,7 @@ import { getPricingSummary, verifyCoursePassCheckout } from "@/server/billing";
 
 export const Route = createFileRoute("/pricing")({
 	validateSearch: parsePricingSearch,
-	head: () => pageHead("/pricing"),
+	head: ({ matches }) => pageHead("/pricing", matches),
 	component: PricingPage,
 });
 

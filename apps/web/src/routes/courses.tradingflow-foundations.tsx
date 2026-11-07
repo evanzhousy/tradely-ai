@@ -15,7 +15,7 @@ import { useI18n } from "@/i18n/provider";
 import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/courses/tradingflow-foundations")({
-	head: () => pageHead("/courses/tradingflow-foundations"),
+	head: ({ matches }) => pageHead("/courses/tradingflow-foundations", matches),
 	component: CoursePage,
 });
 

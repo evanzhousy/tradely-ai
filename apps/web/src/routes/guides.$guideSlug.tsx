@@ -10,13 +10,13 @@ export const Route = createFileRoute("/guides/$guideSlug")({
 		if (!guide) throw notFound();
 		return guide;
 	},
-	head: ({ loaderData }) =>
+	head: ({ loaderData, matches }) =>
 		loaderData
 			? {
-					...pageHead(`/guides/${loaderData.slug}`),
+					...pageHead(`/guides/${loaderData.slug}`, matches),
 					scripts: [guideStructuredData(loaderData)],
 				}
-			: pageHead("/404"),
+			: pageHead("/404", matches),
 	component: GuidePage,
 });
 

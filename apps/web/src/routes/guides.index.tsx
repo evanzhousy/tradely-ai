@@ -5,7 +5,7 @@ import { PageIntro } from "@/components/page-intro";
 import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/guides/")({
-	head: () => pageHead("/guides"),
+	head: ({ matches }) => pageHead("/guides", matches),
 	component: GuidesPage,
 });
 

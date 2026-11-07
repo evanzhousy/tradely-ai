@@ -1,7 +1,7 @@
 import { getLesson, tradingFlowCourse } from "@/content/course";
 import { getGuide, guides } from "@/content/guides";
 import { getLocalizedCourse } from "@/i18n/course";
-import type { Locale } from "@/i18n/messages";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/messages";
 import { shareCards } from "./share-cards";
 import { canonicalUrl, SITE_NAME, SITE_ORIGIN } from "./site";
 
@@ -230,14 +230,22 @@ export function localizedPageMetadata(
 	return page;
 }
 
-export function pageHead(path: string) {
+/**
+ * A route's `head`, in the language the root route resolved for this request. Pass the
+ * `matches` the route's `head` receives; the root match comes first.
+ */
+export function pageHead(
+	path: string,
+	matches?: readonly { loaderData?: unknown }[],
+) {
+	const locale =
+		(matches?.[0]?.loaderData as { locale?: Locale } | undefined)?.locale ??
+		DEFAULT_LOCALE;
+	const { title, description } = localizedPageMetadata(path, locale);
 	const page = seoPage(path);
 	if (!page)
 		return {
-			meta: [
-				{ title: "Page Not Found | Tradely" },
-				{ name: "robots", content: "noindex, follow" },
-			],
+			meta: [{ title }, { name: "robots", content: "noindex, follow" }],
 			links: [],
 		};
 	const index = page.index && import.meta.env.VITE_DEPLOYMENT_ENV !== "preview";
@@ -245,21 +253,21 @@ export function pageHead(path: string) {
 	const image = canonicalUrl(page.image ?? "/brand/share/tradely.png");
 	return {
 		meta: [
-			{ title: page.title },
-			{ name: "description", content: page.description },
+			{ title },
+			{ name: "description", content: description },
 			{ name: "robots", content: index ? "index, follow" : "noindex, follow" },
 			{ property: "og:site_name", content: SITE_NAME },
 			{ property: "og:type", content: page.article ? "article" : "website" },
-			{ property: "og:title", content: page.title },
-			{ property: "og:description", content: page.description },
+			{ property: "og:title", content: title },
+			{ property: "og:description", content: description },
 			{ property: "og:url", content: url },
 			{ property: "og:image", content: image },
 			{ property: "og:image:width", content: "1200" },
 			{ property: "og:image:height", content: "630" },
-			{ property: "og:image:alt", content: page.title },
+			{ property: "og:image:alt", content: title },
 			{ name: "twitter:card", content: "summary_large_image" },
-			{ name: "twitter:title", content: page.title },
-			{ name: "twitter:description", content: page.description },
+			{ name: "twitter:title", content: title },
+			{ name: "twitter:description", content: description },
 			{ name: "twitter:image", content: image },
 		],
 		links: [{ rel: "canonical", href: url }],

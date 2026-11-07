@@ -3,6 +3,6 @@ import { LegalPage } from "@/components/legal-page";
 import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/privacy")({
-	head: () => pageHead("/privacy"),
+	head: ({ matches }) => pageHead("/privacy", matches),
 	component: () => <LegalPage page="privacy" />,
 });

@@ -28,7 +28,7 @@ import type {
 import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/house")({
-	head: () => pageHead("/house"),
+	head: ({ matches }) => pageHead("/house", matches),
 	component: HousePage,
 });
 

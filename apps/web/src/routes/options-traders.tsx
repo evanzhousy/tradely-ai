@@ -12,8 +12,8 @@ export const Route = createFileRoute("/options-traders")({
 		);
 		return { listItems: directoryListItems() };
 	},
-	head: ({ loaderData }) => ({
-		...pageHead("/options-traders"),
+	head: ({ loaderData, matches }) => ({
+		...pageHead("/options-traders", matches),
 		scripts: loaderData
 			? [optionsTradersStructuredData(loaderData.listItems)]
 			: [],

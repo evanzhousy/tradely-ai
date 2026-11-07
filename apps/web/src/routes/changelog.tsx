@@ -5,7 +5,7 @@ import { changelog } from "@/content/changelog";
 import { pageHead } from "@/seo/pages";
 
 export const Route = createFileRoute("/changelog")({
-	head: () => pageHead("/changelog"),
+	head: ({ matches }) => pageHead("/changelog", matches),
 	component: ChangelogPage,
 });
 

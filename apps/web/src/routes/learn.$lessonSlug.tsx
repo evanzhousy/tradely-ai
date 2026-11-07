@@ -76,7 +76,8 @@ export const Route = createFileRoute("/learn/$lessonSlug")({
 		if (!page.found) throw notFound();
 		return { page };
 	},
-	head: ({ params }) => pageHead(`/learn/${params.lessonSlug}`),
+	head: ({ matches, params }) =>
+		pageHead(`/learn/${params.lessonSlug}`, matches),
 	component: LessonPage,
 });
 

@@ -46,7 +46,7 @@ export const Route = createFileRoute("/auth/sign-in")({
 		returnTo: safeReturnTo(search.returnTo),
 		oauthError: search.oauthError === "google" ? "google" : undefined,
 	}),
-	head: () => pageHead("/auth/sign-in"),
+	head: ({ matches }) => pageHead("/auth/sign-in", matches),
 	component: SignInPage,
 });
 
