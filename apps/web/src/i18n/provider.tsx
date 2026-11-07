@@ -11,6 +11,7 @@ import {
 import { rememberLocale } from "./locale";
 import {
 	DEFAULT_LOCALE,
+	htmlLang,
 	LOCALE_STORAGE_KEY,
 	type Locale,
 	type MessageKey,
@@ -52,7 +53,7 @@ export function LocaleProvider({
 	}, []);
 
 	useEffect(() => {
-		document.documentElement.lang = locale;
+		document.documentElement.lang = htmlLang(locale);
 	}, [locale]);
 
 	const setLocale = useCallback((nextLocale: Locale) => {
@@ -63,7 +64,7 @@ export function LocaleProvider({
 			// Storage can be blocked; the choice still holds on this page, and in the cookie if allowed.
 		}
 		rememberLocale(nextLocale);
-		document.documentElement.lang = nextLocale;
+		document.documentElement.lang = htmlLang(nextLocale);
 	}, []);
 
 	const value = useMemo<I18nContextValue>(

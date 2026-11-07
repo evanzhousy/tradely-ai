@@ -662,6 +662,11 @@ export type MessageKey = keyof typeof messages.en;
 
 export const messageKeys = Object.keys(messages.en) as MessageKey[];
 
+/** The BCP 47 tag for `lang`: the course's Chinese is Simplified, whatever the reader's browser asked for. */
+export function htmlLang(locale: Locale): string {
+	return locale === "zh" ? "zh-Hans" : "en";
+}
+
 export function normalizeLocale(input?: string | null): Locale {
 	return input?.toLowerCase().startsWith("zh") ? "zh" : DEFAULT_LOCALE;
 }

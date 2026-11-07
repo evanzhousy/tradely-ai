@@ -1,5 +1,9 @@
 import { createIsomorphicFn } from "@tanstack/react-start";
-import { getCookie, getRequestHeader } from "@tanstack/react-start/server";
+import {
+	getCookie,
+	getRequestHeader,
+	setResponseHeader,
+} from "@tanstack/react-start/server";
 import {
 	LOCALE_COOKIE,
 	LOCALE_STORAGE_KEY,
@@ -13,6 +17,8 @@ import {
  */
 export const resolveLocale = createIsomorphicFn()
 	.server((): Locale => {
+		// One URL serves both languages, so a cache has to key the page on what chooses between them.
+		setResponseHeader("Vary", "Cookie, Accept-Language");
 		const chosen = getCookie(LOCALE_COOKIE);
 		return normalizeLocale(chosen ?? getRequestHeader("accept-language"));
 	})

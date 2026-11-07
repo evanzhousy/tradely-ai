@@ -105,10 +105,14 @@
 }
 
 @theme inline {
-	--font-sans: "Inter Variable", sans-serif;
+	--font-sans:
+		"Inter Variable", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+		"Noto Sans CJK SC", "Noto Sans SC", sans-serif;
 	--font-heading: var(--font-sans);
 	--font-mono:
-		"JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+		"JetBrains Mono Variable", ui-monospace, SFMono-Regular, "PingFang SC",
+		"Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC",
+		monospace;
 	--color-info-foreground: var(--info-foreground);
 	--color-info: var(--info);
 	--color-warning-foreground: var(--warning-foreground);

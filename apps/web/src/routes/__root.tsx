@@ -16,6 +16,7 @@ import { CookieConsentBanner } from "../components/cookie-consent-banner";
 import { Footer } from "../components/footer";
 import Header from "../components/header";
 import { resolveLocale } from "../i18n/locale";
+import { htmlLang } from "../i18n/messages";
 import { useI18n } from "../i18n/provider";
 import appCss from "../index.css?url";
 import { useReloadOnStaleBuild } from "../lib/stale-build";
@@ -64,7 +65,7 @@ function RootDocument() {
 	useReloadOnStaleBuild();
 	const isHouseScene = location.pathname === "/house";
 	return (
-		<html lang={locale} suppressHydrationWarning>
+		<html lang={htmlLang(locale)} suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>

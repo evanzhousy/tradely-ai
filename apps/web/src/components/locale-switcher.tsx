@@ -5,7 +5,7 @@ import {
 import { LanguagesIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
-import { localeOptions } from "@/i18n/messages";
+import { htmlLang, localeOptions } from "@/i18n/messages";
 import { useI18n } from "@/i18n/provider";
 
 export function LocaleSwitcher() {
@@ -34,7 +34,7 @@ export function LocaleSwitcher() {
 				<NativeSelectOption
 					key={option.value}
 					value={option.value}
-					lang={option.value}
+					lang={htmlLang(option.value)}
 				>
 					{t(option.labelKey)}
 				</NativeSelectOption>
