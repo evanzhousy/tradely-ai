@@ -309,7 +309,7 @@ Caution turns olive on a light page because a yellow dark enough to read is the 
 **Copy**
 - English verbs agree with their subject ("You buy", "Eli buys").
 - Chinese copy is idiomatic, with full-width punctuation; numbers and tickers stay half-width.
-- Chinese finance terms keep one meaning each: 看涨 and 看跌 name calls and puts, and 看多 and 看空 name bullish and bearish; 买价 is the bid and 卖价 the ask, so a price you paid is 已付; 每张 is per contract and 每股 per share; 盈利因子 is the profit factor, because 盈亏比 usually means average win over average loss; a statistical population is 总体, not 人群.
+- Chinese finance terms keep one meaning each: 看涨 and 看跌 name calls and puts, and 看多 and 看空 name bullish and bearish; 买价 is the bid and 卖价 the ask, so a price you paid is 已付; 每张 is per contract and 每股 per share; 盈利因子 is the profit factor, because 盈亏比 usually means average win over average loss; a statistical population is 总体, not 人群; a trade on the tape is 记录, not 打印; moneyness is 实值, 虚值 and 实虚值, not 价内 and 价外. `pnpm -C apps/web check-i18n` fails on the words the course has replaced.
 - The next card names the next lesson in syllabus order; the last lesson of a module says "Next: the module checkpoint" / "下一步：模块检查点".
 
 ## 7. Verify a film
@@ -423,6 +423,7 @@ Then run the static check:
 
 ```bash
 pnpm -C apps/web check-concepts
+pnpm -C apps/web check-i18n
 ```
 
 It fails on a wrong choice without a why, a right choice with one, an independent case that keeps every choice answer of its guided case, a concept the syllabus uses but the register doesn't define, and a broken lesson or concept graph. It lists, without failing, any prediction on a lesson scene without an explore task, which the player never shows.
