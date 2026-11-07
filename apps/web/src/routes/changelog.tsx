@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Link as HeroLink } from "@tradely/ui/components/link";
+import { EnglishOnlyNote } from "@/components/english-only-note";
 import { PageIntro } from "@/components/page-intro";
 import { changelog } from "@/content/changelog";
 import { pageHead } from "@/seo/pages";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/changelog")({
 function ChangelogPage() {
 	return (
 		<main lang="en" className="page-shell">
+			<EnglishOnlyNote />
 			<PageIntro
 				eyebrow="Product updates"
 				title="Changelog"

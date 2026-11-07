@@ -7,6 +7,7 @@ import { Link as HeroLink } from "@tradely/ui/components/link";
 import { useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { useAnalytics } from "@/analytics/context";
+import { EnglishOnlyNote } from "@/components/english-only-note";
 import { getLessonById, tradingFlowCourse } from "@/content/course";
 import { type Guide, guides } from "@/content/guides";
 import { GuideDemo } from "@/features/guides/guide-demo";
@@ -21,6 +22,7 @@ export function GuideArticle({ guide }: { guide: Guide }) {
 	const free = tradingFlowCourse.lessons[0];
 	return (
 		<main lang="en" className="page-shell">
+			<EnglishOnlyNote />
 			<ScrollProgress target={article} label="Reading progress" />
 			<Breadcrumb aria-label="Breadcrumb">
 				<BreadcrumbItem href="/">Home</BreadcrumbItem>

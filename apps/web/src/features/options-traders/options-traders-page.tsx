@@ -1,8 +1,8 @@
 import { buttonVariants } from "@tradely/ui/components/button";
 import { ArrowDownIcon } from "lucide-react";
 import { useMemo } from "react";
-
 import { AppLink } from "@/components/app-link";
+import { EnglishOnlyNote } from "@/components/english-only-note";
 import { PageIntro } from "@/components/page-intro";
 import {
 	attachAuthors,
@@ -109,6 +109,7 @@ export function OptionsTradersPage() {
 
 	return (
 		<main lang="en" className="page-shell options-traders-page">
+			<EnglishOnlyNote />
 			<PageIntro
 				eyebrow="Who to read"
 				title="Options traders to follow"

@@ -26,7 +26,7 @@ function LessonVideoPlayback({
 	media,
 	initialPositionSeconds = 0,
 }: LessonVideoProps) {
-	const { t } = useI18n();
+	const { locale, t } = useI18n();
 	const { capture } = useAnalytics();
 	const saveProgress = useServerFn(saveLessonProgress);
 	const lastSavedSecond = useRef(initialPositionSeconds);
@@ -56,7 +56,9 @@ function LessonVideoPlayback({
 				preload="metadata"
 				poster={media.poster}
 				className="aspect-video w-full bg-black object-cover"
-				aria-label={`${lesson.title} video`}
+				aria-label={
+					locale === "zh" ? `${lesson.title}视频` : `${lesson.title} video`
+				}
 				aria-describedby="lesson-video-description"
 				onLoadedMetadata={(event) => {
 					if (

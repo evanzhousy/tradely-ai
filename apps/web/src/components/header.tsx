@@ -27,7 +27,7 @@ function NavigationLinks({
 	mobile?: boolean;
 	onNavigate?: () => void;
 }) {
-	const { t } = useI18n();
+	const { locale, t } = useI18n();
 	return navigation.map((item) => (
 		<AppLink
 			key={item.to}
@@ -42,6 +42,9 @@ function NavigationLinks({
 			activeProps={{ className: "text-foreground" }}
 		>
 			{t(item.key)}
+			{item.to === "/guides" && locale === "zh" ? (
+				<span className="ms-1 text-xs">（英文）</span>
+			) : null}
 		</AppLink>
 	));
 }

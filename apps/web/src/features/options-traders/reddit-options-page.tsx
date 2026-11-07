@@ -20,8 +20,8 @@ import {
 	TableRow,
 } from "@tradely/ui/components/table";
 import { useId, useMemo, useState } from "react";
-
 import { AppLink } from "@/components/app-link";
+import { EnglishOnlyNote } from "@/components/english-only-note";
 import { PageIntro } from "@/components/page-intro";
 import savedPosts from "./data/reddit-posts.json";
 import {
@@ -263,6 +263,7 @@ export function RedditOptionsPage() {
 
 	return (
 		<main lang="en" className="page-shell options-traders-page">
+			<EnglishOnlyNote />
 			<PageIntro
 				eyebrow="Who to read"
 				title="Options posts on Reddit"

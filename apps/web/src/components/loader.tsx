@@ -1,6 +1,9 @@
 import { Skeleton } from "@tradely/ui/components/skeleton";
 
+import { useI18nOrDefault } from "@/i18n/provider";
+
 export default function Loader() {
+	const { t } = useI18nOrDefault();
 	return (
 		<div className="page-shell" role="status" aria-live="polite">
 			<div aria-hidden="true" className="flex flex-col gap-6 py-8">
@@ -13,7 +16,7 @@ export default function Loader() {
 					<Skeleton className="h-52" />
 				</div>
 			</div>
-			<span className="sr-only">Loading</span>
+			<span className="sr-only">{t("common.loading")}</span>
 		</div>
 	);
 }

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BrandOwl } from "@/components/brand-owl";
+import { EnglishOnlyNote } from "@/components/english-only-note";
 import { GuideCards } from "@/components/guide-cards";
 import { PageIntro } from "@/components/page-intro";
 import { pageHead } from "@/seo/pages";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/guides/")({
 function GuidesPage() {
 	return (
 		<main lang="en" className="page-shell">
+			<EnglishOnlyNote />
 			<PageIntro
 				eyebrow="The options field guide"
 				aside={<BrandOwl pose="reading" size={160} className="mx-auto" />}
