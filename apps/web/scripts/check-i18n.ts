@@ -313,7 +313,7 @@ for (const file of files) {
 					(attribute) =>
 						ts.isJsxAttribute(attribute) && attribute.name.getText() === "lang",
 				);
-				if (lang && lang.getText().includes('"en"')) return true;
+				if (lang?.getText().includes('"en"')) return true;
 			}
 		}
 		return false;
