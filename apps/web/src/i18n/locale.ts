@@ -29,6 +29,10 @@ export const resolveLocale = createIsomorphicFn()
 /** Keeps the server's copy of the reader's choice. */
 export function rememberLocale(locale: Locale) {
 	const secure = window.location.protocol === "https:" ? "; Secure" : "";
-	// biome-ignore lint/suspicious/noDocumentCookie: The server needs a same-site mirror of the reader's language choice.
-	document.cookie = `${LOCALE_COOKIE}=${locale}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+	try {
+		// biome-ignore lint/suspicious/noDocumentCookie: The server needs a same-site mirror of the reader's language choice.
+		document.cookie = `${LOCALE_COOKIE}=${locale}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+	} catch {
+		// Cookies can be blocked too; the language then lasts as long as the page.
+	}
 }

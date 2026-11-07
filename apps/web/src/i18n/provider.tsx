@@ -39,7 +39,12 @@ export function LocaleProvider({
 	useEffect(() => {
 		// A choice saved before the cookie existed is only in this browser: apply it and
 		// give the server a copy. Without one, the server's Accept-Language pick stands.
-		const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+		let saved: string | null = null;
+		try {
+			saved = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+		} catch {
+			// Storage can be blocked; the server's pick stands.
+		}
 		if (!saved) return;
 		const chosen = normalizeLocale(saved);
 		setLocaleState(chosen);
@@ -52,7 +57,11 @@ export function LocaleProvider({
 
 	const setLocale = useCallback((nextLocale: Locale) => {
 		setLocaleState(nextLocale);
-		window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
+		try {
+			window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
+		} catch {
+			// Storage can be blocked; the choice still holds on this page, and in the cookie if allowed.
+		}
 		rememberLocale(nextLocale);
 		document.documentElement.lang = nextLocale;
 	}, []);
