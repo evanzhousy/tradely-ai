@@ -55,7 +55,7 @@ import {
  *   condor    18.2–30.5  hero: put spread and call spread; together; it sells a range
  *   package   30.5–41.3  four labels; directional tally; cash groups; one package
  *   claim     41.3–45.6  linked prints, one trade
- *   next      45.6–47.2  Next: checking one trade
+ *   next      45.6–47.2  core path complete
  */
 
 const END = 47.2;
@@ -181,8 +181,8 @@ const copy = {
 	],
 	claimBig: ["Linked prints, one trade.", "关联成交，一笔交易。"],
 	claimSub: ["Same second does not prove linkage.", "同秒成交不证明关联。"],
-	nextBig: ["Next: checking one trade", "下一课：核查一笔成交"],
-	nextSub: ["facts, inferences and unknowns", "事实、推断与未知"],
+	nextBig: ["Core path complete", "核心路径已完成"],
+	nextSub: ["pick a branch to go deeper", "选一个分支继续深入"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

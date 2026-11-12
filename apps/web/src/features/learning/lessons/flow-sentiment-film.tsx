@@ -55,7 +55,7 @@ import {
  *   hedge     24.7–34.3  scaffold; stock/hedge comparison and stock loss; premium and floor
  *   close     34.3–39.5  short-put reference, close arithmetic, then a flat position
  *   claim     39.5–45.0  a label describes a print, not a person
- *   next      45.0–47.5  Next: strategies
+ *   next      45.0–47.5  Next: checking one trade
  */
 
 const END = 47.5;
@@ -183,8 +183,8 @@ const copy = {
 		"It can't see what the account holds.",
 		"它看不到账户里已有的持仓。",
 	],
-	nextBig: ["Next: strategies", "下一课：策略"],
-	nextSub: ["one leg, many positions", "一条腿，多种可能的持仓"],
+	nextBig: ["Next: checking one trade", "下一课：核查一笔成交"],
+	nextSub: ["facts, inferences and unknowns", "事实、推断与未知"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

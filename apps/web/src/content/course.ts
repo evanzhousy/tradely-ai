@@ -299,7 +299,7 @@ const legacyCourse = {
 export const tradingFlowCourse = {
 	...legacyCourse,
 	description:
-		"Understand contracts, quotes, executions, flow, Greeks, market structure and portfolios. Build and audit research from evidence.",
+		"Learn how option contracts work, what moves their price, and how to choose and place a trade. Then go deeper: volatility and market structure, portfolios, reading flow, and research from evidence.",
 	modules: courseModules,
 	lessons: syllabus.map((entry, order): Lesson => {
 		const prior = legacyCourse.lessons.find((item) => item.id === entry.id);
@@ -361,10 +361,12 @@ export function getBranchChoices(
 		.filter((lesson) => lessonPath(lesson) === "core")
 		.at(-1);
 	if (lastCore?.slug !== slug) return null;
-	return (["models", "portfolio", "workflows"] as const).flatMap((path) => {
-		const lesson = lessons.find((item) => lessonPath(item) === path);
-		return lesson ? [{ path, lesson }] : [];
-	});
+	return (["models", "portfolio", "flow", "workflows"] as const).flatMap(
+		(path) => {
+			const lesson = lessons.find((item) => lessonPath(item) === path);
+			return lesson ? [{ path, lesson }] : [];
+		},
+	);
 }
 
 export function getPreviousLesson(slug: string): Lesson | undefined {

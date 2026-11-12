@@ -48,7 +48,7 @@ import {
  *                        the NBBO, $2.05 × $2.15
  *   gone      35.1–40.55 C's last 4 print: volume 13; best ask $2.20
  *   claim     40.55–45   a quote is an offer; only a trade prints
- *   next      45–47.5    Next: counterparties
+ *   next      45–47.5    Next: strategies
  */
 
 const END = 47.5;
@@ -224,8 +224,8 @@ const copy = {
 		"报价是挂单；只有成交才留记录。",
 	],
 	claimSub: ["Buy at ask; sell at bid.", "卖价买入，买价卖出。"],
-	nextBig: ["Next: counterparties", "下一课：交易对手"],
-	nextSub: ["who buys and who sells in one trade", "一笔成交里谁买谁卖"],
+	nextBig: ["Next: strategies", "下一课：策略"],
+	nextSub: ["one leg, many positions", "一条腿，多种可能的持仓"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

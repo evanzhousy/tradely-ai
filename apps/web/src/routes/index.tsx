@@ -34,11 +34,11 @@ export const Route = createFileRoute("/")({
 	component: HomeComponent,
 });
 
-// The core path, then the three deeper branches, in lesson order.
+// The core path, then the branches, in lesson order: flow and research, then models and portfolios.
 const stages = [
 	{
 		start: "stocks-and-prices",
-		end: "symbol-drawer",
+		end: "multi-leg-structures",
 		title: "home.pathOne",
 		description: "home.pathOneDescription",
 		icon: BookOpenIcon,
@@ -46,7 +46,7 @@ const stages = [
 		imageWidth: 1402,
 	},
 	{
-		start: "audited-boundary",
+		start: "execution-counterparties",
 		end: "audit-market-recap",
 		title: "home.pathTwo",
 		description: "home.pathTwoDescription",

@@ -20,26 +20,32 @@ export const courseModules = [
 		zh: "什么在推动期权价格",
 	},
 	{
-		id: "execution",
+		id: "trading",
 		path: "core",
+		en: "Choose and place a trade",
+		zh: "选择并下一笔交易",
+	},
+	{
+		id: "execution",
+		path: "flow",
 		en: "Quotes, executions and sentiment",
 		zh: "报价、成交与情绪分类",
 	},
 	{
 		id: "flow",
-		path: "core",
+		path: "flow",
 		en: "Flow, positions and data quality",
 		zh: "成交流、持仓与数据质量",
 	},
 	{
 		id: "research",
-		path: "core",
+		path: "flow",
 		en: "Comparison and investigation",
 		zh: "比较与研究",
 	},
 	{
 		id: "production",
-		path: "core",
+		path: "flow",
 		en: "Produce and audit research",
 		zh: "撰写与审核研究",
 	},
@@ -69,10 +75,13 @@ export const courseModules = [
 	},
 ] as const;
 /**
- * The core path runs in lesson order; the three deeper branches follow it in any order.
- * "pricing" (delta, gamma, theta and vega, implied volatility) sits right after contracts:
- * a newcomer needs what moves a price before reading other people's trades. It has no
- * checkpoint of its own yet; the exposure checkpoint still tests delta and volatility.
+ * The core path is for someone learning to trade options: contracts, what moves a price,
+ * then choosing and placing a trade. It runs in lesson order and every core lesson sits
+ * before every branch lesson, because "next lesson" follows this file's order and the
+ * branch chooser appears on the last core entry. Reading other people's trades (executions,
+ * flow, research) is a branch, like models, portfolios and workflows; branches follow the
+ * core in any order. "pricing" has no checkpoint of its own yet; the exposure checkpoint
+ * still tests delta and volatility.
  */
 export const coursePaths = {
 	start: {
@@ -80,6 +89,10 @@ export const coursePaths = {
 		zh: "从这里开始：无需任何基础",
 	},
 	core: { en: "Core path", zh: "核心路径" },
+	flow: {
+		en: "Deeper branch: reading option flow and research",
+		zh: "深入分支：解读期权成交流与研究",
+	},
 	models: {
 		en: "Deeper branch: Greeks, volatility and structure",
 		zh: "深入分支：希腊值、波动率与结构",
@@ -337,13 +350,33 @@ export const syllabus: readonly Entry[] = [
 	),
 	lesson(
 		"quotes-orders-trades",
-		"execution",
+		"trading",
 		"Quotes, orders and trades: three different events",
 		"报价、订单与成交：三种不同事件",
 		"Read bid, ask, sizes, spread and last without mistaking a quote for a fill.",
 		"读懂买价、卖价、数量、价差与最新价，不把报价当成成交。",
 		["C04"],
 		["premium-payoff"],
+	),
+	lesson(
+		"option-strategies",
+		"trading",
+		"Strategies: one leg, many possible positions",
+		"策略：一条腿，多种可能的持仓",
+		"See how spreads, covered calls, collars and rolls change what one option leg means.",
+		"看价差、备兑、领口与移仓如何改变单条期权腿的含义。",
+		["C09"],
+		["quotes-orders-trades"],
+	),
+	lesson(
+		"multi-leg-structures",
+		"trading",
+		"Straddles, condors and multi-leg prints",
+		"跨式、铁鹰与多腿成交",
+		"Find a straddle's break-evens and an iron condor's worst case, and read four prints in one second as one package instead of four opinions.",
+		"找出跨式的盈亏平衡点和铁鹰的最坏情况，并把同一秒内的四笔成交作为一个整体来读，而不是四个观点。",
+		["C40"],
+		["option-strategies"],
 	),
 	lesson(
 		"execution-counterparties",
@@ -374,26 +407,6 @@ export const syllabus: readonly Entry[] = [
 		"了解何时可以把一笔成交称为看多或看空，以及该标签无法说明什么。",
 		["C07"],
 		["execution-side"],
-	),
-	lesson(
-		"option-strategies",
-		"execution",
-		"Strategies: one leg, many possible positions",
-		"策略：一条腿，多种可能的持仓",
-		"See how spreads, covered calls, collars and rolls change what one option leg means.",
-		"看价差、备兑、领口与移仓如何改变单条期权腿的含义。",
-		["C09"],
-		["flow-sentiment"],
-	),
-	lesson(
-		"multi-leg-structures",
-		"execution",
-		"Straddles, condors and multi-leg prints",
-		"跨式、铁鹰与多腿成交",
-		"Find a straddle's break-evens and an iron condor's worst case, and read four prints in one second as one package instead of four opinions.",
-		"找出跨式的盈亏平衡点和铁鹰的最坏情况，并把同一秒内的四笔成交作为一个整体来读，而不是四个观点。",
-		["C40"],
-		["option-strategies"],
 	),
 	lesson(
 		"validate-option-print",
