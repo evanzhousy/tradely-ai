@@ -57,7 +57,7 @@ import {
 
 /*
  * Size and exit, as a film. It opens on a $10,000 account and asks what one wrong call can
- * cost. One common rule, shown as an example, allows $200 a trade: a bought call can lose
+ * cost. An example rule allows $200 a trade: a bought call can lose
  * its whole premium, so the $420 contract doesn't fit and the $180 one does, once. Then the
  * same ten losses in a row at two sizes, each marker riding its own line while its meter
  * reads from it: at 20% of what is left each time, $1,074 remains; the hero is the account
@@ -146,8 +146,11 @@ function layout(width: number) {
 		meterNum,
 		meterCol: narrow ? 130 : 230,
 		/** Chart type on a phone: a step up from the 11 px the wide frame's labels use. */
-		axisSize: narrow ? 12 : undefined,
-		labelSize: narrow ? T.body : undefined,
+		axisSize: narrow ? T.body : undefined,
+		labelSize: narrow ? T.body + 1 : undefined,
+		/** The recovery notes: the wide frame's 11 px label size, the phone's body size. */
+		noteSize: narrow ? T.body : 11,
+		lossTicks: narrow ? [0, 5, 10] : [0, 2, 4, 6, 8, 10],
 		/** Where the four labels sit in the band between the two lines, in dollars. */
 		labelY: narrow
 			? { smallTag: 7_100, smallBack: 6_200, bigTag: 5_000, bigBack: 4_150 }
@@ -171,19 +174,16 @@ const copy = {
 		`示例规则：每笔最多亏 ${whole(BUDGET)}。`,
 	],
 	ruleTag: ["an example rule, not advice", "示例规则，不是建议"],
-	worstHead: [
-		"A bought call can lose its whole premium.",
-		"买入的看涨，最多亏掉全部权利金。",
-	],
 	fitHead: [
 		`${whole(DEAR_WORST)} a contract doesn't fit. ${whole(CHEAP_WORST)} does.`,
 		`${whole(DEAR_WORST)} 一张放不下，${whole(CHEAP_WORST)} 的可以。`,
 	],
 	perShare: ["a share", "每股"],
 	perContract: ["a contract (×100)", "每张（×100）"],
+	worstCap: ["worst: whole premium", "最坏：全部权利金"],
 	streakHead: [
-		`Ten losses, each ${LARGE_PERCENT}% of what is left.`,
-		`连亏十次，每次亏掉余额的 ${LARGE_PERCENT}%。`,
+		`Ten losses of ${LARGE_PERCENT}% each.`,
+		`连亏十次，每次亏 ${LARGE_PERCENT}%。`,
 	],
 	sameHead: [
 		`The same ten losses at ${SMALL_PERCENT}% each.`,
@@ -251,10 +251,8 @@ const sideTagShort = (percentLost: number): Copy => [
 	`${percentLost}% of what is left`,
 	`每次亏掉余额的 ${percentLost}%`,
 ];
-const sideBack = (gain: number): Copy => [
-	`recovery needs +${percent(gain, 0)}`,
-	`回本需涨 +${percent(gain, 0)}`,
-];
+const backTo: Copy = [`back to ${whole(ACCOUNT)}`, `回到 ${whole(ACCOUNT)}`];
+const backGain = (gain: number) => `+${percent(gain, 0)}`;
 const sizeText = (contracts: number): Copy => [
 	contractCount(contracts),
 	`${contracts} 张`,
@@ -331,7 +329,7 @@ function Scene({
 								</text>
 							</g>
 						))}
-						{[0, 2, 4, 6, 8, 10].map((v) => (
+						{L.lossTicks.map((v) => (
 							<text
 								key={v}
 								x={L.sx(v)}
@@ -377,16 +375,33 @@ function Scene({
 						>
 							{t((narrow ? sideTagShort : sideTag)(LARGE_PERCENT))}
 						</text>
-						<text
-							data-f="big-back"
-							x={L.right - 4}
-							y={L.sy(L.labelY.bigBack)}
-							textAnchor="end"
-							className="wt-small wt-halo"
-							style={{ fontSize: L.labelSize }}
-						>
-							{t(sideBack(LARGE_RECOVER))}
-						</text>
+						{/* The target as a label, the gain it takes as its figure. */}
+						<g data-f="big-back">
+							<text
+								data-f="big-back-label"
+								x={
+									L.right -
+									4 -
+									L.noteSize * 0.6 * (backGain(LARGE_RECOVER).length + 1)
+								}
+								y={L.sy(L.labelY.bigBack)}
+								textAnchor="end"
+								className="wt-small wt-halo"
+								style={{ fontSize: L.noteSize }}
+							>
+								{t(backTo)}
+							</text>
+							<text
+								data-f="big-back-gain"
+								x={L.right - 4}
+								y={L.sy(L.labelY.bigBack)}
+								textAnchor="end"
+								className="wt-small wt-halo"
+								style={{ fill: "var(--tone-ink)", fontSize: L.noteSize }}
+							>
+								{backGain(LARGE_RECOVER)}
+							</text>
+						</g>
 						<text
 							data-f="small-tag"
 							x={L.right - 4}
@@ -397,16 +412,33 @@ function Scene({
 						>
 							{t((narrow ? sideTagShort : sideTag)(SMALL_PERCENT))}
 						</text>
-						<text
-							data-f="small-back"
-							x={L.right - 4}
-							y={L.sy(L.labelY.smallBack)}
-							textAnchor="end"
-							className="wt-small wt-halo"
-							style={{ fontSize: L.labelSize }}
-						>
-							{t(sideBack(SMALL_RECOVER))}
-						</text>
+						{/* The target as a label, the gain it takes as its figure. */}
+						<g data-f="small-back">
+							<text
+								data-f="small-back-label"
+								x={
+									L.right -
+									4 -
+									L.noteSize * 0.6 * (backGain(SMALL_RECOVER).length + 1)
+								}
+								y={L.sy(L.labelY.smallBack)}
+								textAnchor="end"
+								className="wt-small wt-halo"
+								style={{ fontSize: L.noteSize }}
+							>
+								{t(backTo)}
+							</text>
+							<text
+								data-f="small-back-gain"
+								x={L.right - 4}
+								y={L.sy(L.labelY.smallBack)}
+								textAnchor="end"
+								className="wt-small wt-halo"
+								style={{ fill: "var(--tone-ink)", fontSize: L.noteSize }}
+							>
+								{backGain(SMALL_RECOVER)}
+							</text>
+						</g>
 						<circle
 							data-f="big-marker"
 							cx={L.sx(0)}
@@ -506,7 +538,6 @@ function Scene({
 				/>
 			</g>
 			{headline("a-head", copy.ruleHead)}
-			{headline("b-head", copy.worstHead)}
 			{headline("c-head", copy.fitHead)}
 			{headline("s-head", copy.streakHead)}
 			{headline("u-head", copy.sameHead)}
@@ -588,13 +619,22 @@ function Scene({
 							{t(copy.perContract).toUpperCase()}
 						</Word>
 						<Word
+							name={`k-${name}-cap`}
+							x={W * L.pair[i]}
+							y={L.colY + T.body * 1.7 + T.num * 1.15 + T.small * 3.4}
+							size={T.small}
+							className="wt-film-tag"
+						>
+							{t(copy.worstCap).toUpperCase()}
+						</Word>
+						<Word
 							name={`k-${name}-size`}
 							x={W * L.pair[i]}
 							y={
 								L.colY +
 								T.body * 1.7 +
 								T.num * 1.15 +
-								T.small * 1.8 +
+								T.small * 3.4 +
 								T.head * 1.7
 							}
 							size={T.head}
@@ -774,7 +814,6 @@ function build(context: FilmContext) {
 	};
 	const heads = [
 		"a-head",
-		"b-head",
 		"c-head",
 		"s-head",
 		"u-head",
@@ -782,11 +821,12 @@ function build(context: FilmContext) {
 		"e-head",
 		"g-head",
 	].map((name) => one(name));
-	const [aHead, bHead, cHead, sHead, uHead, u2Head, eHead, gHead] = heads;
+	const [aHead, cHead, sHead, uHead, u2Head, eHead, gHead] = heads;
 	const cols = candidates.flatMap(({ name }) => [
 		one(`k-${name}-card`),
 		one(`k-${name}-worst`),
 		one(`k-${name}-unit`),
+		one(`k-${name}-cap`),
 		one(`k-${name}-size`),
 	]);
 	const plan = [
@@ -839,18 +879,20 @@ function build(context: FilmContext) {
 	// "Not advice" is up with the headline, ahead of the rule's figures.
 	show(one("rule-tag"), 9.0);
 	word(one("rule-eq"), 9.2);
-	// Each contract by name and price, still a full second before its worst case lands.
-	d.swap(aHead, bHead, 12.7);
+	// Each contract by name and price, still a full second before its worst case lands
+	// with what that worst case is: the whole premium.
 	candidates.forEach(({ name }) => {
-		show(one(`k-${name}-card`), 13.3);
-		word(one(`k-${name}-worst`), 14.6);
-		show(one(`k-${name}-unit`), 14.6);
+		show(one(`k-${name}-card`), 10.9);
+		word(one(`k-${name}-worst`), 12.2);
+		show(one(`k-${name}-unit`), 12.2);
+		show(one(`k-${name}-cap`), 12.4);
 	});
-	// The division's results: none of the dearer call, one of the cheaper.
-	d.swap(bHead, cHead, 16.75);
-	show(one("k-dear-size"), 17.5);
-	show(one("k-cheap-size"), 18.0);
-	tl.to(g("k-dear"), { opacity: 0.35, duration: 0.35 }, 19.5);
+	// The division's results, after a second of rest: none of the dearer call, one of the
+	// cheaper.
+	d.swap(aHead, cHead, 14.3);
+	show(one("k-dear-size"), 15.3);
+	show(one("k-cheap-size"), 15.8);
+	tl.to(g("k-dear"), { opacity: 0.35, duration: 0.35 }, 17.6);
 
 	// ——— streak: the same ten losses at two sizes; the smaller one keeps $8,171 ———
 	tl.addLabel("streak", 20.85);
