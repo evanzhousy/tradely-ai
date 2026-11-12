@@ -125,6 +125,7 @@ export type LearningStepView = {
 		| "unusual-activity"
 		| "option-strategies"
 		| "multi-leg-structures"
+		| "size-and-exit"
 		| "strike-and-expiry"
 		| "symbol-drawer"
 		| "delta"

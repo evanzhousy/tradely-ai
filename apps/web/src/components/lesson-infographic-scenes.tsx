@@ -841,6 +841,36 @@ function StrikeChoice({ l }: Props) {
 		</>
 	);
 }
+function SizeStreak({ l }: Props) {
+	return (
+		<>
+			<Axes
+				xLabel={l("Losses in a row", "连续亏损")}
+				yLabel={l("Account", "账户")}
+			/>
+			<Trace d="M46 60L71 80L97 96L122 109L148 119L173 127L198 134L224 139L249 143L275 147L300 149" />
+			<Trace d="M46 60L300 78" delay={600} />
+			<Label x={262} y={68} small>
+				{l("2% each", "每次 2%")}
+			</Label>
+			<Label x={262} y={132} small>
+				{l("20% each", "每次 20%")}
+			</Label>
+			<Label x={300} y={96} strong>
+				$8,171
+			</Label>
+			<Label x={300} y={163} strong>
+				$1,074
+			</Label>
+			<Caption>
+				{l(
+					"The same ten losses leave very different accounts",
+					"同样的十连亏，剩下的账户天差地别",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Strategies({ l }: Props) {
 	return (
 		<>
@@ -2602,6 +2632,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"With ALFA up from 100 to 106 dollars at expiry, the 95, 100 and 105 calls end at plus 370, plus 180 and minus 115 dollars a contract.",
 			"ALFA 从 100 美元涨到到期时的 106 美元，95、100、105 看涨每张的结果分别是盈利 370、盈利 180 和亏损 115 美元。",
+		],
+	},
+	"size-and-exit": {
+		Diagram: SizeStreak,
+		description: [
+			"Ten losses in a row leave 8,171 dollars of 10,000 at 2 percent each and 1,074 dollars at 20 percent each.",
+			"连续亏十次，每次亏 2% 时 10000 美元还剩 8171 美元，每次亏 20% 时只剩 1074 美元。",
 		],
 	},
 	"multi-leg-structures": {

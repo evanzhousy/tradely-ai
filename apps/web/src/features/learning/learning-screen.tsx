@@ -105,6 +105,7 @@ import { RecipeInputsWalkthrough } from "./lessons/recipe-inputs";
 import { RecipeMapWalkthrough } from "./lessons/recipe-map";
 import { ResearchChecklistWalkthrough } from "./lessons/research-checklist";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
+import { SizeAndExitWalkthrough } from "./lessons/size-and-exit";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
 import { StrikeAndExpiryWalkthrough } from "./lessons/strike-and-expiry";
 import { StructuralLevelsWalkthrough } from "./lessons/structural-levels";
@@ -166,6 +167,7 @@ const conceptLabs = {
 	"unusual-activity": UnusualActivityWalkthrough,
 	"option-strategies": OptionStrategiesWalkthrough,
 	"multi-leg-structures": MultiLegStructuresWalkthrough,
+	"size-and-exit": SizeAndExitWalkthrough,
 	"strike-and-expiry": StrikeAndExpiryWalkthrough,
 	"stocks-and-prices": StocksAndPricesWalkthrough,
 	"what-options-are": WhatOptionsAreWalkthrough,

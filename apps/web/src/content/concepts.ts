@@ -53,6 +53,7 @@ export const conceptIds = [
 	"C41",
 	"C42",
 	"C43",
+	"C44",
 ] as const;
 export type ConceptId = (typeof conceptIds)[number];
 
@@ -1563,6 +1564,52 @@ export const concepts: Record<ConceptId, Concept> = {
 				"soft",
 				"Open interest is read as a sign of how actively a contract is held.",
 				"未平仓量被用来判断一张合约的持有是否活跃。",
+			),
+		],
+	},
+	C44: {
+		id: "C44",
+		name: t("Position size and exit plan", "仓位大小与出场计划"),
+		description: t(
+			"How much a trade can lose is decided before entry. The worst case of a bought option is its premium times 100; size is the loss accepted on one trade divided by that worst case, rounded down, and zero is a valid result. Losses compound, and a loss needs a larger gain to undo it, so size decides what a losing streak leaves. An exit plan has a profit point, a loss point and a time stop, written before entry; a planned exit can be jumped past by an overnight gap, so sizing counts the whole premium. A bought option with nine months or less to expiry is paid for in full; writing options ties up collateral or margin, and writing uncovered options needs a higher approval level; brokers set the levels themselves.",
+			"一笔交易最多亏多少，在入场前就已决定。买入期权的最坏情况是权利金乘以 100；仓位大小等于一笔交易上接受的亏损除以这个最坏情况，向下取整，结果为零也是有效答案。亏损会复利累积，而且要靠更大的涨幅才能补回，所以仓位大小决定连续亏损后还剩多少。出场计划包括止盈点、止损点和时间止损，都在入场前写好；计划中的出场可能被隔夜跳空越过，所以计算仓位时按全部权利金来算。距到期不超过九个月的买入期权必须全额支付；卖出期权会占用担保品或保证金，卖出未备兑期权还需要更高的权限级别，而级别由各券商自行设定。",
+		),
+		evidence: [
+			t(
+				"Work out how many contracts fit a stated loss limit from a premium, rounding down, including when the answer is zero",
+				"由权利金算出在给定亏损上限内能买几张（向下取整），包括结果为零的情况",
+			),
+			t(
+				"Work out what a run of equal percentage losses leaves, and the gain needed to get back",
+				"算出连续按同一比例亏损后还剩多少，以及回到原点所需的涨幅",
+			),
+			t(
+				"Name the three parts of an exit plan and explain why sizing counts the whole premium, not the planned loss",
+				"说出出场计划的三个部分，并解释为何计算仓位时按全部权利金而不是计划亏损",
+			),
+			t(
+				"Say what an account must hold to buy an option, and how writing one differs",
+				"说出买入期权时账户里必须有什么，以及卖出期权有何不同",
+			),
+		],
+		prerequisites: [
+			needs(
+				"C03",
+				"hard",
+				"The worst case of a bought option is its premium times the multiplier.",
+				"买入期权的最坏情况是权利金乘以合约乘数。",
+			),
+			needs(
+				"C04",
+				"hard",
+				"An exit is an order, and an order fills at the price that is there.",
+				"出场是一张订单，而订单按当时有的价格成交。",
+			),
+			needs(
+				"C13",
+				"soft",
+				"The time stop rests on time decay speeding up near expiry.",
+				"时间止损的依据是临近到期时时间损耗加速。",
 			),
 		],
 	},

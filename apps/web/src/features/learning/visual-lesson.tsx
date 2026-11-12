@@ -286,6 +286,11 @@ const lessons = {
 			default: m.StrikeAndExpiryWalkthrough,
 		})),
 	),
+	"size-and-exit": lessonModule(() =>
+		import("./lessons/size-and-exit").then((m) => ({
+			default: m.SizeAndExitWalkthrough,
+		})),
+	),
 	"multi-leg-structures": lessonModule(() =>
 		import("./lessons/multi-leg-structures").then((m) => ({
 			default: m.MultiLegStructuresWalkthrough,

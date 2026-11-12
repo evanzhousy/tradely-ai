@@ -156,6 +156,11 @@ export const buildsOn: Record<
 		en: "Those lessons read delta as about how much an option moves for a $1 move in the stock, and theta as what one day takes from its price; this one uses both to compare contracts: a lower strike has the larger delta, and a nearer expiry loses more to time each day.",
 		zh: "那两课把 Delta 读作股价变动 $1 时期权大约变动多少，把 Theta 读作一天从期权价格里拿走多少；本课用这两者来比较合约：行权价越低 Delta 越大，到期越近每天的时间损耗越多。",
 	},
+	"size-and-exit": {
+		lessons: ["options-risks", "theta-vega-rho"],
+		en: "Those lessons showed that a bought option can lose its whole premium, and that time value drains fastest in the last weeks. This one turns the first into a number of contracts and the second into a date to leave by, both written before the trade.",
+		zh: "那两课说明了买入的期权可能亏掉全部权利金，以及时间价值在最后几周流失得最快。本课把前者换算成张数，把后者变成最晚离场的日期，两者都在交易之前写好。",
+	},
 };
 export type ModuleId = (typeof courseModules)[number]["id"];
 
@@ -401,6 +406,16 @@ export const syllabus: readonly Entry[] = [
 		"找出跨式的盈亏平衡点和铁鹰的最坏情况，并把同一秒内的四笔成交作为一个整体来读，而不是四个观点。",
 		["C40"],
 		["option-strategies"],
+	),
+	lesson(
+		"size-and-exit",
+		"trading",
+		"Size and exit: decide both before you buy",
+		"仓位与出场：买入前就定好",
+		"Turn the loss you accept on one trade into a number of contracts, see what size does to a losing streak, and write a profit point, a loss point and a time stop before you enter.",
+		"把一笔交易上你能接受的亏损换算成张数，看仓位大小如何影响连续亏损，并在入场前写好止盈点、止损点和时间止损。",
+		["C44"],
+		["multi-leg-structures"],
 	),
 	lesson(
 		"execution-counterparties",

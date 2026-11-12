@@ -507,4 +507,37 @@ export const glossary: readonly GlossaryEntry[] = [
 		],
 		"C13",
 	),
+	entry(
+		"position-size",
+		["Position size", "仓位大小"],
+		["position sizes", "position size"],
+		["仓位大小"],
+		[
+			"How many contracts or shares a trade holds, and so how much money it puts at risk.",
+			"一笔交易持有多少张合约或多少股，也就是有多少钱处在风险中。",
+		],
+		"C44",
+	),
+	entry(
+		"exit-plan",
+		["Exit plan", "出场计划"],
+		["exit plans", "exit plan"],
+		["出场计划"],
+		[
+			"The conditions for closing a trade, written down before it is opened.",
+			"在开仓之前就写下来的平仓条件。",
+		],
+		"C44",
+	),
+	entry(
+		"time-stop",
+		["Time stop", "时间止损"],
+		["time stops", "time stop"],
+		["时间止损"],
+		[
+			"A date by which a trade is closed if its price points have not been reached.",
+			"如果价格条件一直没有达到，最晚平仓离场的日期。",
+		],
+		"C44",
+	),
 ];
