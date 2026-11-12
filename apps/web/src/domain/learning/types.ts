@@ -125,6 +125,7 @@ export type LearningStepView = {
 		| "unusual-activity"
 		| "option-strategies"
 		| "multi-leg-structures"
+		| "first-spread-trade"
 		| "size-and-exit"
 		| "strike-and-expiry"
 		| "symbol-drawer"

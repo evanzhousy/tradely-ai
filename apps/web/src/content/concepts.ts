@@ -54,6 +54,7 @@ export const conceptIds = [
 	"C42",
 	"C43",
 	"C44",
+	"C45",
 ] as const;
 export type ConceptId = (typeof conceptIds)[number];
 
@@ -1610,6 +1611,64 @@ export const concepts: Record<ConceptId, Concept> = {
 				"soft",
 				"The time stop rests on time decay speeding up near expiry.",
 				"时间止损的依据是临近到期时时间损耗加速。",
+			),
+		],
+	},
+	C45: {
+		id: "C45",
+		name: t("Planning a defined-risk trade", "规划一笔风险有限的交易"),
+		description: t(
+			"A call debit spread buys one call and sells another at a higher strike in the same expiry, as one order with a net limit price. Before the order is sent, four things are known numbers: the worst case (the net debit times 100), the best case (the distance between the strikes minus the debit), the break-even (the lower strike plus the debit) and the written exits. Size is the worst case times the number of spreads, set against the account. At expiry the spread ends below both strikes (the debit is lost), above both (the maximum is kept) or between them, where the bought call is exercised into 100 shares unless the spread is closed first; the sold call can also be assigned before expiry. Brokers usually ask for a higher approval level for spreads than for buying one option.",
+			"看涨借方价差是在同一到期日买入一张看涨、卖出一张行权价更高的看涨，用一张带净限价的订单下达。下单之前，有四样东西已经是确定的数字：最坏情况（净支出乘以 100）、最好情况（两个行权价之差减去净支出）、盈亏平衡点（较低的行权价加上净支出），以及写下的出场点。数量是最坏情况乘以组数，再对照账户的大小。到期时，价差可能低于两个行权价（亏掉净支出）、高于两个行权价（赚到最大盈利），或者落在两者之间：这时买入的看涨会被行权、换成 100 股，除非先平掉价差；卖出的看涨在到期前也可能被指派。券商对价差要求的权限级别，通常高于买入单张期权。",
+		),
+		evidence: [
+			t(
+				"Work out a call debit spread's net debit, worst case, best case and break-even from its two quotes",
+				"由两个报价算出看涨借方价差的净支出、最坏情况、最好情况和盈亏平衡点",
+			),
+			t(
+				"Say why the spread is sent as one order at a net price, and what sending the legs separately risks",
+				"说出价差为何用一张订单按净价下达，以及两条腿分开下单有什么风险",
+			),
+			t(
+				"Size the position from its worst case against an account and a stated loss limit, including when none fits",
+				"根据最坏情况，对照账户和给定的亏损上限决定数量，包括一组都做不了的情况",
+			),
+			t(
+				"Say what is in the account after expiry when the stock closes below, between or above the strikes, and what closing first changes",
+				"说出股价收在两个行权价之下、之间或之上时，到期后账户里有什么，以及先平仓会改变什么",
+			),
+		],
+		prerequisites: [
+			needs(
+				"C44",
+				"hard",
+				"The size and the written exits are applied to this trade's worst case.",
+				"数量和写下的出场点，都要用在这笔交易的最坏情况上。",
+			),
+			needs(
+				"C09",
+				"hard",
+				"A spread is two legs held as one position.",
+				"价差是作为一个持仓持有的两条腿。",
+			),
+			needs(
+				"C03",
+				"hard",
+				"Worst case, best case and break-even are payoff arithmetic on the net premium.",
+				"最坏情况、最好情况和盈亏平衡点，是对净权利金做的到期盈亏算术。",
+			),
+			needs(
+				"C04",
+				"hard",
+				"The spread is placed with a limit order at a net price.",
+				"价差是用一张净价限价单下达的。",
+			),
+			needs(
+				"C02",
+				"soft",
+				"What happens at expiry depends on each call's strike and on exercise and assignment.",
+				"到期时发生什么，取决于每张看涨的行权价以及行权与指派。",
 			),
 		],
 	},

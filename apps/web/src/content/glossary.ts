@@ -540,4 +540,48 @@ export const glossary: readonly GlossaryEntry[] = [
 		],
 		"C44",
 	),
+	entry(
+		"net-debit",
+		["Net debit", "净支出"],
+		["net debits", "net debit"],
+		["净支出"],
+		[
+			"What a trade with several legs costs in all: the premium paid for the bought legs minus the premium received for the sold ones.",
+			"多腿交易合计要付的金额：买入各腿付出的权利金，减去卖出各腿收到的权利金。",
+		],
+		"C45",
+	),
+	entry(
+		"debit-spread",
+		["Debit spread", "借方价差"],
+		["debit spreads", "debit spread"],
+		["借方价差"],
+		[
+			"Two options of the same type and expiry, one bought and one sold at another strike, that cost money to open.",
+			"同一类型、同一到期日的两张期权，一买一卖、行权价不同，开仓时要付钱。",
+		],
+		"C45",
+	),
+	entry(
+		"ex-dividend-date",
+		["Ex-dividend date", "除息日"],
+		["ex-dividend dates", "ex-dividend date"],
+		["除息日"],
+		[
+			"The first day a stock trades without its next dividend: a buyer from that day on does not receive it.",
+			"股票不再附带下一次股息的第一个交易日：从这天起买入的人拿不到这次股息。",
+		],
+		"C45",
+	),
+	entry(
+		"approval-level",
+		["Approval level", "权限级别"],
+		["approval levels", "approval level"],
+		["权限级别"],
+		[
+			"The kinds of option trades a broker allows in an account. Brokers set and name the levels themselves.",
+			"券商允许一个账户做哪些类型的期权交易。级别由各券商自行划分和命名。",
+		],
+		"C45",
+	),
 ];

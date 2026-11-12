@@ -161,6 +161,11 @@ export const buildsOn: Record<
 		en: "Those lessons showed that a bought option can lose its whole premium, and that time value drains fastest in the last weeks. This one turns the first into a number of contracts and the second into a date to leave by, both written before the trade.",
 		zh: "那两课说明了买入的期权可能亏掉全部权利金，以及时间价值在最后几周流失得最快。本课把前者换算成张数，把后者变成最晚离场的日期，两者都在交易之前写好。",
 	},
+	"first-spread-trade": {
+		lessons: ["premium-payoff", "expiration-settlement"],
+		en: "Those lessons found one option's break-even from its premium, and showed that an option in the money at expiry is exercised into shares unless it is closed first. This one does both for two calls held together: a break-even from the net price paid, and an expiry where one call can be exercised while the other expires.",
+		zh: "那两课由权利金找出一张期权的盈亏平衡点，并说明到期时处于实值的期权若不先平仓就会被行权、换成股票。本课把这两件事用在一起持有的两张看涨上：由净支出得到盈亏平衡点，以及到期时可能一张被行权、另一张作废。",
+	},
 };
 export type ModuleId = (typeof courseModules)[number]["id"];
 
@@ -416,6 +421,16 @@ export const syllabus: readonly Entry[] = [
 		"把一笔交易上你能接受的亏损换算成张数，看仓位大小如何影响连续亏损，并在入场前写好止盈点、止损点和时间止损。",
 		["C44"],
 		["multi-leg-structures"],
+	),
+	lesson(
+		"first-spread-trade",
+		"trading",
+		"A first trade, start to finish: one call spread",
+		"第一笔交易，从头到尾：一组看涨价差",
+		"Follow one call spread from a view to its end: its worst case, best case and break-even, the order that places it, its size and exits, and three ways it can finish at expiry.",
+		"跟着一组看涨价差从看法走到结局：它的最坏情况、最好情况和盈亏平衡点，下达它的订单，它的数量与出场点，以及到期时的三种结局。",
+		["C45"],
+		["size-and-exit"],
 	),
 	lesson(
 		"execution-counterparties",

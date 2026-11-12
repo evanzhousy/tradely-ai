@@ -871,6 +871,44 @@ function SizeStreak({ l }: Props) {
 		</>
 	);
 }
+function FirstSpread({ l }: Props) {
+	return (
+		<>
+			<Axes xLabel={l("Spot", "现价")} yLabel={l("Profit", "盈亏")} />
+			<path d="M45 110h266M150 48v118M240 48v118" className="diagram-dashed" />
+			<Trace d="M46 146H150L240 62H316" />
+			<Label x={150} y={181}>
+				100
+			</Label>
+			<Label x={240} y={181}>
+				105
+			</Label>
+			<Label x={60} y={140}>
+				−$215
+			</Label>
+			<Label x={272} y={55}>
+				+$285
+			</Label>
+			<circle
+				cx={188.7}
+				cy={110}
+				r="5"
+				className="diagram-accent"
+				data-diagram-motion="pulse"
+				data-diagram-delay="1100"
+			/>
+			<Label x={198} y={126} small>
+				$102.15
+			</Label>
+			<Caption>
+				{l(
+					"A 100/105 call spread: loss and gain both known",
+					"100/105 看涨价差：亏损和盈利都事先知道",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Strategies({ l }: Props) {
 	return (
 		<>
@@ -2639,6 +2677,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"Ten losses in a row leave 8,171 dollars of 10,000 at 2 percent each and 1,074 dollars at 20 percent each.",
 			"连续亏十次，每次亏 2% 时 10000 美元还剩 8171 美元，每次亏 20% 时只剩 1074 美元。",
+		],
+	},
+	"first-spread-trade": {
+		Diagram: FirstSpread,
+		description: [
+			"A 100/105 call spread bought for 2.15 dollars per share loses at most 215 dollars, gains at most 285 dollars and breaks even at 102.15 dollars.",
+			"以每股 2.15 美元买入 100/105 看涨价差，最多亏 215 美元，最多赚 285 美元，盈亏平衡价为 102.15 美元。",
 		],
 	},
 	"multi-leg-structures": {

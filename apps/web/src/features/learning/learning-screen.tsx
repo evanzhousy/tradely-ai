@@ -80,6 +80,7 @@ import { ExecutionCounterpartiesWalkthrough } from "./lessons/execution-counterp
 import { ExecutionSideWalkthrough } from "./lessons/execution-side";
 import { ExpectedMoveWalkthrough } from "./lessons/expected-move";
 import { ExpirationSettlementWalkthrough } from "./lessons/expiration-settlement";
+import { FirstSpreadTradeWalkthrough } from "./lessons/first-spread-trade";
 import { FlowSentimentWalkthrough } from "./lessons/flow-sentiment";
 import { GammaWalkthrough } from "./lessons/gamma";
 import { GammaExposureWalkthrough } from "./lessons/gamma-exposure";
@@ -167,6 +168,7 @@ const conceptLabs = {
 	"unusual-activity": UnusualActivityWalkthrough,
 	"option-strategies": OptionStrategiesWalkthrough,
 	"multi-leg-structures": MultiLegStructuresWalkthrough,
+	"first-spread-trade": FirstSpreadTradeWalkthrough,
 	"size-and-exit": SizeAndExitWalkthrough,
 	"strike-and-expiry": StrikeAndExpiryWalkthrough,
 	"stocks-and-prices": StocksAndPricesWalkthrough,

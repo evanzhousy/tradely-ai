@@ -291,6 +291,11 @@ const lessons = {
 			default: m.SizeAndExitWalkthrough,
 		})),
 	),
+	"first-spread-trade": lessonModule(() =>
+		import("./lessons/first-spread-trade").then((m) => ({
+			default: m.FirstSpreadTradeWalkthrough,
+		})),
+	),
 	"multi-leg-structures": lessonModule(() =>
 		import("./lessons/multi-leg-structures").then((m) => ({
 			default: m.MultiLegStructuresWalkthrough,
