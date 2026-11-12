@@ -2775,6 +2775,18 @@ export const courseCardScenes: Record<string, Scene> = {
 			"在未见过的一天回答四道题：卖出股票、买入看涨、义务方、限价单。",
 		],
 	},
+	"checkpoint-trading": {
+		Diagram: checkpoint([
+			["Two strikes", "两个行权价"],
+			["A covered call", "备兑看涨"],
+			["How many fit", "能买几组"],
+			["Between the strikes", "两个行权价之间"],
+		]),
+		description: [
+			"A checkpoint on choosing and placing a trade: two strikes for one view, a covered call's best case, sizing a spread from its worst case, and a spread left open between its strikes at expiry.",
+			"“选择并下一笔交易”检查点：同一看法的两个行权价、备兑看涨的最好情况、按最坏情况决定价差数量，以及到期时停在两个行权价之间而没有平仓的价差。",
+		],
+	},
 	"checkpoint-pricing": {
 		Diagram: checkpoint([
 			["Delta in dollars", "Delta 换成金额"],

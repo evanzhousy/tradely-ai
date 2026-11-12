@@ -432,6 +432,14 @@ export const syllabus: readonly Entry[] = [
 		["C45"],
 		["size-and-exit"],
 	),
+	checkpoint(
+		"trading",
+		"Checkpoint: choose and place a trade, on a new day",
+		"检查点：在新的一天里运用“选择并下一笔交易”",
+		"Compare two strikes for one view, find a covered call's best case, size a call spread from its worst case, and follow that spread to an expiry between its strikes, all on a day you haven't seen.",
+		"在你没见过的一天里：为同一个看法比较两个行权价、算出备兑看涨的最好情况、按最坏情况决定一组看涨价差的数量，并跟着这组价差走到停在两个行权价之间的到期日。",
+		["first-spread-trade"],
+	),
 	lesson(
 		"execution-counterparties",
 		"execution",
