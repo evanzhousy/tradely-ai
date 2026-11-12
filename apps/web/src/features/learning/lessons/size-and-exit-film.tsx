@@ -51,7 +51,6 @@ import {
 	SMALL_RECOVER,
 	STREAK,
 	streakPath,
-	TIME_STOP_DAYS_LEFT,
 	TIME_STOP_LABEL,
 	WORST_RESULT,
 } from "./size-and-exit-model";
@@ -146,11 +145,18 @@ function layout(width: number) {
 		meterY,
 		meterNum,
 		meterCol: narrow ? 130 : 230,
+		/** Chart type on a phone: a step up from the 11 px the wide frame's labels use. */
+		axisSize: narrow ? 12 : undefined,
+		labelSize: narrow ? T.body : undefined,
+		/** Where the four labels sit in the band between the two lines, in dollars. */
+		labelY: narrow
+			? { smallTag: 7_100, smallBack: 6_200, bigTag: 5_000, bigBack: 4_150 }
+			: { smallTag: 6_900, smallBack: 6_000, bigTag: 4_300, bigBack: 3_400 },
 		/** The rule, then the two contracts under it. */
 		ruleY: H * 0.3,
 		colY: H * 0.5,
 		/** The plan's rows. */
-		rowSize: narrow ? T.body : T.head * 0.8,
+		rowSize: narrow ? 15 : T.head * 0.8,
 		planY: H * 0.3,
 	};
 }
@@ -161,8 +167,8 @@ const copy = {
 	qTag: ["your account", "你的账户"],
 	qLine: ["One wrong call. How much can it cost?", "看错一次，最多会亏多少？"],
 	ruleHead: [
-		`One common rule: risk ${whole(BUDGET)} a trade.`,
-		`一种常见规则：每笔最多亏 ${whole(BUDGET)}。`,
+		`An example rule: risk ${whole(BUDGET)} a trade.`,
+		`示例规则：每笔最多亏 ${whole(BUDGET)}。`,
 	],
 	ruleTag: ["an example rule, not advice", "示例规则，不是建议"],
 	worstHead: [
@@ -176,8 +182,8 @@ const copy = {
 	perShare: ["a share", "每股"],
 	perContract: ["a contract (×100)", "每张（×100）"],
 	streakHead: [
-		`Ten losses in a row at ${LARGE_PERCENT}% each.`,
-		`连亏十次，每次亏 ${LARGE_PERCENT}%。`,
+		`Ten losses, each ${LARGE_PERCENT}% of what is left.`,
+		`连亏十次，每次亏掉余额的 ${LARGE_PERCENT}%。`,
 	],
 	sameHead: [
 		`The same ten losses at ${SMALL_PERCENT}% each.`,
@@ -195,41 +201,23 @@ const copy = {
 		`1 ${contractLabel(cheapCall, false)[0]} · paid ${usd(PLAN_PAID)}`,
 		`1 张 ${contractLabel(cheapCall, false)[1]} · 已付 ${usd(PLAN_PAID)}`,
 	],
-	profit: [
-		`Profit point · sell at ${usd(PROFIT_POINT)} · `,
-		`止盈点 · ${usd(PROFIT_POINT)} 卖出 · `,
+	profit: ["Profit point", "止盈点"],
+	loss: ["Loss point", "止损点"],
+	time: ["Time stop", "时间止损"],
+	timeBy: [`by ${TIME_STOP_LABEL[0]}`, `${TIME_STOP_LABEL[1]} 前`],
+	gap: ["Overnight gap", "隔夜跳空"],
+	gapOpens: [`opens ${usd(GAP_OPEN)}`, `开在 ${usd(GAP_OPEN)}`],
+	planned: [
+		`planned ${signedUsd(PLANNED_LOSS, 0)}`,
+		`计划 ${signedUsd(PLANNED_LOSS, 0)}`,
 	],
-	profitShort: [
-		`Profit point · ${usd(PROFIT_POINT)} · `,
-		`止盈点 · ${usd(PROFIT_POINT)} · `,
-	],
-	loss: [
-		`Loss point · sell at ${usd(LOSS_POINT)} · `,
-		`止损点 · ${usd(LOSS_POINT)} 卖出 · `,
-	],
-	lossShort: [
-		`Loss point · ${usd(LOSS_POINT)} · `,
-		`止损点 · ${usd(LOSS_POINT)} · `,
-	],
-	time: [
-		`Time stop · out by ${TIME_STOP_LABEL[0]} · ${TIME_STOP_DAYS_LEFT} days left`,
-		`时间止损 · ${TIME_STOP_LABEL[1]} 前离场 · 还剩 ${TIME_STOP_DAYS_LEFT} 天`,
-	],
-	timeShort: [
-		`Time stop · out by ${TIME_STOP_LABEL[0]}`,
-		`时间止损 · ${TIME_STOP_LABEL[1]} 前离场`,
-	],
-	gap: [
-		`Overnight gap · opens at ${usd(GAP_OPEN)} · `,
-		`隔夜跳空 · 开在 ${usd(GAP_OPEN)} · `,
-	],
-	gapShort: [
-		`Gap · opens ${usd(GAP_OPEN)} · `,
-		`跳空 · 开在 ${usd(GAP_OPEN)} · `,
+	actual: [
+		`actual ${signedUsd(GAP_RESULT, 0)}`,
+		`实际 ${signedUsd(GAP_RESULT, 0)}`,
 	],
 	worst: [
-		`So the size counts the full ${whole(-WORST_RESULT)}.`,
-		`所以算仓位时，按全部的 ${whole(-WORST_RESULT)}。`,
+		`So size on the whole ${whole(-WORST_RESULT)}.`,
+		`所以按全部的 ${whole(-WORST_RESULT)} 算仓位。`,
 	],
 	claimBig: [
 		"Size decides what a wrong call costs.",
@@ -258,9 +246,14 @@ const sideMeter = (percentLost: number): Copy => [
 	`at ${percentLost}% each`,
 	`每次 ${percentLost}%`,
 ];
+/** On a phone the name drops its verb, which the headline carries, to fit larger type. */
+const sideTagShort = (percentLost: number): Copy => [
+	`${percentLost}% of what is left`,
+	`每次亏掉余额的 ${percentLost}%`,
+];
 const sideBack = (gain: number): Copy => [
-	`+${percent(gain, 0)} to recover`,
-	`回本需 +${percent(gain, 0)}`,
+	`recovery needs +${percent(gain, 0)}`,
+	`回本需涨 +${percent(gain, 0)}`,
 ];
 const sizeText = (contracts: number): Copy => [
 	contractCount(contracts),
@@ -313,7 +306,12 @@ function Scene({
 								</clipPath>
 							))}
 						</defs>
-						<text x={L.left} y={L.top - 12} className="wt-small">
+						<text
+							x={L.left}
+							y={L.top - 12}
+							className="wt-small"
+							style={{ fontSize: L.axisSize }}
+						>
 							{t(copy.axis)}
 						</text>
 						{[0, 5_000, 10_000].map((v) => (
@@ -327,6 +325,7 @@ function Scene({
 									y={L.sy(v) + 4}
 									textAnchor="end"
 									className="wt-small"
+									style={{ fontSize: L.axisSize }}
 								>
 									{v === 0 ? "$0" : narrow ? `$${v / 1000}k` : whole(v * 100)}
 								</text>
@@ -339,6 +338,7 @@ function Scene({
 								y={L.bottom + 16}
 								textAnchor={v === STREAK ? "end" : "middle"}
 								className="wt-small"
+								style={{ fontSize: L.axisSize }}
 							>
 								{v}
 							</text>
@@ -348,6 +348,7 @@ function Scene({
 							y={L.bottom + T.small * 3.2}
 							textAnchor="middle"
 							className="wt-small"
+							style={{ fontSize: L.axisSize }}
 						>
 							{t(copy.lossAxis)}
 						</text>
@@ -369,37 +370,40 @@ function Scene({
 						<text
 							data-f="big-tag"
 							x={L.right - 4}
-							y={L.sy(4_300)}
+							y={L.sy(L.labelY.bigTag)}
 							textAnchor="end"
 							className="wt-small wt-halo"
-							style={{ fill: "var(--tone-ink)" }}
+							style={{ fill: "var(--tone-ink)", fontSize: L.labelSize }}
 						>
-							{t(sideTag(LARGE_PERCENT))}
+							{t((narrow ? sideTagShort : sideTag)(LARGE_PERCENT))}
 						</text>
 						<text
 							data-f="big-back"
 							x={L.right - 4}
-							y={L.sy(3_400)}
+							y={L.sy(L.labelY.bigBack)}
 							textAnchor="end"
 							className="wt-small wt-halo"
+							style={{ fontSize: L.labelSize }}
 						>
 							{t(sideBack(LARGE_RECOVER))}
 						</text>
 						<text
 							data-f="small-tag"
 							x={L.right - 4}
-							y={L.sy(6_900)}
+							y={L.sy(L.labelY.smallTag)}
 							textAnchor="end"
 							className="wt-small wt-halo wt-accent"
+							style={{ fontSize: L.labelSize }}
 						>
-							{t(sideTag(SMALL_PERCENT))}
+							{t((narrow ? sideTagShort : sideTag)(SMALL_PERCENT))}
 						</text>
 						<text
 							data-f="small-back"
 							x={L.right - 4}
-							y={L.sy(6_000)}
+							y={L.sy(L.labelY.smallBack)}
 							textAnchor="end"
 							className="wt-small wt-halo"
+							style={{ fontSize: L.labelSize }}
 						>
 							{t(sideBack(SMALL_RECOVER))}
 						</text>
@@ -613,49 +617,70 @@ function Scene({
 				>
 					{t(copy.planTag).toUpperCase()}
 				</Word>
-				<Word
-					name="x-profit"
-					x={W / 2}
-					y={row(0)}
-					size={L.rowSize}
-					className="wt-film-num"
-				>
-					{t(narrow ? copy.profitShort : copy.profit)}
-					<tspan className={toneClass.up}>{signedUsd(PROFIT_RESULT, 0)}</tspan>
-				</Word>
-				<Word
-					name="x-loss"
-					x={W / 2}
-					y={row(1)}
-					size={L.rowSize}
-					className="wt-film-num"
-				>
-					{t(narrow ? copy.lossShort : copy.loss)}
-					<tspan className={toneClass.down}>{signedUsd(PLANNED_LOSS, 0)}</tspan>
-				</Word>
-				<Word
-					name="x-time"
-					x={W / 2}
-					y={row(2)}
-					size={L.rowSize}
-					className="wt-film-num"
-				>
-					{t(narrow ? copy.timeShort : copy.time)}
-				</Word>
-				<Word
-					name="x-gap"
-					x={W / 2}
-					y={row(3.4)}
-					size={L.rowSize}
-					className="wt-film-num"
-				>
-					{t(narrow ? copy.gapShort : copy.gap)}
-					<tspan className={toneClass.down}>{signedUsd(GAP_RESULT, 0)}</tspan>
-				</Word>
+				{/* Each row is a name and its value either side of the centre line. */}
+				{(
+					[
+						["x-profit", 0, copy.profit, usd(PROFIT_POINT), PROFIT_RESULT],
+						["x-loss", 1, copy.loss, usd(LOSS_POINT), PLANNED_LOSS],
+						["x-time", 2, copy.time, t(copy.timeBy), null],
+						["x-gap", 3.3, copy.gap, t(copy.gapOpens), null],
+					] as const
+				).map(([name, at, label, value, result]) => (
+					<g key={name} data-f={name}>
+						<Word
+							name={`${name}-label`}
+							x={W / 2 - L.rowSize * 0.6}
+							y={row(at)}
+							size={L.rowSize}
+							anchor="end"
+							className="wt-film-num wt-film-dim"
+						>
+							{t(label)}
+						</Word>
+						<Word
+							name={`${name}-value`}
+							x={W / 2 + L.rowSize * 0.6}
+							y={row(at)}
+							size={L.rowSize}
+							anchor="start"
+							className="wt-film-num"
+						>
+							{value}
+							{result === null ? null : (
+								<tspan
+									className={result > 0 ? toneClass.up : toneClass.down}
+								>{` ${signedUsd(result, 0)}`}</tspan>
+							)}
+						</Word>
+					</g>
+				))}
+				{/* The plan's loss stepped back beside the loss the gap made. */}
+				<g data-f="x-pair">
+					<Word
+						name="x-planned"
+						x={W / 2 - L.rowSize * 0.6}
+						y={row(4.4)}
+						size={L.rowSize * 1.15}
+						anchor="end"
+						className="wt-film-num wt-film-dim"
+					>
+						{t(copy.planned)}
+					</Word>
+					<Word
+						name="x-actual"
+						x={W / 2 + L.rowSize * 0.6}
+						y={row(4.4)}
+						size={L.rowSize * 1.15}
+						anchor="start"
+						className={`wt-film-num ${toneClass.down}`}
+					>
+						{t(copy.actual)}
+					</Word>
+				</g>
 				<Word
 					name="x-worst"
 					x={W / 2}
-					y={row(4.6)}
+					y={row(5.6)}
 					size={T.body}
 					className={`wt-film-type ${toneClass.focus}`}
 				>
@@ -770,6 +795,7 @@ function build(context: FilmContext) {
 		"x-loss",
 		"x-time",
 		"x-gap",
+		"x-pair",
 		"x-worst",
 	].map((name) => one(name));
 
@@ -810,8 +836,8 @@ function build(context: FilmContext) {
 	tl.addLabel("size", 8.8);
 	hide(kids("q"), 8.8);
 	show(aHead, 9.0);
-	// The rule's $200 lands with the headline that names it.
-	show(one("rule-tag"), 9.15);
+	// "Not advice" is up with the headline, ahead of the rule's figures.
+	show(one("rule-tag"), 9.0);
 	word(one("rule-eq"), 9.2);
 	// Each contract by name and price, still a full second before its worst case lands.
 	d.swap(aHead, bHead, 12.7);
@@ -849,8 +875,19 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 28.05);
 	show(u2Head, 28.05);
 	// After the hero has stood, the gain each account needs to get back.
-	show(one("small-back"), 30.2);
-	show(one("big-back"), 30.4);
+	// They fade in where they stand: rising in would pass the label under them.
+	tl.fromTo(
+		one("small-back"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.4 },
+		30.2,
+	);
+	tl.fromTo(
+		one("big-back"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.4 },
+		30.4,
+	);
 
 	// ——— exit: three exits written before entry, and the gap past one of them ———
 	tl.addLabel("exit", 31.9);
@@ -869,6 +906,7 @@ function build(context: FilmContext) {
 		36.4,
 	);
 	show(one("x-gap"), 36.3);
+	show(one("x-pair"), 36.45);
 	show(one("x-worst"), 36.55);
 
 	// ——— claim ———
