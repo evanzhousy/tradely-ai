@@ -45,9 +45,10 @@ import {
  * can say it, the 95, the 100 and the 105, and each row of the table is one of them: what
  * it costs, where it breaks even, and what one move in ALFA does to it. Both moves are
  * suppositions, said as such: a day later with ALFA at $102 all three could be sold for a
- * gain, the largest delta for the most dollars. Then the hero: ALFA closes at $106 on Oct 18, the results land row by row, +$370, +$180
- * and, last and largest, −$115: glowing brackets lock on the call that loses although ALFA
- * rose $6, and a second lock names why, its $107.15 break-even. Last, the same strike with
+ * gain, the largest delta for the most dollars. Then the hero: ALFA closes at $106 on
+ * Oct 18, the results land row by row, +$370, +$180 and, last and largest, −$115: glowing
+ * brackets lock on the call that loses although ALFA rose $6 and stay to the cut, while the
+ * other rows' break-evens step back and leave its $107.15. Last, the same strike with
  * three expiries: later costs more and loses less a day. The liquidity check (the spread and
  * open interest) is the playground's third scene, not a shot here.
  *
@@ -56,7 +57,7 @@ import {
  *   strikes   9.2–17     the table: in, at and out of the money; cost; break-even
  *   soon      17–23      Sep 17, ALFA $102: +$105, +$85, +$55 at the model bid
  *   result    23–31.5    hero: Oct 18, ALFA $106: +$370, +$180, −$115 locked at 27.35;
- *                        then a plain lock on its $107.15 break-even
+ *                        then the other break-evens dim, leaving its $107.15
  *   expiry    31.5–38.3  Sep 20, Oct 18, Nov 15: cost, break-even, time decay a day
  *   claim     38.3–43.1  strike sets how far, expiry sets how long
  *   next      43.1–45.6  Next: strategies
@@ -75,9 +76,13 @@ function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room, type: T } = frame;
 	/** The table's columns: names start at the margin, results end at the right. */
-	const costX = margin + room * (narrow ? 0.4 : 0.44);
-	const evenX = margin + room * (narrow ? 0.6 : 0.64);
-	const endX = margin + room - (narrow ? 6 : 8);
+	const costX = margin + room * (narrow ? 0.42 : 0.44);
+	const evenX = margin + room * (narrow ? 0.61 : 0.64);
+	// A phone's results end 4 px past the type's room, 24 px inside the frame: the notes
+	// under them are set larger there and need the width.
+	const endX = margin + room + (narrow ? 4 : -8);
+	/** The grey notes under a row: the frame's small type, a size up on a phone. */
+	const note = narrow ? T.body : T.small;
 	const headerY = H * (narrow ? 0.29 : 0.28);
 	const rows = (narrow ? [0.42, 0.59, 0.76] : [0.43, 0.6, 0.77]).map(
 		(f) => H * f,
@@ -98,7 +103,9 @@ function layout(width: number) {
 		rowY: (i: number) => rows[i],
 		/** A row's name sits a little above its figures on a phone, over two lines of tag. */
 		nameY: (i: number) => rows[i] - (stack ? 10 : 2),
-		subY: (i: number) => rows[i] + T.small * 1.6,
+		note,
+		// A phone's note sits a little lower, clear of the moneyness word beside it.
+		subY: (i: number) => rows[i] + note * (narrow ? 1.75 : 1.6),
 		name: T.body * (narrow ? 1.15 : 1.25),
 		figure,
 		/** A result is the row's answer; the hero's is the loudest figure of the film. */
@@ -154,8 +161,8 @@ const copy = {
 		`假设到期时 ALFA 收在 ${stock(EXPIRY_SPOT)}。`,
 	],
 	heroHead2: [
-		`The ${hero.strike} call still loses ${dollars(-resultAtExpiry(hero, EXPIRY_SPOT))}.`,
-		`${hero.strike} 看涨仍然亏 ${dollars(-resultAtExpiry(hero, EXPIRY_SPOT))}。`,
+		`The ${hero.strike} call still loses.`,
+		`${hero.strike} 看涨仍然亏损。`,
 	],
 	expiryHead: [
 		"Later expiry: costs more, decays slower.",
@@ -191,8 +198,8 @@ const copy = {
 		"行权价定涨多远，到期日定等多久。",
 	],
 	claimSub: [
-		"Neither is best. Each is a different bet.",
-		"没有哪张最好，每张都是不同的押注。",
+		"The move ALFA needs; the time it has.",
+		"ALFA 要涨多少；它有多少时间。",
 	],
 	nextBig: ["Next: strategies", "下一课：策略"],
 	nextSub: ["one leg, many positions", "一条腿，多种可能的持仓"],
@@ -263,9 +270,9 @@ function Scene({
 				<text
 					key={line}
 					x={margin}
-					y={L.nameY(i) + T.small * (stack ? 1.4 + k * 1.25 : 1.6)}
+					y={L.nameY(i) + L.note * (stack ? 1.4 + k * 1.25 : 1.6)}
 					className="wt-film-type wt-film-dim"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: L.note }}
 				>
 					{line}
 				</text>
@@ -298,7 +305,7 @@ function Scene({
 				y={L.subY(i)}
 				textAnchor={anchor}
 				className="wt-film-type wt-film-dim"
-				style={{ fontSize: T.small }}
+				style={{ fontSize: L.note }}
 			>
 				{under}
 			</text>
@@ -396,7 +403,12 @@ function Scene({
 							`s-name-${id}`,
 							i,
 							`${contract.strike} ${t(copy.callWord)}`,
-							stack ? [t(tagTerm(id)), t(tagMeans(id))] : [t(tag(id))],
+							// A phone has room for the term alone at a readable size.
+							narrow
+								? [t(tagTerm(id))]
+								: stack
+									? [t(tagTerm(id)), t(tagMeans(id))]
+									: [t(tag(id))],
 						)}
 						{cell(
 							`s-cost-${id}`,
@@ -422,7 +434,9 @@ function Scene({
 							L.endX,
 							"end",
 							signedDollars(soon),
-							`${t(copy.model)} · ${t(copy.delta)} ${fixed2(deltaOf(contract))}`,
+							narrow
+								? t(copy.model)
+								: `${t(copy.model)} · ${t(copy.delta)} ${fixed2(deltaOf(contract))}`,
 							L.result,
 							tone(soon),
 						)}
@@ -443,14 +457,13 @@ function Scene({
 							y={L.subY(i)}
 							textAnchor="end"
 							className="wt-film-num wt-film-dim"
-							style={{ fontSize: T.small }}
+							style={{ fontSize: L.note }}
 						>
 							{`${dollars(worthAtExpiry(contract, EXPIRY_SPOT))} − ${dollars(paid(contract))}`}
 						</text>
 					</g>
 				);
 			})}
-			<Brackets name="lock-even" />
 			<Brackets name="lock-hero" glow />
 
 			{/* One strike, three expiries. */}
@@ -543,7 +556,6 @@ function build(context: FilmContext) {
 		list.map((id) => one(`${prefix}-${id}`));
 	const expiryIds: readonly ExpiryRowId[] = expiryCalls.map((row) => row.id);
 	const lockHero = one<SVGGraphicsElement>("lock-hero");
-	const lockEven = one<SVGGraphicsElement>("lock-even");
 	const strikeTable = [
 		one("sh-calls"),
 		one("sh-cost"),
@@ -578,7 +590,6 @@ function build(context: FilmContext) {
 		...soon,
 		...results,
 		lockHero,
-		lockEven,
 		...expiryTable,
 		...kids("claim"),
 	]);
@@ -645,9 +656,13 @@ function build(context: FilmContext) {
 		{ opacity: 0.4, duration: 0.4 },
 		27.35,
 	);
-	hide(lockHero, 29.7, 0.3);
-	// The after-beat: why. ALFA's close is under this call's break-even.
-	d.lock(lockEven, 30.05, { around: one(`s-even-${HERO}`), pad: 5 });
+	// The after-beat, once the hero has stood 1.9 s: the other rows' break-evens step back,
+	// leaving the one ALFA's close fell short of. The glow stays on the result to the cut.
+	tl.to(
+		ids.filter((id) => id !== HERO).map((id) => one(`s-even-${id}`)),
+		{ opacity: 0.4, duration: 0.4 },
+		29.7,
+	);
 
 	// ——— expiry: the same strike, three dates ———
 	tl.addLabel("expiry", 31.5);
@@ -657,7 +672,7 @@ function build(context: FilmContext) {
 			one("answer-head"),
 			...strikeTable,
 			...results,
-			lockEven,
+			lockHero,
 		],
 		31.5,
 	);
