@@ -154,6 +154,33 @@ const sections: readonly Section[] = [
 		],
 	},
 	{
+		lessonId: "strike-and-expiry",
+		topic: ["choosing and sizing a trade", "选择合约与决定仓位"],
+		questions: [
+			{
+				id: "spread-worst",
+				prompt: [
+					"You buy a 100 call for $4.00 and sell a 105 call for $1.50, same expiry, one of each. What is the most this position can lose?",
+					"你以 $4.00 买入一张 100 看涨，并以 $1.50 卖出一张同一到期日的 105 看涨。这笔持仓最多亏多少？",
+				],
+				choices: [
+					["debit", "$250: the net amount paid", "$250：付出的净额"],
+					[
+						"width",
+						"$500: the gap between the strikes",
+						"$500：两个行权价之差",
+					],
+					[
+						"open",
+						"No fixed limit, because a call was sold",
+						"没有固定上限，因为卖出了一张看涨",
+					],
+				],
+				answer: "debit",
+			},
+		],
+	},
+	{
 		lessonId: "session-flow-vs-structure",
 		topic: ["volume and open interest", "成交量与未平仓量"],
 		questions: [
