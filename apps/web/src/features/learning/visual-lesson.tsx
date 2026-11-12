@@ -281,6 +281,11 @@ const lessons = {
 			default: m.OptionStrategiesWalkthrough,
 		})),
 	),
+	"strike-and-expiry": lessonModule(() =>
+		import("./lessons/strike-and-expiry").then((m) => ({
+			default: m.StrikeAndExpiryWalkthrough,
+		})),
+	),
 	"multi-leg-structures": lessonModule(() =>
 		import("./lessons/multi-leg-structures").then((m) => ({
 			default: m.MultiLegStructuresWalkthrough,

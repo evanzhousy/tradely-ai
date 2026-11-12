@@ -27,6 +27,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	"unusual-activity": "reference",
 	"option-strategies": "model",
 	"multi-leg-structures": "model",
+	"strike-and-expiry": "model",
 	"symbol-drawer": "reference",
 	delta: "model",
 	gamma: "model",

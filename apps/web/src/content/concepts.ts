@@ -52,6 +52,7 @@ export const conceptIds = [
 	"C40",
 	"C41",
 	"C42",
+	"C43",
 ] as const;
 export type ConceptId = (typeof conceptIds)[number];
 
@@ -1515,6 +1516,54 @@ export const concepts: Record<ConceptId, Concept> = {
 				"它的成交量永远到不了未平仓量。",
 			),
 			needs("C02", "hard", "It is defined by its expiry.", "它由到期日定义。"),
+		],
+	},
+	C43: {
+		id: "C43",
+		name: t("Choosing strike and expiry", "选择行权价与到期日"),
+		description: t(
+			"One view of a stock can be expressed with many contracts, and each is a different bet. The strike sets how far the stock must go: a lower strike costs more and breaks even sooner, a higher strike costs less, ends worthless at more prices and gains more per dollar paid on a large move. The expiry sets how long the stock has: a later expiry costs more, loses less to time decay each day and outlives a nearer one. Any contract's own quote adds a cost, the gap between bid and ask, which is usually wider where open interest is low.",
+			"对一只股票的同一个看法可以用很多张合约表达，每一张都是不同的押注。行权价决定股票要走多远：行权价越低越贵、越早达到盈亏平衡；行权价越高越便宜，在更多的价格上到期归零，大行情时每付出一美元赚得更多。到期日决定股票有多久：到期越晚越贵，每天的时间损耗越小，并且比较近的合约存续得更久。任何合约自己的报价都会再加一笔成本，即买价与卖价之差，未平仓量低时这个差通常更宽。",
+		),
+		evidence: [
+			t(
+				"Compare calls at different strikes on one move of the stock: cost per contract, break-even at expiry and result in dollars and per dollar paid",
+				"用股票的同一段变动比较不同行权价的看涨：每张成本、到期盈亏平衡点，以及按金额和按每付出一美元计的结果",
+			),
+			t(
+				"Say what a later expiry changes for the same strike: its price, its break-even, its daily time decay and what is left if the stock has not moved",
+				"说出同一行权价换成较晚到期日后改变了什么：价格、盈亏平衡点、每天的时间损耗，以及股价没动时还剩下什么",
+			),
+			t(
+				"Work out what a contract's bid-ask gap costs to trade in and out, and read it beside open interest before choosing",
+				"算出一张合约的买卖价之差在一进一出中要花多少，并在选择之前把它和未平仓量一起看",
+			),
+		],
+		prerequisites: [
+			needs(
+				"C03",
+				"hard",
+				"Comparing strikes is break-even and profit arithmetic on the premium paid.",
+				"比较行权价，就是在所付权利金上做盈亏平衡与盈亏的算术。",
+			),
+			needs(
+				"C04",
+				"hard",
+				"A contract's cost to trade is read from its bid and ask.",
+				"一张合约的交易成本要从它的买价和卖价读出。",
+			),
+			needs(
+				"C13",
+				"soft",
+				"Delta and theta say how each contract responds before expiry.",
+				"Delta 与 Theta 说明每张合约在到期前如何变动。",
+			),
+			needs(
+				"C08",
+				"soft",
+				"Open interest is read as a sign of how actively a contract is held.",
+				"未平仓量被用来判断一张合约的持有是否活跃。",
+			),
 		],
 	},
 };

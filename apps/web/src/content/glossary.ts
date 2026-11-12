@@ -496,4 +496,15 @@ export const glossary: readonly GlossaryEntry[] = [
 		],
 		"C07",
 	),
+	entry(
+		"time-decay",
+		["Time decay", "时间损耗"],
+		["time decay"],
+		["时间损耗"],
+		[
+			"The part of an option's price that wears away as days pass with nothing else changing. Theta is its size for one day.",
+			"其他条件不变时，期权价格随日子过去而逐渐消失的那一部分。Theta 是它一天的大小。",
+		],
+		"C13",
+	),
 ];

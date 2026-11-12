@@ -6,11 +6,13 @@ import { orientationUnits } from "./orientation.server";
 import { portfolioUnits } from "./portfolio.server";
 import { productionUnits } from "./production.server";
 import { researchUnits } from "./research.server";
+import { strikeAndExpiryUnit } from "./strike-and-expiry.server";
 import { structureUnits } from "./structure.server";
 import { workflowUnits } from "./workflows.server";
 export const teachingUnits = [
 	...orientationUnits,
 	...foundationUnits,
+	strikeAndExpiryUnit,
 	...flowUnits,
 	...exposureUnits,
 	...structureUnits,

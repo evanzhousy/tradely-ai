@@ -151,6 +151,11 @@ export const buildsOn: Record<
 		en: "Those lessons judged a reading against a baseline built from complete, comparable periods, and introduced implied volatility. This one places today's implied volatility within a stated window of its own history in two ways, rank and percentile, and shows why one outlier splits them.",
 		zh: "那两课用由完整、可比时段构成的基准来判断一个读数，并介绍了隐含波动率。本课用两种方式把今天的隐含波动率放进它自身历史的一段明确窗口中衡量，即 IV Rank 与 IV 百分位，并说明一个极端值为何让两者分歧。",
 	},
+	"strike-and-expiry": {
+		lessons: ["delta", "theta-vega-rho"],
+		en: "Those lessons read delta as about how much an option moves for a $1 move in the stock, and theta as what one day takes from its price; this one uses both to compare contracts: a lower strike has the larger delta, and a nearer expiry loses more to time each day.",
+		zh: "那两课把 Delta 读作股价变动 $1 时期权大约变动多少，把 Theta 读作一天从期权价格里拿走多少；本课用这两者来比较合约：行权价越低 Delta 越大，到期越近每天的时间损耗越多。",
+	},
 };
 export type ModuleId = (typeof courseModules)[number]["id"];
 
@@ -368,6 +373,16 @@ export const syllabus: readonly Entry[] = [
 		["premium-payoff"],
 	),
 	lesson(
+		"strike-and-expiry",
+		"trading",
+		"Strike and expiry: choosing a contract",
+		"行权价与到期日：选一张合约",
+		"Compare the contracts that fit one view of a stock: what each strike costs and needs, what a later expiry buys, and what a wide quote adds to any of them.",
+		"比较能表达同一个看法的几张合约：每个行权价要花多少、需要什么，较晚的到期日换来什么，以及宽报价会给任何一张合约加上多少成本。",
+		["C43"],
+		["quotes-orders-trades"],
+	),
+	lesson(
 		"option-strategies",
 		"trading",
 		"Strategies: one leg, many possible positions",
@@ -375,7 +390,7 @@ export const syllabus: readonly Entry[] = [
 		"See how spreads, covered calls, collars and rolls change what one option leg means.",
 		"看价差、备兑、领口与移仓如何改变单条期权腿的含义。",
 		["C09"],
-		["quotes-orders-trades"],
+		["strike-and-expiry"],
 	),
 	lesson(
 		"multi-leg-structures",

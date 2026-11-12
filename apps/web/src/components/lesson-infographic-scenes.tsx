@@ -796,6 +796,51 @@ function Unusual({ l }: Props) {
 		</>
 	);
 }
+function StrikeChoice({ l }: Props) {
+	return (
+		<>
+			<Label x={180} y={24} small>
+				{l("ALFA $100 → $106 at expiry", "ALFA $100 → 到期 $106")}
+			</Label>
+			<Panel x={24} y={36} w={96} h={118} />
+			<Panel x={132} y={36} w={96} h={118} />
+			<Panel x={240} y={36} w={96} h={118} accent />
+			<Label x={72} y={60}>
+				{l("95 call", "95 看涨")}
+			</Label>
+			<Label x={180} y={60}>
+				{l("100 call", "100 看涨")}
+			</Label>
+			<Label x={288} y={60}>
+				{l("105 call", "105 看涨")}
+			</Label>
+			<Label x={72} y={84} small>
+				{l("cost $730", "成本 $730")}
+			</Label>
+			<Label x={180} y={84} small>
+				{l("cost $420", "成本 $420")}
+			</Label>
+			<Label x={288} y={84} small>
+				{l("cost $215", "成本 $215")}
+			</Label>
+			<Label x={72} y={128} strong>
+				+$370
+			</Label>
+			<Label x={180} y={128} strong>
+				+$180
+			</Label>
+			<Label x={288} y={128} strong>
+				−$115
+			</Label>
+			<Caption>
+				{l(
+					"One rise in the stock, three calls, three results",
+					"同一段上涨，三张看涨，三种结果",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Strategies({ l }: Props) {
 	return (
 		<>
@@ -2550,6 +2595,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"A long call plus a short put at the same strike moves like the stock less the strike.",
 			"同一行权价的看涨多头加看跌空头，走势如同股票减行权价。",
+		],
+	},
+	"strike-and-expiry": {
+		Diagram: StrikeChoice,
+		description: [
+			"With ALFA up from 100 to 106 dollars at expiry, the 95, 100 and 105 calls end at plus 370, plus 180 and minus 115 dollars a contract.",
+			"ALFA 从 100 美元涨到到期时的 106 美元，95、100、105 看涨每张的结果分别是盈利 370、盈利 180 和亏损 115 美元。",
 		],
 	},
 	"multi-leg-structures": {
