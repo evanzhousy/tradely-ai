@@ -336,6 +336,11 @@ const lessons = {
 			default: m.ExpirationSettlementWalkthrough,
 		})),
 	),
+	"checkpoint-pricing": lessonModule(() =>
+		import("./lessons/checkpoint-pricing").then((m) => ({
+			default: m.CheckpointPricingWalkthrough,
+		})),
+	),
 	"checkpoint-contracts": lessonModule(() =>
 		import("./lessons/checkpoint-contracts").then((m) => ({
 			default: m.CheckpointContractsWalkthrough,

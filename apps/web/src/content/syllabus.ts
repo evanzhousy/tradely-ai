@@ -80,8 +80,9 @@ export const courseModules = [
  * before every branch lesson, because "next lesson" follows this file's order and the
  * branch chooser appears on the last core entry. Reading other people's trades (executions,
  * flow, research) is a branch, like models, portfolios and workflows; branches follow the
- * core in any order. "pricing" has no checkpoint of its own yet; the exposure checkpoint
- * still tests delta and volatility.
+ * core in any order. "pricing" closes with its own checkpoint (delta, gamma, theta and vega,
+ * implied against realized volatility); the exposure checkpoint still opens with a
+ * position-delta question that revisits the delta lesson.
  */
 export const coursePaths = {
 	start: {
@@ -347,6 +348,14 @@ export const syllabus: readonly Entry[] = [
 		"区分期权价格中隐含的波动率与股票实际表现出的波动率。",
 		["C14"],
 		["theta-vega-rho"],
+	),
+	checkpoint(
+		"pricing",
+		"Checkpoint: what moves an option's price, on a new day",
+		"检查点：在新的一天里运用“什么在推动期权价格”",
+		"Turn a delta into dollars per contract, let gamma change it for the next dollar, add a day of theta to a drop in implied volatility, and read implied against realized volatility, all on a day you haven't seen.",
+		"在你没见过的一天里：把 Delta 换算成每张合约的金额、让 Gamma 改变下一个 $1 的变化、把一天的 Theta 与隐含波动率的下降相加，并对照已实现波动率解读隐含波动率。",
+		["implied-realized-volatility"],
 	),
 	lesson(
 		"quotes-orders-trades",

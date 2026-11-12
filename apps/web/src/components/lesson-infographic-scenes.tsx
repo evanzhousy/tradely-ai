@@ -2641,6 +2641,18 @@ export const courseCardScenes: Record<string, Scene> = {
 			"在未见过的一天回答四道题：卖出股票、买入看涨、义务方、限价单。",
 		],
 	},
+	"checkpoint-pricing": {
+		Diagram: checkpoint([
+			["Delta in dollars", "Delta 换成金额"],
+			["The second dollar", "第二个 $1"],
+			["A day and IV", "一天与 IV"],
+			["Implied vs realized", "隐含与已实现"],
+		]),
+		description: [
+			"A checkpoint on what moves an option's price: delta in dollars, gamma, a day of theta with vega, and implied against realized volatility.",
+			"“什么在推动期权价格”检查点：Delta 换成金额、Gamma、一天的 Theta 与 Vega，以及隐含与已实现波动率。",
+		],
+	},
 	"checkpoint-contracts": {
 		Diagram: checkpoint([
 			["What it costs", "成本"],
