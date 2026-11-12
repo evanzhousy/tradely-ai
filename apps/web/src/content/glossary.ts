@@ -584,4 +584,48 @@ export const glossary: readonly GlossaryEntry[] = [
 		],
 		"C45",
 	),
+	entry(
+		"market-maker",
+		["Market maker (dealer)", "做市商"],
+		["market makers", "market maker", "dealers", "dealer"],
+		["做市商"],
+		[
+			"A firm that quotes a price to buy and a price to sell all day and aims to earn the gap between them, not the stock's direction.",
+			"全天同时报出买入价和卖出价的机构，目标是赚取两者之间的差额，而不是股价的方向。",
+		],
+		"C46",
+	),
+	entry(
+		"hedge",
+		["Hedge", "对冲"],
+		["hedging", "hedged", "hedges", "hedge"],
+		["对冲"],
+		[
+			"A second position held so that its gains and losses offset another's: here, shares held against an option position's delta.",
+			"为了让盈亏与另一笔持仓相互抵消而持有的第二笔持仓：这里指针对期权持仓的 Delta 持有的股票。",
+		],
+		"C46",
+	),
+	entry(
+		"short-gamma",
+		["Short gamma", "空 Gamma"],
+		["short gamma"],
+		["空 Gamma", "负 Gamma"],
+		[
+			"A position whose gamma is negative, as when options have been sold.",
+			"Gamma 为负的持仓，例如卖出了期权。",
+		],
+		"C46",
+	),
+	entry(
+		"long-gamma",
+		["Long gamma", "多 Gamma"],
+		["long gamma"],
+		["多 Gamma", "正 Gamma"],
+		[
+			"A position whose gamma is positive, as when options have been bought.",
+			"Gamma 为正的持仓，例如买入了期权。",
+		],
+		"C46",
+	),
 ];

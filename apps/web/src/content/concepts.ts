@@ -55,6 +55,7 @@ export const conceptIds = [
 	"C43",
 	"C44",
 	"C45",
+	"C46",
 ] as const;
 export type ConceptId = (typeof conceptIds)[number];
 
@@ -1669,6 +1670,42 @@ export const concepts: Record<ConceptId, Concept> = {
 				"soft",
 				"What happens at expiry depends on each call's strike and on exercise and assignment.",
 				"到期时发生什么，取决于每张看涨的行权价以及行权与指派。",
+			),
+		],
+	},
+	C46: {
+		id: "C46",
+		name: t("Dealer hedging", "做市商对冲"),
+		description: t(
+			"The seller of an option you buy is often a market maker, or dealer, who aims to earn the bid-ask spread and not the stock's direction, so it offsets the option position's delta with shares. Gamma changes that delta as the stock moves: a dealer who is short options (short gamma) buys rises and sells falls, and one who is long options (long gamma) does the opposite. Open interest shows that contracts exist, not which side dealers hold, so any dealer-positioning figure is a model built on an assumed side, and it describes a hedge, not a forecast.",
+			"你买入的期权，卖方往往是做市商（dealer）；它想赚的是买卖价差，而不是股价的方向，所以会用股票抵消期权持仓的 Delta。股价变动时 Gamma 会改变这个 Delta：做空期权的做市商（空 Gamma）涨时买入、跌时卖出，做多期权的做市商（多 Gamma）则相反。未平仓量只说明合约存在，不说明做市商在哪一边，所以任何“做市商持仓”数字都是建立在假设方向上的模型；它描述的是对冲，而不是预测。",
+		),
+		evidence: [
+			t(
+				"Size a dealer's share hedge from delta, contract count and the multiplier, with the right sign",
+				"由 Delta、张数和乘数算出做市商的股票对冲，并确定正确的买卖方向",
+			),
+			t(
+				"Say whether a dealer who is short or long options buys or sells shares after a rise or a fall, and by how much",
+				"说出做空或做多期权的做市商在上涨或下跌之后是买入还是卖出股票，以及数量",
+			),
+			t(
+				"Tell a dealer position that is stated from one a model assumes from open interest",
+				"区分明确给出的做市商持仓与模型由未平仓量假设出来的持仓",
+			),
+		],
+		prerequisites: [
+			needs(
+				"C13",
+				"hard",
+				"The hedge is sized by delta and moved by gamma.",
+				"对冲的大小由 Delta 决定，并随 Gamma 变动。",
+			),
+			needs(
+				"C08",
+				"soft",
+				"Open interest is what positioning models start from.",
+				"持仓模型从未平仓量出发。",
 			),
 		],
 	},

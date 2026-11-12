@@ -909,6 +909,39 @@ function FirstSpread({ l }: Props) {
 		</>
 	);
 }
+function DealerHedge({ l }: Props) {
+	return (
+		<>
+			<Panel x={24} y={36} w={136} h={66} />
+			<Label x={92} y={60} small>
+				{l("Dealer sold 5 calls", "做市商卖出 5 张看涨")}
+			</Label>
+			<Label x={92} y={85}>
+				{l("like −260 shares", "相当于 −260 股")}
+			</Label>
+			<Flow x={166} y={69} dx={28} />
+			<Panel x={200} y={36} w={136} h={66} accent />
+			<Label x={268} y={60} small>
+				{l("Buys shares", "买入股票")}
+			</Label>
+			<Label x={268} y={85} strong>
+				+260
+			</Label>
+			<Label x={180} y={132} small>
+				{l("ALFA +$2 · delta 0.52 → 0.60", "ALFA +$2 · Delta 0.52 → 0.60")}
+			</Label>
+			<Label x={180} y={156}>
+				{l("buys 40 more", "再买入 40 股")}
+			</Label>
+			<Caption>
+				{l(
+					"A dealer hedges, and the hedge trades the stock",
+					"做市商要对冲，对冲就得买卖股票",
+				)}
+			</Caption>
+		</>
+	);
+}
 function Strategies({ l }: Props) {
 	return (
 		<>
@@ -2684,6 +2717,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"A 100/105 call spread bought for 2.15 dollars per share loses at most 215 dollars, gains at most 285 dollars and breaks even at 102.15 dollars.",
 			"以每股 2.15 美元买入 100/105 看涨价差，最多亏 215 美元，最多赚 285 美元，盈亏平衡价为 102.15 美元。",
+		],
+	},
+	"dealers-and-hedging": {
+		Diagram: DealerHedge,
+		description: [
+			"A dealer who sold 5 calls buys 260 shares as a hedge, then buys 40 more when ALFA rises 2 dollars and delta goes from 0.52 to 0.60.",
+			"卖出 5 张看涨的做市商买入 260 股作为对冲；ALFA 上涨 2 美元、Delta 从 0.52 升到 0.60 时，再买入 40 股。",
 		],
 	},
 	"multi-leg-structures": {

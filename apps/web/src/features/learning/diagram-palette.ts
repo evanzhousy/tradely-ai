@@ -27,6 +27,7 @@ const paletteByLesson: Record<string, DiagramPalette> = {
 	"unusual-activity": "reference",
 	"option-strategies": "model",
 	"multi-leg-structures": "model",
+	"dealers-and-hedging": "model",
 	"first-spread-trade": "model",
 	"size-and-exit": "model",
 	"strike-and-expiry": "model",

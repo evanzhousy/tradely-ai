@@ -55,7 +55,7 @@ const stages = [
 		imageWidth: 1192,
 	},
 	{
-		start: "zero-dte",
+		start: "dealers-and-hedging",
 		end: "portfolio-exposure",
 		title: "home.pathThree",
 		description: "home.pathThreeDescription",

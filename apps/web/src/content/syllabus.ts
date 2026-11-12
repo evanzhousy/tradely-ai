@@ -166,6 +166,11 @@ export const buildsOn: Record<
 		en: "Those lessons found one option's break-even from its premium, and showed that an option in the money at expiry is exercised into shares unless it is closed first. This one does both for two calls held together: a break-even from the net price paid, and an expiry where one call can be exercised while the other expires.",
 		zh: "那两课由权利金找出一张期权的盈亏平衡点，并说明到期时处于实值的期权若不先平仓就会被行权、换成股票。本课把这两件事用在一起持有的两张看涨上：由净支出得到盈亏平衡点，以及到期时可能一张被行权、另一张作废。",
 	},
+	"dealers-and-hedging": {
+		lessons: ["delta", "gamma"],
+		en: "Those lessons read delta as the shares an option position moves like (delta × contracts × 100) and gamma as how fast that delta changes when the stock moves. This one puts a dealer on the other side of your trade: it offsets that delta with shares, and gamma makes it trade again as the price moves.",
+		zh: "那两课把 Delta 读作期权持仓相当于多少股（Delta × 张数 × 100），把 Gamma 读作股价变动时这个 Delta 变化得多快。本课让做市商站到你交易的另一边：它用股票抵消这个 Delta，而 Gamma 让它在价格变动时再次交易。",
+	},
 };
 export type ModuleId = (typeof courseModules)[number]["id"];
 
@@ -641,6 +646,16 @@ export const syllabus: readonly Entry[] = [
 		"Total a packet with a missing row, catch a chart whose axis exaggerates, and audit a colleague's recap claim by claim, all on a day you haven't seen.",
 		"在你没见过的一天里：为有一行缺失的研究包算出合计、识别夸大差距的坐标轴，并逐条审核同事的复盘。",
 		["audit-market-recap"],
+	),
+	lesson(
+		"dealers-and-hedging",
+		"exposure",
+		"Dealers and hedging: who takes the other side",
+		"做市商与对冲：谁是你的交易对手",
+		"Meet the market maker on the other side of your option, see how it hedges with shares and trades again as the stock moves, and why nobody outside can see which way dealers are positioned.",
+		"认识站在你期权另一边的做市商，看它如何用股票对冲、又如何随股价变动再次交易，以及为什么外界看不到做市商的持仓方向。",
+		["C46"],
+		["gamma"],
 	),
 	lesson(
 		"zero-dte",

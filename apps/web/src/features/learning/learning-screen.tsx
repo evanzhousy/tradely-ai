@@ -72,6 +72,7 @@ import { CharmVannaWalkthrough } from "./lessons/charm-vanna";
 import { ConnectAgentWalkthrough } from "./lessons/connect-agent";
 import { ResearchPacketWalkthrough } from "./lessons/cookbook-research-packet";
 import { CustomFormulasWalkthrough } from "./lessons/custom-formulas";
+import { DealersAndHedgingWalkthrough } from "./lessons/dealers-and-hedging";
 import { DeltaWalkthrough } from "./lessons/delta";
 import { DexDeiWalkthrough } from "./lessons/dex-dei-gex";
 import { EditWithAiWalkthrough } from "./lessons/edit-with-ai";
@@ -168,6 +169,7 @@ const conceptLabs = {
 	"unusual-activity": UnusualActivityWalkthrough,
 	"option-strategies": OptionStrategiesWalkthrough,
 	"multi-leg-structures": MultiLegStructuresWalkthrough,
+	"dealers-and-hedging": DealersAndHedgingWalkthrough,
 	"first-spread-trade": FirstSpreadTradeWalkthrough,
 	"size-and-exit": SizeAndExitWalkthrough,
 	"strike-and-expiry": StrikeAndExpiryWalkthrough,

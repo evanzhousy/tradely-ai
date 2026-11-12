@@ -1,4 +1,5 @@
 import "@tanstack/react-start/server-only";
+import { dealersAndHedgingUnit } from "./dealers-and-hedging.server";
 import { exposureUnits } from "./exposure.server";
 import { firstSpreadTradeUnit } from "./first-spread-trade.server";
 import { flowUnits } from "./flow.server";
@@ -19,6 +20,7 @@ export const teachingUnits = [
 	firstSpreadTradeUnit,
 	sizeAndExitUnit,
 	...exposureUnits,
+	dealersAndHedgingUnit,
 	...structureUnits,
 	...researchUnits,
 	...productionUnits,

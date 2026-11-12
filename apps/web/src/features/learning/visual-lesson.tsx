@@ -296,6 +296,11 @@ const lessons = {
 			default: m.FirstSpreadTradeWalkthrough,
 		})),
 	),
+	"dealers-and-hedging": lessonModule(() =>
+		import("./lessons/dealers-and-hedging").then((m) => ({
+			default: m.DealersAndHedgingWalkthrough,
+		})),
+	),
 	"multi-leg-structures": lessonModule(() =>
 		import("./lessons/multi-leg-structures").then((m) => ({
 			default: m.MultiLegStructuresWalkthrough,
