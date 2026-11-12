@@ -111,7 +111,11 @@ function layout(width: number) {
 		/** A result is the row's answer; the hero's is the loudest figure of the film. */
 		result: T.num * 0.8,
 		heroSize: T.num * 1.05,
-		decay: narrow ? figure : T.num * 0.8,
+		decay: T.num * 0.8,
+		/** The unit under a decay figure: a phone sets it a step above its other notes. */
+		decayNote: narrow ? T.body * 1.04 : note,
+		/** Column headers: the frame's small type, a size up on a phone. */
+		header: narrow ? T.body : T.small,
 	};
 }
 
@@ -157,13 +161,10 @@ const copy = {
 		`假设第二天 ALFA 到了 ${stock(SOON_SPOT)}。`,
 	],
 	heroHead: [
-		`Say ALFA closes at ${stock(EXPIRY_SPOT)}.`,
+		`ALFA closes at ${stock(EXPIRY_SPOT)}.`,
 		`假设到期时 ALFA 收在 ${stock(EXPIRY_SPOT)}。`,
 	],
-	heroHead2: [
-		`The ${hero.strike} call still loses.`,
-		`${hero.strike} 看涨仍然亏损。`,
-	],
+	heroHead2: [`The ${hero.strike} call loses.`, `${hero.strike} 看涨亏损。`],
 	expiryHead: [
 		"Later expiry: costs more, decays slower.",
 		"到期越晚：越贵，损耗越慢。",
@@ -172,11 +173,14 @@ const copy = {
 		`Oct 18 calls · ALFA ${stock(SPOT)}`,
 		`10月18日 看涨 · ALFA ${stock(SPOT)}`,
 	],
-	headCallsShort: ["Oct 18 calls", "10月18日 看涨"],
+	headCallsShort: ["Oct 18", "10月18日"],
+	headEvenTop: ["break-", "盈亏"],
+	headEvenBottom: ["even", "平衡"],
 	headCost: ["cost", "成本"],
 	headEven: ["break-even", "盈亏平衡"],
 	headSoonDate: ["Sep 17", "9月17日"],
-	headExpiryDate: ["Oct 18", "10月18日"],
+	// The supposition lives in the header, so the headline pair stays at eight words.
+	headExpiryDate: ["if Oct 18", "若 10月18日"],
 	headAt: ["at", "股价"],
 	headExpiries: [
 		`${SAME_STRIKE} calls · ALFA ${stock(SPOT)}`,
@@ -192,7 +196,7 @@ const copy = {
 	delta: ["delta", "Delta"],
 	daysLeft: ["days left", "天后到期"],
 	perContract: ["per contract · model", "每张 · 模型"],
-	perContractShort: ["per contract", "每张"],
+	perContractShort: ["a day, per contract", "每天 · 每张"],
 	claimBig: [
 		"Strike sets how far. Expiry sets how long.",
 		"行权价定涨多远，到期日定等多久。",
@@ -238,18 +242,22 @@ function Scene({
 		<text
 			data-f={name}
 			x={x}
-			y={L.headerY - (lines.length - 1) * T.small * 1.3}
+			y={L.headerY - (lines.length - 1) * L.header * 1.3}
 			textAnchor={anchor}
 			className="wt-film-tag"
-			style={{ fontSize: T.small }}
+			style={{ fontSize: L.header }}
 		>
 			{lines.map((line, i) => (
-				<tspan key={line} x={x} dy={i === 0 ? 0 : T.small * 1.3}>
+				<tspan key={line} x={x} dy={i === 0 ? 0 : L.header * 1.3}>
 					{line.toUpperCase()}
 				</tspan>
 			))}
 		</text>
 	);
+	// The kit has one dim. A phone's notes take ink at four fifths strength instead: a step
+	// brighter than dim, still under the names and figures.
+	const noteClass = narrow ? "wt-film-type" : "wt-film-type wt-film-dim";
+	const noteStrength = narrow ? 0.8 : undefined;
 	/** A row's name with what it means under it. */
 	const named = (
 		name: string,
@@ -271,8 +279,8 @@ function Scene({
 					key={line}
 					x={margin}
 					y={L.nameY(i) + L.note * (stack ? 1.4 + k * 1.25 : 1.6)}
-					className="wt-film-type wt-film-dim"
-					style={{ fontSize: L.note }}
+					className={noteClass}
+					style={{ fontSize: L.note, fillOpacity: noteStrength }}
 				>
 					{line}
 				</text>
@@ -289,6 +297,7 @@ function Scene({
 		under: string,
 		size = L.figure,
 		tone = "",
+		underSize = L.note,
 	) => (
 		<g data-f={name}>
 			<text
@@ -304,8 +313,8 @@ function Scene({
 				x={x}
 				y={L.subY(i)}
 				textAnchor={anchor}
-				className="wt-film-type wt-film-dim"
-				style={{ fontSize: L.note }}
+				className={noteClass}
+				style={{ fontSize: underSize, fillOpacity: noteStrength }}
 			>
 				{under}
 			</text>
@@ -318,6 +327,17 @@ function Scene({
 		narrow
 			? `${perShare(paid(contract))}×100`
 			: `${perShare(paid(contract))} ${t(copy.aShare)}`;
+	// A phone's larger header has no room for "break-even" on one line beside "cost".
+	const evenHead = narrow
+		? [t(copy.headEvenTop), t(copy.headEvenBottom)]
+		: [t(copy.headEven)];
+	/** A long term takes two lines under a phone's row name, clear of the cost beside it. */
+	const termLines = (term: string) => {
+		const at = term.indexOf(" the ");
+		return term.length > 12 && at > 0
+			? [term.slice(0, at), term.slice(at + 1)]
+			: [term];
+	};
 	const claim = t(copy.claimBig);
 	const claimLines = lineCount(claim, room, T.title);
 	const claimY = H * 0.46 - ((claimLines - 1) * T.title * 1.35) / 2;
@@ -377,7 +397,7 @@ function Scene({
 				"start",
 			)}
 			{header("sh-cost", [t(copy.headCost)], L.costX, "middle")}
-			{header("sh-even", [t(copy.headEven)], L.evenX, "middle")}
+			{header("sh-even", evenHead, L.evenX, "middle")}
 			{header(
 				"sh-soon",
 				stack
@@ -405,7 +425,7 @@ function Scene({
 							`${contract.strike} ${t(copy.callWord)}`,
 							// A phone has room for the term alone at a readable size.
 							narrow
-								? [t(tagTerm(id))]
+								? termLines(t(tagTerm(id)))
 								: stack
 									? [t(tagTerm(id)), t(tagMeans(id))]
 									: [t(tag(id))],
@@ -456,8 +476,8 @@ function Scene({
 							x={L.endX}
 							y={L.subY(i)}
 							textAnchor="end"
-							className="wt-film-num wt-film-dim"
-							style={{ fontSize: L.note }}
+							className={narrow ? "wt-film-num" : "wt-film-num wt-film-dim"}
+							style={{ fontSize: L.note, fillOpacity: noteStrength }}
 						>
 							{`${dollars(worthAtExpiry(contract, EXPIRY_SPOT))} − ${dollars(paid(contract))}`}
 						</text>
@@ -474,7 +494,7 @@ function Scene({
 				"start",
 			)}
 			{header("eh-cost", [t(copy.headCost)], L.costX, "middle")}
-			{header("eh-even", [t(copy.headEven)], L.evenX, "middle")}
+			{header("eh-even", evenHead, L.evenX, "middle")}
 			{header(
 				"eh-decay",
 				stack
@@ -515,6 +535,7 @@ function Scene({
 						t(narrow ? copy.perContractShort : copy.perContract),
 						L.decay,
 						toneClass.down,
+						L.decayNote,
 					)}
 				</g>
 			))}
@@ -533,7 +554,7 @@ function Scene({
 					text={t(copy.claimSub)}
 					x={W / 2}
 					y={claimY + (claimLines - 1) * T.title * 1.35 + T.title * 1.1}
-					size={T.body}
+					size={T.head}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
 				/>
