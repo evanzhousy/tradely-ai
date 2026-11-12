@@ -1,6 +1,46 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-11-12-learn-to-trade-path",
+		date: "2026-11-12",
+		dateLabel: "November 12, 2026",
+		title: "A core path for learning to trade options",
+		summary:
+			"The core path now runs from contracts, through what moves an option's price, to choosing and placing a trade. Reading other traders' flow and building research moved to an optional branch.",
+		changes: [
+			{
+				title: "What moves a price comes early",
+				description:
+					"Delta, gamma, theta and vega, and implied against realized volatility follow the contract lessons, with their own checkpoint.",
+			},
+			{
+				title: "Strike and expiry",
+				description:
+					"One view of a stock, three strikes and three expiries: what each costs, where it breaks even, and what the same move does to each.",
+			},
+			{
+				title: "Size and exit",
+				description:
+					"Turn the loss you accept into a number of contracts, see what size does to a losing streak, and write your exit before you enter. Every rule is an example, not advice.",
+			},
+			{
+				title: "A first trade, start to finish",
+				description:
+					"One call spread from the view to expiry: worst case, best case, break-even, the two-leg order, and what happens if the stock ends between the strikes.",
+			},
+			{
+				title: "Dealers and hedging",
+				description:
+					"A primer opens the Greeks and structure branch: who sells the option you buy, how they hedge, and why nobody outside sees which side dealers hold.",
+			},
+			{
+				title: "Four optional branches",
+				description:
+					"After the core path, pick any of: reading option flow and research; Greeks, volatility and structure; portfolios; workflows in TradingFlow. Earlier completions are kept.",
+			},
+		],
+	},
+	{
 		id: "2026-10-01-tradingflow-workflows",
 		date: "2026-10-01",
 		dateLabel: "October 1, 2026",
