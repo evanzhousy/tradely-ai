@@ -115,7 +115,7 @@ function layout(width: number) {
 		exampleY: H * (narrow ? 0.265 : 0.27),
 		needed: row(H * (narrow ? 0.345 : 0.36)),
 		held: row(H * (narrow ? 0.555 : 0.58)),
-		heroY: H * 0.775,
+		heroY: H * (narrow ? 0.76 : 0.775),
 		heroSize: T.num * 1.35,
 		notes: { net: H * 0.76, spread: H * 0.86, fall: H * 0.955 },
 		headWidth: narrow ? frame.room : frame.room * 0.74,
@@ -183,13 +183,13 @@ const copy = {
 	],
 	moveHead: ["Then ALFA rises.", "接着 ALFA 上涨。"],
 	moveAnswer: [
-		`Short gamma: buy ${count(BUY_AFTER_RISE)} more.`,
-		`空 Gamma：再买 ${count(BUY_AFTER_RISE)} 股。`,
+		`The dealer buys ${count(BUY_AFTER_RISE)} more.`,
+		`做市商再买 ${count(BUY_AFTER_RISE)} 股。`,
 	],
 	heroCaption: ["shares to buy", "需要再买入的股数"],
 	heroWhy: [
-		"It sold options, so it buys as ALFA rises.",
-		"它卖出了期权，所以上涨时要买入。",
+		"Short gamma: it sold options, so it buys as ALFA rises.",
+		"空 Gamma：它卖出了期权，所以上涨时要买入。",
 	],
 	fall: [
 		`Had ALFA fallen $${MOVE}: sell ${count(SELL_AFTER_FALL)} shares.`,
@@ -212,8 +212,8 @@ const copy = {
 		`未平仓量：${count(OPEN_INTEREST)} 张 10月18日 ${STRIKE} 看涨。`,
 	],
 	sideCalcNarrow: [
-		`Gamma (how fast delta changes): ${count(STRIKE_SHARES)} shares per $1.`,
-		`Gamma（Delta 变化的快慢）：每 $1 ${count(STRIKE_SHARES)} 股。`,
+		`${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = ${count(STRIKE_SHARES)} per $1`,
+		`${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = 每 $1 ${count(STRIKE_SHARES)} 股`,
 	],
 	sideColumnNarrow: ["If ALFA rises $1", "ALFA 上涨 $1 时"],
 	sideColumn: [
@@ -538,41 +538,31 @@ function Scene({
 					maxWidth={room}
 					anchor="start"
 				/>
-				{narrow ? (
-					<Lines
-						name="s-calc"
-						text={t(copy.sideCalcNarrow)}
-						x={margin}
-						y={L.side.calc}
-						size={T.body}
-						maxWidth={room}
-						anchor="start"
-						className="wt-film-type wt-film-dim"
-					/>
-				) : (
-					<>
-						<Word
-							name="s-calc"
-							x={margin}
-							y={L.side.calc}
-							size={T.small * 1.1}
-							anchor="start"
-							className="wt-film-num wt-film-dim"
-						>
-							{t(copy.sideCalc)}
-						</Word>
-						<Word
-							name="s-gloss"
-							x={margin + textWidth(t(copy.sideCalc), T.small * 1.1) + 16}
-							y={L.side.calc}
-							size={T.small}
-							anchor="start"
-							className="wt-film-type wt-film-dim"
-						>
-							{t(copy.gammaGloss)}
-						</Word>
-					</>
-				)}
+				{/* The arithmetic is its own row, with gamma's gloss beside it or, on a phone, under it. */}
+				<Word
+					name="s-calc"
+					x={margin}
+					y={L.side.calc}
+					size={narrow ? T.body : T.small * 1.1}
+					anchor="start"
+					className={narrow ? "wt-film-num" : "wt-film-num wt-film-dim"}
+				>
+					{t(narrow ? copy.sideCalcNarrow : copy.sideCalc)}
+				</Word>
+				<Word
+					name="s-gloss"
+					x={
+						narrow
+							? margin
+							: margin + textWidth(t(copy.sideCalc), T.small * 1.1) + 16
+					}
+					y={narrow ? L.side.calc + T.small * 1.5 : L.side.calc}
+					size={T.small}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.gammaGloss)}
+				</Word>
 				<Word
 					name="s-column"
 					x={L.right}
@@ -743,8 +733,7 @@ function build(context: FilmContext) {
 	const lockHero = one<SVGGraphicsElement>("lock-hero");
 	const example = one("x-example");
 	const deltaGloss = one("b-gloss");
-	// The wide frame sets gamma's gloss beside its arithmetic; a phone folds it into the line.
-	const sideCalc = [one("s-calc"), one("s-gloss")].filter(Boolean);
+	const sideCalc = [one("s-calc"), one("s-gloss")];
 	const need = [
 		one("b-need-tag"),
 		needBar,
@@ -797,11 +786,17 @@ function build(context: FilmContext) {
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	// The example tag stands from here until the hero has been read.
-	fade(example, 4.3);
-	show(one("q-you"), 4.6);
-	fade(one("q-cost"), 5.0);
-	show(one("q-seller"), 5.5);
+	fade(example, 4.15);
+	show(one("q-you"), 4.4);
+	fade(one("q-cost"), 4.7);
+	show(one("q-seller"), 5.0);
 	show(one("q-line"), 6.0);
+	// Once each setup line has had its 3.5 s, it steps back and the question stands alone.
+	tl.to(
+		[one("q-you"), one("q-cost"), one("q-seller")],
+		{ opacity: 0.4, duration: 0.4 },
+		8.7,
+	);
 
 	// ——— hedge: the sold calls, and the shares bought against them ———
 	tl.addLabel("hedge", 9.6);
@@ -902,9 +897,11 @@ function build(context: FilmContext) {
 	);
 	show(one("s-head"), 34.45);
 	show(one("s-oi"), 34.75);
-	fade([...sideCalc, one("s-column")], 35.3);
+	// The arithmetic stands 1.2 s before the two cases it feeds.
+	fade(sideCalc, 35.1);
+	fade(one("s-column"), 35.9);
 	show(kids("s-short"), 36.3, "below", 0.4);
-	show(kids("s-long"), 36.7, "below", 0.4);
+	show(kids("s-long"), 36.6, "below", 0.4);
 	fade(one("s-unknown"), 37.3, 0.4);
 
 	// Cut: the claim, held to be read.
