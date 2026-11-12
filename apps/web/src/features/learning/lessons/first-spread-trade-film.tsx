@@ -116,9 +116,10 @@ const copy = {
 		`买入 ${LONG.strike} 看涨，卖出 ${SHORT.strike} 看涨。`,
 	],
 	legsTag: [
-		"One call spread · 100 shares a contract",
-		"一组看涨价差 · 每张 100 股",
+		"An example spread · 100 shares a contract",
+		"示例价差 · 每张 100 股",
 	],
+	legsTagShort: ["An example spread", "示例价差"],
 	buyLeg: [
 		`buy 1 Oct 18 ${LONG.strike} call`,
 		`买入 1 张 10月18日 ${LONG.strike} 看涨`,
@@ -156,10 +157,10 @@ const copy = {
 	callFloor: [`${LONG.strike} call alone · `, `只买 ${LONG.strike} 看涨 · `],
 	callFloorShort: ["alone ", "只买 "],
 	noCeiling: ["no ceiling", "不封顶"],
-	hHead: ["The most one spread can lose?", "一组价差最多亏多少？"],
+	hHead: ["One spread's worst case?", "一组价差的最坏情况？"],
 	h2Head: [
-		`What you paid for it: ${dollars(MAX_LOSS)}.`,
-		`就是你为它付出的：${dollars(MAX_LOSS)}。`,
+		`The ${dollars(MAX_LOSS)} you paid.`,
+		`就是付出的 ${dollars(MAX_LOSS)}。`,
 	],
 	heroTag: ["worst case · per spread", "最坏情况 · 每组价差"],
 	breakEven: [
@@ -169,11 +170,8 @@ const copy = {
 	sizeA: [`example: ${PLAN_SPREADS} spreads`, `示例 ${PLAN_SPREADS} 组`],
 	sizeJoin: [", ", "："],
 	sizeB: [` of ${dollars(ACCOUNT)}`, `，账户 ${dollars(ACCOUNT)}`],
-	eHead: ["Oct 18: three ways it can end.", "10月18日：三种结局。"],
-	e2Head: [
-		`Unless closed, you buy ${SHARES} shares.`,
-		`不先平仓，就要买入 ${SHARES} 股。`,
-	],
+	eHead: ["Oct 18: three ends.", "10月18日：三种结局。"],
+	e2Head: ["Unclosed, you get shares.", "不平仓，就会拿到股票。"],
 	below: [
 		`ALFA $${ENDS.below} · below both strikes`,
 		`ALFA $${ENDS.below} · 低于两个行权价`,
@@ -198,18 +196,24 @@ const copy = {
 		"your call ends in the money: exercised automatically",
 		"你买入的看涨是实值，会被自动行权",
 	],
-	betweenWhyShort: [
-		"your call is exercised automatically",
-		"你买入的看涨是实值，会被自动行权",
+	// A phone's cards read in two lines: the same facts in fewer words.
+	belowPhone: [
+		`both expire worthless · lose the ${dollars(MAX_LOSS)} paid`,
+		`两张看涨都作废 · 亏掉付出的 ${dollars(MAX_LOSS)}`,
+	],
+	betweenPhone: [
+		`${LONG.strike} call exercised · unless closed first`,
+		`${LONG.strike} 看涨被行权 · 除非先平仓`,
+	],
+	abovePhone: [
+		`buy shares at $${LONG.strike}, must sell at $${SHORT.strike}`,
+		`以 $${LONG.strike} 买入股票，须以 $${SHORT.strike} 卖出`,
 	],
 	betweenMore: [
 		"the sold call expires worthless · unless closed first",
 		"卖出的看涨作废 · 除非先平仓",
 	],
-	betweenMoreShort: [
-		"it is in the money · unless closed first",
-		"卖出的看涨作废 · 除非先平仓",
-	],
+
 	aboveWhy: [
 		`you buy at $${LONG.strike} through your call`,
 		`通过你的看涨以 $${LONG.strike} 买入`,
@@ -218,10 +222,7 @@ const copy = {
 		`and must sell at $${SHORT.strike} through the one you sold`,
 		`并须按卖出的看涨以 $${SHORT.strike} 卖出`,
 	],
-	aboveMoreShort: [
-		`and must sell at $${SHORT.strike} (the call you sold)`,
-		`并须按卖出的看涨以 $${SHORT.strike} 卖出`,
-	],
+
 	sharesDue: [
 		`${SHARES} shares · ${dollars(BETWEEN.due)}`,
 		`${SHARES} 股 · ${dollars(BETWEEN.due)}`,
@@ -407,7 +408,7 @@ function Scene({
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
 			>
-				{t(copy.legsTag).toUpperCase()}
+				{t(L.narrow ? copy.legsTagShort : copy.legsTag).toUpperCase()}
 			</text>
 			{row(
 				"leg-0",
@@ -646,31 +647,31 @@ function Scene({
 				"end-0",
 				0,
 				narrow ? copy.belowShort : copy.below,
-				copy.bothExpire,
+				narrow ? copy.belowPhone : copy.bothExpire,
 				signedDollars(spreadProfit(ENDS.below)),
 				`wt-film-num ${toneClass.down}`,
 				undefined,
-				copy.belowMore,
+				narrow ? undefined : copy.belowMore,
 			)}
 			{row(
 				"end-1",
 				1,
 				narrow ? copy.betweenShort : copy.between,
-				narrow ? copy.betweenWhyShort : copy.betweenWhy,
+				narrow ? copy.betweenPhone : copy.betweenWhy,
 				t(copy.sharesDue),
 				"wt-film-num wt-film-accent",
 				undefined,
-				narrow ? copy.betweenMoreShort : copy.betweenMore,
+				narrow ? undefined : copy.betweenMore,
 			)}
 			{row(
 				"end-2",
 				2,
 				narrow ? copy.aboveShort : copy.above,
-				copy.aboveWhy,
+				narrow ? copy.abovePhone : copy.aboveWhy,
 				signedDollars(spreadProfit(ENDS.above)),
 				`wt-film-num ${toneClass.up}`,
 				undefined,
-				narrow ? copy.aboveMoreShort : copy.aboveMore,
+				narrow ? undefined : copy.aboveMore,
 			)}
 			<Word
 				name="close-note"
