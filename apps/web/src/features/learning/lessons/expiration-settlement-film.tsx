@@ -168,8 +168,8 @@ const copy = {
 	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
 	claimBig: ["A few cents can mean shares.", "几美分也能变成股票。"],
 	claimSub: [
-		"Send exercise instructions before cutoff.",
-		"券商截止前确认行权指示。",
+		"Don't want shares? Sell before the close.",
+		"不想要股票？收盘前卖出平仓。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["contracts and money, on a new day", "在新的一天里运用合约与金额"],

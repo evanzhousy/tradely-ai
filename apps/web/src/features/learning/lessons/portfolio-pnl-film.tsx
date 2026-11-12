@@ -151,7 +151,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["P&L", "盈亏"],
-	titleSub: ["positions, cost and cash", "持仓、成本与现金"],
+	titleSub: ["profit and loss: positions, cash", "盈利与亏损：持仓与现金"],
 	qOpen: [
 		`Monday open ${dollars(valueOpen)} → Tuesday`,
 		`周一开盘 ${dollars(valueOpen)} → 周二`,
@@ -199,7 +199,7 @@ const copy = {
 	],
 	bid: ["bid", "买价"],
 	mid: ["mid", "中间价"],
-	bpNote: ["includes 50% credit", "含 50% 授信"],
+	bpNote: ["half is borrowed", "一半是借款"],
 	benHead: [
 		`Ben wrote ${BEN} of these calls.`,
 		`Ben 卖出了 ${BEN} 张同样的看涨。`,

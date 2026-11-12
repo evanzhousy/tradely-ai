@@ -125,7 +125,7 @@ function layout(width: number) {
 
 const copy = {
 	title: ["0DTE", "0DTE"],
-	titleSub: ["options on their last day", "最后一天的期权"],
+	titleSub: ["zero days to expiry: the last day", "距到期零天：最后一天"],
 	qTagOpen: ["Fri Sep 20, 9:30", "9月20日 周五 9:30"],
 	qTagClose: ["4:00 pm close", "下午 4:00 收盘"],
 	qLine: [

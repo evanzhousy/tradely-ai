@@ -131,10 +131,13 @@ const copy = {
 	timeHead: ["Time wears the call down.", "时间磨损看涨期权。"],
 	timeHeadShort: ["Time wears it down.", "时间磨损它。"],
 	crushHead: [
-		"Then implied volatility (IV) falls.",
-		"接着隐含波动率（IV）下降。",
+		"Expected swings shrink: implied volatility (IV) falls.",
+		"预期波动变小：隐含波动率（IV）下降。",
 	],
-	crushHeadShort: ["Implied volatility (IV) falls.", "隐含波动率（IV）下降。"],
+	crushHeadShort: [
+		"Expected swings shrink: IV falls.",
+		"预期波动变小：IV 下降。",
+	],
 	axis: ["modeled call value / share", "看涨模型价值 / 股"],
 	spotAxis: ["ALFA price", "ALFA 股价"],
 	paid: ["paid $4.20", "已付 $4.20"],

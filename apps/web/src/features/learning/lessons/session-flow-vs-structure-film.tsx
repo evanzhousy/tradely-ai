@@ -259,7 +259,7 @@ const copy = {
 	inBucket: ["in the bucket", "桶内合计"],
 	days: ["days to expiry", "距到期天数"],
 	claimBig: [
-		"Volume is flow; open interest is stock.",
+		"Volume counts trades; open interest counts positions.",
 		"交易是流量，持仓是存量。",
 	],
 	claimSub: ["Compare each to itself.", "同一序列，前后对照。"],

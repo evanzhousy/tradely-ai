@@ -105,7 +105,7 @@ const gaps: { id: string; question: Copy; needs: Copy }[] = [
 	{
 		id: "open",
 		question: ["Opened new contracts?", "开立了新合约？"],
-		needs: ["Next OI report", "次日未平仓量"],
+		needs: ["Next open-interest report", "次日未平仓量"],
 	},
 	{
 		id: "leg",
@@ -567,7 +567,7 @@ function Scene({
 				anchor="start"
 				className="wt-film-type wt-film-accent"
 			>
-				{t(["Tuesday OI ", "周二未平仓量 "])}
+				{t(["Tuesday open interest ", "周二未平仓量 "])}
 				<tspan className={toneClass.up}>+{BLOCK.openInterestChange}</tspan>
 				{t([": mostly opening", "：多为开仓"])}
 			</Word>

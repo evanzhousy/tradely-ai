@@ -128,8 +128,8 @@ const copy = {
 	qBig: ["What do I check before selling a call?", "卖出看涨前，查什么？"],
 	qLine: ["A friend's list has one odd step.", "朋友清单里有一步不合适。"],
 	friendHead: [
-		"A friend's checklist for selling an ALFA call.",
-		"朋友列的卖出 ALFA 看涨清单。",
+		"A friend's checklist for selling a covered call.",
+		"朋友列的卖出备兑看涨清单。",
 	],
 	friendHeadShort: ["A friend's checklist.", "朋友的清单。"],
 	flagHead: ["Below $105 is a forecast.", "低于 $105 是预测。"],
