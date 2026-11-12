@@ -49,7 +49,7 @@ import {
  *   window    25.3–29.7  American trading days; European at expiry
  *   pin       29.7–35.05  the close minus strike makes a bracketed expiry value
  *   writer    35.05–40.6 settled close/after-hours pair, exercise, then Monday short shares
- *   claim     40.6–45.0 check exercise instructions and the broker's cutoff
+ *   claim     40.6–45.0 a few cents can mean shares; close before expiry if you don't want them
  *   next      45.0–47.5 Next: the module checkpoint
  */
 
@@ -168,8 +168,8 @@ const copy = {
 	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
 	claimBig: ["A few cents can mean shares.", "几美分也能变成股票。"],
 	claimSub: [
-		"Don't want shares? Sell before the close.",
-		"不想要股票？收盘前卖出平仓。",
+		"Don't want shares? Close before expiry.",
+		"不想要股票？到期前平仓。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["contracts and money, on a new day", "在新的一天里运用合约与金额"],

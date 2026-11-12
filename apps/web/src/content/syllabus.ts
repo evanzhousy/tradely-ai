@@ -46,8 +46,8 @@ export const courseModules = [
 	{
 		id: "exposure",
 		path: "models",
-		en: "Volatility, 0DTE and exposure",
-		zh: "波动率、0DTE 与敞口",
+		en: "Greeks, volatility and exposure",
+		zh: "希腊值、波动率与敞口",
 	},
 	{
 		id: "structure",
@@ -81,8 +81,8 @@ export const coursePaths = {
 	},
 	core: { en: "Core path", zh: "核心路径" },
 	models: {
-		en: "Deeper branch: volatility, exposure and structure",
-		zh: "深入分支：波动率、敞口与结构",
+		en: "Deeper branch: Greeks, volatility and structure",
+		zh: "深入分支：希腊值、波动率与结构",
 	},
 	portfolio: { en: "Deeper branch: portfolios", zh: "深入分支：投资组合" },
 	workflows: {

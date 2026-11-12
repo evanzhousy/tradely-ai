@@ -135,8 +135,8 @@ const copy = {
 		"预期波动变小：隐含波动率（IV）下降。",
 	],
 	crushHeadShort: [
-		"Expected swings shrink: IV falls.",
-		"预期波动变小：IV 下降。",
+		"Swings shrink: implied volatility (IV) falls.",
+		"波动变小：隐含波动率（IV）下降。",
 	],
 	axis: ["modeled call value / share", "看涨模型价值 / 股"],
 	spotAxis: ["ALFA price", "ALFA 股价"],
