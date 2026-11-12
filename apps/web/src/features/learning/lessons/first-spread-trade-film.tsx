@@ -87,7 +87,10 @@ function layout(width: number) {
 		heroSize,
 		heroTagY,
 		heroY,
-		sizeY: heroY + heroSize * 0.25 + 16 + T.small * 1.1,
+		sizeY: heroY + heroSize * 0.25 + 16 + T.body,
+		/** Chart labels and axis ticks, at the sizes the neighbouring films use for theirs. */
+		label: T.body,
+		tick: T.small * (narrow ? 1.1 : 1.15),
 		x: (spot: number) =>
 			left + ((spot - RANGE[0]) / (RANGE[1] - RANGE[0])) * (right - left),
 		y: (value: number) =>
@@ -112,7 +115,10 @@ const copy = {
 		`Buy the ${LONG.strike} call, sell the ${SHORT.strike}.`,
 		`买入 ${LONG.strike} 看涨，卖出 ${SHORT.strike} 看涨。`,
 	],
-	legsTag: ["One call spread · per share", "一组看涨价差 · 每股"],
+	legsTag: [
+		"One call spread · 100 shares a contract",
+		"一组看涨价差 · 每张 100 股",
+	],
 	buyLeg: [
 		`buy 1 Oct 18 ${LONG.strike} call`,
 		`买入 1 张 10月18日 ${LONG.strike} 看涨`,
@@ -123,18 +129,20 @@ const copy = {
 	],
 	atAsk: ["at the ask", "按卖价成交"],
 	atBid: ["at the bid", "按买价成交"],
-	youPay: ["you pay", "付出"],
-	youReceive: ["you receive", "收到"],
+	paidShare: [`${usd(PAID)} a share`, `每股 ${usd(PAID)}`],
+	receivedShare: [`${usd(RECEIVED)} a share`, `每股 ${usd(RECEIVED)}`],
+	youPay: [`you pay ${dollars(PAID)}`, `付出 ${dollars(PAID)}`],
+	youReceive: [`you receive ${dollars(RECEIVED)}`, `收到 ${dollars(RECEIVED)}`],
 	netA: ["net debit · ", "净支出 · "],
-	netB: [" a share · ", " 每股 · "],
+	netB: [" a share = ", " 每股 = "],
 	netC: [" a spread", " 每组"],
 	order: [
-		"one order, two legs, one net limit price",
-		"一张订单，两条腿，一个净限价",
+		"net debit: what you pay, less what you receive",
+		"净支出：付出的减去收到的",
 	],
 	legNote: [
-		"Sent apart, one leg can fill alone.",
-		"分两张单下，可能只成交一条腿。",
+		"One order: sent apart, one leg can fill alone.",
+		"用一张订单：分开下，可能只成交一条腿。",
 	],
 	pHead: ["Its loss and its gain are capped.", "亏损和盈利都有上限。"],
 	axis: ["profit on Oct 18, per spread", "10月18日盈亏，每组价差"],
@@ -150,56 +158,77 @@ const copy = {
 	noCeiling: ["no ceiling", "不封顶"],
 	hHead: ["The most one spread can lose?", "一组价差最多亏多少？"],
 	h2Head: [
-		`The debit you paid: ${dollars(MAX_LOSS)}.`,
-		`就是付出的净支出：${dollars(MAX_LOSS)}。`,
+		`What you paid for it: ${dollars(MAX_LOSS)}.`,
+		`就是你为它付出的：${dollars(MAX_LOSS)}。`,
 	],
 	heroTag: ["worst case · per spread", "最坏情况 · 每组价差"],
 	breakEven: [
 		`break-even $${BREAK_EVEN.toFixed(2)}`,
 		`盈亏平衡 $${BREAK_EVEN.toFixed(2)}`,
 	],
-	sizeA: [`${PLAN_SPREADS} spreads: `, `${PLAN_SPREADS} 组：`],
+	sizeA: [`example: ${PLAN_SPREADS} spreads`, `示例 ${PLAN_SPREADS} 组`],
+	sizeJoin: [", ", "："],
 	sizeB: [` of ${dollars(ACCOUNT)}`, `，账户 ${dollars(ACCOUNT)}`],
 	eHead: ["Oct 18: three ways it can end.", "10月18日：三种结局。"],
 	e2Head: [
-		`In between, you buy ${SHARES} shares.`,
-		`落在中间：要买入 ${SHARES} 股。`,
+		`Unless closed, you buy ${SHARES} shares.`,
+		`不先平仓，就要买入 ${SHARES} 股。`,
 	],
 	below: [
 		`ALFA $${ENDS.below} · below both strikes`,
 		`ALFA $${ENDS.below} · 低于两个行权价`,
 	],
-	belowShort: [
-		`ALFA $${ENDS.below} · below both`,
-		`ALFA $${ENDS.below} · 都低于`,
-	],
+	belowShort: [`$${ENDS.below} · below both`, `ALFA $${ENDS.below} · 都低于`],
 	between: [
 		`ALFA $${ENDS.between} · between the strikes`,
 		`ALFA $${ENDS.between} · 两个行权价之间`,
 	],
 	betweenShort: [
-		`ALFA $${ENDS.between} · in between`,
+		`$${ENDS.between} · between`,
 		`ALFA $${ENDS.between} · 在中间`,
 	],
 	above: [
 		`ALFA $${ENDS.above} · above both strikes`,
 		`ALFA $${ENDS.above} · 高于两个行权价`,
 	],
-	aboveShort: [
-		`ALFA $${ENDS.above} · above both`,
-		`ALFA $${ENDS.above} · 都高于`,
-	],
+	aboveShort: [`$${ENDS.above} · above both`, `ALFA $${ENDS.above} · 都高于`],
 	bothExpire: ["both calls expire worthless", "两张看涨都作废"],
-	longExercised: [
-		`the ${LONG.strike} call is exercised`,
-		`${LONG.strike} 看涨被行权`,
+	belowMore: ["you lose what you paid", "亏掉付出的净支出"],
+	betweenWhy: [
+		"your call ends in the money: exercised automatically",
+		"你买入的看涨是实值，会被自动行权",
 	],
-	bothUsed: ["one exercised, one assigned", "一张行权，一张被指派"],
-	sharesIn: [`${SHARES} shares`, `${SHARES} 股`],
-	due: [`${dollars(BETWEEN.due)} due`, `应付 ${dollars(BETWEEN.due)}`],
+	betweenWhyShort: [
+		"your call is exercised automatically",
+		"你买入的看涨是实值，会被自动行权",
+	],
+	betweenMore: [
+		"the sold call expires worthless · unless closed first",
+		"卖出的看涨作废 · 除非先平仓",
+	],
+	betweenMoreShort: [
+		"it is in the money · unless closed first",
+		"卖出的看涨作废 · 除非先平仓",
+	],
+	aboveWhy: [
+		`you buy at $${LONG.strike} through your call`,
+		`通过你的看涨以 $${LONG.strike} 买入`,
+	],
+	aboveMore: [
+		`and must sell at $${SHORT.strike} through the one you sold`,
+		`并须按卖出的看涨以 $${SHORT.strike} 卖出`,
+	],
+	aboveMoreShort: [
+		`and must sell at $${SHORT.strike} (the call you sold)`,
+		`并须按卖出的看涨以 $${SHORT.strike} 卖出`,
+	],
+	sharesDue: [
+		`${SHARES} shares · ${dollars(BETWEEN.due)}`,
+		`${SHARES} 股 · ${dollars(BETWEEN.due)}`,
+	],
 	closeNote: [
-		"Many close the spread before expiry.",
-		"很多人会在到期前平掉价差。",
+		"So many close the spread before expiry.",
+		"所以很多人会在到期前平掉价差。",
 	],
 	claimBig: [
 		"Know the worst case before you order.",
@@ -261,54 +290,69 @@ function Scene({
 		value: ReactNode,
 		valueClass: string,
 		valueSub?: Copy,
-	) => (
-		<g key={name} data-f={name}>
-			<rect
-				x={margin}
-				y={L.rowY(i)}
-				width={room}
-				height={L.rowH}
-				rx={12}
-				className="wt-panel-shape"
-			/>
-			<text
-				x={margin + 14}
-				y={L.rowY(i) + L.rowH * 0.42}
-				className="wt-film-num"
-				style={{ fontSize: text }}
-			>
-				{t(line)}
-			</text>
-			<text
-				x={margin + 14}
-				y={L.rowY(i) + L.rowH * 0.76}
-				className="wt-film-type wt-film-dim"
-				style={{ fontSize: T.small * 1.1 }}
-			>
-				{t(sub)}
-			</text>
-			<text
-				x={margin + room - 14}
-				y={L.rowY(i) + L.rowH * 0.42}
-				textAnchor="end"
-				className={valueClass}
-				style={{ fontSize: text }}
-			>
-				{value}
-			</text>
-			{valueSub ? (
+		more?: Copy,
+	) => {
+		const at = more ? [0.3, 0.58, 0.86] : [0.42, 0.76];
+		const lineY = (k: number) => L.rowY(i) + L.rowH * at[k];
+		return (
+			<g key={name} data-f={name}>
+				<rect
+					x={margin}
+					y={L.rowY(i)}
+					width={room}
+					height={L.rowH}
+					rx={12}
+					className="wt-panel-shape"
+				/>
 				<text
-					x={margin + room - 14}
-					y={L.rowY(i) + L.rowH * 0.76}
-					textAnchor="end"
+					x={margin + 14}
+					y={lineY(0)}
+					className="wt-film-num"
+					style={{ fontSize: text }}
+				>
+					{t(line)}
+				</text>
+				<text
+					x={margin + 14}
+					y={lineY(1)}
 					className="wt-film-type wt-film-dim"
 					style={{ fontSize: T.small * 1.1 }}
 				>
-					{t(valueSub)}
+					{t(sub)}
 				</text>
-			) : null}
-		</g>
-	);
+				<text
+					x={margin + room - 14}
+					y={lineY(0)}
+					textAnchor="end"
+					className={valueClass}
+					style={{ fontSize: text }}
+				>
+					{value}
+				</text>
+				{valueSub ? (
+					<text
+						x={margin + room - 14}
+						y={lineY(1)}
+						textAnchor="end"
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: T.small * 1.1 }}
+					>
+						{t(valueSub)}
+					</text>
+				) : null}
+				{more ? (
+					<text
+						x={margin + 14}
+						y={lineY(2)}
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: T.small * 1.1 }}
+					>
+						{t(more)}
+					</text>
+				) : null}
+			</g>
+		);
+	};
 	const point = (spot: number, value: number, i: number) =>
 		`${i ? "L" : "M"}${L.x(spot).toFixed(1)} ${L.y(value).toFixed(1)}`;
 	const spreadPath = [RANGE[0], LONG.strike, SHORT.strike, RANGE[1]]
@@ -370,7 +414,7 @@ function Scene({
 				0,
 				copy.buyLeg,
 				copy.atAsk,
-				usd(PAID),
+				t(copy.paidShare),
 				"wt-film-num",
 				copy.youPay,
 			)}
@@ -379,7 +423,7 @@ function Scene({
 				1,
 				copy.sellLeg,
 				copy.atBid,
-				usd(RECEIVED),
+				t(copy.receivedShare),
 				"wt-film-num",
 				copy.youReceive,
 			)}
@@ -434,7 +478,12 @@ function Scene({
 			<g data-f="depth">
 				<g data-f="world">
 					<g data-f="chart">
-						<text x={L.left} y={L.top - 12} className="wt-small">
+						<text
+							x={L.left}
+							y={L.top - 12}
+							className="wt-small"
+							style={{ fontSize: L.tick }}
+						>
 							{t(copy.axis)}
 						</text>
 						<path d={`M${L.left} ${L.y(0)}H${L.right}`} className="wt-axis" />
@@ -446,6 +495,7 @@ function Scene({
 									y={L.y(v) + 4}
 									textAnchor="end"
 									className="wt-small"
+									style={{ fontSize: L.tick }}
 								>
 									{v === 0 ? "$0" : signedDollars(v)}
 								</text>
@@ -460,6 +510,7 @@ function Scene({
 									v === RANGE[1] ? "end" : v === RANGE[0] ? "start" : "middle"
 								}
 								className="wt-small"
+								style={{ fontSize: L.tick }}
 							>
 								{`$${v}`}
 							</text>
@@ -474,10 +525,10 @@ function Scene({
 								/>
 								<text
 									x={L.x(leg.strike)}
-									y={L.bottom + 32}
+									y={L.bottom + 16 + L.tick * 1.5}
 									textAnchor={leg === LONG ? "end" : "start"}
 									className="wt-small"
-									style={{ fill: "var(--tone-ink)" }}
+									style={{ fill: "var(--tone-ink)", fontSize: L.tick }}
 								>
 									{t(leg === LONG ? copy.buyMark : copy.sellMark)}
 								</text>
@@ -494,10 +545,10 @@ function Scene({
 						<text
 							data-f="g-ceil"
 							x={L.right - 8}
-							y={L.y(MAX_GAIN) + T.small * 1.1 + 6}
+							y={L.y(MAX_GAIN) + L.label + 6}
 							textAnchor="end"
 							className="wt-film-type wt-film-dim"
-							style={{ fontSize: T.small * 1.1 }}
+							style={{ fontSize: L.label }}
 						>
 							<tspan className={`wt-film-num ${toneClass.up}`}>
 								{signedDollars(MAX_GAIN)}
@@ -509,7 +560,7 @@ function Scene({
 							x={L.left + 6}
 							y={L.y(-PAID) - 8}
 							className="wt-film-type wt-film-dim"
-							style={{ fontSize: T.small * 1.1 }}
+							style={{ fontSize: L.label }}
 						>
 							{t(narrow ? copy.callFloorShort : copy.callFloor)}
 							<tspan className={`wt-film-num ${toneClass.down}`}>
@@ -523,7 +574,7 @@ function Scene({
 							y={noCeilingY}
 							textAnchor="end"
 							className="wt-film-type wt-film-dim"
-							style={{ fontSize: T.small * 1.1 }}
+							style={{ fontSize: L.label }}
 						>
 							{t(copy.noCeiling)}
 						</text>
@@ -536,9 +587,9 @@ function Scene({
 							/>
 							<text
 								x={L.x(BREAK_EVEN) + 10}
-								y={L.y(0) + T.small * 1.1 + 6}
+								y={L.y(0) + L.label + 6}
 								className="wt-film-type wt-film-accent"
-								style={{ fontSize: T.small * 1.1 }}
+								style={{ fontSize: L.label }}
 							>
 								{t(copy.breakEven)}
 							</text>
@@ -570,15 +621,21 @@ function Scene({
 				name="size-line"
 				x={L.left + 12}
 				y={L.sizeY}
-				size={T.small * 1.1}
+				size={narrow ? L.label : L.label * 0.9}
 				anchor="start"
 				className="wt-film-type"
 			>
 				{t(copy.sizeA)}
-				<tspan className={`wt-film-num ${toneClass.down}`}>
+				{narrow ? "" : t(copy.sizeJoin)}
+				{/* A phone sets the amount on a second line, clear of the rising payoff line. */}
+				<tspan
+					x={narrow ? L.left + 12 : undefined}
+					dy={narrow ? L.label * 1.3 : undefined}
+					className={`wt-film-num ${toneClass.down}`}
+				>
 					{signedDollars(-worstCase(PLAN_SPREADS))}
 				</tspan>
-				{narrow ? "" : t(copy.sizeB)}
+				{t(copy.sizeB)}
 			</Word>
 			<Brackets name="lock-worst" tone="loss" glow />
 
@@ -592,23 +649,28 @@ function Scene({
 				copy.bothExpire,
 				signedDollars(spreadProfit(ENDS.below)),
 				`wt-film-num ${toneClass.down}`,
+				undefined,
+				copy.belowMore,
 			)}
 			{row(
 				"end-1",
 				1,
 				narrow ? copy.betweenShort : copy.between,
-				copy.longExercised,
-				t(copy.sharesIn),
+				narrow ? copy.betweenWhyShort : copy.betweenWhy,
+				t(copy.sharesDue),
 				"wt-film-num wt-film-accent",
-				copy.due,
+				undefined,
+				narrow ? copy.betweenMoreShort : copy.betweenMore,
 			)}
 			{row(
 				"end-2",
 				2,
 				narrow ? copy.aboveShort : copy.above,
-				copy.bothUsed,
+				copy.aboveWhy,
 				signedDollars(spreadProfit(ENDS.above)),
 				`wt-film-num ${toneClass.up}`,
+				undefined,
+				narrow ? copy.aboveMoreShort : copy.aboveMore,
 			)}
 			<Word
 				name="close-note"
@@ -764,7 +826,7 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 27.6);
 	// After the hero's 1.5-second stand: where the trade breaks even, then its size.
 	fade(one("be"), 29.7);
-	show(one("size-line"), 31.2);
+	show(one("size-line"), 30.8);
 
 	// ——— ends: three ways Oct 18 can end ———
 	tl.addLabel("ends", 33.7);
