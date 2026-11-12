@@ -58,7 +58,8 @@ import { fixed2 } from "./gamma-model";
  *                        $0.15 spread ($15 a contract)
  *   move      21.4–34.1  ALFA $100 → $102 in one walk: delta 0.52 → 0.60, 260 → 300 against
  *                        260 held; hero: +40 shares to buy, locked at 27.8 and standing to
- *                        29.95; then "Short gamma", and the fall: sell 40
+ *                        29.95 with its reason under it; then "Short gamma", and the fall:
+ *                        sell 40. An "example" tag stands from the question to here
  *   side      34.1–41.1  2,500 Oct 18 110 calls open: 6,650 shares a $1; dealers short them
  *                        buy, dealers long them sell; which one is a model's assumption
  *   claim     41.1–45.5  "Dealers hedge; the hedge trades the stock."
@@ -86,33 +87,60 @@ function layout(width: number) {
 	const right = width - margin;
 	const barSpan = width * (narrow ? 0.46 : 0.5);
 	const barH = clamp(14, H * 0.045, 24);
-	const row = (tagY: number) => ({
-		tag: tagY,
-		bar: tagY + 10,
-		figure: tagY + 10 + barH / 2 + T.num * 0.35,
-		note: tagY + 10 + barH + 6 + T.small,
-	});
+	// A phone's captions and arithmetic are set at body size, never the small tag size.
+	const expressionSize = narrow ? T.body * 0.92 : T.small;
+	const row = (tagY: number) => {
+		const note = tagY + 10 + barH + 6 + expressionSize;
+		return {
+			tag: tagY,
+			bar: tagY + 10,
+			figure: tagY + 10 + barH / 2 + T.num * 0.35,
+			note,
+			/** The gloss sits beside the arithmetic, or under it on a phone. */
+			gloss: narrow ? note + T.small * 1.4 : note,
+		};
+	};
+	const noteSize = T.body * 1.08;
 	return {
 		...frame,
 		right,
 		barH,
 		/** The x a number of shares reaches on either bar. */
 		bar: (shares: number) => (shares / BAR_MAX) * barSpan,
-		spotY: H * 0.27,
-		needed: row(H * 0.36),
-		held: row(H * 0.58),
-		heroY: H * 0.8,
+		expressionSize,
+		// Under nine tenths of a headline at every width: a note is not a beat.
+		noteSize,
+		spotY: H * (narrow ? 0.215 : 0.27),
+		/** "One example": beside the price on the wide frame, under it on a phone. */
+		exampleY: H * (narrow ? 0.265 : 0.27),
+		needed: row(H * (narrow ? 0.345 : 0.36)),
+		held: row(H * (narrow ? 0.555 : 0.58)),
+		heroY: H * 0.775,
 		heroSize: T.num * 1.35,
 		notes: { net: H * 0.76, spread: H * 0.86, fall: H * 0.955 },
 		headWidth: narrow ? frame.room : frame.room * 0.74,
-		side: {
-			oi: H * 0.29,
-			calc: H * 0.385,
-			column: H * 0.47,
-			rows: [H * 0.59, H * 0.74] as const,
-			unknown: H * 0.9,
-			result: narrow ? T.num * 0.9 : T.num * 0.8,
-		},
+		// A phone gives the two cases the room: shorter supporting lines, larger rows.
+		side: narrow
+			? {
+					oi: H * 0.26,
+					calc: H * 0.33,
+					column: H * 0.45,
+					rows: [H * 0.56, H * 0.72] as const,
+					unknown: H * 0.88,
+					result: T.num,
+					label: T.head,
+					tag: T.body,
+				}
+			: {
+					oi: H * 0.29,
+					calc: H * 0.385,
+					column: H * 0.47,
+					rows: [H * 0.59, H * 0.74] as const,
+					unknown: H * 0.9,
+					result: T.num * 0.8,
+					label: noteSize,
+					tag: T.small,
+				},
 	};
 }
 
@@ -132,6 +160,12 @@ const copy = {
 		"卖方是做市商（dealer）。",
 	],
 	qLine: ["Is the dealer betting against you?", "做市商是在和你对赌吗？"],
+	example: ["one dealer · one example trade", "一家做市商 · 一笔示例交易"],
+	deltaGloss: [
+		"delta: shares one call moves like",
+		"Delta：一张看涨相当于多少股",
+	],
+	gammaGloss: ["gamma: how fast delta changes", "Gamma：Delta 变化的快慢"],
 	hedgeHead: ["The dealer hedges with shares.", "做市商用股票对冲。"],
 	neededTag: [
 		`Sold ${CONTRACTS} calls: like being short`,
@@ -149,10 +183,14 @@ const copy = {
 	],
 	moveHead: ["Then ALFA rises.", "接着 ALFA 上涨。"],
 	moveAnswer: [
-		`Short gamma: the dealer buys ${count(BUY_AFTER_RISE)} more.`,
-		`空 Gamma：做市商要再买 ${count(BUY_AFTER_RISE)} 股。`,
+		`Short gamma: buy ${count(BUY_AFTER_RISE)} more.`,
+		`空 Gamma：再买 ${count(BUY_AFTER_RISE)} 股。`,
 	],
 	heroCaption: ["shares to buy", "需要再买入的股数"],
+	heroWhy: [
+		"It sold options, so it buys as ALFA rises.",
+		"它卖出了期权，所以上涨时要买入。",
+	],
 	fall: [
 		`Had ALFA fallen $${MOVE}: sell ${count(SELL_AFTER_FALL)} shares.`,
 		`如果 ALFA 下跌 $${MOVE}：卖出 ${count(SELL_AFTER_FALL)} 股。`,
@@ -169,18 +207,23 @@ const copy = {
 		`gamma ${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = ${count(STRIKE_SHARES)} shares per $1`,
 		`Gamma ${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = 每 $1 ${count(STRIKE_SHARES)} 股`,
 	],
-	sideCalcShort: [
-		`gamma ${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = ${count(STRIKE_SHARES)}`,
-		`Gamma ${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = ${count(STRIKE_SHARES)}`,
+	sideOiNarrow: [
+		`Open interest: ${count(OPEN_INTEREST)} Oct 18 ${STRIKE} calls.`,
+		`未平仓量：${count(OPEN_INTEREST)} 张 10月18日 ${STRIKE} 看涨。`,
 	],
+	sideCalcNarrow: [
+		`Gamma (how fast delta changes): ${count(STRIKE_SHARES)} shares per $1.`,
+		`Gamma（Delta 变化的快慢）：每 $1 ${count(STRIKE_SHARES)} 股。`,
+	],
+	sideColumnNarrow: ["If ALFA rises $1", "ALFA 上涨 $1 时"],
 	sideColumn: [
 		"Shares to trade if ALFA rises $1",
 		"ALFA 上涨 $1 时要交易的股数",
 	],
 	sideShort: ["If dealers are short them", "假设做市商全部做空"],
 	sideLong: ["If dealers are long them", "假设做市商全部做多"],
-	sideShortNarrow: ["Dealers short them", "假设做市商全部做空"],
-	sideLongNarrow: ["Dealers long them", "假设做市商全部做多"],
+	sideShortNarrow: ["Dealers short them", "若做市商做空"],
+	sideLongNarrow: ["Dealers long them", "若做市商做多"],
 	buy: [
 		`buy ${count(strikeTrade("short", 1))} shares`,
 		`买入 ${count(strikeTrade("short", 1))} 股`,
@@ -232,8 +275,7 @@ function Scene({
 	const unitWidth = textWidth(t(copy.unit), T.body);
 	const figureX = L.right - unitWidth - 8;
 	const spotSize = T.body * 1.15;
-	// Under nine tenths of a headline at every width: a note is not a beat.
-	const noteSize = T.body * 1.08;
+	const { noteSize } = L;
 	const rows = [
 		{
 			id: "need",
@@ -278,14 +320,14 @@ function Scene({
 					name="q-you"
 					text={t(copy.qYou)}
 					x={W / 2}
-					y={H * 0.33}
+					y={H * 0.35}
 					size={T.head * 1.15}
 					maxWidth={room}
 				/>
 				<Word
 					name="q-cost"
 					x={W / 2}
-					y={H * 0.33 + T.small * 2.2}
+					y={H * 0.35 + T.small * 2.2}
 					size={T.small}
 					className="wt-film-tag"
 				>
@@ -295,7 +337,7 @@ function Scene({
 					name="q-seller"
 					text={t(copy.qSeller)}
 					x={W / 2}
-					y={H * 0.5}
+					y={H * 0.52}
 					size={T.head * 1.15}
 					maxWidth={room}
 					className="wt-film-type wt-film-accent"
@@ -304,11 +346,23 @@ function Scene({
 					name="q-line"
 					text={t(copy.qLine)}
 					x={W / 2}
-					y={H * 0.68}
+					y={H * 0.69}
 					size={T.head * 1.3}
 					maxWidth={room}
 				/>
 			</g>
+
+			{/* From the first shot to the hero: this is one worked example, not a reading. */}
+			<Word
+				name="x-example"
+				x={margin}
+				y={L.exampleY}
+				size={T.small}
+				anchor="start"
+				className="wt-film-tag"
+			>
+				{t(copy.example).toUpperCase()}
+			</Word>
 
 			{/* The dealer's hedge: what the sold calls move like, and the shares held against them. */}
 			<g data-f="book">
@@ -338,11 +392,11 @@ function Scene({
 							name={`b-${row.id}-tag`}
 							x={margin}
 							y={row.at.tag}
-							size={T.small}
+							size={narrow ? T.body : T.small}
 							anchor="start"
-							className="wt-film-tag"
+							className={narrow ? "wt-film-type" : "wt-film-tag"}
 						>
-							{t(row.tag).toUpperCase()}
+							{narrow ? t(row.tag) : t(row.tag).toUpperCase()}
 						</Word>
 						<rect
 							data-f={`b-${row.id}-bar`}
@@ -380,11 +434,25 @@ function Scene({
 					name="b-expression"
 					x={margin}
 					y={L.needed.note}
-					size={T.small}
+					size={L.expressionSize}
 					anchor="start"
 					className="wt-film-num wt-film-dim"
 				>
 					{t(expression(DELTA))}
+				</Word>
+				<Word
+					name="b-gloss"
+					x={
+						narrow
+							? margin
+							: margin + textWidth(t(expression(DELTA)), L.expressionSize) + 14
+					}
+					y={L.needed.gloss}
+					size={T.small}
+					anchor="start"
+					className="wt-film-type wt-film-dim"
+				>
+					{t(copy.deltaGloss)}
 				</Word>
 				{/* The shares still to buy: the stretch of the hedge that isn't there yet. */}
 				<rect
@@ -440,6 +508,15 @@ function Scene({
 				{t(copy.heroCaption)}
 			</Word>
 			<Lines
+				name="hero-why"
+				text={t(copy.heroWhy)}
+				x={W / 2}
+				y={L.heroY + T.body * 3.4}
+				size={T.body}
+				maxWidth={room}
+				className="wt-film-type wt-film-dim"
+			/>
+			<Lines
 				name="m-fall"
 				text={t(copy.fall)}
 				x={margin}
@@ -454,23 +531,48 @@ function Scene({
 			<g data-f="side">
 				<Lines
 					name="s-oi"
-					text={t(copy.sideOi)}
+					text={t(narrow ? copy.sideOiNarrow : copy.sideOi)}
 					x={margin}
 					y={L.side.oi}
 					size={noteSize}
 					maxWidth={room}
 					anchor="start"
 				/>
-				<Word
-					name="s-calc"
-					x={margin}
-					y={L.side.calc}
-					size={narrow ? T.small : T.small * 1.1}
-					anchor="start"
-					className="wt-film-num wt-film-dim"
-				>
-					{t(narrow ? copy.sideCalcShort : copy.sideCalc)}
-				</Word>
+				{narrow ? (
+					<Lines
+						name="s-calc"
+						text={t(copy.sideCalcNarrow)}
+						x={margin}
+						y={L.side.calc}
+						size={T.body}
+						maxWidth={room}
+						anchor="start"
+						className="wt-film-type wt-film-dim"
+					/>
+				) : (
+					<>
+						<Word
+							name="s-calc"
+							x={margin}
+							y={L.side.calc}
+							size={T.small * 1.1}
+							anchor="start"
+							className="wt-film-num wt-film-dim"
+						>
+							{t(copy.sideCalc)}
+						</Word>
+						<Word
+							name="s-gloss"
+							x={margin + textWidth(t(copy.sideCalc), T.small * 1.1) + 16}
+							y={L.side.calc}
+							size={T.small}
+							anchor="start"
+							className="wt-film-type wt-film-dim"
+						>
+							{t(copy.gammaGloss)}
+						</Word>
+					</>
+				)}
 				<Word
 					name="s-column"
 					x={L.right}
@@ -479,7 +581,7 @@ function Scene({
 					anchor="end"
 					className="wt-film-tag"
 				>
-					{t(copy.sideColumn).toUpperCase()}
+					{t(narrow ? copy.sideColumnNarrow : copy.sideColumn).toUpperCase()}
 				</Word>
 				{sideRows.map((row, i) => (
 					<g key={row.id} data-f={`s-${row.id}`}>
@@ -487,7 +589,7 @@ function Scene({
 							name={`s-${row.id}-label`}
 							x={margin}
 							y={L.side.rows[i]}
-							size={noteSize}
+							size={L.side.label}
 							anchor="start"
 						>
 							{t(row.label)}
@@ -495,8 +597,8 @@ function Scene({
 						<Word
 							name={`s-${row.id}-tag`}
 							x={margin}
-							y={L.side.rows[i] + T.small * 1.7}
-							size={T.small}
+							y={L.side.rows[i] + L.side.tag * 1.7}
+							size={L.side.tag}
 							anchor="start"
 							className="wt-film-tag"
 						>
@@ -637,7 +739,12 @@ function build(context: FilmContext) {
 	const gap = one("b-gap");
 	const heroFigure = one<SVGGraphicsElement>("hero-figure");
 	const heroCaption = one<SVGGraphicsElement>("hero-caption");
+	const heroWhy = one<SVGGraphicsElement>("hero-why");
 	const lockHero = one<SVGGraphicsElement>("lock-hero");
+	const example = one("x-example");
+	const deltaGloss = one("b-gloss");
+	// The wide frame sets gamma's gloss beside its arithmetic; a phone folds it into the line.
+	const sideCalc = [one("s-calc"), one("s-gloss")].filter(Boolean);
 	const need = [
 		one("b-need-tag"),
 		needBar,
@@ -655,6 +762,10 @@ function build(context: FilmContext) {
 	// Everything at rest: hidden until its shot needs it.
 	d.hidden([
 		...kids("q"),
+		example,
+		deltaGloss,
+		heroWhy,
+		...sideCalc,
 		spot,
 		moved,
 		...need,
@@ -669,7 +780,6 @@ function build(context: FilmContext) {
 		...kids("s-short"),
 		...kids("s-long"),
 		one("s-oi"),
-		one("s-calc"),
 		one("s-column"),
 		one("s-unknown"),
 		one("h-head"),
@@ -686,6 +796,8 @@ function build(context: FilmContext) {
 	// ——— question: who sold you the calls? ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
+	// The example tag stands from here until the hero has been read.
+	fade(example, 4.3);
 	show(one("q-you"), 4.6);
 	fade(one("q-cost"), 5.0);
 	show(one("q-seller"), 5.5);
@@ -697,7 +809,7 @@ function build(context: FilmContext) {
 	fade(spot, 9.8, 0.4);
 	show(one("h-head"), 9.95);
 	// The row's label and its arithmetic stand a second before its bar draws.
-	fade([one("b-need-tag"), expressionText], 10.5);
+	fade([one("b-need-tag"), expressionText, deltaGloss], 10.5);
 	grow(needBar, -short.options, 11.6);
 	fade([needFigure, one("b-need-unit")], 12.3);
 	fade(one("b-held-tag"), 13.3);
@@ -740,20 +852,27 @@ function build(context: FilmContext) {
 	// stretch, its figure, its name, the lock.
 	fade(gap, 26.2, 0.4);
 	land(heroFigure, 26.8);
-	fade(heroCaption, 27.2, 0.3);
-	d.lock(lockHero, HERO_LOCK, { around: [heroFigure, heroCaption], pad: 8 });
+	fade([heroCaption, heroWhy], 27.2, 0.3);
+	d.lock(lockHero, HERO_LOCK, {
+		around: [heroFigure, heroCaption, heroWhy],
+		pad: 8,
+	});
 	tl.addLabel("hero-lock", HERO_LOCK);
-	const rest = [
-		spot,
-		moved,
-		one("b-need-tag"),
-		needFigure,
-		one("b-need-unit"),
-		expressionText,
-		one("b-held-tag"),
-		one("b-held-figure"),
-		one("b-held-unit"),
-	];
+	// A phone keeps 300 and 260, and what each is, at full strength beside the +40.
+	const rest = L.narrow
+		? [spot, moved, expressionText, deltaGloss]
+		: [
+				spot,
+				moved,
+				one("b-need-tag"),
+				needFigure,
+				one("b-need-unit"),
+				expressionText,
+				deltaGloss,
+				one("b-held-tag"),
+				one("b-held-figure"),
+				one("b-held-unit"),
+			];
 	tl.to(rest, { opacity: 0.45, duration: 0.4 }, HERO_LOCK);
 	// The glow is full at 28.25; nothing moves until 29.95.
 	hide(lockHero, 29.95, 0.3, 0);
@@ -770,6 +889,9 @@ function build(context: FilmContext) {
 			one("m-fall"),
 			heroFigure,
 			heroCaption,
+			heroWhy,
+			example,
+			deltaGloss,
 			spot,
 			moved,
 			...need,
@@ -780,7 +902,7 @@ function build(context: FilmContext) {
 	);
 	show(one("s-head"), 34.45);
 	show(one("s-oi"), 34.75);
-	fade([one("s-calc"), one("s-column")], 35.3);
+	fade([...sideCalc, one("s-column")], 35.3);
 	show(kids("s-short"), 36.3, "below", 0.4);
 	show(kids("s-long"), 36.7, "below", 0.4);
 	fade(one("s-unknown"), 37.3, 0.4);
@@ -791,7 +913,7 @@ function build(context: FilmContext) {
 		[
 			one("s-head"),
 			one("s-oi"),
-			one("s-calc"),
+			...sideCalc,
 			one("s-column"),
 			...kids("s-short"),
 			...kids("s-long"),
