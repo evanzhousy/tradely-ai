@@ -58,7 +58,7 @@ import {
  *                        ten only, 15%, locked
  *   horizons  31.55–40.65  RV behind today, IV ahead with earnings; cut: +11 vol points
  *   claim     40.65–45.45  "IV looks ahead. RV looks back."
- *   next      45.45–47.45  Next: the expected move
+ *   next      45.45–47.45  Next: quotes, orders and trades
  */
 
 const END = 47.45;
@@ -174,11 +174,8 @@ const copy = {
 	],
 	claimBig: ["IV looks ahead. RV looks back.", "IV 向前看，RV 向后看。"],
 	claimSub: ["Specify price, window, convention.", "注明价格、窗口、约定。"],
-	nextBig: ["Next: the expected move", "下一课：预期波动幅度"],
-	nextSub: [
-		"the size of move an option's price implies",
-		"期权价格所隐含的波动幅度",
-	],
+	nextBig: ["Next: quotes, orders and trades", "下一课：报价、订单与成交"],
+	nextSub: ["three different events", "三种不同的事件"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

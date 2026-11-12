@@ -55,7 +55,7 @@ const stages = [
 		imageWidth: 1192,
 	},
 	{
-		start: "delta",
+		start: "zero-dte",
 		end: "portfolio-exposure",
 		title: "home.pathThree",
 		description: "home.pathThreeDescription",

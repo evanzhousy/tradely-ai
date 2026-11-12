@@ -49,7 +49,7 @@ import {
  *   oi        35.45–41.0 headline with the OI hand-over after the hero exits,
  *                        3,400 open Thursday, 12,000 traded Friday; Monday absent, expired
  *   claim     41.0–45.4  "Little time. Large hedge changes."
- *   next      45.4–47.4  Next: implied and realized volatility
+ *   next      45.4–47.4  Next: the expected move
  */
 
 const END = 47.4;
@@ -182,13 +182,10 @@ const copy = {
 		"Time value drains. No OI count after expiry.",
 		"时间价值流失，到期后没有未平仓量读数。",
 	],
-	nextBig: [
-		"Next: implied and realized volatility",
-		"下一课：隐含与已实现波动率",
-	],
+	nextBig: ["Next: the expected move", "下一课：预期变动"],
 	nextSub: [
-		"what the market prices, against what the stock did",
-		"市场定价的波动，与股价实际的波动",
+		"the size of move an option's price implies",
+		"期权价格所隐含的变动幅度",
 	],
 } as const satisfies Record<string, Copy>;
 

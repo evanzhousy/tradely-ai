@@ -14,6 +14,12 @@ export const courseModules = [
 		zh: "合约与金额",
 	},
 	{
+		id: "pricing",
+		path: "core",
+		en: "What moves an option's price",
+		zh: "什么在推动期权价格",
+	},
+	{
 		id: "execution",
 		path: "core",
 		en: "Quotes, executions and sentiment",
@@ -40,8 +46,8 @@ export const courseModules = [
 	{
 		id: "exposure",
 		path: "models",
-		en: "Greeks, volatility and exposure",
-		zh: "希腊值、波动率与敞口",
+		en: "Volatility, 0DTE and exposure",
+		zh: "波动率、0DTE 与敞口",
 	},
 	{
 		id: "structure",
@@ -62,7 +68,12 @@ export const courseModules = [
 		zh: "在 TradingFlow 中构建工作流",
 	},
 ] as const;
-/** The core path runs in lesson order; the three deeper branches follow it in any order. */
+/**
+ * The core path runs in lesson order; the three deeper branches follow it in any order.
+ * "pricing" (delta, gamma, theta and vega, implied volatility) sits right after contracts:
+ * a newcomer needs what moves a price before reading other people's trades. It has no
+ * checkpoint of its own yet; the exposure checkpoint still tests delta and volatility.
+ */
 export const coursePaths = {
 	start: {
 		en: "Start here: no experience needed",
@@ -70,8 +81,8 @@ export const coursePaths = {
 	},
 	core: { en: "Core path", zh: "核心路径" },
 	models: {
-		en: "Deeper branch: Greeks, volatility and structure",
-		zh: "深入分支：希腊值、波动率与结构",
+		en: "Deeper branch: volatility, exposure and structure",
+		zh: "深入分支：波动率、敞口与结构",
 	},
 	portfolio: { en: "Deeper branch: portfolios", zh: "深入分支：投资组合" },
 	workflows: {
@@ -283,6 +294,46 @@ export const syllabus: readonly Entry[] = [
 		"Price contracts from a quote, follow an assignment, price a put from its call, and settle an index option in cash, all on a day you haven't seen.",
 		"在你没见过的一天里：按报价计算合约成本、跟随一次指派、由看涨推出看跌的价格，并以现金结算一张指数期权。",
 		["expiration-settlement"],
+	),
+	lesson(
+		"delta",
+		"pricing",
+		"Delta: a local price sensitivity",
+		"Delta：局部价格敏感度",
+		"Estimate how an option's price moves for a small stock move, and get the position's sign right.",
+		"估算标的小幅变动时期权价格的变化，并确定持仓的正负方向。",
+		["C13"],
+		["premium-payoff"],
+	),
+	lesson(
+		"gamma",
+		"pricing",
+		"Gamma: how delta changes",
+		"Gamma：Delta 如何变化",
+		"See how delta itself changes as the stock moves, and what that means for a hedge.",
+		"理解 Delta 如何随股价变化，以及这对对冲意味着什么。",
+		["C13"],
+		["delta"],
+	),
+	lesson(
+		"theta-vega-rho",
+		"pricing",
+		"Theta, vega and rho: time, volatility and rates",
+		"Theta、Vega 与 Rho：时间、波动率与利率",
+		"Read time decay, volatility and rate sensitivity in their own units, and see how they can outweigh a good move.",
+		"按各自单位读取时间损耗、波动率与利率敏感度，并看它们如何抵消有利的价格变动。",
+		["C13"],
+		["delta"],
+	),
+	lesson(
+		"implied-realized-volatility",
+		"pricing",
+		"Implied and realized volatility: forward and backward views",
+		"隐含与已实现波动率：向前与向后的视角",
+		"Tell the volatility priced into options from the volatility the stock actually showed.",
+		"区分期权价格中隐含的波动率与股票实际表现出的波动率。",
+		["C14"],
+		["theta-vega-rho"],
 	),
 	lesson(
 		"quotes-orders-trades",
@@ -517,36 +568,6 @@ export const syllabus: readonly Entry[] = [
 		["audit-market-recap"],
 	),
 	lesson(
-		"delta",
-		"exposure",
-		"Delta: a local price sensitivity",
-		"Delta：局部价格敏感度",
-		"Estimate how an option's price moves for a small stock move, and get the position's sign right.",
-		"估算标的小幅变动时期权价格的变化，并确定持仓的正负方向。",
-		["C13"],
-		["premium-payoff"],
-	),
-	lesson(
-		"gamma",
-		"exposure",
-		"Gamma: how delta changes",
-		"Gamma：Delta 如何变化",
-		"See how delta itself changes as the stock moves, and what that means for a hedge.",
-		"理解 Delta 如何随股价变化，以及这对对冲意味着什么。",
-		["C13"],
-		["delta"],
-	),
-	lesson(
-		"theta-vega-rho",
-		"exposure",
-		"Theta, vega and rho: time, volatility and rates",
-		"Theta、Vega 与 Rho：时间、波动率与利率",
-		"Read time decay, volatility and rate sensitivity in their own units, and see how they can outweigh a good move.",
-		"按各自单位读取时间损耗、波动率与利率敏感度，并看它们如何抵消有利的价格变动。",
-		["C13"],
-		["delta"],
-	),
-	lesson(
 		"zero-dte",
 		"exposure",
 		"0DTE: options on their last day",
@@ -555,16 +576,6 @@ export const syllabus: readonly Entry[] = [
 		"观察当天到期的期权价值如何按小时流失，看它的 Delta 在行权价附近如何随几美分摆动，以及为何它的成交量永远不会出现在未平仓量里。",
 		["C42"],
 		["theta-vega-rho", "session-flow-vs-structure"],
-	),
-	lesson(
-		"implied-realized-volatility",
-		"exposure",
-		"Implied and realized volatility: forward and backward views",
-		"隐含与已实现波动率：向前与向后的视角",
-		"Tell the volatility priced into options from the volatility the stock actually showed.",
-		"区分期权价格中隐含的波动率与股票实际表现出的波动率。",
-		["C14"],
-		["theta-vega-rho"],
 	),
 	lesson(
 		"expected-move",

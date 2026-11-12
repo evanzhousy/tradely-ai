@@ -57,11 +57,11 @@ const messages = {
 		"home.pathTitle": "Less noise. A clear place to start.",
 		"home.lessonRange": "Lessons {first}–{last}",
 		"home.pathOneDescription":
-			"Start with shares, quotes and your first option, then learn contracts, trades, side and sentiment before interpreting flow.",
+			"Start with shares, quotes and your first option, then learn contracts, what moves an option's price, trades, side and sentiment before interpreting flow.",
 		"home.pathTwoDescription":
 			"Ask an answerable question, compare fairly, then build and audit a research packet.",
 		"home.pathThreeDescription":
-			"Two optional branches: Greeks, volatility and market structure, and your own portfolio's risk and performance.",
+			"Two optional branches: volatility, exposure and market structure, and your own portfolio's risk and performance.",
 		"hall.sceneLabel": "Inside the Tradely trading hall",
 		"hall.simulation": "Trading hall · Simulated market data",
 		"hall.observeLabel": "Read the data",
@@ -395,11 +395,11 @@ const messages = {
 		"home.pathTitle": "理清思路，找到起点。",
 		"home.lessonRange": "第 {first}–{last} 课",
 		"home.pathOneDescription":
-			"先认识股票、报价和第一份期权，再理解合约、交易、成交侧与情绪标签，然后解读资金流。",
+			"先认识股票、报价和第一份期权，再理解合约、什么在推动期权价格、交易、成交侧与情绪标签，然后解读资金流。",
 		"home.pathTwoDescription":
 			"提出可回答的问题、公平比较，再建立并审核研究包。",
 		"home.pathThreeDescription":
-			"两个可选分支：希腊值、波动率与市场结构，以及你自己组合的风险与绩效。",
+			"两个可选分支：波动率、敞口与市场结构，以及你自己组合的风险与绩效。",
 		"hall.sceneLabel": "走进 Tradely 交易大厅",
 		"hall.simulation": "交易大厅 · 模拟行情",
 		"hall.observeLabel": "读懂数据",

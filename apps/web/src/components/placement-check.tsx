@@ -108,6 +108,25 @@ const sections: readonly Section[] = [
 		],
 	},
 	{
+		lessonId: "delta",
+		topic: ["delta", "Delta"],
+		questions: [
+			{
+				id: "delta",
+				prompt: [
+					"A call has a delta of 0.40. If the stock rises $1 and nothing else changes, about how much does the call's price change?",
+					"某看涨期权的 Delta 为 0.40。若股价上涨 $1 且其他条件不变，期权价格大约变化多少？",
+				],
+				choices: [
+					["share", "About +$0.40 per share", "每股约 +$0.40"],
+					["contract", "About +$0.40 per contract", "每张合约约 +$0.40"],
+					["dollar", "About +$1.00 per share", "每股约 +$1.00"],
+				],
+				answer: "share",
+			},
+		],
+	},
+	{
 		lessonId: "quotes-orders-trades",
 		topic: ["quotes versus trades", "报价与成交的区别"],
 		questions: [
@@ -185,25 +204,6 @@ const sections: readonly Section[] = [
 					],
 				],
 				answer: "measure",
-			},
-		],
-	},
-	{
-		lessonId: "delta",
-		topic: ["delta", "Delta"],
-		questions: [
-			{
-				id: "delta",
-				prompt: [
-					"A call has a delta of 0.40. If the stock rises $1 and nothing else changes, about how much does the call's price change?",
-					"某看涨期权的 Delta 为 0.40。若股价上涨 $1 且其他条件不变，期权价格大约变化多少？",
-				],
-				choices: [
-					["share", "About +$0.40 per share", "每股约 +$0.40"],
-					["contract", "About +$0.40 per contract", "每张合约约 +$0.40"],
-					["dollar", "About +$1.00 per share", "每股约 +$1.00"],
-				],
-				answer: "share",
 			},
 		],
 	},

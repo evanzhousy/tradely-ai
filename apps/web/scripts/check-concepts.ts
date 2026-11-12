@@ -9,7 +9,7 @@
  * concept or an unknown prerequisite lesson; a cycle in the lesson graph; a hard concept
  * prerequisite that neither the lesson nor one of its prerequisite lessons teaches; a
  * `buildsOn` entry naming an unknown lesson; a checkpoint without its lesson file, or a
- * checkpoint `revisit` that names a lesson outside its module; a teaching unit whose id is not a
+ * checkpoint `revisit` that names a lesson of a later module; a teaching unit whose id is not a
  * lesson; and, wherever a question gives per-choice feedback (`why`), a wrong choice without it
  * or a right choice with it, in the units' case questions (run) and in the lessons' predict
  * blocks (read from the source); and a practice case whose independent step keeps every choice
@@ -214,9 +214,12 @@ for (const checkpoint of checkpoints) {
 		const lesson = entries.get(revisit);
 		if (!lesson || lesson.kind === "checkpoint")
 			fail(`${checkpoint.id}: revisit "${revisit}" is not a lesson`);
-		else if (lesson.moduleId !== checkpoint.moduleId)
+		else if (
+			lesson.moduleId !== checkpoint.moduleId &&
+			syllabus.indexOf(lesson) > syllabus.indexOf(checkpoint)
+		)
 			fail(
-				`${checkpoint.id}: revisit "${revisit}" is in module ${lesson.moduleId}, not ${checkpoint.moduleId}`,
+				`${checkpoint.id}: revisit "${revisit}" is in module ${lesson.moduleId} and comes after the checkpoint`,
 			);
 	}
 }

@@ -56,7 +56,7 @@ import {
  *                         a subordinate repriced −$0.19, locked
  *   positions  31.95–37.05    the −$0.20 shrinks in place and feeds you −$320, Ben +$200
  *   rho        37.05–45.45    $0.042 a rate point; cut: "A good move can still lose."
- *   next       45.45–47.45  Next: 0DTE
+ *   next       45.45–47.45  Next: implied and realized volatility
  */
 
 const END = 47.45;
@@ -228,8 +228,14 @@ const copy = {
 		"Time and volatility use separate units.",
 		"时间和波动率各用各的单位。",
 	],
-	nextBig: ["Next: 0DTE", "下一课：0DTE"],
-	nextSub: ["an option's last day, hour by hour", "期权的最后一天，逐小时看"],
+	nextBig: [
+		"Next: implied and realized volatility",
+		"下一课：隐含与已实现波动率",
+	],
+	nextSub: [
+		"what the market prices, against what the stock did",
+		"市场定价的波动，与股价实际的波动",
+	],
 } as const satisfies Record<string, Copy>;
 
 const barLabels: Record<(typeof bars)[number]["id"], readonly [Copy, Copy]> = {
