@@ -1677,8 +1677,8 @@ export const concepts: Record<ConceptId, Concept> = {
 		id: "C46",
 		name: t("Dealer hedging", "做市商对冲"),
 		description: t(
-			"The seller of an option you buy is often a market maker, or dealer, who aims to earn the bid-ask spread and not the stock's direction, so it offsets the option position's delta with shares. Gamma changes that delta as the stock moves: a dealer who is short options (short gamma) buys rises and sells falls, and one who is long options (long gamma) does the opposite. Open interest shows that contracts exist, not which side dealers hold, so any dealer-positioning figure is a model built on an assumed side, and it describes a hedge, not a forecast.",
-			"你买入的期权，卖方往往是做市商（dealer）；它想赚的是买卖价差，而不是股价的方向，所以会用股票抵消期权持仓的 Delta。股价变动时 Gamma 会改变这个 Delta：做空期权的做市商（空 Gamma）涨时买入、跌时卖出，做多期权的做市商（多 Gamma）则相反。未平仓量只说明合约存在，不说明做市商在哪一边，所以任何“做市商持仓”数字都是建立在假设方向上的模型；它描述的是对冲，而不是预测。",
+			"The seller of an option you buy may be a market maker, or dealer, who aims to earn the bid-ask spread and not the stock's direction, so it offsets the option position's delta with shares. Gamma changes that delta as the stock moves: a dealer who is short options (short gamma) buys rises and sells falls, and one who is long options (long gamma) does the opposite. Open interest shows that contracts exist, not which side dealers hold, so any dealer-positioning figure is a model built on an assumed side, and it describes a hedge, not a forecast.",
+			"你买入的期权，卖方可能是做市商（dealer）；它想赚的是买卖价差，而不是股价的方向，所以会用股票抵消期权持仓的 Delta。股价变动时 Gamma 会改变这个 Delta：做空期权的做市商（空 Gamma）涨时买入、跌时卖出，做多期权的做市商（多 Gamma）则相反。未平仓量只说明合约存在，不说明做市商在哪一边，所以任何“做市商持仓”数字都是建立在假设方向上的模型；它描述的是对冲，而不是预测。",
 		),
 		evidence: [
 			t(

@@ -236,8 +236,8 @@ function SoldScene({
 			details={
 				<p>
 					{t([
-						"When you buy an option, the seller is often a market maker, also called a dealer: a firm that quotes a price to buy and a price to sell and aims to earn the gap between them, the bid-ask spread. It doesn't want the stock's direction, so it hedges: an option position moves like delta × contracts × 100 shares, and the dealer holds the opposite number of shares. A dealer who sold puts would sell shares short instead, because a put's delta is negative. The seller isn't always a dealer; it can be another investor, and a trade record doesn't say which.",
-						"你买入期权时，卖方往往是做市商（dealer）：这类机构同时报出买入价和卖出价，目标是赚取两者之间的差额，也就是买卖价差。它不想承担股价的方向，所以会对冲：一笔期权持仓的涨跌相当于 Delta × 张数 × 100 股，做市商就持有相反数量的股票。卖出看跌的做市商则会卖空股票，因为看跌的 Delta 为负。卖方不一定是做市商，也可能是另一位投资者，成交记录并不说明是哪一种。",
+						"When you buy an option, the seller may be a market maker, also called a dealer: a firm that stands ready to buy and to sell at the prices it quotes, and aims to earn the gap between them, the bid-ask spread. It doesn't want the stock's direction, so it hedges: an option position moves like delta × contracts × 100 shares, and the dealer holds the opposite number of shares. A dealer who sold puts would sell shares short instead, because a put's delta is negative. The seller isn't always a dealer; it can be another investor, and a trade record doesn't say which.",
+						"你买入期权时，卖方可能是做市商（dealer）：这类机构随时准备按自己报出的买入价和卖出价成交，目标是赚取两者之间的差额，也就是买卖价差。它不想承担股价的方向，所以会对冲：一笔期权持仓的涨跌相当于 Delta × 张数 × 100 股，做市商就持有相反数量的股票。卖出看跌的做市商则会卖空股票，因为看跌的 Delta 为负。卖方不一定是做市商，也可能是另一位投资者，成交记录并不说明是哪一种。",
 					])}
 				</p>
 			}
