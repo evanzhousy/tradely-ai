@@ -28,9 +28,9 @@ const staticPages: SeoPage[] = [
 	},
 	{
 		path: "/",
-		title: "Learn Options Flow, Greeks & Gamma Exposure | Tradely",
+		title: "Learn Options Trading for Free | Tradely",
 		description:
-			"Learn to interpret options data with worked examples and animated diagrams. Explore options flow, open interest, Greeks and gamma exposure.",
+			"A free, visual path from your first stock quote to choosing, sizing and exiting an options trade. Animated lessons and worked examples. No experience needed.",
 		index: true,
 		sitemap: true,
 	},
@@ -61,9 +61,9 @@ const staticPages: SeoPage[] = [
 	},
 	{
 		path: "/courses/tradingflow-foundations",
-		title: "Options Research Course: Visual Lessons | Tradely",
+		title: "Free Options Trading Course for Beginners | Tradely",
 		description:
-			"Build a repeatable options research process through contracts, executions, flow, Greeks and market structure. Explore the complete free curriculum.",
+			"Learn how options work, what moves their price, and how to choose, size and exit a first trade. Free visual lessons. No experience needed.",
 		index: true,
 		sitemap: true,
 	},
@@ -128,18 +128,18 @@ const chineseStaticMetadata: Record<
 	Pick<SeoPage, "title" | "description">
 > = {
 	"/": {
-		title: "免费学习期权成交流、希腊值与 Gamma Exposure | Tradely",
+		title: "免费学习期权交易 | Tradely",
 		description:
-			"通过动画图解和完整示例学习解读期权数据，涵盖成交流、未平仓量、希腊值与 Gamma Exposure。",
+			"从第一个股票报价开始，一步步学会期权如何运作、什么推动价格，以及如何为一笔交易选择合约、决定张数并计划离场。动画课程与完整示例，无需任何经验。",
 	},
 	"/changelog": {
 		title: "更新日志 | Tradely",
 		description: "查看 Tradely 课程、动画图解与期权研究学习体验的最新改进。",
 	},
 	"/courses/tradingflow-foundations": {
-		title: "视觉化期权研究课程 | Tradely",
+		title: "免费期权交易入门课程 | Tradely",
 		description:
-			"从合约、成交、成交流、希腊值到市场结构，建立可重复的期权研究流程。",
+			"学习期权如何运作、什么推动价格，以及如何为第一笔交易选择合约、决定张数并计划离场。免费视觉化课程，无需任何经验。",
 	},
 	"/pricing": {
 		title: "免费学习与历史购买 | Tradely",

@@ -60,9 +60,9 @@ const courseCopy = {
 		description: tradingFlowCourse.description,
 	},
 	zh: {
-		title: "证据驱动的期权研究",
+		title: "期权交易入门",
 		description:
-			"理解合约、报价、成交、成交流、希腊值、市场结构与投资组合，用证据建立并审核研究。",
+			"学习期权合约如何运作、什么推动价格，以及如何选择并下一笔交易。之后可以深入：波动率与市场结构、投资组合、解读成交流，以及基于证据的研究。",
 	},
 } as const;
 

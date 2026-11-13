@@ -76,8 +76,8 @@ const messages = {
 		"hall.replay": "Replay the 3D scan",
 		"hall.loading": "Opening the trading hall…",
 		"hall.static": "Trading hall preview",
-		"home.openingLabel": "A field guide to options research",
-		"home.titleRead": "Learn options research for free.",
+		"home.openingLabel": "A field guide to options trading",
+		"home.titleRead": "Learn options trading for free.",
 		"home.titleVerify": "See how it works.",
 		"home.intro":
 			"A guided path from your first stock quote to options flow, market structure and independent research. No experience needed: start with shares and quotes, then build up.",
@@ -412,8 +412,8 @@ const messages = {
 		"hall.replay": "重播 3D 扫描",
 		"hall.loading": "正在展开交易大厅…",
 		"hall.static": "交易大厅预览",
-		"home.openingLabel": "期权研究的实践指南",
-		"home.titleRead": "免费学习期权研究。",
+		"home.openingLabel": "期权交易的实践指南",
+		"home.titleRead": "免费学习期权交易。",
 		"home.titleVerify": "看懂它如何运作。",
 		"home.intro":
 			"从看懂第一个股票报价出发，一路走到期权成交流、市场结构与独立研究。无需任何基础：先学股票与报价，再逐步深入。",

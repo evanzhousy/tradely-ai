@@ -298,6 +298,8 @@ const legacyCourse = {
 
 export const tradingFlowCourse = {
 	...legacyCourse,
+	// The course is for new option traders; legacyCourse keeps the name earlier buyers saw.
+	title: "Options Trading for Beginners",
 	description:
 		"Learn how option contracts work, what moves their price, and how to choose and place a trade. Then go deeper: volatility and market structure, portfolios, reading flow, and research from evidence.",
 	modules: courseModules,
