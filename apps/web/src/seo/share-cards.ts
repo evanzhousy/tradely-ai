@@ -41,6 +41,7 @@ export const shareCards: ReadonlySet<string> = new Set([
 	"recipe-inputs",
 	"recipe-map",
 	"research-checklist",
+	"selling-covered-options",
 	"session-flow-vs-structure",
 	"size-and-exit",
 	"stocks-and-prices",
