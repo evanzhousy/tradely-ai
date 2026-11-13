@@ -194,7 +194,7 @@ cmd_cards() { # [LESSON...]
 	if [ $# -gt 0 ]; then lessons="$(printf '%s\n' "$@")"
 	else lessons="$(cd "$WEB/src/features/learning/lessons" && ls -- *-film.tsx | sed 's/-film\.tsx$//')"; fi
 	run share-cards.mjs LESSONS="$lessons" OUT="$dir" PORT="$PORT" \
-		SITE_TITLE="Learn options research for free." SITE_FILM="what-options-are"
+		SITE_TITLE="Learn options trading for free." SITE_FILM="what-options-are"
 	# Flat frames keep their detail in a small palette, at a fraction of the size.
 	for card in $lessons tradely; do
 		[ -f "$dir/$card.png" ] && magick "$dir/$card.png" -strip -colors 128 "PNG8:$pub/$card.png"
