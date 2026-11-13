@@ -552,6 +552,17 @@ export const glossary: readonly GlossaryEntry[] = [
 		"C45",
 	),
 	entry(
+		"net-credit",
+		["Net credit", "净收入"],
+		["net credits", "net credit"],
+		["净收入"],
+		[
+			"What a trade with several legs brings in overall: the premium received for the sold legs minus the premium paid for the bought ones.",
+			"多腿交易合计收到的金额：卖出各腿收到的权利金，减去买入各腿付出的权利金。",
+		],
+		"C40",
+	),
+	entry(
 		"debit-spread",
 		["Debit spread", "借方价差"],
 		["debit spreads", "debit spread"],

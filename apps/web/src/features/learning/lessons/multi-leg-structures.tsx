@@ -1,11 +1,4 @@
-import {
-	type Copy,
-	count,
-	optionQuote,
-	pick,
-	signedUsd,
-	usd,
-} from "@/content/world";
+import { type Copy, optionQuote, pick, signedUsd, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import { ChoiceField, RangeControl } from "../concept-scene";
 import {
@@ -18,6 +11,7 @@ import {
 	type TapeRow,
 	TradeTape,
 	tapeHeight,
+	tapeTitle,
 } from "../walkthrough/instruments/trade-tape";
 import { Working, workingHeight } from "../walkthrough/instruments/working";
 import { Player } from "../walkthrough/player";
@@ -26,31 +20,35 @@ import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
 import { SceneFrame } from "../walkthrough/walkthrough";
 import { multiLegStructuresFilm } from "./multi-leg-structures-film";
 import {
-	BEARISH,
-	BULLISH,
 	CALL_100,
 	CALL_CREDIT,
+	CLOSES,
 	CREDIT,
 	callSpread,
 	condor,
 	curve,
 	LEGS,
 	type Leg,
+	legCash,
 	legPrice,
+	legValueAt,
 	MAX_LOSS,
+	NET_CASH,
 	oct18,
-	PACKAGE_CREDIT,
-	PACKAGE_RISK,
 	PUT_100,
 	PUT_CREDIT,
+	PUT_SIDE_CLOSE,
 	putSpread,
 	RANGE,
+	resultAt,
 	SIZE,
 	STRADDLE_COST,
 	STRADDLE_HIGH,
 	STRADDLE_LOW,
 	STRIKES,
 	straddle,
+	WIDTH,
+	WORST_CASH,
 	worth,
 } from "./multi-leg-structures-model";
 
@@ -410,11 +408,48 @@ function CondorView({
 	);
 }
 
-// ——— Scene 3: four prints, one package ———
+// ——— Scene 3: your condor as one order ———
 
-type PackageState = { view: "legs" | "tally" | "package" };
+type OrderState = { stage: 0 | 1 | 2; close: number };
 
-function PackageView({
+/** "Sell 95 put", or with its size on a wider stage: "Sell 1 · 95 put". */
+const legName = (leg: Leg, narrow: boolean): Copy => {
+	const right: Copy =
+		leg.contract.right === "call" ? ["call", "看涨"] : ["put", "看跌"];
+	const side: Copy = leg.side === "sell" ? ["Sell", "卖出"] : ["Buy", "买入"];
+	return narrow
+		? [
+				`${side[0]} ${leg.contract.strike} ${right[0]}`,
+				`${side[1]} ${leg.contract.strike} ${right[1]}`,
+			]
+		: [
+				`${side[0]} ${SIZE} · ${leg.contract.strike} ${right[0]}`,
+				`${side[1]} ${SIZE} 张 ${leg.contract.strike} ${right[1]}`,
+			];
+};
+/** Signed amounts in cents as a sum: "+$205 − $100 + $205 − $93". */
+const sum = (cents: readonly number[]) =>
+	cents
+		.map((value, i) =>
+			i === 0
+				? signedUsd(value, 0)
+				: `${value < 0 ? "−" : "+"} ${usd(Math.abs(value), 0)}`,
+		)
+		.join(" ");
+const SOLD_CASH = LEGS.filter((leg) => leg.side === "sell").reduce(
+	(total, leg) => total + legCash(leg),
+	0,
+);
+const BOUGHT_CASH = NET_CASH - SOLD_CASH;
+/** What the four legs are worth to you at a close, added up, in cents a condor. */
+const legsAt = (close: number) =>
+	LEGS.reduce((total, leg) => total + legValueAt(leg, close), 0);
+const signTone = (cents: number): ResultItem["tone"] =>
+	cents > 0 ? "gain" : cents < 0 ? "loss" : "neutral";
+const PUT_SIDE_LEG = LEGS.find((leg) => legValueAt(leg, PUT_SIDE_CLOSE) !== 0);
+const PUT_SIDE_OWED = -legsAt(PUT_SIDE_CLOSE);
+
+function OrderView({
 	locale,
 	phase,
 	state,
@@ -423,119 +458,138 @@ function PackageView({
 }: {
 	locale: Locale;
 	phase: Phase;
-	state: PackageState;
-	explore: PackageState | null;
-	setExplore: (next: PackageState) => void;
+	state: OrderState;
+	explore: OrderState | null;
+	setExplore: (next: OrderState) => void;
 }) {
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
-	// A phone has no room for the time, and names the side in the present tense to save room.
-	const legName = (leg: Leg, narrow: boolean): string =>
-		t([
-			`${leg.side === "buy" ? (narrow ? "Buy" : "Bought") : narrow ? "Sell" : "Sold"} ${leg.contract.strike} ${leg.contract.right}`,
-			`${leg.side === "buy" ? "买入" : "卖出"} ${leg.contract.strike} ${leg.contract.right === "call" ? "看涨" : "看跌"}`,
-		]);
+	const closed = shown.stage >= 2;
+	const atClose = t([`At $${shown.close}`, `收于 $${shown.close}`]);
 	const rows = (narrow: boolean): TapeRow[] =>
 		LEGS.map((leg) => ({
 			key: leg.key,
 			cells: [
-				...(narrow ? [] : ["11:20:04"]),
-				legName(leg, narrow),
-				count(SIZE),
+				t(legName(leg, narrow)),
 				usd(legPrice(leg)),
-				shown.view === "package"
-					? t(["multi-leg", "多腿"])
-					: leg.label === "bullish"
-						? t(["bullish", "看多"])
-						: t(["bearish", "看空"]),
+				signedUsd(legCash(leg), 0),
+				...(closed ? [signedUsd(legValueAt(leg, shown.close), 0)] : []),
 			],
 		}));
-	const lines: string[] =
-		shown.view === "legs"
+	const columns = (narrow: boolean) => {
+		const leg = { label: t(["Leg", "腿"]), share: closed ? 0.41 : 0.44 };
+		const price = {
+			label: narrow ? t(["Price", "价格"]) : t(["Price a share", "每股价格"]),
+			share: closed ? 0.16 : 0.24,
+			align: "end" as const,
+		};
+		const entry = {
+			label: narrow ? t(["Entry", "入场"]) : t(["At entry", "入场时"]),
+			share: closed ? 0.21 : 0.32,
+			align: "end" as const,
+		};
+		return closed
 			? [
+					leg,
+					price,
+					entry,
+					{ label: atClose, share: 0.22, align: "end" as const },
+				]
+			: [leg, price, entry];
+	};
+	const entryCash = sum(LEGS.map(legCash));
+	const result = resultAt(shown.close);
+	const lines: string[] = closed
+		? [
+				`${sum([NET_CASH, legsAt(shown.close)])} = ${signedUsd(result, 0)}`,
+				t([
+					"credit at entry, plus the legs at expiry: the whole condor",
+					"入场时的收入，加上到期时各腿的价值：整组铁鹰",
+				]),
+			]
+		: shown.stage === 1
+			? [
+					`${entryCash} = ${signedUsd(NET_CASH, 0)}`,
 					t([
-						"Four prints in one second, each flagged multi-leg",
-						"同一秒内四笔成交，每笔都带多腿标记",
-					]),
-					t([
-						"labelled one by one: 2 bullish, 2 bearish",
-						"逐笔贴标签：2 笔看多，2 笔看空",
+						`one order, one net price: a ${share(CREDIT)} credit a share`,
+						`一张订单，一个净价：每股净收入 ${share(CREDIT)}`,
 					]),
 				]
-			: shown.view === "tally"
-				? [
-						t([
-							`bullish premium ${usd(BULLISH, 0)} · bearish ${usd(BEARISH, 0)}`,
-							`看多权利金 ${usd(BULLISH, 0)} · 看空 ${usd(BEARISH, 0)}`,
-						]),
-						t([
-							`net ${signedUsd(BULLISH - BEARISH, 0)}: "slightly bearish"`,
-							`净额 ${signedUsd(BULLISH - BEARISH, 0)}：“略偏看空”`,
-						]),
-					]
-				: [
-						t([
-							`one short iron condor × ${SIZE}: ${usd(PACKAGE_CREDIT, 0)} credit`,
-							`一组铁鹰空头 × ${SIZE}：收入 ${usd(PACKAGE_CREDIT, 0)}`,
-						]),
-						t([
-							`kept if ALFA stays $95–$105 · up to ${usd(PACKAGE_RISK, 0)} at risk`,
-							`ALFA 留在 $95–$105 即全部保留 · 最多 ${usd(PACKAGE_RISK, 0)} 风险`,
-						]),
-					];
-	const result: ResultItem[] =
-		shown.view === "package"
+			: [
+					entryCash,
+					t([
+						"per contract (×100 shares): sold legs bring cash in, bought legs cost it",
+						"每张（×100 股）：卖出的腿收入现金，买入的腿支出现金",
+					]),
+				];
+	const items: ResultItem[] =
+		shown.stage === 0
 			? [
 					{
-						id: "view",
-						label: t(["The package", "整体"]),
-						value: t(["ALFA stays in a range", "ALFA 留在区间内"]),
+						id: "in",
+						label: t(["Sold legs bring in", "卖出的腿收入"]),
+						value: signedUsd(SOLD_CASH, 0),
 					},
 					{
-						id: "credit",
-						label: t(["Credit collected", "收入"]),
-						value: usd(PACKAGE_CREDIT, 0),
-						note: t([
-							`${share(CREDIT)} × 100 × ${SIZE}`,
-							`${share(CREDIT)} × 100 × ${SIZE}`,
-						]),
-						evidence: "calculated",
-					},
-					{
-						id: "risk",
-						label: t(["Most it can lose", "最大亏损"]),
-						value: signedUsd(-PACKAGE_RISK, 0),
-						tone: "loss",
-						evidence: "calculated",
+						id: "out",
+						label: t(["Bought legs cost", "买入的腿支出"]),
+						value: signedUsd(BOUGHT_CASH, 0),
 					},
 				]
 			: [
 					{
-						id: "labels",
-						label: t(["Leg labels", "单腿标签"]),
-						value: t(["2 bullish · 2 bearish", "2 看多 · 2 看空"]),
+						id: "net",
+						label: t(["Net credit, one condor", "每组净收入"]),
+						value: signedUsd(NET_CASH, 0),
+						note: t([
+							`${share(CREDIT)} a share × 100`,
+							`每股 ${share(CREDIT)} × 100`,
+						]),
+						tone: "gain",
+						evidence: "calculated",
 					},
-					...(shown.view === "tally"
+					{
+						id: "worst",
+						label: t(["Worst case at expiry", "到期最坏情况"]),
+						value: signedUsd(WORST_CASH, 0),
+						note: t([
+							`${share(WIDTH)} width − ${share(CREDIT)}, a share`,
+							`每股宽度 ${share(WIDTH)} − ${share(CREDIT)}`,
+						]),
+						tone: "loss",
+						evidence: "calculated",
+					},
+					...(closed
 						? [
 								{
-									id: "net",
-									label: t(["Premium by label, net", "按标签计的净权利金"]),
-									value: signedUsd(BULLISH - BEARISH, 0),
-									tone: "loss" as const,
+									id: "close",
+									label: t([
+										`Whole condor at ALFA $${shown.close}`,
+										`ALFA 收于 $${shown.close} 时整组铁鹰`,
+									]),
+									value: signedUsd(result, 0),
+									tone: signTone(result),
 									evidence: "calculated" as const,
 								},
 							]
 						: []),
 				];
+	const orderTitle = t([
+		"Your order · ALFA Oct 18 iron condor",
+		"你的订单 · ALFA 10月18日 铁鹰",
+	]);
+	/** The tape's height in a stage `width` wide: its title takes two lines on a phone. */
+	const tapeBottom = (width: number) =>
+		tapeHeight(4, tapeTitle(orderTitle, width - 16).length);
 	return (
 		<SceneFrame
 			stage={
 				<Stage
 					label={t([
-						"Four ALFA Oct 18 option prints in the same second, read leg by leg and as one iron condor",
-						"同一秒内四笔 ALFA 10月18日 期权成交，逐腿解读与作为一个铁鹰整体解读",
+						"Your ALFA Oct 18 iron condor as one order: its four legs, the cash each brings in or costs, the net credit, and what each leg is worth at an Oct 18 close",
+						"你的 ALFA 10月18日 铁鹰作为一张订单：四条腿、每条腿收入或支出的现金、净收入，以及 10月18日收盘时每条腿的价值",
 					])}
-					height={(width) => tapeHeight(4) + 18 + workingHeight(width, 2)}
+					height={(width) => tapeBottom(width) + 18 + workingHeight(width, 2)}
 				>
 					{(width) => (
 						<g>
@@ -543,53 +597,15 @@ function PackageView({
 								x={8}
 								y={4}
 								width={width - 16}
-								title={t([
-									"Time and sales · ALFA Oct 18 options",
-									"逐笔成交 · ALFA 10月18日 期权",
-								])}
-								columns={
-									width < 520
-										? [
-												{ label: t(["Leg", "腿"]), share: 0.4 },
-												{
-													label: t(["Qty", "张数"]),
-													share: 0.13,
-													align: "end",
-												},
-												{
-													label: t(["Price", "价格"]),
-													share: 0.19,
-													align: "end",
-												},
-												{
-													label: t(["Label", "标签"]),
-													share: 0.28,
-													align: "end",
-												},
-											]
-										: [
-												{ label: t(["Time", "时间"]), share: 0.18 },
-												{ label: t(["Leg", "腿"]), share: 0.3 },
-												{ label: t(["Qty", "张数"]), share: 0.1, align: "end" },
-												{
-													label: t(["Price", "价格"]),
-													share: 0.16,
-													align: "end",
-												},
-												{
-													label: t(["Label", "标签"]),
-													share: 0.26,
-													align: "end",
-												},
-											]
-								}
+								title={orderTitle}
+								columns={columns(width < 520)}
 								rows={rows(width < 520)}
 								maxRows={4}
-								empty={t(["No prints", "没有成交"])}
+								empty={t(["No legs", "没有腿"])}
 							/>
 							<Working
 								x={14}
-								y={tapeHeight(4) + 12}
+								y={tapeBottom(width) + 12}
 								width={width - 28}
 								lines={lines.map((text, i) => ({
 									text,
@@ -600,26 +616,24 @@ function PackageView({
 					)}
 				</Stage>
 			}
-			result={result}
+			result={items}
 			controls={
 				explore ? (
 					<ChoiceField
-						label={t(["Read the prints", "解读成交"])}
-						value={explore.view}
-						options={[
-							["legs", t(["Leg by leg", "逐腿"])],
-							["tally", t(["Premium by label", "按标签计权利金"])],
-							["package", t(["As one package", "作为整体"])],
-						]}
-						onChange={(view) => setExplore({ view })}
+						label={t(["ALFA on Oct 18", "10月18日 ALFA"])}
+						value={String(explore.close)}
+						options={CLOSES.map((close) => [String(close), `$${close}`])}
+						onChange={(close) =>
+							setExplore({ ...explore, close: Number(close) })
+						}
 					/>
 				) : null
 			}
 			details={
 				<p>
 					{t([
-						"A multi-leg order is priced and executed as one package, but the tape prints each leg separately. A feed that labels prints one at a time will call some legs bullish and others bearish, and adding premium by label can even produce a direction the trader never had. Prints in the same second with a multi-leg condition, matching sizes and strikes that fit a known structure are the clues to read them together; only linked-leg records prove it.",
-						"多腿订单作为一个整体定价和执行，但逐笔成交会把每条腿分开记录。逐笔贴标签的数据会把一些腿标为看多、另一些标为看空，按标签加总权利金甚至会得出交易者从未有过的方向。同一秒内、带多腿条件、数量一致、行权价符合某种已知结构，这些都是把它们合起来解读的线索；只有关联腿记录才能证明。",
+						`Each leg on its own looks like a different bet: a sold put, a bought call. None of them is your position. You decided on the condor once, entered it as one order at one net price, and what you hold is the sum: the ${signedUsd(NET_CASH, 0)} credit at entry plus what the four legs are worth at expiry. Judge it by that whole. Its best case is the credit, its worst case is one side's width minus the credit, ${signedUsd(WORST_CASH, 0)}, and in between the result depends on where ALFA closes.`,
+						`单看每条腿，它们像是不同的押注：卖出一张看跌，买入一张看涨。但没有哪一条腿是你的持仓。你只做了一个决定：铁鹰，用一张订单、一个净价下达；你持有的是总和：入场时的 ${signedUsd(NET_CASH, 0)} 收入，加上四条腿到期时的价值。要按这个整体来评判。最好情况是这笔收入，最坏情况是一侧的宽度减去收入，即 ${signedUsd(WORST_CASH, 0)}；两者之间的结果取决于 ALFA 收在哪里。`,
 					])}
 				</p>
 			}
@@ -826,107 +840,111 @@ const scenes = [
 		},
 		View: CondorView,
 	}),
-	defineScene<PackageState, PackageState>({
+	defineScene<OrderState, OrderState>({
 		id: "package",
-		label: ["Four prints, one trade", "四笔成交，一笔交易"],
+		label: ["One order", "一张订单"],
 		title: [
-			"Read a multi-leg trade as one package",
-			"把多腿交易作为一个整体来读",
+			"Enter the condor as one order, judge the whole",
+			"把铁鹰作为一张订单下达，按整体评判",
 		],
 		predict: {
 			prompt: [
-				"Four ALFA Oct 18 prints arrive in the same second, all flagged multi-leg, 200 contracts each: sold 95 puts, bought 90 puts, sold 105 calls, bought 110 calls. What's the trader's view?",
-				"同一秒内出现四笔 ALFA 10月18日 成交，都带多腿标记，每笔 200 张：卖出 95 看跌、买入 90 看跌、卖出 105 看涨、买入 110 看涨。交易者的看法是什么？",
+				`Your condor went in as one order for a ${signedUsd(NET_CASH, 0)} net credit. On Oct 18 ALFA closes at $${PUT_SIDE_CLOSE}. What does the whole condor make or lose?`,
+				`你的铁鹰作为一张订单下达，净收入 ${signedUsd(NET_CASH, 0)}。10月18日 ALFA 收于 $${PUT_SIDE_CLOSE}。整组铁鹰赚或亏多少？`,
 			],
 			choices: [
 				{
-					id: "range",
+					id: "whole",
 					label: [
-						"ALFA stays between about $95 and $105",
-						"ALFA 大致留在 $95 到 $105 之间",
+						signedUsd(resultAt(PUT_SIDE_CLOSE), 0),
+						signedUsd(resultAt(PUT_SIDE_CLOSE), 0),
 					],
 				},
 				{
-					id: "bullish",
-					label: ["Bullish: two legs are bullish", "看多：有两条腿是看多的"],
+					id: "leg",
+					label: [signedUsd(-PUT_SIDE_OWED, 0), signedUsd(-PUT_SIDE_OWED, 0)],
 					why: [
-						"Counting legs misreads a package. Two of the four labels look bullish, but together the legs are a short iron condor that profits if ALFA stays in a range.",
-						"数腿会误读组合单。四个标签中有两个看似看多，但合起来是铁鹰空头，ALFA 留在区间内才获利。",
+						`${usd(PUT_SIDE_OWED, 0)} is only what the 95 put you sold owes at $${PUT_SIDE_CLOSE}. The ${usd(NET_CASH, 0)} came in when the order filled, so the whole condor is ${signedUsd(NET_CASH, 0)} − ${usd(PUT_SIDE_OWED, 0)} = ${signedUsd(resultAt(PUT_SIDE_CLOSE), 0)}.`,
+						`${usd(PUT_SIDE_OWED, 0)} 只是你卖出的 95 看跌在 $${PUT_SIDE_CLOSE} 时要付的钱。${usd(NET_CASH, 0)} 在订单成交时就已收到，所以整组铁鹰是 ${signedUsd(NET_CASH, 0)} − ${usd(PUT_SIDE_OWED, 0)} = ${signedUsd(resultAt(PUT_SIDE_CLOSE), 0)}。`,
 					],
 				},
 				{
-					id: "bearish",
-					label: ["Slightly bearish, by premium", "按权利金算，略偏看空"],
+					id: "credit",
+					label: [signedUsd(NET_CASH, 0), signedUsd(NET_CASH, 0)],
 					why: [
-						"Weighing labels by premium still reads the legs one by one. Together they are a short iron condor: a bet on ALFA staying between $95 and $105.",
-						"按权利金加权标签，仍然是逐腿解读。合起来它们是铁鹰空头：押注 ALFA 留在 $95 到 $105 之间。",
+						`$${PUT_SIDE_CLOSE} is below the 95 put you sold, so that put is worth ${share(PUT_SIDE_OWED / 10_000)} a share against you. The credit is kept in full only between $95 and $105.`,
+						`$${PUT_SIDE_CLOSE} 低于你卖出的 95 看跌的行权价，所以这张看跌每股有 ${share(PUT_SIDE_OWED / 10_000)} 的价值，要由你来付。只有在 $95 到 $105 之间，收入才能全部保留。`,
+					],
+				},
+				{
+					id: "worst",
+					label: [signedUsd(WORST_CASH, 0), signedUsd(WORST_CASH, 0)],
+					why: [
+						`The worst case needs ALFA at $90 or below, where the 95 put owes the full ${usd(WIDTH * 10_000, 0)} and the 90 put stops the loss. At $${PUT_SIDE_CLOSE} it owes ${usd(PUT_SIDE_OWED, 0)}.`,
+						`最坏情况要 ALFA 跌到 $90 或以下：那时 95 看跌要付满 ${usd(WIDTH * 10_000, 0)}，90 看跌把亏损止住。在 $${PUT_SIDE_CLOSE}，它只要付 ${usd(PUT_SIDE_OWED, 0)}。`,
 					],
 				},
 			],
-			answer: "range",
+			answer: "whole",
 			revealAt: 2,
 			explain: [
-				"Together the four legs are the short iron condor from the last scene: $43,400 collected, kept in full if ALFA stays between $95 and $105. The leg labels cancel out and say nothing about that view.",
-				"四条腿合起来就是上一个场景的铁鹰空头：收入 $43,400，ALFA 留在 $95 到 $105 之间就能全部保留。各腿的标签相互抵消，完全说明不了这个看法。",
+				`The order brought in ${usd(NET_CASH, 0)}. At $${PUT_SIDE_CLOSE} only the 95 put you sold is in the money, worth ${usd(PUT_SIDE_OWED, 0)} a condor against you; the 90 put and both calls expire worthless. ${signedUsd(NET_CASH, 0)} − ${usd(PUT_SIDE_OWED, 0)} = ${signedUsd(resultAt(PUT_SIDE_CLOSE), 0)}.`,
+				`这张订单收入 ${usd(NET_CASH, 0)}。在 $${PUT_SIDE_CLOSE}，只有你卖出的 95 看跌是实值，每组要由你付 ${usd(PUT_SIDE_OWED, 0)}；90 看跌和两张看涨都到期作废。${signedUsd(NET_CASH, 0)} − ${usd(PUT_SIDE_OWED, 0)} = ${signedUsd(resultAt(PUT_SIDE_CLOSE), 0)}。`,
 			],
 		},
 		beats: [
 			{
 				id: "legs",
-				label: ["Leg by leg", "逐腿"],
+				label: ["Four legs", "四条腿"],
 				caption: [
-					"A feed that labels each print alone calls the sold 95 put and bought 110 call bullish, and the bought 90 put and sold 105 call bearish.",
-					"逐笔贴标签的数据会把卖出的 95 看跌和买入的 110 看涨标为看多，把买入的 90 看跌和卖出的 105 看涨标为看空。",
+					`Your iron condor is one order with four legs, one contract each: ${LEGS.map((leg) => `${leg.side === "sell" ? "sell" : "buy"} the ${leg.contract.strike} ${leg.contract.right} at ${usd(legPrice(leg))} (${signedUsd(legCash(leg), 0)})`).join(", ")}.`,
+					`你的铁鹰是一张有四条腿的订单，每条腿 1 张：${LEGS.map((leg) => `以 ${usd(legPrice(leg))} ${leg.side === "sell" ? "卖出" : "买入"} ${leg.contract.strike} ${leg.contract.right === "call" ? "看涨" : "看跌"}（${signedUsd(legCash(leg), 0)}）`).join("，")}。`,
 				],
-				state: { view: "legs" },
+				state: { stage: 0, close: CLOSES[0] },
 			},
 			{
-				id: "tally",
-				label: ["By premium", "按权利金"],
+				id: "net",
+				label: ["One net price", "一个净价"],
 				caption: [
-					'Add premium by label and it\'s $59,600 bullish against $61,000 bearish: net −$1,400, "slightly bearish". A direction nobody chose.',
-					"按标签加总权利金：看多 $59,600，看空 $61,000，净额 −$1,400，“略偏看空”。一个没人选择过的方向。",
+					`The legs add up to one number: ${signedUsd(NET_CASH, 0)}, a net credit of ${share(CREDIT)} a share. The order carries that one price, so the four legs fill together at ${share(CREDIT)} or better, or the order waits. The worst case at expiry is ${share(WIDTH)} − ${share(CREDIT)} = ${share(MAX_LOSS)} a share, ${signedUsd(WORST_CASH, 0)}.`,
+					`四条腿加起来是一个数：${signedUsd(NET_CASH, 0)}，即每股净收入 ${share(CREDIT)}。订单只带这一个价格，四条腿一起按 ${share(CREDIT)} 或更优的价格成交，否则订单继续等。到期最坏情况是每股 ${share(WIDTH)} − ${share(CREDIT)} = ${share(MAX_LOSS)}，即 ${signedUsd(WORST_CASH, 0)}。`,
 				],
-				state: { view: "tally" },
+				state: { stage: 1, close: CLOSES[0] },
 			},
 			{
-				id: "package",
-				label: ["One package", "整体"],
+				id: "close",
+				label: [`At $${PUT_SIDE_CLOSE}`, `收于 $${PUT_SIDE_CLOSE}`],
 				caption: [
-					"Read together, it's 200 short iron condors: $2.17 × 100 × 200 = $43,400 collected, kept if ALFA stays between $95 and $105, with up to $56,600 at risk.",
-					"合起来读，这是 200 组铁鹰空头：$2.17 × 100 × 200 = $43,400 收入，ALFA 留在 $95 到 $105 之间就能保留，最多有 $56,600 的风险。",
+					`Judge the whole, not the legs. At $${PUT_SIDE_CLOSE} the ${PUT_SIDE_LEG?.contract.strike} put you sold owes ${usd(PUT_SIDE_OWED, 0)} and the other three legs expire worthless: ${signedUsd(NET_CASH, 0)} − ${usd(PUT_SIDE_OWED, 0)} = ${signedUsd(resultAt(PUT_SIDE_CLOSE), 0)}.`,
+					`要看整体，而不是单条腿。在 $${PUT_SIDE_CLOSE}，你卖出的 ${PUT_SIDE_LEG?.contract.strike} 看跌要付 ${usd(PUT_SIDE_OWED, 0)}，另外三条腿到期作废：${signedUsd(NET_CASH, 0)} − ${usd(PUT_SIDE_OWED, 0)} = ${signedUsd(resultAt(PUT_SIDE_CLOSE), 0)}。`,
 				],
-				state: { view: "package" },
+				state: { stage: 2, close: PUT_SIDE_CLOSE },
 			},
 		],
 		explore: {
 			prompt: [
-				"Switch between reading the prints leg by leg and as one package.",
-				"在逐腿解读和整体解读之间切换。",
+				"Choose where ALFA closes on Oct 18 and read each leg and the whole condor.",
+				"选择 ALFA 在 10月18日的收盘价，读出每条腿和整组铁鹰的结果。",
 			],
-			start: () => ({ view: "legs" }),
+			start: () => ({ stage: 2, close: CLOSES[0] }),
 			task: {
 				kind: "answer",
 				prompt: [
-					"Read leg by leg, what does the feed's premium tally say about this trade?",
-					"如果逐腿解读，数据按权利金加总会怎么说这笔交易？",
+					"At which close does the whole condor lose money, but less than its worst case?",
+					"收盘价在哪里时，整组铁鹰亏钱，但亏得比最坏情况少？",
 				],
-				choices: [
-					{
-						id: "bearish",
-						label: ["Slightly bearish: −$1,400", "略偏看空：−$1,400"],
-					},
-					{ id: "neutral", label: ["Neutral: $0", "中性：$0"] },
-					{ id: "bullish", label: ["Bullish: +$43,400", "看多：+$43,400"] },
-				],
-				answer: "bearish",
+				choices: CLOSES.map((close) => ({
+					id: String(close),
+					label: [`$${close}`, `$${close}`] as Copy,
+				})),
+				answer: String(CLOSES[1]),
 				done: [
-					"The tally says −$1,400, a slight bearish lean, because the sold 105 calls and the bought 90 puts carry a little more premium. The trader's real view is a range, and the $43,400 credit only shows up when the legs are read as one package.",
-					"加总结果是 −$1,400，略偏看空，因为卖出的 105 看涨和买入的 90 看跌权利金稍多。交易者真正的看法是一个区间，而 $43,400 的收入只有把各腿作为整体来读时才会出现。",
+					`At $${CLOSES[1]} only the 105 call you sold is worth anything, ${usd(-legsAt(CLOSES[1]), 0)} against you: ${signedUsd(NET_CASH, 0)} − ${usd(-legsAt(CLOSES[1]), 0)} = ${signedUsd(resultAt(CLOSES[1]), 0)}. At $${CLOSES[0]} every leg expires worthless and the whole keeps ${signedUsd(resultAt(CLOSES[0]), 0)}. At $${CLOSES[2]} the 110 call you bought pays ${usd(legValueAt(LEGS[3], CLOSES[2]), 0)} back and stops the loss at ${signedUsd(resultAt(CLOSES[2]), 0)}, the worst case.`,
+					`在 $${CLOSES[1]}，只有你卖出的 105 看涨还有价值，你要付 ${usd(-legsAt(CLOSES[1]), 0)}：${signedUsd(NET_CASH, 0)} − ${usd(-legsAt(CLOSES[1]), 0)} = ${signedUsd(resultAt(CLOSES[1]), 0)}。在 $${CLOSES[0]}，每条腿都到期作废，整组保留 ${signedUsd(resultAt(CLOSES[0]), 0)}。在 $${CLOSES[2]}，你买入的 110 看涨付回 ${usd(legValueAt(LEGS[3], CLOSES[2]), 0)}，把亏损止在 ${signedUsd(resultAt(CLOSES[2]), 0)}，即最坏情况。`,
 				],
 			},
 		},
-		View: PackageView,
+		View: OrderView,
 	}),
 ] as const;
 
@@ -936,8 +954,8 @@ export function MultiLegStructuresWalkthrough({ locale }: { locale: Locale }) {
 			locale={locale}
 			id="multi-leg-structures"
 			label={[
-				"Interactive lesson on straddles, condors and multi-leg prints",
-				"跨式、铁鹰与多腿成交互动课",
+				"Interactive lesson on straddles and condors, trades with no view on direction",
+				"跨式与铁鹰互动课：不判断方向的交易",
 			]}
 			film={multiLegStructuresFilm}
 			scenes={scenes}

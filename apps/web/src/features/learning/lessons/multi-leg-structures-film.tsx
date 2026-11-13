@@ -1,4 +1,4 @@
-import { type Copy, pick, signedUsd, usd } from "@/content/world";
+import { ALFA, type Copy, pick, signedUsd, usd } from "@/content/world";
 import type { Locale } from "@/i18n/messages";
 import type { Film, FilmContext } from "../walkthrough/film";
 import {
@@ -14,19 +14,20 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
-	BEARISH,
-	BULLISH,
 	CALL_100,
 	CALL_CREDIT,
+	CLOSE,
+	CLOSE_OWED,
+	CLOSE_RESULT,
 	CREDIT,
 	callSpread,
 	condor,
 	LEGS,
-	legPremium,
+	type Leg,
+	legCash,
 	legPrice,
 	MAX_LOSS,
-	PACKAGE_CREDIT,
-	PACKAGE_RISK,
+	NET_CASH,
 	PUT_100,
 	PUT_CREDIT,
 	putSpread,
@@ -37,24 +38,25 @@ import {
 	STRADDLE_LOW,
 	straddle,
 	WIDTH,
+	WORST_CASH,
 	worth,
 } from "./multi-leg-structures-model";
 
 /*
- * Straddles, condors and multi-leg prints, as a film. Four linked ALFA prints in one second, 200
- * each: sold 95 puts, bought 90 puts, sold 105 calls, bought 110 calls. Bullish or
- * bearish? First a straddle, a V that needs a move of $8.40 either way. The hero is an
- * iron condor: two credit spreads that together keep $2.17 inside $95–$105 and risk $2.83
- * outside, and glowing brackets lock on what it keeps: it sells a range. Then the four
- * prints: labelled one by one they net −$1,400, "slightly bearish"; read as one package
- * they are 200 short iron condors.
+ * Straddles and condors, as a film. You have no view on which way ALFA goes: is there
+ * still a trade? First a straddle, a V that needs a move of $8.40 either way: it buys a
+ * move. The hero is an iron condor: two credit spreads that together keep $217 inside
+ * $95–$105 and can lose $283 outside, and glowing brackets lock on what it keeps: it sells a
+ * range. Then your one condor as one order: four legs, each with the cash it brings in or
+ * costs a contract, adding to a +$217 net credit, with −$283 the worst case at expiry; and
+ * one worked close, ALFA at $108, where the 105 call owes $300 and the whole loses $83.
  *
  *   open      0–4        "Straddles and condors"
- *   question  4–8.6      four prints in one second: bullish or bearish?
+ *   question  4–8.6      no view on direction: is there still a trade?
  *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
  *   condor    18.2–30.5  hero: put spread and call spread; together; it sells a range
- *   package   30.5–41.3  four labels; directional tally; cash groups; one package
- *   claim     41.3–45.6  linked prints, one trade
+ *   package   30.5–41.3  one order, four legs; net credit; worst case; a close at $108
+ *   claim     41.3–45.6  four legs, one trade
  *   next      45.6–47.2  Next: size and exit
  */
 
@@ -63,15 +65,11 @@ const CENTS = (perShare: number) => Math.round(perShare * 100);
 /** Dollars a share as whole dollars a contract: "+$375", "−$283". */
 const perContract = (perShare: number) => signedUsd(CENTS(perShare) * 100, 0);
 const share = (dollars: number) => usd(CENTS(dollars));
-const NET_LABELS = BULLISH - BEARISH;
 // Model curves use a 100-share contract; WIDTH is dollars per share.
 const WING_PAYOUT = CENTS(WIDTH) * 100;
-const SOLD_ROWS = LEGS.filter((leg) => leg.side === "sell");
-const BOUGHT_ROWS = LEGS.filter((leg) => leg.side === "buy");
-const SOLD_PREMIUM = SOLD_ROWS.reduce((sum, leg) => sum + legPremium(leg), 0);
-const BOUGHT_PREMIUM = BOUGHT_ROWS.reduce(
-	(sum, leg) => sum + legPremium(leg),
-	0,
+/** The leg the worked close turns on: the one option worth anything at that price. */
+const CLOSE_LEG = LEGS.findIndex(
+	(leg) => leg.side === "sell" && worth(leg.contract, CLOSE) > 0,
 );
 /** Each chart's own vertical range, in dollars a contract, and its ticks. */
 const S_Y = [-1500, 2100] as const;
@@ -86,9 +84,13 @@ function layout(width: number) {
 	const right = margin + room;
 	const top = H * (narrow ? 0.3 : 0.28);
 	const bottom = H * 0.84;
-	const cardY = H * (narrow ? 0.63 : 0.64);
-	const cardH = H * (narrow ? 0.32 : 0.28);
-	const compactCard = !narrow && width < 700;
+	const rowY = (i: number) =>
+		H * (narrow ? 0.26 : 0.27) + i * H * (narrow ? 0.085 : 0.09);
+	const rowH = H * (narrow ? 0.07 : 0.075);
+	// Under the four legs: their total, the worst case, then the card for the worked close.
+	const totalY = rowY(LEGS.length);
+	const cardY = H * (narrow ? 0.735 : 0.775);
+	const cardH = H * (narrow ? 0.215 : 0.15);
 	return {
 		...frame,
 		left,
@@ -99,44 +101,50 @@ function layout(width: number) {
 			left + ((spot - RANGE[0]) / (RANGE[1] - RANGE[0])) * (right - left),
 		y: (range: readonly [number, number], dollars: number) =>
 			bottom - ((dollars - range[0]) / (range[1] - range[0])) * (bottom - top),
-		rowY: (i: number) =>
-			H * (narrow ? 0.26 : 0.27) + i * H * (narrow ? 0.085 : 0.09),
-		rowH: H * (narrow ? 0.07 : 0.075),
-		tallyY: H * (narrow ? 0.67 : 0.68),
+		rowY,
+		rowH,
+		totalY,
+		worstY: totalY + rowH + (cardY - totalY - rowH) * 0.68,
 		cardY,
 		cardH,
-		compactCard,
-		saleSumY: cardY + cardH * (compactCard ? 0.26 : narrow ? 0.32 : 0.34),
-		purchaseSumY: cardY + cardH * (narrow ? 0.48 : compactCard ? 0.26 : 0.34),
-		netY: cardY + cardH * (compactCard ? 0.45 : narrow ? 0.64 : 0.56),
-		resultY: cardY + cardH * (compactCard ? 0.72 : narrow ? 0.8 : 0.77),
-		rangeY: cardY + cardH * (compactCard ? 0.93 : 0.94),
+		closeY: cardY + cardH * (narrow ? 0.36 : 0.42),
+		closeResultY: cardY + cardH * (narrow ? 0.76 : 0.82),
 	};
 }
 
-const legCopy: Record<string, Copy> = {
-	a: ["sold 200 · 95 put", "卖出 200 · 95 看跌"],
-	b: ["bought 200 · 90 put", "买入 200 · 90 看跌"],
-	c: ["sold 200 · 105 call", "卖出 200 · 105 看涨"],
-	d: ["bought 200 · 110 call", "买入 200 · 110 看涨"],
+const SIDE: Record<Leg["side"], Copy> = {
+	sell: ["Sell", "卖出"],
+	buy: ["Buy", "买入"],
 };
-
-const legShortCopy: Record<string, Copy> = {
-	a: ["sold 95P", "卖95看跌"],
-	b: ["bought 90P", "买90看跌"],
-	c: ["sold 105C", "卖105看涨"],
-	d: ["bought 110C", "买110看涨"],
+const RIGHT: Record<Leg["contract"]["right"], Copy> = {
+	call: ["call", "看涨"],
+	put: ["put", "看跌"],
+};
+/** A leg of the order as its row reads: "Sell 1 · 95 put at $2.05"; shorter on a phone. */
+const legRow = (leg: Leg, narrow: boolean): Copy => {
+	const name = (i: 0 | 1) =>
+		`${leg.contract.strike} ${RIGHT[leg.contract.right][i]}`;
+	const price = usd(legPrice(leg));
+	return narrow
+		? [
+				`${SIDE[leg.side][0]} ${name(0)} · ${price}`,
+				`${SIDE[leg.side][1]} ${name(1)} · ${price}`,
+			]
+		: [
+				`${SIDE[leg.side][0]} ${SIZE} · ${name(0)} at ${price}`,
+				`${SIDE[leg.side][1]} ${SIZE} 张 · ${name(1)} · ${price}`,
+			];
 };
 
 const copy = {
 	title: ["Straddles and condors", "跨式与铁鹰"],
-	titleSub: ["linked legs in one second", "关联腿在同一秒分别成交"],
+	titleSub: ["trades that pick no direction", "不判断方向的交易"],
 	qTag: [
-		`ALFA · linked legs · ${SIZE} each`,
-		`ALFA · 关联腿 · 每腿 ${SIZE} 张`,
+		`ALFA ${usd(ALFA.open, 0)} · Oct 18`,
+		`ALFA ${usd(ALFA.open, 0)} · 10月18日`,
 	],
-	qLegs: ["Four linked legs", "四条关联腿"],
-	qBig: ["Bullish or bearish?", "看多还是看空？"],
+	qView: ["You have no view on ALFA's direction.", "你不判断 ALFA 的涨跌。"],
+	qBig: ["Is there still a trade?", "还有交易可做吗？"],
 	sHead: ["A long straddle needs a big move.", "买入跨式需大幅变动。"],
 	cHead: ["An iron condor: two credit spreads.", "铁鹰：两个收入价差。"],
 	c2Head: ["It sells a range.", "它卖出的是一个区间。"],
@@ -157,30 +165,27 @@ const copy = {
 		`${perContract(-STRADDLE_COST)} paid`,
 		`支付 ${perContract(-STRADDLE_COST)}`,
 	],
-	pHead: ["Label the four prints one by one.", "四笔成交逐笔贴标签。"],
+	pHead: ["Your condor goes in as one order.", "你的铁鹰作为一张订单下达。"],
 	p2Head: [
-		`As one package: ${SIZE} short condors.`,
-		`作为整体：${SIZE} 组铁鹰空头。`,
+		`At $${CLOSE} the condor loses ${usd(-CLOSE_RESULT, 0)}.`,
+		`收于 $${CLOSE}，铁鹰亏 ${usd(-CLOSE_RESULT, 0)}。`,
 	],
-	bullish: ["bullish", "看多"],
-	bearish: ["bearish", "看空"],
-	cashSales: ["sold", "卖出"],
-	cashPurchases: ["bought", "买入"],
-	tally: [
-		`bullish ${usd(BULLISH, 0)} · bearish ${usd(BEARISH, 0)} · net ${signedUsd(NET_LABELS, 0)}`,
-		`看多 ${usd(BULLISH, 0)} · 看空 ${usd(BEARISH, 0)} · 净额 ${signedUsd(NET_LABELS, 0)}`,
+	total: ["net credit a condor (×100 shares)", "每组净收入（×100 股）"],
+	totalShort: ["net credit a condor (×100)", "每组净收入（×100）"],
+	worst: ["worst case at expiry", "到期最坏情况"],
+	close: [
+		`Oct 18 close $${CLOSE} · the ${LEGS[CLOSE_LEG].contract.strike} call owes ${usd(CLOSE_OWED, 0)}`,
+		`10月18日收于 $${CLOSE} · ${LEGS[CLOSE_LEG].contract.strike} 看涨要付 ${usd(CLOSE_OWED, 0)}`,
 	],
-	tallyShort: [
-		`net ${signedUsd(NET_LABELS, 0)}: "slightly bearish"`,
-		`净额 ${signedUsd(NET_LABELS, 0)}：“略偏看空”`,
+	closeShort: [
+		`close $${CLOSE} · ${LEGS[CLOSE_LEG].contract.strike} call owes ${usd(CLOSE_OWED, 0)}`,
+		`收于 $${CLOSE} · ${LEGS[CLOSE_LEG].contract.strike} 看涨要付 ${usd(CLOSE_OWED, 0)}`,
 	],
-	pkgCredit: [signedUsd(PACKAGE_CREDIT, 0), signedUsd(PACKAGE_CREDIT, 0)],
-	pkgRange: [
-		`Oct 18: $95–$105 · ${usd(PACKAGE_RISK, 0)} at risk`,
-		`10月18日 $95–$105 · 风险 ${usd(PACKAGE_RISK, 0)}`,
+	claimBig: ["Four legs, one trade.", "四条腿，一笔交易。"],
+	claimSub: [
+		`Best ${signedUsd(NET_CASH, 0)}, worst ${signedUsd(WORST_CASH, 0)} a condor.`,
+		`每组最好 ${signedUsd(NET_CASH, 0)}，最坏 ${signedUsd(WORST_CASH, 0)}。`,
 	],
-	claimBig: ["Linked prints, one trade.", "关联成交，一笔交易。"],
-	claimSub: ["Same second does not prove linkage.", "同秒成交不证明关联。"],
 	nextBig: ["Next: size and exit", "下一课：仓位与出场"],
 	nextSub: ["decide both before you buy", "买入前就定好"],
 } as const satisfies Record<string, Copy>;
@@ -315,7 +320,7 @@ function Scene({
 				</Word>
 				<Lines
 					name="q-line"
-					text={t(copy.qLegs)}
+					text={t(copy.qView)}
 					x={W / 2}
 					y={H * 0.42}
 					size={narrow ? T.body : T.head}
@@ -517,9 +522,9 @@ function Scene({
 				</g>
 			</g>
 
-			{/* Four prints, one package. */}
+			{/* Your one condor, entered as one order. */}
 			{headline("p-head", copy.pHead)}
-			{/* The answer, as the four rows become one package. */}
+			{/* The worked close's answer, as its result lands. */}
 			<Lines
 				name="p2-head"
 				text={t(copy.p2Head)}
@@ -550,46 +555,61 @@ function Scene({
 						className="wt-film-num"
 						style={{ fontSize: text }}
 					>
-						{`${t((narrow ? legShortCopy : legCopy)[leg.key])} @ ${usd(legPrice(leg))}`}
+						{t(legRow(leg, narrow))}
 					</text>
 					<text
-						x={margin + room - (narrow ? 14 : room * 0.2)}
+						x={margin + room - 14}
 						y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 						textAnchor="end"
-						className="wt-film-type"
+						className="wt-film-num"
 						style={{ fontSize: text }}
 					>
-						<tspan data-f={`leg-direction-${i}`}>{t(copy[leg.label])}</tspan>
-						{narrow ? (
-							<tspan data-f={`leg-cash-${i}`} className="wt-film-type">
-								{` ${usd(legPremium(leg), 0)}`}
-							</tspan>
-						) : null}
+						{signedUsd(legCash(leg), 0)}
 					</text>
-					{narrow ? null : (
-						<text
-							data-f={`leg-cash-${i}`}
-							x={margin + room - 14}
-							y={L.rowY(i) + L.rowH / 2 + text * 0.36}
-							textAnchor="end"
-							className="wt-film-num wt-film-dim"
-							style={{ fontSize: text }}
-						>
-							{usd(legPremium(leg), 0)}
-						</text>
-					)}
 				</g>
 			))}
-			<Lines
-				name="tally"
-				text={t(narrow ? copy.tallyShort : copy.tally)}
-				x={margin}
-				y={L.tallyY}
-				size={narrow ? T.body : T.body * 1.2}
-				maxWidth={room}
-				anchor="start"
-				className="wt-film-type wt-film-warn"
-			/>
+			{/* The legs' cash added up: one net price for the whole order. */}
+			<g data-f="leg-total">
+				<rect
+					x={margin}
+					y={L.totalY}
+					width={room}
+					height={L.rowH}
+					rx={10}
+					className="wt-panel-shape"
+				/>
+				<text
+					x={margin + 14}
+					y={L.totalY + L.rowH / 2 + text * 0.36}
+					className="wt-film-type"
+					style={{ fontSize: text }}
+				>
+					{t(narrow ? copy.totalShort : copy.total)}
+				</text>
+				<text
+					x={margin + room - 14}
+					y={L.totalY + L.rowH / 2 + text * 0.36}
+					textAnchor="end"
+					className="wt-film-num wt-film-gain"
+					style={{ fontSize: text }}
+				>
+					{signedUsd(NET_CASH, 0)}
+				</text>
+			</g>
+			<text
+				data-f="pkg-worst"
+				x={margin + room - 14}
+				y={L.worstY}
+				textAnchor="end"
+				className="wt-film-type"
+				style={{ fontSize: narrow ? T.small * 1.1 : T.small * 1.15 }}
+			>
+				<tspan className="wt-film-dim">{`${t(copy.worst)} `}</tspan>
+				<tspan className="wt-film-num wt-film-loss">
+					{signedUsd(WORST_CASH, 0)}
+				</tspan>
+			</text>
+			{/* One worked close: the whole position at one ALFA price. */}
 			<g data-f="pkg">
 				<rect
 					x={margin}
@@ -600,76 +620,23 @@ function Scene({
 					className="wt-focus-shape"
 				/>
 				<text
-					data-f="pkg-result"
 					x={margin + 16}
-					y={L.resultY}
-					className="wt-film-num wt-film-gain"
-					style={{ fontSize: narrow ? T.head : T.body * 1.25 }}
+					y={L.closeY}
+					className="wt-film-type"
+					style={{ fontSize: narrow ? T.small * 1.1 : T.small * 1.15 }}
 				>
-					{t(copy.pkgCredit)}
-				</text>
-				<text
-					x={margin + 16}
-					y={L.rangeY}
-					className="wt-film-type wt-film-dim"
-					style={{ fontSize: T.small * 1.1 }}
-				>
-					{t(copy.pkgRange)}
-				</text>
-			</g>
-
-			<g data-f="cash-additions">
-				<text
-					x={margin + 16}
-					y={L.saleSumY}
-					className="wt-film-num"
-					style={{ fontSize: T.body }}
-				>
-					<tspan
-						className="wt-film-tag"
-						dy={L.compactCard ? -T.small * 1.25 : 0}
-						style={{ fontSize: T.small, letterSpacing: narrow ? 0 : undefined }}
-					>
-						{`${t(copy.cashSales)} `}
-					</tspan>
-					<tspan
-						x={L.compactCard ? margin + 16 : undefined}
-						dy={L.compactCard ? T.small * 1.25 : 0}
-					>
-						{SOLD_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}
-					</tspan>
-				</text>
-				<text
-					x={narrow ? margin + 16 : margin + room / 2 + 8}
-					y={L.purchaseSumY}
-					className="wt-film-num"
-					style={{ fontSize: T.body }}
-				>
-					<tspan
-						className="wt-film-tag"
-						dy={L.compactCard ? -T.small * 1.25 : 0}
-						style={{ fontSize: T.small, letterSpacing: narrow ? 0 : undefined }}
-					>
-						{`${t(copy.cashPurchases)} `}
-					</tspan>
-					<tspan
-						x={L.compactCard ? margin + room / 2 + 8 : undefined}
-						dy={L.compactCard ? T.small * 1.25 : 0}
-					>
-						{BOUGHT_ROWS.map((leg) => usd(legPremium(leg), 0)).join(" + ")}
-					</tspan>
+					{t(narrow ? copy.closeShort : copy.close)}
 				</text>
 			</g>
 			<text
-				data-f="pkg-equation"
+				data-f="pkg-result"
 				x={margin + 16}
-				y={L.netY}
+				y={L.closeResultY}
 				className="wt-film-num"
 				style={{ fontSize: T.body }}
 			>
-				<tspan>{`${pick(["sold", "卖出"], locale)} ${usd(SOLD_PREMIUM, 0)}`}</tspan>
-				<tspan>{" − "}</tspan>
-				<tspan>{`${pick(["bought", "买入"], locale)} ${usd(BOUGHT_PREMIUM, 0)}`}</tspan>
+				<tspan>{`${signedUsd(NET_CASH, 0)} − ${usd(CLOSE_OWED, 0)} = `}</tspan>
+				<tspan className="wt-film-loss">{signedUsd(CLOSE_RESULT, 0)}</tspan>
 			</text>
 
 			<g data-f="claim">
@@ -738,34 +705,14 @@ function build(context: FilmContext) {
 	};
 	const legs = LEGS.map((_, i) => one(`leg-${i}`));
 	const lockKeep = one<SVGGraphicsElement>("lock-keep");
-	// Keep the wrapped copy and positions; only the signed net takes its loss tone.
-	for (const line of one("tally").querySelectorAll("tspan")) {
-		const text = line.textContent ?? "";
-		const net = signedUsd(NET_LABELS, 0);
-		const at = text.indexOf(net);
-		if (at < 0) continue;
-		const amount = line.ownerDocument.createElementNS(
-			"http://www.w3.org/2000/svg",
-			"tspan",
-		);
-		amount.setAttribute("class", toneClass.down);
-		amount.textContent = net;
-		line.replaceChildren(
-			text.slice(0, at),
-			amount,
-			text.slice(at + net.length),
-		);
-	}
-
 	d.hidden([
 		...flat("q"),
 		...Object.values(heads),
 		...kids("world"),
 		...legs,
-		one("tally"),
+		one("leg-total"),
+		one("pkg-worst"),
 		one("pkg"),
-		one("cash-additions"),
-		one("pkg-equation"),
 		one("pkg-result"),
 		...kids("claim"),
 	]);
@@ -774,7 +721,7 @@ function build(context: FilmContext) {
 	tl.addLabel("open", 0);
 	d.open(0);
 
-	// ——— question: four prints ———
+	// ——— question: no view on direction ———
 	tl.addLabel("question", 4);
 	d.tag(4.0);
 	show(one("q-tag"), 4.6);
@@ -849,10 +796,10 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 26.9);
 	show(heads.condorAnswer, 26.9);
 
-	// ——— package: four labels, one trade ———
+	// ——— package: your one condor, one order ———
 	tl.addLabel("package", 30.5);
-	// Whole-stage cut: the condor heading and chart fade out together; the package heading
-	// fades in after they clear. It then stands for 1 s before all four linked rows arrive.
+	// Whole-stage cut: the condor heading and chart fade out together; the order's heading
+	// fades in after they clear. It then stands for 1 s before all four legs arrive together.
 	tl.to(
 		[heads.condor, heads.condorAnswer, one("depth")],
 		{ opacity: 0, duration: 0.3, ease: "power2.in" },
@@ -860,47 +807,33 @@ function build(context: FilmContext) {
 	);
 	fadeIn(heads.package, 30.8, 0.3);
 	show(legs, 32.1, "right", 0.3);
-	show(one("tally"), 32.4);
-	hide(one("tally"), 35.9, 0.3);
-	// Preserve the tally's 1.6 s rest, then bring the cash amounts into focus.
+	// The legs settle at 32.4 and rest 1.2 s; their total is revealed settled, never counted.
+	fadeIn(one("leg-total"), 33.6, 0.4);
+	// The net credit settles at 34.0 and rests 1 s before the whole's worst case joins it.
+	fadeIn(one("pkg-worst"), 35.0, 0.4);
+	// Worst case settles at 35.4; a quiet second, then the one leg the close turns on stays lit.
 	tl.to(
-		LEGS.map((_, i) => one(`leg-direction-${i}`)),
-		{ opacity: 0.25, duration: 0.4 },
-		34.5,
+		legs.filter((_, i) => i !== CLOSE_LEG),
+		{ opacity: 0.3, duration: 0.4 },
+		36.4,
 	);
-	LEGS.forEach((_, i) => {
-		// Timeline-owned classes restore the dim desktop amounts on a backward seek.
-		tl.set(
-			one(`leg-cash-${i}`),
-			{
-				attr: {
-					class: L.narrow ? "wt-film-type" : "wt-film-num",
-				},
-			},
-			34.5,
-		);
-	});
-	// Cash emphasis settles at 34.9; the named row additions reveal settled at 36.5.
-	fadeIn(one("cash-additions"), 36.0);
-	// The cash amounts settle at 36.5; preserve their existing 1.3 s quiet interval.
-	tl.to(legs, { opacity: 0.45, duration: 0.4 }, 37.8);
-	fadeIn(one("pkg"), 37.8);
-	fadeIn(one("pkg-equation"), 37.8);
+	fadeIn(one("pkg"), 36.4, 0.4);
+	// The close settles at 36.8 and rests 1 s; its result lands with the headline that names it.
 	show(heads.packageAnswer, 37.8);
-	// The subtraction settles at 38.3; leave a quiet second before revealing its credit.
-	fadeIn(one("pkg-result"), 39.3);
+	fadeIn(one("pkg-result"), 37.8, 0.3);
 
 	// ——— claim ———
-	// Credit settles at 39.8 and rests 1.5 s before departure; its answer keeps a 3.5 s hold.
+	// The result settles at 38.1 and rests until the cut; its headline keeps a 3.5 s hold.
 	tl.addLabel("claim", 41.3);
 	hide(
 		[
 			heads.package,
 			heads.packageAnswer,
 			...legs,
+			one("leg-total"),
+			one("pkg-worst"),
 			one("pkg"),
-			one("cash-additions"),
-			one("pkg-equation"),
+			one("pkg-result"),
 		],
 		41.3,
 	);
@@ -918,8 +851,8 @@ function build(context: FilmContext) {
 export const multiLegStructuresFilm: Film = {
 	id: "multi-leg-structures",
 	label: [
-		`Straddles, condors and multi-leg prints, as a short film: a long Oct 18 100 straddle bought for ${share(STRADDLE_COST)}, a V with break-evens at ${share(STRADDLE_LOW)} and ${share(STRADDLE_HIGH)}; an iron condor sold for ${share(CREDIT)} as a 95/90 put spread and a 105/110 call spread, keeping ${perContract(CREDIT)} between $95 and $105 and risking ${perContract(-MAX_LOSS)}; and four linked prints in one second, ${SIZE} contracts each, that net ${signedUsd(NET_LABELS, 0)} when labelled leg by leg but are ${SIZE} short iron condors read as one package, ${signedUsd(PACKAGE_CREDIT, 0)} collected`,
-		`跨式、铁鹰与多腿成交短片：以 ${share(STRADDLE_COST)} 买入 10月18日 100 跨式，一个 V 字，盈亏平衡在 ${share(STRADDLE_LOW)} 和 ${share(STRADDLE_HIGH)}；以 ${share(CREDIT)} 卖出的铁鹰，由 95/90 看跌价差和 105/110 看涨价差组成，$95 到 $105 之间保留 ${perContract(CREDIT)}，风险 ${perContract(-MAX_LOSS)}；以及同一秒的四笔关联成交，每笔 ${SIZE} 张：逐腿贴标签净额 ${signedUsd(NET_LABELS, 0)}，作为整体来读则是 ${SIZE} 组铁鹰空头，收入 ${signedUsd(PACKAGE_CREDIT, 0)}`,
+		`Straddles and condors, as a short film: with no view on which way ALFA goes, a long Oct 18 100 straddle bought for ${share(STRADDLE_COST)}, a V with break-evens at ${share(STRADDLE_LOW)} and ${share(STRADDLE_HIGH)}; an iron condor sold for ${share(CREDIT)} as a 95/90 put spread and a 105/110 call spread, keeping ${perContract(CREDIT)} between $95 and $105 and losing at most ${perContract(-MAX_LOSS)}; and that condor entered as one order of four legs, ${LEGS.map((leg) => signedUsd(legCash(leg), 0)).join(", ")} a contract, a net credit of ${signedUsd(NET_CASH, 0)}, which loses ${usd(-CLOSE_RESULT, 0)} if ALFA closes at $${CLOSE}`,
+		`跨式与铁鹰短片：不判断 ALFA 涨跌时，以 ${share(STRADDLE_COST)} 买入 10月18日 100 跨式，一个 V 字，盈亏平衡在 ${share(STRADDLE_LOW)} 和 ${share(STRADDLE_HIGH)}；以 ${share(CREDIT)} 卖出的铁鹰，由 95/90 看跌价差和 105/110 看涨价差组成，$95 到 $105 之间保留 ${perContract(CREDIT)}，最多亏 ${perContract(-MAX_LOSS)}；这组铁鹰作为一张四条腿的订单下达，每张合约分别为 ${LEGS.map((leg) => signedUsd(legCash(leg), 0)).join("、")}，净收入 ${signedUsd(NET_CASH, 0)}，ALFA 收于 $${CLOSE} 时亏 ${usd(-CLOSE_RESULT, 0)}`,
 	],
 	stage: "dark",
 	shots: [
@@ -927,7 +860,7 @@ export const multiLegStructuresFilm: Film = {
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "straddle", label: ["A straddle", "跨式"] },
 		{ id: "condor", label: ["An iron condor", "铁鹰"] },
-		{ id: "package", label: ["One package", "一个整体"] },
+		{ id: "package", label: ["One order", "一张订单"] },
 		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一课"] },
 	],

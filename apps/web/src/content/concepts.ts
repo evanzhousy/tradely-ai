@@ -1420,8 +1420,8 @@ export const concepts: Record<ConceptId, Concept> = {
 		id: "C40",
 		name: t("Multi-leg structures", "多腿结构"),
 		description: t(
-			"A straddle buys a call and a put at one strike and pays on a large move either way, with break-evens the total premium above and below the strike; a strangle uses different strikes; an iron condor sells a put spread and a call spread and keeps the credit if the stock stays between the short strikes, with a worst case of one spread's width minus the credit. Legs that print in the same second are one package to be read together, not several opinions.",
-			"跨式在同一行权价买入看涨与看跌，股价大幅变动时无论方向都能获利，盈亏平衡点在行权价上下各一个总权利金处；宽跨式用不同的行权价；铁鹰卖出一个看跌价差和一个看涨价差，股价停在两个卖出行权价之间就保住权利金，最坏情况是一个价差的宽度减去所收权利金。同一秒内记录的多条腿是一个整体，要一起读，而不是几个观点。",
+			"A straddle buys a call and a put at one strike and pays on a large move either way, with break-evens the total premium above and below the strike; a strangle uses different strikes; an iron condor sells a put spread and a call spread and keeps the credit if the stock stays between the short strikes, with a worst case of one spread's width minus the credit. The legs are entered as one order at one net price and judged as one position, not leg by leg.",
+			"跨式在同一行权价买入看涨与看跌，股价大幅变动时无论方向都能获利，盈亏平衡点在行权价上下各一个总权利金处；宽跨式用不同的行权价；铁鹰卖出一个看跌价差和一个看涨价差，股价停在两个卖出行权价之间就保住权利金，最坏情况是一个价差的宽度减去所收权利金。各条腿作为一张订单、按一个净价下达，要当作一个持仓来判断，而不是逐腿判断。",
 		),
 		evidence: [
 			t(
@@ -1433,8 +1433,8 @@ export const concepts: Record<ConceptId, Concept> = {
 				"算出铁鹰的最坏情况以及它在哪个区间保住权利金",
 			),
 			t(
-				"Read several prints in one second as one package and say what a per-leg sentiment label misses",
-				"把同一秒内的几笔成交作为一个整体来读，并说出逐腿情绪标签遗漏了什么",
+				"Add an iron condor's four legs into its net credit and find its result at a given closing price",
+				"把铁鹰四条腿的收支相加得到净收入，并算出它在给定收盘价下的结果",
 			),
 		],
 		prerequisites: [
