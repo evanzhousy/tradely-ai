@@ -8,11 +8,6 @@ import {
 	type PayoffLine,
 	type PayoffMarker,
 } from "../walkthrough/instruments/payoff-chart";
-import {
-	type TapeRow,
-	TradeTape,
-	tapeHeight,
-} from "../walkthrough/instruments/trade-tape";
 import { Player } from "../walkthrough/player";
 import { Label, Stage, useTeachMotion } from "../walkthrough/stage";
 import { defineScene, type Phase, type ResultItem } from "../walkthrough/types";
@@ -26,8 +21,18 @@ import {
 	kinks,
 	longLeg,
 	NET,
+	NOV_DAYS_LEFT,
+	OCT_DAYS_LEFT,
 	RANGE,
+	ROLL_NET,
+	ROLL_NET_CONTRACT,
+	ROLL_NET_SHARE,
+	ROLL_PAID,
 	ROLL_QUANTITY,
+	ROLL_REALIZED,
+	ROLL_SPOT,
+	ROLL_TOTAL_PAID,
+	ROLL_WEEKS,
 	SELL_OCT,
 	SOLD,
 	STOCK_COST,
@@ -150,7 +155,7 @@ function LegView({
 			controls={
 				explore ? (
 					<ChoiceField
-						label={t(["The seller also holds", "卖方同时持有"])}
+						label={t(["You also hold", "你同时持有"])}
 						value={explore.context}
 						options={[
 							["alone", t(["Nothing", "无"])],
@@ -164,8 +169,8 @@ function LegView({
 			details={
 				<p>
 					{t([
-						"A leg is one position; a strategy combines legs and sometimes shares. A covered call adds stock to a short call; a protective put adds a long put to stock; a collar does both; a straddle pairs a call and a put at one strike; a vertical spread pairs two strikes in one expiry. The tape shows legs, never the structure, unless linked-leg records say so.",
-						"一条腿是一项持仓；策略把多条腿、有时还有股票组合起来。备兑看涨是股票加看涨空头；保护性看跌是股票加看跌多头；领口两者都有；跨式是同一行权价的看涨加看跌；垂直价差是同一到期日的两个行权价。除非有关联腿记录，逐笔成交只显示单腿，从不显示结构。",
+						"A leg is one position; a strategy combines legs and sometimes shares. A covered call adds stock to a short call; a protective put adds a long put to stock; a collar does both; a straddle pairs a call and a put at one strike; a vertical spread pairs two strikes in one expiry. Each leg is its own contract with its own price; what the position can make or lose comes from all its legs, and any shares, together.",
+						"一条腿是一项持仓；策略把多条腿、有时还有股票组合起来。备兑看涨是股票加看涨空头；保护性看跌是股票加看跌多头；领口两者都有；跨式是同一行权价的看涨加看跌；垂直价差是同一到期日的两个行权价。每条腿都是一份独立的合约，有自己的价格；整个持仓能赚多少、会亏多少，要把所有的腿和股票合在一起看。",
 					])}
 				</p>
 			}
@@ -361,12 +366,16 @@ function AddView({
 	);
 }
 
-// ——— Scene 3: a roll is two linked trades ———
+// ——— Scene 3: your own roll ———
 
 type RollState = { step: 0 | 1 | 2 | 3 };
 
 const POSITION_TOP = 30;
 const POSITION_ROW = 44;
+/** Whole dollars from cents: "$6,000", "−$590". */
+const cash = (cents: number) => usd(cents, 0);
+const signedCash = (cents: number) => signedUsd(cents, 0);
+const SPOT_TEXT = usd(ROLL_SPOT, 0);
 
 function Positions({
 	width,
@@ -382,24 +391,30 @@ function Positions({
 	const rows = [
 		{
 			id: "oct",
-			label: t(["Oct 18 100 call", "10月18日 100 看涨"]),
+			label: t([
+				`Oct 18 100 call · ${OCT_DAYS_LEFT} days left`,
+				`10月18日 100 看涨 · 剩 ${OCT_DAYS_LEFT} 天`,
+			]),
 			size: step >= 1 ? 0 : ROLL_QUANTITY,
 			before: step >= 1 ? ROLL_QUANTITY : null,
 		},
 		{
 			id: "nov",
-			label: t(["Nov 15 100 call", "11月15日 100 看涨"]),
+			label: t([
+				`Nov 15 100 call · ${NOV_DAYS_LEFT} days left`,
+				`11月15日 100 看涨 · 剩 ${NOV_DAYS_LEFT} 天`,
+			]),
 			size: step >= 2 ? ROLL_QUANTITY : 0,
 			before: null,
 		},
 	];
-	const left = width < 520 ? 14 : 170;
+	const left = width < 520 ? 14 : 264;
 	const span = width - left - 60;
 	const k = span / ROLL_QUANTITY;
 	return (
 		<g>
 			<Label x={14} y={18} tone="muted">
-				{t(["Your position · contracts", "你的持仓 · 张"])}
+				{t(["Example account · your contracts", "示例账户 · 你的持仓（张）"])}
 			</Label>
 			{rows.map((row, i) => {
 				const y = POSITION_TOP + i * POSITION_ROW;
@@ -456,29 +471,6 @@ function RollView({
 }) {
 	const t = tr(locale);
 	const shown = phase === "explore" && explore ? explore : state;
-	const prints: TapeRow[] = [];
-	if (shown.step >= 2)
-		prints.push({
-			key: "nov",
-			cells: [
-				"10:15:02",
-				t(["Nov 15 100 c", "11月15日 100 看涨"]),
-				count(ROLL_QUANTITY),
-				usd(BUY_NOV),
-				t(["bullish", "看多"]),
-			],
-		});
-	if (shown.step >= 1)
-		prints.push({
-			key: "oct",
-			cells: [
-				"10:15:01",
-				t(["Oct 18 100 c", "10月18日 100 看涨"]),
-				count(ROLL_QUANTITY),
-				usd(SELL_OCT),
-				t(["bearish", "看空"]),
-			],
-		});
 	const positionsHeight = POSITION_TOP + 2 * POSITION_ROW + 8;
 	const result: ResultItem[] = [];
 	if (shown.step === 0)
@@ -490,25 +482,25 @@ function RollView({
 				`${ROLL_QUANTITY} 张 10月18日 100 看涨`,
 			]),
 			note: t([
-				"Fri Oct 4, ALFA $102, 14 days left",
-				"10月4日 周五，ALFA $102，剩 14 天",
+				`bought on Monday Sep 16 for ${cash(ROLL_PAID)}; Fri Oct 4, ALFA ${SPOT_TEXT}`,
+				`9月16日 周一以 ${cash(ROLL_PAID)} 买入；10月4日 周五，ALFA ${SPOT_TEXT}`,
 			]),
 		});
 	if (shown.step >= 1)
 		result.push({
 			id: "in",
 			label: t(["Sold to close", "卖出平仓"]),
-			value: signedUsd(CASH_IN, 0),
+			value: signedCash(CASH_IN),
 			note: t([
-				`${ROLL_QUANTITY} × ${usd(SELL_OCT)} × 100`,
-				`${ROLL_QUANTITY} × ${usd(SELL_OCT)} × 100`,
+				`${ROLL_QUANTITY} × ${usd(SELL_OCT)} × 100; they cost ${cash(ROLL_PAID)}`,
+				`${ROLL_QUANTITY} × ${usd(SELL_OCT)} × 100；买入时花了 ${cash(ROLL_PAID)}`,
 			]),
 		});
 	if (shown.step >= 2)
 		result.push({
 			id: "out",
 			label: t(["Bought to open", "买入开仓"]),
-			value: signedUsd(-CASH_OUT, 0),
+			value: signedCash(-CASH_OUT),
 			note: t([
 				`${ROLL_QUANTITY} × ${usd(BUY_NOV)} × 100`,
 				`${ROLL_QUANTITY} × ${usd(BUY_NOV)} × 100`,
@@ -518,11 +510,12 @@ function RollView({
 		result.push({
 			id: "net",
 			label: t(["Net cost of the roll", "移仓净成本"]),
-			value: usd(CASH_OUT - CASH_IN, 0),
+			value: cash(ROLL_NET),
 			note: t([
-				`${usd(BUY_NOV - SELL_OCT)} a share for four more weeks`,
-				`每股 ${usd(BUY_NOV - SELL_OCT)}，换来多四周`,
+				`${usd(ROLL_NET_SHARE)} a share, ${cash(ROLL_NET_CONTRACT)} a contract (×100), for ${ROLL_WEEKS} more weeks`,
+				`每股 ${usd(ROLL_NET_SHARE)}，每张 ${cash(ROLL_NET_CONTRACT)}（×100），换来多 ${ROLL_WEEKS} 周`,
 			]),
+			tone: "focus",
 			evidence: "calculated",
 		});
 	return (
@@ -530,72 +523,13 @@ function RollView({
 			stage={
 				<Stage
 					label={t([
-						"A roll: your Oct 18 calls closed and Nov 15 calls opened, with the two prints it leaves",
-						"移仓：平掉 10月18日 看涨、开立 11月15日 看涨，以及留下的两笔成交",
+						"A roll in the course's example account: your Oct 18 100 calls closed and the same number of Nov 15 100 calls opened",
+						"课程示例账户里的一次移仓：平掉你的 10月18日 100 看涨，开立同样张数的 11月15日 100 看涨",
 					])}
-					height={(width) =>
-						positionsHeight + (width < 520 ? 24 : 0) + 12 + tapeHeight(2)
-					}
+					height={(width) => positionsHeight + (width < 520 ? 24 : 0)}
 				>
 					{(width) => (
-						<g>
-							<Positions width={width} step={shown.step} locale={locale} />
-							<TradeTape
-								x={8}
-								y={positionsHeight + (width < 520 ? 24 : 0) + 12}
-								width={width - 16}
-								title={t([
-									"Time and sales · Fri Oct 4",
-									"逐笔成交 · 10月4日 周五",
-								])}
-								columns={
-									width < 520
-										? [
-												{ label: t(["Contract", "合约"]), share: 0.44 },
-												{
-													label: t(["Qty", "张数"]),
-													share: 0.12,
-													align: "end",
-												},
-												{
-													label: t(["Price", "价格"]),
-													share: 0.2,
-													align: "end",
-												},
-												{
-													label: t(["Label", "标签"]),
-													share: 0.24,
-													align: "end",
-												},
-											]
-										: [
-												{ label: t(["Time", "时间"]), share: 0.2 },
-												{ label: t(["Contract", "合约"]), share: 0.3 },
-												{ label: t(["Qty", "张数"]), share: 0.1, align: "end" },
-												{
-													label: t(["Price", "价格"]),
-													share: 0.18,
-													align: "end",
-												},
-												{
-													label: t(["Label", "标签"]),
-													share: 0.22,
-													align: "end",
-												},
-											]
-								}
-								rows={
-									width < 520
-										? prints.map((row) => ({
-												...row,
-												cells: row.cells.slice(1),
-											}))
-										: prints
-								}
-								maxRows={2}
-								empty={t(["No trades yet", "尚无成交"])}
-							/>
-						</g>
+						<Positions width={width} step={shown.step} locale={locale} />
 					)}
 				</Stage>
 			}
@@ -620,8 +554,8 @@ function RollView({
 			details={
 				<p>
 					{t([
-						"A roll closes one contract and opens another, here the same strike a month later. It usually goes in as one order, but it prints as two separate trades, so a feed that labels each print alone sees one bearish sale and one bullish purchase. Linked-leg records, or your own blotter, show they were one decision.",
-						"移仓是平掉一张合约、再开另一张，这里是同一行权价、晚一个月到期。它通常作为一张订单下达，但会记录成两笔独立成交，所以逐笔贴标签的数据会看到一笔看空的卖出和一笔看多的买入。关联腿记录或你自己的交易记录会显示它们是同一个决定。",
+						`A roll closes one contract and opens another, here the same strike ${ROLL_WEEKS} weeks later. Many brokers take it as one order with one net price, here ${usd(ROLL_NET_SHARE)} a share; it can also be placed as two orders. It keeps the strike and buys time. It does not undo a loss: the October calls cost ${cash(ROLL_PAID)} and sold for ${cash(CASH_IN)}, and that ${cash(-ROLL_REALIZED)} loss is final. Fees are left out. The ${ROLL_QUANTITY} contracts are the example account's size, not a suggested one.`,
+						`移仓是平掉一张合约、再开另一张，这里是同一行权价、晚 ${ROLL_WEEKS} 周到期。很多券商可以把它作为一张订单、按一个净价下达，这里是每股 ${usd(ROLL_NET_SHARE)}；也可以分成两张订单。它保留行权价，买来时间，但不会抹掉亏损：十月看涨买入时花了 ${cash(ROLL_PAID)}，卖出收回 ${cash(CASH_IN)}，这 ${cash(-ROLL_REALIZED)} 的亏损已成定局。这里不计费用。${ROLL_QUANTITY} 张是示例账户的数量，不是建议的仓位。`,
 					])}
 				</p>
 			}
@@ -641,23 +575,26 @@ const scenes = [
 		],
 		predict: {
 			prompt: [
-				"You see one Oct 18 105 call sold at the bid. Is the seller betting ALFA won't rise?",
-				"你看到一张 10月18日 105 看涨在买价被卖出。卖方是在押注 ALFA 不会上涨吗？",
+				`You sell one Oct 18 105 call for ${usd(SOLD)} a share. Is that a bet that ALFA won't rise?`,
+				`你以每股 ${usd(SOLD)} 卖出一张 10月18日 105 看涨。这是在押注 ALFA 不会上涨吗？`,
 			],
 			choices: [
 				{
 					id: "unknown",
 					label: [
-						"Can't tell: it may cover shares or cap a spread",
-						"无法判断：可能是备兑股票或价差的上限",
+						"Not always: it depends on what else you hold",
+						"不一定：要看你还持有什么",
 					],
 				},
 				{
-					id: "bearish",
-					label: ["Yes: short calls are bearish", "是的：看涨空头就是看空"],
+					id: "fall",
+					label: [
+						"Yes: a sold call always gains from a fall",
+						"是的：卖出的看涨总是靠下跌获利",
+					],
 					why: [
-						"A short call can be one leg of a bullish plan: written against shares it's a covered call, and paired with a long call it's a bull spread.",
-						"看涨空头可以是看多计划中的一条腿：对着股票卖出是备兑看涨，与看涨多头搭配是看涨价差。",
+						"A sold call can be one leg of a position that gains when ALFA rises: sold against 100 shares it's a covered call, and paired with a long 100 call it's a call spread.",
+						"卖出的看涨可以是一组在 ALFA 上涨时获利的持仓中的一条腿：对着 100 股卖出是备兑看涨，与 100 看涨多头搭配是看涨价差。",
 					],
 				},
 				{
@@ -672,8 +609,8 @@ const scenes = [
 			answer: "unknown",
 			revealAt: 1,
 			explain: [
-				"Written against 100 shares it caps a bullish stock position; paired with a long 100 call it forms a bull spread. Alone, one print can't tell you which.",
-				"对着 100 股卖出，它是给看多的股票持仓设上限；与 100 看涨多头搭配，就组成看涨价差。仅凭一笔成交，无法判断是哪一种。",
+				"Sold against 100 shares it caps a stock position that still gains as ALFA rises; paired with a long 100 call it forms a call spread that also gains from a rise. Only on its own does it lose, without limit, when ALFA rises.",
+				"对着 100 股卖出，它给一个 ALFA 上涨时仍获利的股票持仓设了上限；与 100 看涨多头搭配，就组成同样靠上涨获利的看涨价差。只有单独卖出时，ALFA 上涨才会带来没有上限的亏损。",
 			],
 		},
 		beats: [
@@ -699,7 +636,7 @@ const scenes = [
 				id: "spread",
 				label: ["In a spread", "价差中"],
 				caption: [
-					"Paired with a long Oct 18 100 call it caps a bull call spread: −$215 at worst, +$285 at best.",
+					"Paired with a long Oct 18 100 call it caps a call spread: −$215 at worst, +$285 at best.",
 					"与 10月18日 100 看涨多头搭配，它是看涨价差的上限：最坏 −$215，最好 +$285。",
 				],
 				state: { context: "spread" },
@@ -707,15 +644,15 @@ const scenes = [
 		],
 		explore: {
 			prompt: [
-				"Pick what else the seller holds and watch the position change.",
-				"选择卖方还持有什么，观察持仓如何变化。",
+				"Pick what else you hold and watch the position change.",
+				"选择你还持有什么，观察持仓如何变化。",
 			],
 			start: () => ({ context: "alone" }),
 			task: {
 				kind: "answer",
 				prompt: [
-					"With which holding is the call seller's worst case limited to $215?",
-					"卖出看涨的人同时持有什么时，最坏情况被限制在 $215？",
+					"With which holding is your worst case on the sold call limited to $215?",
+					"卖出这张看涨后，你同时持有什么时，最坏情况被限制在 $215？",
 				],
 				choices: [
 					{ id: "spread", label: ["A long 100 call", "100 看涨多头"] },
@@ -724,8 +661,8 @@ const scenes = [
 				],
 				answer: "spread",
 				done: [
-					"With the long 100 call it is a bull call spread: the most it can lose is the $215 it cost. Covered by shares, the worst case is the shares' fall; alone, the loss has no limit.",
-					"加上 100 看涨多头，它就是牛市看涨价差：最多亏它花的 $215。用股票备兑时，最坏情况是股价下跌的损失；单独卖出时，亏损没有上限。",
+					"With the long 100 call it is a call spread: the most it can lose is the $215 it cost. Covered by shares, the worst case is the shares' fall; alone, the loss has no limit.",
+					"加上 100 看涨多头，它就是看涨价差：最多亏它花的 $215。用股票备兑时，最坏情况是股价下跌的损失；单独卖出时，亏损没有上限。",
 				],
 			},
 		},
@@ -832,42 +769,62 @@ const scenes = [
 	defineScene<RollState, RollState>({
 		id: "roll",
 		label: ["Close, then open", "先平仓，再开仓"],
-		title: ["A roll is two linked trades", "移仓是两笔关联的交易"],
+		title: [
+			"A roll closes one contract and opens a later one",
+			"移仓：平掉一张合约，开立更晚到期的一张",
+		],
 		predict: {
 			prompt: [
-				"A trader sells 16 Oct 18 100 calls and a second later buys 16 Nov 15 100 calls. A feed labels them bearish and bullish. What happened?",
-				"一位交易者卖出 16 张 10月18日 100 看涨，一秒后买入 16 张 11月15日 100 看涨。数据分别标为看空和看多。发生了什么？",
+				`You paid ${cash(ROLL_PAID)} for ${ROLL_QUANTITY} Oct 18 100 calls. With ${OCT_DAYS_LEFT} days left they sell for ${cash(CASH_IN)}. You roll: sell them and buy ${ROLL_QUANTITY} Nov 15 100 calls for ${cash(CASH_OUT)}. What has the roll done?`,
+				`你花 ${cash(ROLL_PAID)} 买了 ${ROLL_QUANTITY} 张 10月18日 100 看涨。还剩 ${OCT_DAYS_LEFT} 天时，它们能卖 ${cash(CASH_IN)}。你移仓：卖掉它们，再花 ${cash(CASH_OUT)} 买入 ${ROLL_QUANTITY} 张 11月15日 100 看涨。这次移仓做了什么？`,
 			],
 			choices: [
 				{
-					id: "roll",
+					id: "time",
 					label: [
-						"One decision: a roll to a later expiry",
-						"一个决定：移仓到更晚的到期日",
+						`Bought ${ROLL_WEEKS} more weeks for ${cash(ROLL_NET)} more`,
+						`多花 ${cash(ROLL_NET)}，换来多 ${ROLL_WEEKS} 周`,
 					],
 				},
 				{
-					id: "flip",
-					label: ["They changed their mind twice", "他改了两次主意"],
+					id: "reset",
+					label: [
+						`Erased the ${cash(-ROLL_REALIZED)} loss so far`,
+						`抹掉了到目前为止的 ${cash(-ROLL_REALIZED)} 亏损`,
+					],
 					why: [
-						"The two trades came a second apart at the same strike and size. That's one plan, closing October and opening November, not two changes of mind.",
-						"两笔交易相隔一秒，行权价和数量都相同。这是一个计划：平掉十月、开立十一月，而不是两次改变主意。",
+						`The October calls cost ${cash(ROLL_PAID)} and sold for ${cash(CASH_IN)}. Selling them makes that ${cash(-ROLL_REALIZED)} loss final; the November calls are a new position with their own cost.`,
+						`十月看涨买入时花了 ${cash(ROLL_PAID)}，卖出收回 ${cash(CASH_IN)}。卖出让这 ${cash(-ROLL_REALIZED)} 的亏损成为定局；十一月看涨是一个新持仓，有它自己的成本。`,
 					],
 				},
 				{
-					id: "two",
-					label: ["Two different traders", "两个不同的交易者"],
+					id: "free",
+					label: [
+						"Swapped expiries at no cost: the sale pays for the purchase",
+						"不花钱换了到期日：卖出的钱够付买入",
+					],
 					why: [
-						"Same size, same strike, a second apart: that pattern points to one trader rolling the position, not two strangers matching by chance.",
-						"相同数量、相同行权价、相隔一秒：这种形态指向一个交易者在移仓，而不是两个陌生人碰巧对上。",
+						`The sale brings in ${cash(CASH_IN)}, but the November calls cost ${cash(CASH_OUT)}: ${ROLL_WEEKS} more weeks of time cost more. The ${cash(ROLL_NET)} difference is new money paid.`,
+						`卖出收回 ${cash(CASH_IN)}，但十一月看涨要 ${cash(CASH_OUT)}：多 ${ROLL_WEEKS} 周的时间更贵。差额 ${cash(ROLL_NET)} 是新付出的钱。`,
+					],
+				},
+				{
+					id: "safer",
+					label: [
+						"Lowered the most you can lose from here",
+						"降低了从现在起最多能亏的金额",
+					],
+					why: [
+						`More premium is at risk after the roll, not less: ${cash(CASH_OUT)} in November calls, against ${cash(CASH_IN)} in the October calls before it.`,
+						`移仓后承担风险的权利金更多，而不是更少：十一月看涨是 ${cash(CASH_OUT)}，移仓前的十月看涨是 ${cash(CASH_IN)}。`,
 					],
 				},
 			],
-			answer: "roll",
-			revealAt: 2,
+			answer: "time",
+			revealAt: 3,
 			explain: [
-				"Closing the October calls and opening November ones at the same strike keeps the same view for four more weeks. The two opposite labels describe legs, not a change of mind.",
-				"平掉十月看涨、开立同一行权价的十一月看涨，是把同样的观点再延长四周。两个相反的标签描述的是两条腿，而不是改变主意。",
+				`${cash(CASH_OUT)} out less ${cash(CASH_IN)} in is ${cash(ROLL_NET)}: ${usd(ROLL_NET_SHARE)} a share, ${cash(ROLL_NET_CONTRACT)} a contract. The strike is still $100 and the expiry is ${ROLL_WEEKS} weeks later. The ${cash(-ROLL_REALIZED)} loss on the October calls is made, and ${cash(CASH_OUT)} of premium is now at risk.`,
+				`支出 ${cash(CASH_OUT)} 减去收回的 ${cash(CASH_IN)}，是 ${cash(ROLL_NET)}：每股 ${usd(ROLL_NET_SHARE)}，每张 ${cash(ROLL_NET_CONTRACT)}。行权价仍是 $100，到期日晚了 ${ROLL_WEEKS} 周。十月看涨上 ${cash(-ROLL_REALIZED)} 的亏损已经发生，现在有 ${cash(CASH_OUT)} 的权利金承担风险。`,
 			],
 		},
 		beats: [
@@ -875,8 +832,8 @@ const scenes = [
 				id: "hold",
 				label: ["Before", "之前"],
 				caption: [
-					"Fri Oct 4, ALFA $102: you still hold the 16 Oct 18 100 calls from Monday, with two weeks left.",
-					"10月4日 周五，ALFA $102：你仍持有周一买入的 16 张 10月18日 100 看涨，还剩两周。",
+					`Fri Oct 4, ALFA ${SPOT_TEXT}: in the course's example account you hold ${ROLL_QUANTITY} Oct 18 100 calls, bought for ${cash(ROLL_PAID)}, with ${OCT_DAYS_LEFT} days left.`,
+					`10月4日 周五，ALFA ${SPOT_TEXT}：在课程的示例账户里，你持有以 ${cash(ROLL_PAID)} 买入的 ${ROLL_QUANTITY} 张 10月18日 100 看涨，还剩 ${OCT_DAYS_LEFT} 天。`,
 				],
 				state: { step: 0 },
 			},
@@ -884,8 +841,8 @@ const scenes = [
 				id: "close",
 				label: ["Close", "平仓"],
 				caption: [
-					"First leg: sell to close all 16 at the $3.75 bid. $6,000 comes in, and the tape shows a sale at the bid.",
-					"第一条腿：以 $3.75 的买价卖出平仓全部 16 张。收入 $6,000，逐笔成交显示一笔在买价的卖出。",
+					`First leg: sell to close all ${ROLL_QUANTITY} at ${usd(SELL_OCT)} a share. ${cash(CASH_IN)} comes in, ${cash(-ROLL_REALIZED)} less than they cost.`,
+					`第一条腿：以每股 ${usd(SELL_OCT)} 卖出平仓全部 ${ROLL_QUANTITY} 张。收回 ${cash(CASH_IN)}，比买入成本少 ${cash(-ROLL_REALIZED)}。`,
 				],
 				state: { step: 1 },
 			},
@@ -893,17 +850,17 @@ const scenes = [
 				id: "open",
 				label: ["Open", "开仓"],
 				caption: [
-					"Second leg: buy to open 16 Nov 15 100 calls at the $5.70 ask. $9,120 goes out, and a purchase at the ask prints.",
-					"第二条腿：以 $5.70 的卖价买入开仓 16 张 11月15日 100 看涨。支出 $9,120，留下一笔在卖价买入的记录。",
+					`Second leg: buy to open ${ROLL_QUANTITY} Nov 15 100 calls at ${usd(BUY_NOV)} a share. ${cash(CASH_OUT)} goes out: the same strike, with ${NOV_DAYS_LEFT} days left.`,
+					`第二条腿：以每股 ${usd(BUY_NOV)} 买入开仓 ${ROLL_QUANTITY} 张 11月15日 100 看涨。支出 ${cash(CASH_OUT)}：同一行权价，还剩 ${NOV_DAYS_LEFT} 天。`,
 				],
 				state: { step: 2 },
 			},
 			{
 				id: "net",
-				label: ["One decision", "一个决定"],
+				label: ["Net cost", "净成本"],
 				caption: [
-					"Together: the same strike four weeks later for a net $3,120. One decision, two prints with opposite labels.",
-					"合起来：同一行权价、晚四周到期，净支出 $3,120。一个决定，两笔标签相反的成交。",
+					`Together, one roll: ${usd(ROLL_NET_SHARE)} a share net, ${cash(ROLL_NET_CONTRACT)} a contract, ${cash(ROLL_NET)} for all ${ROLL_QUANTITY}. Same strike, ${ROLL_WEEKS} more weeks, more premium at risk.`,
+					`合起来是一次移仓：每股净付 ${usd(ROLL_NET_SHARE)}，每张 ${cash(ROLL_NET_CONTRACT)}，${ROLL_QUANTITY} 张共 ${cash(ROLL_NET)}。同一行权价，多 ${ROLL_WEEKS} 周，承担风险的权利金更多。`,
 				],
 				state: { step: 3 },
 			},
@@ -917,18 +874,21 @@ const scenes = [
 			task: {
 				kind: "answer",
 				prompt: [
-					"What did the whole roll cost, net?",
-					"整个移仓的净成本是多少？",
+					"Once the roll is done, how much have you paid in all for these calls, October and November together?",
+					"移仓完成后，十月和十一月合在一起，你为这些看涨总共付了多少？",
 				],
 				choices: [
-					{ id: "net", label: ["$3,120", "$3,120"] },
-					{ id: "open", label: ["$9,120", "$9,120"] },
-					{ id: "close", label: ["$6,000", "$6,000"] },
+					{
+						id: "all",
+						label: [cash(ROLL_TOTAL_PAID), cash(ROLL_TOTAL_PAID)],
+					},
+					{ id: "open", label: [cash(CASH_OUT), cash(CASH_OUT)] },
+					{ id: "net", label: [cash(ROLL_NET), cash(ROLL_NET)] },
 				],
-				answer: "net",
+				answer: "all",
 				done: [
-					"$9,120 out for the November calls less $6,000 in for the October ones: $3,120 for four more weeks at the same strike. One decision, two prints with opposite labels.",
-					"买入 11月 看涨支出 $9,120，减去卖出 10月 看涨收回的 $6,000：花 $3,120 换来同一行权价多四周的时间。一个决定，两笔标签相反的成交。",
+					`${cash(ROLL_PAID)} on Monday plus the roll's ${cash(ROLL_NET)}: ${cash(ROLL_TOTAL_PAID)} in all, for November calls bought at ${cash(CASH_OUT)}. The ${cash(-ROLL_REALIZED)} between them is the October loss. The roll bought time; it did not win that back.`,
+					`周一的 ${cash(ROLL_PAID)} 加上移仓的 ${cash(ROLL_NET)}：一共 ${cash(ROLL_TOTAL_PAID)}，换来以 ${cash(CASH_OUT)} 买入的十一月看涨。两者之差 ${cash(-ROLL_REALIZED)} 就是十月看涨的亏损。移仓买来的是时间，并没有把这笔亏损赚回来。`,
 				],
 			},
 		},

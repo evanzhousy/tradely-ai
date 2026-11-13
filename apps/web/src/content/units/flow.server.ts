@@ -628,25 +628,25 @@ export const flowUnits: TeachingUnit[] = [
 	},
 	{
 		id: "option-strategies",
-		version: 3,
+		version: 4,
 		conceptLab: {
 			kind: "option-strategies",
 			intro: t(
-				"Place one short call inside three different positions, add a spread's signed legs into its payoff, and watch a roll print as two opposite-looking trades.",
-				"把同一张看涨空头放进三种不同持仓，把价差带符号的各腿相加成到期价值，再看一次移仓如何记录成两笔看似相反的成交。",
+				"Place one short call inside three different positions, add a spread's signed legs into its payoff, and roll your own calls to a later expiry to see what that costs and what it changes.",
+				"把同一张看涨空头放进三种不同持仓，把价差带符号的各腿相加成到期价值，再把你自己的看涨移仓到更晚的到期日，看它要花多少钱、改变了什么。",
 			),
 		},
 		sources: [basics],
 		explanation: t(
-			"A leg is one position; a strategy combines legs and sometimes underlying shares. A protective put combines stock with a long put. A covered call combines stock with a short call; an uncovered short call lacks that stock and has very different upside risk. A vertical spread combines same-expiry options at different strikes. A straddle combines a call and put at one strike; a collar combines stock, a put and a short call. A roll closes one contract and opens another. These structures can make an isolated print's sentiment misleading about the complete portfolio. Opening/closing and linked-leg records are required to distinguish them. Expiration payoff, entry premium, fees, early assignment and path-dependent management must remain separate.",
-			"一条腿是一项持仓，策略可组合多腿及股票。保护性看跌是股票加多头看跌；备兑看涨是股票加空头看涨，未备兑空头缺少股票，其上涨风险很不同。垂直价差结合同到期不同行权价；跨式结合同行权价看涨与看跌；领口结合股票、看跌与空头看涨。移仓包含平旧合约和开新合约。单笔情绪因此可能误导完整组合解读，识别结构需开平仓和关联腿记录。到期价值、入场权利金、费用、提前指派及持仓管理过程应分别看待。",
+			"A leg is one position; a strategy combines legs and sometimes underlying shares. A protective put combines stock with a long put. A covered call combines stock with a short call; an uncovered short call lacks that stock and has very different upside risk. A vertical spread combines same-expiry options at different strikes. A straddle combines a call and put at one strike; a collar combines stock, a put and a short call. A roll closes one contract and opens another, usually a later expiry, and many brokers take it as one order with one net price; it buys time for more premium and does not undo a loss already made on the contract it closes. So one leg alone does not show what a position can make or lose: read all its legs, and any shares, together. Expiration payoff, entry premium, fees, early assignment and path-dependent management must remain separate.",
+			"一条腿是一项持仓，策略可组合多腿及股票。保护性看跌是股票加多头看跌；备兑看涨是股票加空头看涨，未备兑空头缺少股票，其上涨风险很不同。垂直价差结合同到期不同行权价；跨式结合同行权价看涨与看跌；领口结合股票、看跌与空头看涨。移仓是平掉旧合约、开立新合约，通常换到更晚的到期日，很多券商可以把它作为一张订单、按一个净价下达；它用更多权利金买来时间，但不会抹掉被平掉的合约上已经发生的亏损。所以单看一条腿，看不出整个持仓能赚多少、会亏多少：要把所有的腿和股票合在一起看。到期价值、入场权利金、费用、提前指派及持仓管理过程应分别看待。",
 		),
 		example: t(
-			"The 105/110 call spread bought for $1.25 net per share, multiplier 100: at expiration spot $115, the long call pays $10 and the short call costs $5, so net payoff is $500 and profit $375. Reading only the short-call print would miss the capped bullish spread.",
-			"105/110 看涨价差每股净成本 $1.25，乘数 100。到期现价 $115，多头价值 $10、空头需付 $5：净价值 $500，利润 $375。只看空头看涨成交会漏掉整体有上限的看涨价差。",
+			"The 105/110 call spread bought for $1.25 net per share, multiplier 100: at expiration spot $115, the long call pays $10 and the short call costs $5, so net payoff is $500 and profit $375. Judging the short 110 call on its own would miss that the whole spread gains when ALFA rises, up to a cap.",
+			"105/110 看涨价差每股净成本 $1.25，乘数 100。到期现价 $115，多头价值 $10、空头需付 $5：净价值 $500，利润 $375。只看 110 看涨空头这一条腿，就会漏掉一点：整组价差在 ALFA 上涨时获利，只是有上限。",
 		),
 		misconception: t(
-			"Someone bullish on ALFA can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
+			"Someone who expects ALFA to rise can still buy a put to protect shares. One leg's direction doesn't reveal the whole position.",
 			"看好 ALFA 的人也可能买看跌来保护持股。单条腿的方向说明不了整个持仓。",
 		),
 		case: (v) => {
@@ -655,14 +655,12 @@ export const flowUnits: TeachingUnit[] = [
 			const long = Math.max(spot - 100, 0);
 			const short = Math.max(spot - 110, 0);
 			const perShare = long - short - cost;
-			/** How the spread's legs show on the tape: not shown (guided: the 110 sale alone), linked as one package, or side by side with no link. */
-			const tape = (["alone", "linked", "unlinked", "linked"] as const)[v];
 			/** What the second account's statement shows beside its 95 put: 100 shares, nothing in ALFA, or no statement at all. */
 			const holding = (["shares", "shares", "unseen", "none"] as const)[v];
 			return {
 				brief: t(
-					`You bought an ALFA 100/110 call spread for ${money(cost)} a share net: long the 100 call and short the 110 call, same expiry.${tape === "linked" ? " On the tape, both legs printed in the same second, the same size, each with a multi-leg condition and the same package ID." : tape === "unlinked" ? " On the tape, both legs printed in the same second, the same size, with no condition code or package ID." : ""} At expiry ALFA is ${money(spot)}. One contract covers 100 shares; ignore fees.\n\nSeparately, a second account buys one ALFA 95 put. ${holding === "shares" ? "Its statement shows 100 ALFA shares." : holding === "none" ? "Its statement shows no ALFA shares and no other ALFA options." : "You see that trade, but not the account's statement."}`,
-					`你以每股净价 ${money(cost)} 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。${tape === "linked" ? "在成交记录上，两条腿在同一秒成交，数量相同，都带有多腿条件和同一个组合单编号。" : tape === "unlinked" ? "在成交记录上，两条腿在同一秒成交，数量相同，但都没有条件代码或组合单编号。" : ""}到期时 ALFA 为 ${money(spot)}。一张合约对应 100 股，不计费用。\n\n另外，第二个账户买入一张 ALFA 95 看跌。${holding === "shares" ? "它的账户报表显示持有 100 股 ALFA。" : holding === "none" ? "它的账户报表显示没有 ALFA 股票，也没有其他 ALFA 期权。" : "你只看到这笔成交，看不到该账户的报表。"}`,
+					`You bought an ALFA 100/110 call spread for ${money(cost)} a share net: long the 100 call and short the 110 call, same expiry. At expiry ALFA is ${money(spot)}. One contract covers 100 shares; ignore fees.\n\nSeparately, a second account buys one ALFA 95 put. ${holding === "shares" ? "Its statement shows 100 ALFA shares." : holding === "none" ? "Its statement shows no ALFA shares and no other ALFA options." : "You see that trade, but not the account's statement."}`,
+					`你以每股净价 ${money(cost)} 买入了 ALFA 100/110 看涨价差：多头 100 看涨、空头 110 看涨，到期日相同。到期时 ALFA 为 ${money(spot)}。一张合约对应 100 股，不计费用。\n\n另外，第二个账户买入一张 ALFA 95 看跌。${holding === "shares" ? "它的账户报表显示持有 100 股 ALFA。" : holding === "none" ? "它的账户报表显示没有 ALFA 股票，也没有其他 ALFA 期权。" : "你只看到这笔成交，看不到该账户的报表。"}`,
 				),
 				questions: [
 					n(
@@ -676,59 +674,35 @@ export const flowUnits: TeachingUnit[] = [
 						`100 看涨价值 ${money(long)}，空头 110 看涨要付 ${money(short)}；再减去支付的 ${money(cost)}，每股 ${signedMoney(perShare)}，整组价差 ${signedMoney(perShare * 100, 0)}。`,
 					),
 					c(
-						"isolated",
-						tape === "alone"
-							? "If you saw only the 110 call being sold, could you tell it was part of this spread?"
-							: "Could someone watching the tape tell your 110 call sale was part of this spread?",
-						tape === "alone"
-							? "如果只看到 110 看涨被卖出，你能判断它属于这组价差吗？"
-							: "旁观成交记录的人，能看出你卖出的 110 看涨属于这组价差吗？",
+						"short110",
+						"At expiry, what did your short 110 call do to the spread?",
+						"到期时，你的 110 看涨空头对这组价差起了什么作用？",
 						[
 							[
-								"can",
-								"Yes: selling calls always means a spread",
-								"能：卖出看涨总是意味着价差",
-								tape === "linked"
-									? "They could tell here, but not because selling calls means a spread: the multi-leg condition and shared package ID tie the two legs together."
-									: tape === "unlinked"
-										? "Selling calls doesn't always mean a spread: with no condition code or package ID, the sale could be a covered call, a close or an uncovered sale."
-										: "Selling calls doesn't always mean a spread: it could be a covered call, a close or an uncovered sale. You'd need the other leg and a link between them.",
-								tape === "linked"
-									? "这里确实能看出来，但不是因为卖出看涨就意味着价差：是多腿条件和同一个组合单编号把两条腿连在一起。"
-									: tape === "unlinked"
-										? "卖出看涨并不总是价差：没有条件代码或组合单编号，这笔卖出可能是备兑看涨、平仓或未备兑卖出。"
-										: "卖出看涨并不总是价差：它可能是备兑看涨、平仓或未备兑卖出。你需要另一条腿以及两者之间的关联。",
+								"nothing",
+								"Nothing: ALFA is below $110, so it expires worth $0",
+								"没有作用：ALFA 低于 $110，它到期价值为 $0",
+								`ALFA is ${money(spot)}, above $110: the short call costs ${money(short)} a share, which comes off what the 100 call pays.`,
+								`ALFA 为 ${money(spot)}，高于 $110：空头看涨每股要付 ${money(short)}，从 100 看涨的收益里扣除。`,
 							],
 							[
-								"cannot",
-								"No: you'd need the other leg and a link between them",
-								"不能：需要另一条腿以及两者之间的关联",
-								"The tape has both: the other leg printed beside it, and the multi-leg condition and shared package ID link them.",
-								"成交记录两样都有：另一条腿就在旁边成交，多腿条件和同一个组合单编号把它们连了起来。",
+								"cap",
+								"It took back every dollar above $110, capping the gain",
+								"它把 $110 以上的每一美元都拿回去，给收益封了顶",
+								`ALFA is ${money(spot)}, below $110, so the short 110 call expires worth $0 and takes nothing back.`,
+								`ALFA 为 ${money(spot)}，低于 $110，110 看涨空头到期价值为 $0，什么都没拿回去。`,
 							],
 							[
-								"linked",
-								"Yes: the tape ties it to the 100 call buy",
-								"能：成交记录把它和 100 看涨的买入连在一起",
-								tape === "unlinked"
-									? "Printing in the same second, at the same size, isn't a link: neither print carries a condition code or package ID, so they could be separate trades."
-									: "With only the 110 call's print in view, there's no other leg to tie it to.",
-								tape === "unlinked"
-									? "同一秒、同样数量成交并不是关联：两笔都没有条件代码或组合单编号，它们可能是各自独立的交易。"
-									: "只看到 110 看涨这一笔成交时，没有另一条腿可以和它连在一起。",
+								"unlimited",
+								"It lost without limit, as a sold call does",
+								"它像卖出的看涨一样，亏损没有上限",
+								"Your long 100 call covers it: above $110 the 100 call gains as fast as the 110 call loses, so the spread's loss is limited to what it cost.",
+								"你的 100 看涨多头覆盖了它：$110 以上，100 看涨涨得和 110 看涨亏得一样快，所以价差最多亏掉它的成本。",
 							],
 						],
-						tape === "linked" ? "linked" : "cannot",
-						tape === "linked"
-							? "A multi-leg condition and one package ID on two same-size prints tie the short 110 call to the long 100 call. Without them, the sale alone could be a covered call, a close or an outright short."
-							: tape === "unlinked"
-								? "Same second and same size suggest a link but don't prove one. With no condition code or package ID, the sale could be a separate trade; only a linked-leg record settles it."
-								: "A lone short-call print could be a covered call, a spread's leg or an outright short. The structure comes from the linked legs, which a single print doesn't carry.",
-						tape === "linked"
-							? "两笔数量相同的成交带有多腿条件和同一个组合单编号，把 110 看涨空头和 100 看涨多头连在一起。没有这些，单看这笔卖出，可能是备兑、平仓，也可能是单纯做空。"
-							: tape === "unlinked"
-								? "同一秒、数量相同只是提示可能有关联，并不能证明。没有条件代码或组合单编号，这笔卖出可能是独立的交易；只有关联腿记录才能确定。"
-								: "一笔单独的看涨卖出，可能是备兑、价差的一条腿，也可能是单纯做空。结构来自相互关联的各条腿，而单笔成交不包含这些信息。",
+						spot >= 110 ? "cap" : "nothing",
+						"A short call inside a spread is covered by the long call: below $110 it expires worth nothing; above, it gives back what the long call gains past $110.",
+						"价差里的空头看涨由多头看涨覆盖：低于 $110 时它到期一文不值；高于 $110 时，它把多头看涨超过 $110 的收益交回去。",
 					),
 					c(
 						"put",
@@ -751,11 +725,11 @@ export const flowUnits: TeachingUnit[] = [
 								"Betting on a fall: the account gains only if ALFA drops",
 								"押注下跌：只有 ALFA 下跌时账户才获利",
 								holding === "shares"
-									? "Buying a put isn't bearish by itself: with 100 shares, the account gains if ALFA rises, and the put limits the loss below $95."
-									: "A lone put looks bearish, but you can't see the account: it may hold shares the put protects.",
+									? "Buying a put isn't a bet on a fall by itself: with 100 shares, the account gains if ALFA rises, and the put limits the loss below $95."
+									: "A lone put looks like a bet on a fall, but you can't see the account: it may hold shares the put protects.",
 								holding === "shares"
-									? "买入看跌本身并不代表看空：持有 100 股时，ALFA 上涨账户就获利，看跌只是限制了 $95 以下的亏损。"
-									: "单独一张看跌看起来是看空，但你看不到这个账户：它可能持有这张看跌所保护的股票。",
+									? "买入看跌本身并不代表押注下跌：持有 100 股时，ALFA 上涨账户就获利，看跌只是限制了 $95 以下的亏损。"
+									: "单独一张看跌看起来是在押注下跌，但你看不到这个账户：它可能持有这张看跌所保护的股票。",
 							],
 							[
 								"unknown",

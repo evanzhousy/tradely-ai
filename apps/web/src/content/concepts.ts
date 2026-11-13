@@ -351,8 +351,8 @@ export const concepts: Record<ConceptId, Concept> = {
 		id: "C09",
 		name: t("Positions and strategies", "持仓与策略"),
 		description: t(
-			"The holder of an option owns a right and the writer carries the matching obligation; buying or selling to open or to close changes a position, while exercising uses the right. A strategy combines legs, sometimes with shares: a covered call, a protective put, a spread, a collar or a roll each change what one option leg means, so a single print cannot reveal the position behind it.",
-			"期权持有人拥有权利，义务方承担对应的义务；买入或卖出开仓、平仓改变持仓，行权则是使用权利。策略把多条腿组合起来，有时还包括股票：备兑看涨、保护性看跌、价差、领口与移仓都会改变单条期权腿的含义，所以单笔成交无法揭示背后的持仓。",
+			"The holder of an option owns a right and the writer carries the matching obligation; buying or selling to open or to close changes a position, while exercising uses the right. A strategy combines legs, sometimes with shares: a covered call, a protective put, a spread, a collar or a roll each change what one option leg means, so one leg on its own does not say what the whole position can make or lose.",
+			"期权持有人拥有权利，义务方承担对应的义务；买入或卖出开仓、平仓改变持仓，行权则是使用权利。策略把多条腿组合起来，有时还包括股票：备兑看涨、保护性看跌、价差、领口与移仓都会改变单条期权腿的含义，所以单看一条腿，说明不了整个持仓能赚多少、会亏多少。",
 		),
 		evidence: [
 			t(
@@ -366,6 +366,10 @@ export const concepts: Record<ConceptId, Concept> = {
 			t(
 				"Name two strategies in which the same short call leg carries different risk",
 				"举出两种策略，其中同一条卖出看涨腿承担不同的风险",
+			),
+			t(
+				"Say what rolling a long call to a later expiry costs, net, and what it does not change: the loss already made on the contract it closes",
+				"说出把看涨多头移仓到更晚到期日的净成本，以及它不会改变什么：被平掉的合约上已经发生的亏损",
 			),
 		],
 		prerequisites: [

@@ -2,6 +2,7 @@ import "@tanstack/react-start/server-only";
 import type { LearningScenario } from "@/domain/learning/scenario";
 import exposureStructureCasesV2 from "../units/archive/exposure-structure-cases-v2.json";
 import flowCasesV2 from "../units/archive/flow-cases-v2.json";
+import flowCasesV3 from "../units/archive/flow-cases-v3.json";
 import foundationsCasesV2 from "../units/archive/foundations-cases-v2.json";
 import { archivedFoundationUnits } from "../units/archive/foundations-original.server";
 import { optionContractsV2 } from "../units/archive/option-contracts-v2.server";
@@ -27,6 +28,7 @@ const frozen = (scenarios: unknown) => scenarios as LearningScenario[];
 
 const archivedScenarios = [
 	...frozen(flowCasesV2),
+	...frozen(flowCasesV3),
 	...frozen(researchCasesV2),
 	...frozen(workflowsCasesV2),
 	...frozen(exposureStructureCasesV2),

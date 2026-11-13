@@ -16,6 +16,7 @@ import {
 	Word,
 } from "../walkthrough/film-kit";
 import {
+	BUY_NOV,
 	CALL_105,
 	CALL_110,
 	CASH_IN,
@@ -23,7 +24,10 @@ import {
 	longLeg,
 	NET,
 	RANGE,
+	ROLL_NET,
+	ROLL_NET_CONTRACT,
 	ROLL_QUANTITY,
+	SELL_OCT,
 	SOLD,
 	STOCK_COST,
 	shortLeg110,
@@ -34,18 +38,20 @@ import {
 /*
  * Strategies, as a film. One Oct 18 105 call sold at the $2.05 bid: a bet ALFA won't rise?
  * The chart answers with three positions it can belong to: alone, its loss has no limit;
- * against 100 shares it is a covered call; beside a long 100 call it caps a bull spread.
+ * against 100 shares it is a covered call; beside a long 100 call it caps a call spread.
  * The hero adds a 105/110 spread's signed legs at $115: +$1,000, −$500, $500 together, and
- * glowing brackets lock on +$375 after its cost. Last, a roll: a sale at the bid and a
- * purchase at the ask, labelled bearish and bullish, that are one decision.
+ * glowing brackets lock on +$375 after its cost. Last, your own roll in the course's example
+ * account: 16 October 100 calls sold to close for +$6,000, 16 November 100 calls bought to
+ * open for −$9,120, one order whose net cost is $3,120 ($195 a contract) for the same strike
+ * four weeks later.
  *
  *   open      0–4        "Strategies"
  *   question  4–8.6      the 105 call sold at $2.05: a bet ALFA won't rise?
  *   leg       8.6–21.35   alone; covered by shares; capping a spread
  *   add       21.35–34.0  hero: long 105; short 110; payoff less cost; +$375 profit
- *   roll      34.0–40.3  sell October at the bid; buy November at the ask; one roll
+ *   roll      34.0–40.3  sell October to close; buy November to open; one net cost
  *   claim     40.3–45.0  one leg, many positions
- *   next      45.0–47.5  Next: straddles and condors
+ *   next      45.0–47.5  Next: straddles and condors, trades with no view on direction
  */
 
 const END = 47.5;
@@ -59,7 +65,6 @@ const stockLine = (spot: number) => (spot - STOCK_COST) * 100;
 /** Dollars per contract as a whole-dollar figure: "$500", "+$375". */
 const dollars = (value: number) => usd(value * 100, 0);
 const signedDollars = (value: number) => signedUsd(value * 100, 0);
-const ROLL_NET = CASH_OUT - CASH_IN;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -123,27 +128,39 @@ const copy = {
 		`${dollars(spreadPayoff(SPOT))} − ${dollars(NET)}`,
 	],
 	spot: [`ALFA $${SPOT}`, `ALFA $${SPOT}`],
-	rHead: ["Sold at the bid, bought at the ask.", "买价卖出，卖价买入。"],
-	r2Head: ["Two labels, one decision: a roll.", "两个标签，一个决定：移仓。"],
+	rHead: ["Sell October, buy November.", "卖出十月，买入十一月。"],
+	r2Head: ["One order, one net cost: a roll.", "一张订单，一个净成本：移仓。"],
+	// The 16 contracts are the course's example account, not a suggested size.
 	rollTag: [
-		`Fri Oct 4 · ${count(ROLL_QUANTITY)} contracts per leg`,
-		`10月4日 周五 · 每腿 ${count(ROLL_QUANTITY)} 张合约`,
+		`Course example account · Fri Oct 4 · ${count(ROLL_QUANTITY)} contracts`,
+		`课程示例账户 · 10月4日 周五 · ${count(ROLL_QUANTITY)} 张合约`,
+	],
+	rollTagShort: [
+		`Example account · Oct 4 · ${count(ROLL_QUANTITY)} calls`,
+		`示例账户 · 10月4日 · ${count(ROLL_QUANTITY)} 张合约`,
 	],
 	sellOct: ["sell Oct 18 · 100 call", "卖出 10月18日 · 100 看涨"],
 	buyNov: ["buy Nov 15 · 100 call", "买入 11月15日 · 100 看涨"],
 	toClose: ["to close", "平仓"],
 	toOpen: ["to open", "开仓"],
-	bearish: ["feed: BID · bearish", "数据源：BID · 看空"],
-	bullish: ["feed: ASK · bullish", "数据源：ASK · 看多"],
+	sellWork: [
+		`${count(ROLL_QUANTITY)} × ${usd(SELL_OCT)} × 100`,
+		`${count(ROLL_QUANTITY)} × ${usd(SELL_OCT)} × 100`,
+	],
+	buyWork: [
+		`${count(ROLL_QUANTITY)} × ${usd(BUY_NOV)} × 100`,
+		`${count(ROLL_QUANTITY)} × ${usd(BUY_NOV)} × 100`,
+	],
 	rollNet: ["net", "净额"],
+	rollEach: [
+		`${usd(ROLL_NET_CONTRACT, 0)} a contract × ${count(ROLL_QUANTITY)}`,
+		`每张 ${usd(ROLL_NET_CONTRACT, 0)} × ${count(ROLL_QUANTITY)}`,
+	],
 	rollShort: ["same strike · four weeks later", "同一行权价 · 延后四周"],
 	claimBig: ["One leg, many positions.", "一条腿，多种持仓。"],
 	claimSub: ["A sale can cover, cap or roll.", "卖出可备兑、封顶或移仓。"],
 	nextBig: ["Next: straddles and condors", "下一课：跨式与铁鹰"],
-	nextSub: [
-		"four prints in one second, one package",
-		"同一秒的四笔成交，一个整体",
-	],
+	nextSub: ["trades with no view on direction", "不判断方向的交易"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({
@@ -214,8 +231,8 @@ function Scene({
 		],
 	];
 	const rows: [Copy, Copy, Copy][] = [
-		[copy.sellOct, copy.toClose, copy.bearish],
-		[copy.buyNov, copy.toOpen, copy.bullish],
+		[copy.sellOct, copy.toClose, copy.sellWork],
+		[copy.buyNov, copy.toOpen, copy.buyWork],
 	];
 	const axisCaptions: [string, Copy][] = [
 		["axis-profit", copy.axisProfit],
@@ -575,9 +592,9 @@ function Scene({
 			</Word>
 			<Brackets name="lock-profit" tone="gain" glow />
 
-			{/* A roll: two prints, one decision. */}
+			{/* A roll: your October calls closed, November calls opened, one order. */}
 			{headline("r-head", copy.rHead)}
-			{/* The answer, as the bracket joins the two prints. */}
+			{/* The answer, as the bracket joins the two legs. */}
 			<Lines
 				name="r2-head"
 				text={t(copy.r2Head)}
@@ -599,9 +616,9 @@ function Scene({
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
 			>
-				{t(copy.rollTag).toUpperCase()}
+				{t(narrow ? copy.rollTagShort : copy.rollTag).toUpperCase()}
 			</text>
-			{rows.map(([line, sub, label], i) => (
+			{rows.map(([line, sub, work], i) => (
 				<g key={t(line)} data-f={`row-${i}`}>
 					<rect
 						x={margin}
@@ -634,10 +651,10 @@ function Scene({
 						x={margin + room - 14}
 						y={L.rowY(i) + L.rowH * 0.76}
 						textAnchor="end"
-						className="wt-film-type"
+						className="wt-film-num"
 						style={{ fontSize: T.small * 1.1 }}
 					>
-						{t(label)}
+						{t(work)}
 					</text>
 				</g>
 			))}
@@ -659,6 +676,7 @@ function Scene({
 					<tspan className="wt-film-num wt-film-loss">
 						{signedUsd(-ROLL_NET, 0)}
 					</tspan>
+					<tspan className="wt-film-dim">{` · ${t(copy.rollEach)}`}</tspan>
 				</Word>
 				<Lines
 					name="roll-expiry"
@@ -897,7 +915,7 @@ function build(context: FilmContext) {
 		32.4,
 	);
 
-	// ——— roll: two prints, one decision ———
+	// ——— roll: close October, open November, one net cost ———
 	tl.addLabel("roll", 34.0);
 	hide([heads[3], heads[4], readouts[3], one("cost"), lockProfit], 34.0);
 	d.sink(34.0);
@@ -942,8 +960,8 @@ function build(context: FilmContext) {
 export const optionStrategiesFilm: Film = {
 	id: "option-strategies",
 	label: [
-		`Strategies, as a short film: one Oct 18 105 call sold at ${usd(SOLD)}, alone with a loss that has no limit, against 100 shares as a covered call that gains up to ${signedDollars(COVERED_TOP)}, and beside a long 100 call as the cap of a bull spread, ${signedDollars(SPREAD_LOW)} to ${signedDollars(SPREAD_HIGH)}; a 105/110 call spread added leg by leg at $${SPOT}, ${signedDollars(longLeg(SPOT))} and ${signedDollars(shortLeg110(SPOT))} for ${dollars(spreadPayoff(SPOT))}, and ${signedDollars(profit(SPOT))} after its cost; and a roll, ${count(ROLL_QUANTITY)} October calls sold at the bid and November calls bought at the ask, two opposite labels for one decision`,
-		`策略短片：以 ${usd(SOLD)} 卖出的一张 10月18日 105 看涨：单独卖出亏损无上限；对着 100 股是备兑看涨，最多获利 ${signedDollars(COVERED_TOP)}；配上 100 看涨多头是牛市价差的上限，${signedDollars(SPREAD_LOW)} 到 ${signedDollars(SPREAD_HIGH)}；105/110 看涨价差在 $${SPOT} 逐腿相加：${signedDollars(longLeg(SPOT))} 与 ${signedDollars(shortLeg110(SPOT))} 合计 ${dollars(spreadPayoff(SPOT))}，扣除成本后 ${signedDollars(profit(SPOT))}；以及一次移仓：在买价卖出 ${ROLL_QUANTITY} 张十月看涨、在卖价买入十一月看涨，两个相反的标签，一个决定`,
+		`Strategies, as a short film: one Oct 18 105 call sold at ${usd(SOLD)}, alone with a loss that has no limit, against 100 shares as a covered call that gains up to ${signedDollars(COVERED_TOP)}, and beside a long 100 call as the cap of a call spread, ${signedDollars(SPREAD_LOW)} to ${signedDollars(SPREAD_HIGH)}; a 105/110 call spread added leg by leg at $${SPOT}, ${signedDollars(longLeg(SPOT))} and ${signedDollars(shortLeg110(SPOT))} for ${dollars(spreadPayoff(SPOT))}, and ${signedDollars(profit(SPOT))} after its cost; and a roll in the course's example account, ${count(ROLL_QUANTITY)} October 100 calls sold to close for ${signedUsd(CASH_IN, 0)} and ${count(ROLL_QUANTITY)} November 100 calls bought to open for ${signedUsd(-CASH_OUT, 0)}: one order with a net cost of ${usd(ROLL_NET, 0)}, ${usd(ROLL_NET_CONTRACT, 0)} a contract, for the same strike four weeks later`,
+		`策略短片：以 ${usd(SOLD)} 卖出的一张 10月18日 105 看涨：单独卖出亏损无上限；对着 100 股是备兑看涨，最多获利 ${signedDollars(COVERED_TOP)}；配上 100 看涨多头是看涨价差的上限，${signedDollars(SPREAD_LOW)} 到 ${signedDollars(SPREAD_HIGH)}；105/110 看涨价差在 $${SPOT} 逐腿相加：${signedDollars(longLeg(SPOT))} 与 ${signedDollars(shortLeg110(SPOT))} 合计 ${dollars(spreadPayoff(SPOT))}，扣除成本后 ${signedDollars(profit(SPOT))}；以及课程示例账户里的一次移仓：卖出平仓 ${count(ROLL_QUANTITY)} 张十月 100 看涨，收入 ${signedUsd(CASH_IN, 0)}；买入开仓 ${count(ROLL_QUANTITY)} 张十一月 100 看涨，支出 ${signedUsd(-CASH_OUT, 0)}：一张订单，净成本 ${usd(ROLL_NET, 0)}，每张 ${usd(ROLL_NET_CONTRACT, 0)}，换来同一行权价、晚四周到期`,
 	],
 	stage: "dark",
 	shots: [
