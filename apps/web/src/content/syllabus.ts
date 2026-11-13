@@ -166,6 +166,11 @@ export const buildsOn: Record<
 		en: "Those lessons found one option's break-even from its premium, and showed that an option in the money at expiry is exercised into shares unless it is closed first. This one does both for two calls held together: a break-even from the net price paid, and an expiry where one call can be exercised while the other expires.",
 		zh: "那两课由权利金找出一张期权的盈亏平衡点，并说明到期时处于实值的期权若不先平仓就会被行权、换成股票。本课把这两件事用在一起持有的两张看涨上：由净支出得到盈亏平衡点，以及到期时可能一张被行权、另一张作废。",
 	},
+	"selling-covered-options": {
+		lessons: ["expiration-settlement"],
+		en: "That lesson showed that a writer can be assigned on any trading day, rarely while time value remains, and that an option $0.01 or more in the money at expiry is exercised unless its holder says otherwise. This one makes you the writer: a call sold against your shares and a put sold against your cash, and what assignment moves in each.",
+		zh: "那一课说明了义务方在任一交易日都可能被指派（只要还有时间价值就很少见），以及到期时实值 $0.01 或以上的期权除非持有人另行指示就会被行权。本课让你成为义务方：对着自己的股票卖出看涨、对着自己的现金卖出看跌，以及被指派时各自会转移什么。",
+	},
 	"dealers-and-hedging": {
 		lessons: ["delta", "gamma"],
 		en: "Those lessons read delta as the shares an option position moves like (delta × contracts × 100) and gamma as how fast that delta changes when the stock moves. This one puts a dealer on the other side of your trade: it offsets that delta with shares, and gamma makes it trade again as the price moves.",
@@ -437,13 +442,23 @@ export const syllabus: readonly Entry[] = [
 		["C45"],
 		["size-and-exit"],
 	),
+	lesson(
+		"selling-covered-options",
+		"trading",
+		"Selling an option you can cover: covered calls and cash-secured puts",
+		"卖出有保障的期权：备兑看涨与现金担保看跌",
+		"Sell a call against shares you own and a put against cash set aside: what each keeps, can lose and ties up, and why assignment can come on any trading day.",
+		"对着自己的股票卖出看涨、对着预留的现金卖出看跌：每一笔能留下多少、最多会亏多少、占用多少，以及为什么任一交易日都可能被指派。",
+		["C47"],
+		["first-spread-trade"],
+	),
 	checkpoint(
 		"trading",
 		"Checkpoint: choose and place a trade, on a new day",
 		"检查点：在新的一天里运用“选择并下一笔交易”",
 		"Compare two strikes for one view, find a covered call's best case, size a call spread from its worst case, and follow that spread to an expiry between its strikes, all on a day you haven't seen.",
 		"在你没见过的一天里：为同一个看法比较两个行权价、算出备兑看涨的最好情况、按最坏情况决定一组看涨价差的数量，并跟着这组价差走到停在两个行权价之间的到期日。",
-		["first-spread-trade"],
+		["selling-covered-options"],
 	),
 	lesson(
 		"execution-counterparties",

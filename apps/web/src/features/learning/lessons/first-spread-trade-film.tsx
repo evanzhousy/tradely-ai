@@ -55,7 +55,7 @@ import {
  *   payoff    16.4–33.7  floor and ceiling; the call alone; hero: −$215; break-even; size
  *   ends      33.7–40.5  below, between, above; in between, 100 shares; close before expiry
  *   claim     40.5–45.0  know the worst case before you order
- *   next      45.0–47.5  Next: the module checkpoint
+ *   next      45.0–47.5  Next: selling an option
  */
 
 const END = 47.5;
@@ -239,11 +239,8 @@ const copy = {
 		"The best case, break-even and exits too.",
 		"最好情况、盈亏平衡和出场点也一样。",
 	],
-	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
-	nextSub: [
-		"choose and place a trade, on a new day",
-		"在新的一天里运用“选择并下一笔交易”",
-	],
+	nextBig: ["Next: selling an option", "下一课：卖出期权"],
+	nextSub: ["one you can cover, with shares or cash", "用股票或现金来保障"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({

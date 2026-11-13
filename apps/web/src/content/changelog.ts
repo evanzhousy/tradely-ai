@@ -1,6 +1,31 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-11-13-selling-covered-options",
+		date: "2026-11-13",
+		dateLabel: "November 13, 2026",
+		title: "Selling an option you can cover",
+		summary:
+			"A new lesson ends the core path: covered calls and cash-secured puts as your own trades. Two strategy lessons now work with your own positions instead of other traders' prints.",
+		changes: [
+			{
+				title: "Covered calls and cash-secured puts",
+				description:
+					"Sell a call against shares you own and a put against cash set aside: what each keeps, can lose and ties up, and why assignment can come on any trading day.",
+			},
+			{
+				title: "Strategies and rolls",
+				description:
+					"The roll in the strategies lesson is now your own: sell October, buy November, one order with one net cost.",
+			},
+			{
+				title: "Straddles and condors",
+				description:
+					"Trades with no view on direction: your iron condor goes in as one order, and you judge the whole position at a closing price.",
+			},
+		],
+	},
+	{
 		id: "2026-11-12-learn-to-trade-path",
 		date: "2026-11-12",
 		dateLabel: "November 12, 2026",

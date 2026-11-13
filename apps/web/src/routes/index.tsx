@@ -38,7 +38,7 @@ export const Route = createFileRoute("/")({
 const stages = [
 	{
 		start: "stocks-and-prices",
-		end: "first-spread-trade",
+		end: "selling-covered-options",
 		title: "home.pathOne",
 		description: "home.pathOneDescription",
 		icon: BookOpenIcon,

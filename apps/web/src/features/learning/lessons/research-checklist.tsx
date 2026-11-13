@@ -216,7 +216,7 @@ function ForecastView({
 							value: t(["Not a recommendation", "不是建议"]),
 							note: t([
 								"to sell a covered or naked call",
-								"卖出备兑或无备兑看涨",
+								"卖出备兑看涨或无备兑的看涨",
 							]),
 						},
 					];

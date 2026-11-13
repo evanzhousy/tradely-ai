@@ -127,6 +127,7 @@ export type LearningStepView = {
 		| "multi-leg-structures"
 		| "dealers-and-hedging"
 		| "first-spread-trade"
+		| "selling-covered-options"
 		| "size-and-exit"
 		| "strike-and-expiry"
 		| "symbol-drawer"

@@ -596,6 +596,28 @@ export const glossary: readonly GlossaryEntry[] = [
 		"C45",
 	),
 	entry(
+		"covered-call",
+		["Covered call", "备兑看涨"],
+		["covered calls", "covered call"],
+		["备兑看涨"],
+		[
+			"A call sold against shares already owned, 100 for each contract, so the shares can be delivered if the call is assigned.",
+			"对着已持有的股票卖出的看涨，每张对应 100 股；看涨被指派时可以交出这些股票。",
+		],
+		"C47",
+	),
+	entry(
+		"cash-secured-put",
+		["Cash-secured put", "现金担保看跌"],
+		["cash-secured puts", "cash-secured put"],
+		["现金担保看跌"],
+		[
+			"A put sold with the strike × 100 set aside in cash for each contract, enough to buy the shares if the put is assigned.",
+			"卖出看跌的同时，每张预留行权价 × 100 的现金，足够在看跌被指派时买下股票。",
+		],
+		"C47",
+	),
+	entry(
 		"market-maker",
 		["Market maker (dealer)", "做市商"],
 		["market makers", "market maker", "dealers", "dealer"],

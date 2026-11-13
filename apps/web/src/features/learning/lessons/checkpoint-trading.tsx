@@ -873,7 +873,7 @@ const scenes = [
 			"A call sold against shares caps the gain and lowers break-even",
 			"对着股票卖出看涨：盈利封顶，盈亏平衡点下移",
 		],
-		revisit: "option-strategies",
+		revisit: "selling-covered-options",
 		predict: {
 			prompt: [
 				`On ${DAY[0]} you buy ${SHARES} ALFA shares at ${usd(ALFA_CENTS)} and sell one ${UPPER_NAME[0]} against them at its ${usd(SOLD)} bid: a covered call. What is the most the shares and the call together can make by ${EXPIRY.label[0]}?`,

@@ -56,6 +56,7 @@ export const conceptIds = [
 	"C44",
 	"C45",
 	"C46",
+	"C47",
 ] as const;
 export type ConceptId = (typeof conceptIds)[number];
 
@@ -1710,6 +1711,70 @@ export const concepts: Record<ConceptId, Concept> = {
 				"soft",
 				"Open interest is what positioning models start from.",
 				"持仓模型从未平仓量出发。",
+			),
+		],
+	},
+	C47: {
+		id: "C47",
+		name: t("Selling a covered option", "卖出有保障的期权"),
+		description: t(
+			"Selling an option takes on an obligation in exchange for the premium. A covered call sells one call against 100 shares owned, which are delivered if it is assigned; a cash-secured put sells one put with the strike times 100 set aside in cash, which buys the shares if it is assigned. Before the sale each has known numbers: the premium kept; the covered call's best case (the strike less the shares' cost, plus the premium, times 100), break-even (the shares' cost less the premium) and worst case (that break-even times 100, if the stock falls to zero); the cash-secured put's best case (the premium), net price if assigned and break-even (the strike less the premium) and worst case (that price times 100). The covered call gives up gains above the strike plus the premium; the cash-secured put ties up its cash and can buy shares that keep falling. An American-style equity option can be assigned on any trading day, more likely in the money with little time value left and, for a call, just before an ex-dividend date; at expiry one $0.01 or more in the money is exercised unless its holder instructs otherwise; only buying the option back rules assignment out. Brokers set their own approval levels, and which level each of these needs differs by broker.",
+			"卖出期权就是用义务换取权利金。备兑看涨是对着持有的 100 股卖出一张看涨，被指派时交出这些股票；现金担保看跌是卖出一张看跌，并预留行权价乘以 100 的现金，被指派时用它买下股票。卖出之前，每一笔都有确定的数字：留下的权利金；备兑看涨的最好情况（行权价减去股票成本，加上权利金，乘以 100）、盈亏平衡点（股票成本减去权利金）和最坏情况（股价跌到零时，这个盈亏平衡价乘以 100）；现金担保看跌的最好情况（权利金）、被指派时的净价即盈亏平衡点（行权价减去权利金）和最坏情况（这个价格乘以 100）。备兑看涨放弃了行权价加权利金以上的涨幅；现金担保看跌占用现金，还可能买到继续下跌的股票。美式股票期权在任一交易日都可能被指派，处于实值且时间价值所剩无几时更可能，看涨在除息日前夕也更可能；到期时实值 $0.01 或以上的期权除非持有人另行指示就会被行权；只有把期权买回才能排除指派。券商自行设定权限级别，每种做法需要哪一级因券商而异。",
+		),
+		evidence: [
+			t(
+				"Work out a covered call's premium kept, best case, break-even and worst case per contract from the shares' cost and the call's bid",
+				"由股票成本和看涨的买价，算出备兑看涨每张合约留下的权利金、最好情况、盈亏平衡点和最坏情况",
+			),
+			t(
+				"Work out a cash-secured put's cash set aside, best case, net price if assigned and worst case per contract from its strike and bid",
+				"由行权价和买价，算出现金担保看跌每张合约预留的现金、最好情况、被指派时的净价和最坏情况",
+			),
+			t(
+				"Say what moves when either is assigned, at expiry or on an earlier trading day, and what buying the option back changes",
+				"说出两者被指派时（到期或更早的交易日）会转移什么，以及把期权买回会改变什么",
+			),
+			t(
+				"Say what each gives up: the gain above the strike plus the premium, or cash tied up and a fall below the net price after assignment",
+				"说出两者各自放弃了什么：行权价加权利金以上的涨幅，或者被占用的现金以及被指派后跌破净价的风险",
+			),
+		],
+		prerequisites: [
+			needs(
+				"C09",
+				"hard",
+				"A covered call combines a sold call with shares, and the writer carries the obligation.",
+				"备兑看涨把卖出的看涨和股票组合在一起，义务由义务方承担。",
+			),
+			needs(
+				"C02",
+				"hard",
+				"Exercise and assignment follow from the contract's terms: the strike, the right and the multiplier.",
+				"行权与指派由合约条款决定：行权价、权利类型和乘数。",
+			),
+			needs(
+				"C03",
+				"hard",
+				"Best case, worst case and break-even are payoff arithmetic on the premium.",
+				"最好情况、最坏情况和盈亏平衡点，是对权利金做的到期盈亏算术。",
+			),
+			needs(
+				"C44",
+				"hard",
+				"The cash a put ties up is set against the account, as a position's size is.",
+				"看跌占用的现金要对照账户来看，和仓位大小一样。",
+			),
+			needs(
+				"C04",
+				"soft",
+				"Each option is sold at its bid.",
+				"每张期权都按买价卖出。",
+			),
+			needs(
+				"C45",
+				"soft",
+				"Exercise at expiry and early assignment of a sold call were met in the first spread trade.",
+				"到期行权和卖出看涨的提前指派，在第一笔价差交易中已经出现过。",
 			),
 		],
 	},

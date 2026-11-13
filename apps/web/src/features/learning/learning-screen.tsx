@@ -106,6 +106,7 @@ import { RankSymbolsWalkthrough } from "./lessons/rank-symbols";
 import { RecipeInputsWalkthrough } from "./lessons/recipe-inputs";
 import { RecipeMapWalkthrough } from "./lessons/recipe-map";
 import { ResearchChecklistWalkthrough } from "./lessons/research-checklist";
+import { SellingCoveredOptionsWalkthrough } from "./lessons/selling-covered-options";
 import { VolumeOpenInterestWalkthrough } from "./lessons/session-flow-vs-structure";
 import { SizeAndExitWalkthrough } from "./lessons/size-and-exit";
 import { StocksAndPricesWalkthrough } from "./lessons/stocks-and-prices";
@@ -171,6 +172,7 @@ const conceptLabs = {
 	"multi-leg-structures": MultiLegStructuresWalkthrough,
 	"dealers-and-hedging": DealersAndHedgingWalkthrough,
 	"first-spread-trade": FirstSpreadTradeWalkthrough,
+	"selling-covered-options": SellingCoveredOptionsWalkthrough,
 	"size-and-exit": SizeAndExitWalkthrough,
 	"strike-and-expiry": StrikeAndExpiryWalkthrough,
 	"stocks-and-prices": StocksAndPricesWalkthrough,

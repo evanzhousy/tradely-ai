@@ -664,7 +664,7 @@ export const orientationUnits: TeachingUnit[] = [
 							? `At $${finish}, per contract, writing the call ends ${signedMoney(outcomes["short-call"])}, buying the call ${signedMoney(outcomes["long-call"])} and buying the put ${signedMoney(outcomes["long-put"])}. A buyer can lose at most the premium; the uncovered writer's loss grows the higher ALFA goes.`
 							: "An uncovered call writer must deliver shares at the strike however high the stock goes. Buyers can lose at most the premium.",
 						scenario
-							? `ALFA 为 $${finish} 时，每张合约：卖出看涨 ${signedMoney(outcomes["short-call"])}，买入看涨 ${signedMoney(outcomes["long-call"])}，买入看跌 ${signedMoney(outcomes["long-put"])}。买方最多损失权利金；未备兑看涨义务方的亏损随 ALFA 上涨而扩大。`
+							? `ALFA 为 $${finish} 时，每张合约：卖出看涨 ${signedMoney(outcomes["short-call"])}，买入看涨 ${signedMoney(outcomes["long-call"])}，买入看跌 ${signedMoney(outcomes["long-put"])}。买方最多损失权利金；未备兑的看涨义务方的亏损随 ALFA 上涨而扩大。`
 							: "未备兑的看涨义务方无论股价涨多高都必须按行权价交付股票。买方最多损失权利金。",
 					),
 					n(

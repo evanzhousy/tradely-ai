@@ -909,6 +909,42 @@ function FirstSpread({ l }: Props) {
 		</>
 	);
 }
+
+function SecuredPut({ l }: Props) {
+	return (
+		<>
+			<Axes xLabel={l("Spot", "现价")} yLabel={l("Profit", "盈亏")} />
+			<path d="M45 62.6h275M259.8 48v118" className="diagram-dashed" />
+			<Trace d="M46 153.1L259.8 60.6H316" />
+			<Label x={259.8} y={181}>
+				95
+			</Label>
+			<Label x={288} y={52}>
+				+$205
+			</Label>
+			<Label x={104} y={160}>
+				−$9,295
+			</Label>
+			<circle
+				cx={255.1}
+				cy={62.6}
+				r="5"
+				className="diagram-accent"
+				data-diagram-motion="pulse"
+				data-diagram-delay="1100"
+			/>
+			<Label x={226} y={50} small>
+				$92.95
+			</Label>
+			<Caption>
+				{l(
+					"A cash-secured put: keep $205, or buy at a net $92.95",
+					"现金担保看跌：留下 $205，或以每股净价 $92.95 买入",
+				)}
+			</Caption>
+		</>
+	);
+}
 function DealerHedge({ l }: Props) {
 	return (
 		<>
@@ -2717,6 +2753,13 @@ export const courseCardScenes: Record<string, Scene> = {
 		description: [
 			"A 100/105 call spread bought for 2.15 dollars per share loses at most 215 dollars, gains at most 285 dollars and breaks even at 102.15 dollars.",
 			"以每股 2.15 美元买入 100/105 看涨价差，最多亏 215 美元，最多赚 285 美元，盈亏平衡价为 102.15 美元。",
+		],
+	},
+	"selling-covered-options": {
+		Diagram: SecuredPut,
+		description: [
+			"A cash-secured put on a 95 strike, sold for 2.05 dollars a share, keeps at most 205 dollars, buys 100 shares at a net 92.95 dollars if assigned, and loses 9,295 dollars if ALFA falls to zero.",
+			"以每股 2.05 美元卖出行权价 95 的现金担保看跌，最多留下 205 美元；被指派时以每股净价 92.95 美元买入 100 股；ALFA 跌到零时亏损 9,295 美元。",
 		],
 	},
 	"dealers-and-hedging": {

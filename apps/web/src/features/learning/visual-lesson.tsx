@@ -296,6 +296,11 @@ const lessons = {
 			default: m.FirstSpreadTradeWalkthrough,
 		})),
 	),
+	"selling-covered-options": lessonModule(() =>
+		import("./lessons/selling-covered-options").then((m) => ({
+			default: m.SellingCoveredOptionsWalkthrough,
+		})),
+	),
 	"dealers-and-hedging": lessonModule(() =>
 		import("./lessons/dealers-and-hedging").then((m) => ({
 			default: m.DealersAndHedgingWalkthrough,

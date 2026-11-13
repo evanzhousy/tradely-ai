@@ -8,6 +8,7 @@ import { orientationUnits } from "./orientation.server";
 import { portfolioUnits } from "./portfolio.server";
 import { productionUnits } from "./production.server";
 import { researchUnits } from "./research.server";
+import { sellingCoveredOptionsUnit } from "./selling-covered-options.server";
 import { sizeAndExitUnit } from "./size-and-exit.server";
 import { strikeAndExpiryUnit } from "./strike-and-expiry.server";
 import { structureUnits } from "./structure.server";
@@ -18,6 +19,7 @@ export const teachingUnits = [
 	strikeAndExpiryUnit,
 	...flowUnits,
 	firstSpreadTradeUnit,
+	sellingCoveredOptionsUnit,
 	sizeAndExitUnit,
 	...exposureUnits,
 	dealersAndHedgingUnit,

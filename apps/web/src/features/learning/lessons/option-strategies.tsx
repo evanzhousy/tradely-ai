@@ -79,7 +79,7 @@ function LegView({
 			id: "position",
 			label:
 				shown.context === "alone"
-					? t(["uncovered short call", "无备兑看涨空头"])
+					? t(["uncovered short call", "无备兑的看涨空头"])
 					: shown.context === "covered"
 						? t(["covered call", "备兑看涨"])
 						: t(["100/105 call spread", "100/105 看涨价差"]),
