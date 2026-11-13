@@ -10,6 +10,12 @@ import {
 	t,
 } from "./authoring.server";
 
+/** Defines a market maker (for stocks; the unit applies the same role to options). */
+const marketMakers = {
+	title: "Investor.gov · Market makers",
+	href: "https://www.investor.gov/introduction-investing/investing-basics/glossary/market-makers",
+};
+
 export const dealersAndHedgingUnit: TeachingUnit = {
 	id: "dealers-and-hedging",
 	version: 1,
@@ -20,10 +26,10 @@ export const dealersAndHedgingUnit: TeachingUnit = {
 			"跟随卖给你 5 张 10月18日 100 看涨的做市商：先买入 260 股作为对冲，ALFA 上涨 $2 后再买 40 股；买入看涨的做市商则反过来交易。再看某个行权价上 2,500 张未平仓合约，为什么不能告诉你做市商往哪个方向交易。",
 		),
 	},
-	sources: [greeks, oi],
+	sources: [marketMakers, greeks, oi],
 	explanation: t(
-		"When you buy an option, the seller is often a market maker, also called a dealer: a firm that quotes a price to buy and a price to sell all day and aims to earn the gap between them, the bid-ask spread. A dealer doesn't want the stock's direction, so it hedges. An option position moves like delta × contracts × 100 shares; a dealer who is short calls buys that many shares, and one who is long calls sells them short, so the net is zero. The hedge is not fixed, because delta changes as the stock moves (gamma). A dealer who is short options is short gamma: to stay hedged it buys shares as the price rises and sells as it falls, trading with the move. A dealer who is long options is long gamma and does the opposite, selling rises and buying dips, against the move. With many contracts open at one strike, that re-hedging can be a large, mechanical flow in the stock that has nothing to do with anyone's view of the company. Nobody outside sees a dealer's book. Open interest, the count of contracts still open, says the contracts exist, not who holds which side, so every dealer-positioning figure is a model built on an assumption about who is long and who is short. Such a figure describes a hedge the assumed book would call for; it doesn't say where the price goes.",
-		"你买入期权时，卖给你的往往是做市商（dealer）：这类机构全天同时报出买入价和卖出价，目标是赚取两者之间的差额，也就是买卖价差。做市商不想承担股价的方向，所以会对冲。一笔期权持仓的涨跌相当于 Delta × 张数 × 100 股；做空看涨的做市商买入这么多股票，做多看涨的做市商则卖空这么多股票，让净额归零。对冲不是一次就完事，因为股价变动时 Delta 也在变（Gamma）。做空期权的做市商是空 Gamma（Gamma 为负）：要保持对冲，股价上涨时得买入股票、下跌时得卖出，顺着变动交易。做多期权的做市商是多 Gamma（Gamma 为正），做法相反：涨时卖出、跌时买入，逆着变动交易。当某个行权价上有大量未平仓合约时，这种重新对冲可能成为股票上一股规模很大的机械性交易，与任何人对公司的看法无关。外界看不到做市商的持仓。未平仓量统计的是仍然存续的合约张数，只说明合约存在，不说明谁持有哪一边；所以每一个“做市商持仓”数字都是模型，建立在“谁做多、谁做空”的假设之上。这样的数字描述的是假设持仓所需要的对冲，并不说明价格会往哪里走。",
+		"When you buy an option, the seller may be a market maker, also called a dealer: a firm that stands ready to buy and to sell at the prices it quotes and aims to earn the gap between them, the bid-ask spread. A dealer doesn't want the stock's direction, so it hedges. An option position moves like delta × contracts × 100 shares; a dealer who is short calls buys that many shares, and one who is long calls sells them short, so the net is zero. The hedge is not fixed, because delta changes as the stock moves (gamma). A dealer who is short options is short gamma: to stay hedged it buys shares as the price rises and sells as it falls, trading with the move. A dealer who is long options is long gamma and does the opposite, selling rises and buying dips, against the move. With many contracts open at one strike, that re-hedging can be a large, mechanical flow in the stock that has nothing to do with anyone's view of the company. Nobody outside sees a dealer's book. Open interest, the count of contracts still open, says the contracts exist, not who holds which side, so every dealer-positioning figure is a model built on an assumption about who is long and who is short. Such a figure describes a hedge the assumed book would call for; it doesn't say where the price goes.",
+		"你买入期权时，卖给你的可能是做市商（dealer）：这类机构随时准备按自己报出的买入价和卖出价成交，目标是赚取两者之间的差额，也就是买卖价差。做市商不想承担股价的方向，所以会对冲。一笔期权持仓的涨跌相当于 Delta × 张数 × 100 股；做空看涨的做市商买入这么多股票，做多看涨的做市商则卖空这么多股票，让净额归零。对冲不是一次就完事，因为股价变动时 Delta 也在变（Gamma）。做空期权的做市商是空 Gamma（Gamma 为负）：要保持对冲，股价上涨时得买入股票、下跌时得卖出，顺着变动交易。做多期权的做市商是多 Gamma（Gamma 为正），做法相反：涨时卖出、跌时买入，逆着变动交易。当某个行权价上有大量未平仓合约时，这种重新对冲可能成为股票上一股规模很大的机械性交易，与任何人对公司的看法无关。外界看不到做市商的持仓。未平仓量统计的是仍然存续的合约张数，只说明合约存在，不说明谁持有哪一边；所以每一个“做市商持仓”数字都是模型，建立在“谁做多、谁做空”的假设之上。这样的数字描述的是假设持仓所需要的对冲，并不说明价格会往哪里走。",
 	),
 	example: t(
 		"You buy 5 Oct 18 100 calls at $4.20 a share ($420 a contract) from a dealer quoting $4.05 to buy and $4.20 to sell: a $0.15 spread, $15 a contract. Each call has delta 0.52, so the dealer's short 5 calls move like 5 × 100 × 0.52 = 260 shares short, and the dealer buys 260 shares. ALFA rises $2 and delta goes to about 0.60: the calls now move like 300 shares, so the dealer buys 40 more. Had ALFA fallen $2, delta would be about 0.44, 220 shares, and the dealer would sell 40. A dealer who had bought 5 calls instead would trade the other way each time. At the 110 strike 2,500 calls are open with gamma 0.0266: if dealers were short all of them, a $1 rise would call for buying 0.0266 × 2,500 × 100 = 6,650 shares; if long all of them, selling 6,650. Open interest doesn't say which.",
