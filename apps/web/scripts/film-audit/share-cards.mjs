@@ -1,7 +1,8 @@
 // One page of the share cards (run by film-audit.sh in ego-browser): for each lesson, the film at
 // its hero lock beside the lesson's title, as a 1200×630 card for link previews. A film's
-// hero-lock label marks its one key moment, so no frame is chosen by hand.
-// env: SPACE, LESSONS (one a line), OUT, PORT, SITE_TITLE, SITE_FILM
+// hero-lock label marks its one key moment, so no frame is chosen by hand. A guide's card is its
+// lesson's film beside the guide's own title.
+// env: SPACE, LESSONS (one a line), OUT, PORT, SITE_TITLE, SITE_FILM, GUIDES ("slug<TAB>lesson<TAB>title" a line)
 const fs = await import("node:fs/promises");
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
@@ -64,10 +65,15 @@ async function captureFilm(lesson, path) {
 }
 
 /** Lays the frame and the title over the page, where the site's own fonts have loaded. */
-async function compose(title, filmPath, outPath) {
+async function compose(
+	title,
+	filmPath,
+	outPath,
+	footText = "Free lessons · tradely.ai",
+) {
 	const film = (await fs.readFile(filmPath)).toString("base64");
 	await page.evaluate(
-		({ title, film }) => {
+		({ title, film, footText }) => {
 			document.getElementById("share-card")?.remove();
 			const card = document.createElement("div");
 			card.id = "share-card";
@@ -88,7 +94,7 @@ async function compose(title, filmPath, outPath) {
 			const size = title.length <= 28 ? 46 : title.length <= 48 ? 40 : 34;
 			heading.style.cssText = `margin:0;font-size:${size}px;line-height:1.14;font-weight:600;letter-spacing:-0.01em;text-wrap:balance`;
 			const foot = document.createElement("p");
-			foot.textContent = "Free lessons · tradely.ai";
+			foot.textContent = footText;
 			foot.style.cssText = "margin:0;font-size:20px;color:#a2a6b4";
 			left.append(brand, heading, foot);
 			const image = document.createElement("img");
@@ -107,7 +113,7 @@ async function compose(title, filmPath, outPath) {
 				),
 			);
 		},
-		{ title, film },
+		{ title, film, footText },
 	);
 	await metrics(1200, 630, 1);
 	await page.waitForTimeout(200);
@@ -134,6 +140,30 @@ for (const lesson of lessons) {
 		);
 	} catch (error) {
 		console.log(JSON.stringify({ lesson, error: String(error).slice(0, 200) }));
+	}
+}
+
+// Each guide's card: the film of the lesson it leads to, beside the guide's title.
+for (const line of (env.GUIDES ?? "").split("\n").filter(Boolean)) {
+	const [slug, lesson, title] = line.split("\t");
+	const filmPath = `${env.OUT}/film-${lesson}.png`;
+	try {
+		const found = await captureFilm(lesson, filmPath);
+		if (!found) {
+			console.log(JSON.stringify({ guide: slug, error: "no hero-lock label" }));
+			continue;
+		}
+		await compose(
+			title,
+			filmPath,
+			`${env.OUT}/guide-${slug}.png`,
+			"Free guide · tradely.ai",
+		);
+		console.log(JSON.stringify({ guide: slug, lesson, title }));
+	} catch (error) {
+		console.log(
+			JSON.stringify({ guide: slug, error: String(error).slice(0, 200) }),
+		);
 	}
 }
 

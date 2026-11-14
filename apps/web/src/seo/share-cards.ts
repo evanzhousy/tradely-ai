@@ -59,3 +59,13 @@ export const shareCards: ReadonlySet<string> = new Set([
 	"what-options-are",
 	"zero-dte",
 ]);
+
+/** Guides with a card in public/brand/share/guides. Written by film-audit.sh guide-cards. */
+export const guideShareCards: ReadonlySet<string> = new Set([
+	"choose-strike-and-expiration",
+	"covered-call-vs-cash-secured-put",
+	"gamma-exposure",
+	"how-many-option-contracts",
+	"iv-crush",
+	"open-interest-vs-volume",
+]);

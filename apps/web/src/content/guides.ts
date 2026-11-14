@@ -261,7 +261,7 @@ export const guides: Guide[] = [
 			"Understand implied volatility crush with hypothetical before-and-after option prices. Separate the stock move, time and volatility from realized profit.",
 		updated: "2026-09-09",
 		minutes: 6,
-		lessonIds: ["implied-realized-volatility", "theta-vega-rho"],
+		lessonIds: ["theta-vega-rho", "implied-realized-volatility"],
 		sections: [
 			{
 				id: "meaning",
