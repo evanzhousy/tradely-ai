@@ -5,12 +5,14 @@
  *
  *   pnpm --filter web options-traders:sync [--feed <url or JSON file>]
  *
- * Nothing is written unless the feed read both the posts and the trader list from Notion within
- * the last two hours. A number the mirror cannot read keeps the value Notion stored, and the run
+ * Nothing is written if the feed did not read both the posts and the trader list from Notion in
+ * the last two hours, or if the mirror answers for fewer than half the traders or posts. A number
+ * it cannot read keeps its last saved value (or Notion's, for a new trader), and the run
  * says how many those were. The output is committed: building or running Tradely never needs Notion.
  */
 import { execFileSync } from "node:child_process";
 import {
+	existsSync,
 	mkdirSync,
 	readdirSync,
 	readFileSync,
@@ -117,7 +119,15 @@ async function readFeed() {
 				return response.json();
 			})
 		: JSON.parse(readFileSync(feedLocation, "utf8"));
-	const raw = z.looseObject({}).parse(body);
+	const raw = z
+		.looseObject({ freshness: z.looseObject({ status: z.string() }) })
+		.parse(body);
+	// A failed read returns the last good data, which may have no trader list at all.
+	if (raw.freshness.status !== "success") {
+		throw new Error(
+			`The feed's last Notion read ended "${raw.freshness.status}" (often the digest's freshness page is not complete); nothing written.`,
+		);
+	}
 	if (!("profiles" in raw)) {
 		throw new Error(
 			"The feed fell back to the saved trader list, so Notion's list was not read; nothing written.",
@@ -156,7 +166,7 @@ async function mirror(path: string): Promise<Record<string, unknown> | null> {
 				return null;
 			}
 		} catch {
-			// Retried below; a post or profile the mirror never answers keeps Notion's numbers.
+			// Retried; a post or profile the mirror never answers keeps its last known numbers.
 		}
 	}
 	return null;
@@ -228,6 +238,23 @@ const posts = measured
 		return seen < MAX_POSTS_PER_AUTHOR;
 	});
 
+mkdirSync(dataDirectory, { recursive: true });
+const profilesPath = join(dataDirectory, "profiles.json");
+const postsPath = join(dataDirectory, "posts.json");
+
+/** Notion's follower column is never updated for X, so the last saved reading is the better fallback. */
+const lastSaved = new Map(
+	(existsSync(profilesPath)
+		? z
+				.array(profileSchema)
+				.parse(JSON.parse(readFileSync(profilesPath, "utf8")))
+		: []
+	).map((profile) => [
+		`${profile.platform}:${profile.handle.toLowerCase()}`,
+		profile,
+	]),
+);
+
 mkdirSync(avatarDirectory, { recursive: true });
 const avatarFiles = new Set(readdirSync(avatarDirectory));
 const avatarFor = (platform: keyof typeof AVATAR_KEYS, handle: string) => {
@@ -239,7 +266,8 @@ const avatarFor = (platform: keyof typeof AVATAR_KEYS, handle: string) => {
 
 let followersRead = 0;
 const unreadFollowers: string[] = [];
-const avatarsAdded: string[] = [];
+/** Written only after the mirror checks below pass. */
+const newAvatars: { file: string; bytes: Buffer }[] = [];
 const profiles: z.infer<typeof profileSchema>[] = [];
 for (const profile of feed.profiles) {
 	let next = { ...profile, avatar: null as string | null };
@@ -260,6 +288,19 @@ for (const profile of feed.profiles) {
 			};
 		} else {
 			unreadFollowers.push(profile.handle);
+			const saved = lastSaved.get(
+				`${profile.platform}:${profile.handle.toLowerCase()}`,
+			);
+			if (
+				saved?.followers != null &&
+				saved.followersAsOf > profile.followersAsOf
+			) {
+				next = {
+					...next,
+					followers: saved.followers,
+					followersAsOf: saved.followersAsOf,
+				};
+			}
 		}
 		const avatarUrl =
 			typeof user?.avatar_url === "string" ? user.avatar_url : "";
@@ -274,9 +315,8 @@ for (const profile of feed.profiles) {
 				type === "image/png" ? "png" : type === "image/jpeg" ? "jpg" : null;
 			if (bytes && ext && bytes.length <= MAX_AVATAR_BYTES) {
 				const file = `x-${profile.handle.toLowerCase()}.${ext}`;
-				writeFileSync(join(avatarDirectory, file), bytes);
+				newAvatars.push({ file, bytes });
 				avatarFiles.add(file);
-				avatarsAdded.push(file);
 			}
 		}
 	}
@@ -284,6 +324,17 @@ for (const profile of feed.profiles) {
 	profiles.push({ ...next, avatar: file ? `${AVATAR_PATH}/${file}` : null });
 }
 
+// An outage on the mirror would quietly freeze every number, so it stops the run instead.
+const onX = feed.profiles.filter((profile) => profile.platform === "x.com");
+if (followersRead < onX.length / 2 || postsMeasured < inWindow.length / 2) {
+	throw new Error(
+		`The X mirror answered for ${followersRead} of ${onX.length} traders and ${postsMeasured} of ${inWindow.length} posts; nothing written.`,
+	);
+}
+
+for (const { file, bytes } of newAvatars) {
+	writeFileSync(join(avatarDirectory, file), bytes);
+}
 // A trader taken off the list takes their picture with them.
 const published = new Set(
 	profiles.flatMap((profile) =>
@@ -293,9 +344,6 @@ const published = new Set(
 const avatarsRemoved = [...avatarFiles].filter((file) => !published.has(file));
 for (const file of avatarsRemoved) rmSync(join(avatarDirectory, file));
 
-mkdirSync(dataDirectory, { recursive: true });
-const profilesPath = join(dataDirectory, "profiles.json");
-const postsPath = join(dataDirectory, "posts.json");
 writeFileSync(profilesPath, `${JSON.stringify(profiles, null, "\t")}\n`);
 writeFileSync(
 	postsPath,
@@ -322,15 +370,15 @@ execFileSync(
 const ranked = profiles.filter((profile) => profile.rank !== undefined).length;
 console.log(
 	[
-		`Posts ${from} to ${to}: ${posts.length} saved, ${postsMeasured} re-measured on the mirror, ${inWindow.length - postsMeasured - droppedPosts.length} kept Notion's numbers.`,
+		`Posts ${from} to ${to}: ${posts.length} saved, ${postsMeasured} re-measured on the mirror, ${inWindow.length - postsMeasured - droppedPosts.length} kept their last numbers.`,
 		droppedPosts.length
 			? `Left out (reply or different author on X): ${droppedPosts.join(", ")}.`
 			: "",
 		`Traders: ${profiles.length} listed (${ranked} ranked); followers re-read for ${followersRead} on X.`,
 		unreadFollowers.length
-			? `Followers kept from Notion: ${unreadFollowers.join(", ")}.`
+			? `Followers not re-read (last saved or Notion value kept): ${unreadFollowers.join(", ")}.`
 			: "",
-		`Avatars: ${published.size} published, ${avatarsAdded.length} added, ${avatarsRemoved.length} removed.`,
+		`Avatars: ${published.size} published, ${newAvatars.length} added, ${avatarsRemoved.length} removed${avatarsRemoved.length ? ` (${avatarsRemoved.join(", ")})` : ""}.`,
 	]
 		.filter(Boolean)
 		.join("\n"),
