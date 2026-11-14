@@ -9,6 +9,7 @@
 #   film-audit.sh play LESSON...            real-time playback at the default rate
 #   film-audit.sh evidence DIR "lesson:end:heroStart:heroEnd ..."   frames, GIFs and results for a review
 #   film-audit.sh cards [LESSON...]         link-preview cards from each film's hero, into the repository
+#   film-audit.sh guide-cards               a card for every guide: its lesson's film beside its title
 #
 # END is the film's END constant (its timeline runs to END − 2). TIMES is "a,b,c" or
 # "start:end:step" in timeline seconds; SIZE is 1440x900x1 or 390x844x2m.
@@ -199,6 +200,14 @@ cmd_cards() { # [LESSON...]
 	for card in $lessons tradely; do
 		[ -f "$dir/$card.png" ] && magick "$dir/$card.png" -strip -colors 128 "PNG8:$pub/$card.png"
 	done
+	write_share_list
+	du -sh "$pub"
+}
+
+# The lists of cards in public/brand/share (lessons) and public/brand/share/guides, for the pages'
+# link-preview tags; a page not on a list keeps the site's card.
+write_share_list() {
+	local pub="$WEB/public/brand/share" card
 	{
 		echo '/** Lessons with a card in public/brand/share. Written by film-audit.sh cards. */'
 		echo 'export const shareCards: ReadonlySet<string> = new Set(['
@@ -207,18 +216,37 @@ cmd_cards() { # [LESSON...]
 			[ "$card" = tradely ] || printf '\t"%s",\n' "$card"
 		done
 		echo ']);'
+		echo
+		echo '/** Guides with a card in public/brand/share/guides. Written by film-audit.sh guide-cards. */'
+		echo 'export const guideShareCards: ReadonlySet<string> = new Set(['
+		for card in "$pub"/guides/*.png; do
+			[ -f "$card" ] && printf '\t"%s",\n' "$(basename "$card" .png)"
+		done
+		echo ']);'
 	} > "$WEB/src/seo/share-cards.ts"
+}
+
+# Every guide's card, from src/content/guides.ts: the film of its first related lesson at the hero.
+cmd_guide_cards() {
+	local dir="$OUT/share-cards" pub="$WEB/public/brand/share/guides" list slug
+	mkdir -p "$dir" "$pub"
+	list="$(cd "$WEB" && npx tsx --tsconfig scripts/coaching-tsconfig.json "$HERE/guide-list.ts")" || return 1
+	run share-cards.mjs LESSONS="" GUIDES="$list" OUT="$dir" PORT="$PORT"
+	while IFS=$'\t' read -r slug _ _; do
+		[ -f "$dir/guide-$slug.png" ] && magick "$dir/guide-$slug.png" -strip -colors 128 "PNG8:$pub/$slug.png"
+	done <<< "$list"
+	write_share_list
 	du -sh "$pub"
 }
 
 [ $# -ge 1 ] || { sed -n '2,20p' "$0"; exit 1; }
 sub=$1; shift
 case "$sub" in
-	check | scan | flight | timing | frames | play | evidence | cards)
+	check | scan | flight | timing | frames | play | evidence | cards | guide-cards)
 		space
 		server_up
 		rm -f "$OUT/run-failed.txt"
-		"cmd_$sub" "$@"
+		"cmd_${sub//-/_}" "$@"
 		status=$?
 		if [ -s "$OUT/run-failed.txt" ]; then
 			echo "film-audit: a page script returned nothing; see $OUT/run-failed.txt" >&2

@@ -2,7 +2,7 @@ import { getLesson, tradingFlowCourse } from "@/content/course";
 import { getGuide, guides } from "@/content/guides";
 import { getLocalizedCourse } from "@/i18n/course";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/messages";
-import { shareCards } from "./share-cards";
+import { guideShareCards, shareCards } from "./share-cards";
 import { canonicalUrl, SITE_NAME, SITE_ORIGIN } from "./site";
 
 export type SeoPage = {
@@ -183,6 +183,9 @@ export function seoPage(path: string): SeoPage | undefined {
 				sitemap: true,
 				updated: guide.updated,
 				article: true,
+				image: guideShareCards.has(guide.slug)
+					? `/brand/share/guides/${guide.slug}.png`
+					: undefined,
 			};
 	}
 	if (normalized.startsWith("/learn/")) {

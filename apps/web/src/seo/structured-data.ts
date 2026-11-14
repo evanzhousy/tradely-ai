@@ -1,4 +1,5 @@
 import type { Guide } from "@/content/guides";
+import { guideShareCards } from "./share-cards";
 import { canonicalUrl, SITE_NAME, SITE_ORIGIN, serializeJsonLd } from "./site";
 
 const organization = {
@@ -23,6 +24,11 @@ export function guideStructuredData(guide: Guide) {
 					description: guide.description,
 					inLanguage: "en",
 					dateModified: guide.updated,
+					...(guideShareCards.has(guide.slug)
+						? {
+								image: canonicalUrl(`/brand/share/guides/${guide.slug}.png`),
+							}
+						: {}),
 					mainEntityOfPage: url,
 					author: { "@id": organization["@id"] },
 					publisher: { "@id": organization["@id"] },
