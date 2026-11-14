@@ -83,6 +83,9 @@ export type PostSnapshot = {
 	posts: SavedPost[];
 };
 
+/** The feed adds the trader list only when it came from Notion, so a copy of it is never a fallback. */
+export type LiveSnapshot = PostSnapshot & { profiles?: TraderProfile[] };
+
 export type PostWithAuthor = SavedPost & { author: TraderProfile };
 
 export type DirectoryFilters = {
