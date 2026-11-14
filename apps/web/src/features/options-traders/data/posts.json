@@ -5,9 +5,9 @@
 		"to": "2026-11-13"
 	},
 	"freshness": {
-		"dataSyncedAt": "2026-11-14T17:32:32.608Z",
+		"dataSyncedAt": "2026-11-14T17:46:18.112Z",
 		"sourceUpdatedAt": "2026-11-13T15:27:33Z",
-		"lastAttemptedAt": "2026-11-14T17:32:32.608Z",
+		"lastAttemptedAt": "2026-11-14T17:46:18.112Z",
 		"status": "success"
 	},
 	"posts": [
@@ -43,7 +43,7 @@
 			"tickers": [],
 			"structure": "Other",
 			"bias": "Neutral",
-			"views": 25263,
+			"views": 25265,
 			"likes": 131,
 			"reposts": 7
 		},
@@ -115,7 +115,7 @@
 			"tickers": ["Other"],
 			"structure": "Spread",
 			"bias": "Bearish",
-			"views": 15252,
+			"views": 15253,
 			"likes": 42,
 			"reposts": 3
 		},
@@ -259,7 +259,7 @@
 			"tickers": ["SPY"],
 			"structure": "Flow",
 			"bias": "Neutral",
-			"views": 8909,
+			"views": 8910,
 			"likes": 30,
 			"reposts": 1
 		},
@@ -421,7 +421,7 @@
 			"tickers": ["SPX", "SPY", "QQQ", "VIX", "AMZN"],
 			"structure": "IV",
 			"bias": "Neutral",
-			"views": 2335,
+			"views": 2336,
 			"likes": 22,
 			"reposts": 2
 		},
@@ -475,7 +475,7 @@
 			"tickers": ["SPX", "Other", "SPY", "QQQ", "IWM", "ES", "NQ", "VIX"],
 			"structure": "IV",
 			"bias": "Neutral",
-			"views": 1985,
+			"views": 1986,
 			"likes": 11,
 			"reposts": 2
 		},
