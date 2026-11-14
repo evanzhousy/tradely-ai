@@ -24,7 +24,7 @@ function GuidesPage() {
 						Work through an example.
 					</>
 				}
-				description="Free explanations of gamma exposure, open interest and volatility. Read the reasoning, explore a hypothetical case and check what the evidence can tell you."
+				description="Free explanations, from choosing a strike and sizing a trade to gamma exposure, open interest and volatility. Read the reasoning, work through a hypothetical case and check your understanding."
 			>
 				<p className="text-muted-foreground text-sm">
 					No sign-in required · Guides currently available in English

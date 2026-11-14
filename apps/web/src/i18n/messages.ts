@@ -161,7 +161,7 @@ const messages = {
 		"nav.changelog": "Changelog",
 		"home.guidesTitle": "Start with a question about options.",
 		"home.guidesDescription":
-			"Three free guides. Worked examples, clear assumptions and a chance to check your understanding.",
+			"Six free guides, from choosing a strike to reading gamma exposure. Worked examples, clear assumptions and a chance to check your understanding.",
 		"nav.pricing": "Free learning",
 		"nav.openTradingFlow": "Open TradingFlow",
 		"nav.openMenu": "Open menu",
@@ -491,7 +491,7 @@ const messages = {
 		"nav.changelog": "更新日志",
 		"home.guidesTitle": "从一个期权问题开始。",
 		"home.guidesDescription":
-			"三篇免费英文指南：示例计算、明确假设与理解检查。",
+			"六篇免费英文指南，从选择行权价到解读 Gamma 敞口：示例计算、明确假设与理解检查。",
 		"nav.pricing": "免费学习",
 		"nav.openTradingFlow": "打开 TradingFlow",
 		"nav.openMenu": "打开菜单",

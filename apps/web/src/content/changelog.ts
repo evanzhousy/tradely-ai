@@ -1,6 +1,31 @@
 /** Newest first. Add a dated entry here when a user-facing update is ready. */
 export const changelog = [
 	{
+		id: "2026-11-14-beginner-guides",
+		date: "2026-11-14",
+		dateLabel: "November 14, 2026",
+		title: "Three guides for your first trades",
+		summary:
+			"Three new free guides answer questions new option traders ask, each with a worked example you can change and a link into the lesson that goes further.",
+		changes: [
+			{
+				title: "Choosing a strike and expiration",
+				description:
+					"Three strikes and three expiries on one view of a $100 stock: cost, break-even, daily time decay and the spread, in dollars.",
+			},
+			{
+				title: "How many contracts to buy",
+				description:
+					"Size from what one contract can lose: an example 2% rule on a $10,000 account, and why the answer can be zero.",
+			},
+			{
+				title: "Covered call vs cash-secured put",
+				description:
+					"One stock, both trades: premium kept, break-even, best and worst case, and when assignment can come.",
+			},
+		],
+	},
+	{
 		id: "2026-11-13-selling-covered-options",
 		date: "2026-11-13",
 		dateLabel: "November 13, 2026",

@@ -38,7 +38,7 @@ const staticPages: SeoPage[] = [
 		path: "/guides",
 		title: "Options Guides with Interactive Examples | Tradely",
 		description:
-			"Free guides to gamma exposure, open interest vs volume and IV crush. Read a worked example, explore the concept and continue learning.",
+			"Free options guides: choosing a strike and expiry, how many contracts to buy, covered calls vs cash-secured puts, gamma exposure, open interest and IV crush.",
 		index: true,
 		sitemap: true,
 	},
