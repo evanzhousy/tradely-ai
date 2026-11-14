@@ -1,91 +1,297 @@
 /**
- * Refreshes the public options-trader directory from the repository that owns its private CRM.
+ * Rebuilds the saved options-trader snapshot from Tradely's own feed, which reads Notion: posts
+ * from Options Ideas and the listed traders from Options Traders. X numbers are then re-read from
+ * FxTwitter's public mirror of X, which needs no login.
  *
- *   pnpm --filter web options-traders:sync --source <path to that repository>
+ *   pnpm --filter web options-traders:sync [--feed <url or JSON file>]
  *
- * It runs that repository's own public adapter rather than reading the CRM itself, so outreach
- * notes, scores and other private columns never reach this repository. The output is committed:
- * building or running Tradely never needs the source repository.
+ * Nothing is written unless the feed read both the posts and the trader list from Notion within
+ * the last two hours. A number the mirror cannot read keeps the value Notion stored, and the run
+ * says how many those were. The output is committed: building or running Tradely never needs Notion.
  */
 import { execFileSync } from "node:child_process";
 import {
-	copyFileSync,
 	mkdirSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { z } from "zod";
 
-const sourceFlag = process.argv.indexOf("--source");
-const sourceArgument =
-	sourceFlag === -1 ? undefined : process.argv[sourceFlag + 1];
-if (!sourceArgument) {
-	throw new Error(
-		"Pass --source <path to the repository that owns the directory>",
-	);
-}
-const source = resolve(sourceArgument);
+const DEFAULT_FEED = "https://www.tradely.ai/api/options-traders";
+const MIRROR = "https://api.fxtwitter.com";
+const AVATAR_HOST = "pbs.twimg.com";
+/** The same 21 calendar days and author cap the live feed uses. */
+const WINDOW_DAYS = 21;
+const MAX_POSTS_PER_AUTHOR = 3;
+const MAX_READ_AGE_MS = 2 * 60 * 60 * 1000;
+const MIRROR_SPACING_MS = 300;
+const MAX_AVATAR_BYTES = 200_000;
 
 const webRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dataDirectory = join(webRoot, "src/features/options-traders/data");
 const avatarDirectory = join(webRoot, "public/options-traders/avatars");
 const AVATAR_PATH = "/options-traders/avatars";
-
-type SourceEntry = {
-	platform: "x.com" | "youtube.com" | "reddit.com";
-	handle: string;
-	name: string;
-	type: "individual" | "institutional";
-	description: string;
-	focus: string[];
-	cadence: string | null;
-	activity: string;
-	followers: number | null;
-	followersAsOf: string;
-	profileUrl: string;
-	avatar: string | null;
-	languages: string[];
+const AVATAR_KEYS = {
+	"x.com": "x",
+	"youtube.com": "youtube",
+	"reddit.com": "reddit",
 };
 
-// The adapter resolves its CRM and avatar files against the working directory.
-process.chdir(source);
-const adapter = (await import(
-	pathToFileURL(join(source, "src/lib/options-influencers/index.ts")).href
-)) as {
-	getInfluencerDirectory: () => { entries: SourceEntry[] }[];
-	getOptionsInfluencers: () => { handle: string; rank: number }[];
-	getInitialOptionsSnapshot: () => unknown;
+const args = process.argv.slice(2);
+if (args.includes("--source")) {
+	throw new Error(
+		"The sync reads Notion through Tradely's feed now; drop --source.",
+	);
+}
+const feedFlag = args.indexOf("--feed");
+const feedLocation =
+	feedFlag === -1 ? `${DEFAULT_FEED}?sync=${Date.now()}` : args[feedFlag + 1];
+if (!feedLocation) throw new Error("Pass --feed <url or JSON file>");
+
+const timestamp = z.iso.datetime({ offset: true });
+const metric = z.number().int().nonnegative().nullable();
+const languageCode = z.string().regex(/^[a-z]{2,3}$/);
+
+/** Explicit field lists: a field the feed adds later stays out until someone adds it here. */
+const postSchema = z.object({
+	id: z.string().regex(/^\d{15,25}$/),
+	handle: z.string().regex(/^[a-zA-Z0-9_]{1,15}$/),
+	url: z.url(),
+	postedAt: timestamp,
+	digestDate: z.iso.date().nullable(),
+	capturedAt: timestamp.nullable(),
+	metricsCapturedAt: z.union([z.iso.date(), timestamp]).nullable(),
+	text: z.string().min(1).max(20_000),
+	language: languageCode,
+	authorLanguages: z.array(languageCode),
+	tickers: z.array(z.string().min(1).max(30)),
+	structure: z.string().max(100),
+	bias: z.string().max(50),
+	views: metric,
+	likes: metric,
+	reposts: metric,
+});
+const profileSchema = z.object({
+	platform: z.enum(["x.com", "youtube.com", "reddit.com"]),
+	handle: z.string().regex(/^[a-zA-Z0-9_.-]{1,30}$/),
+	name: z.string().min(1).max(100),
+	type: z.enum(["individual", "institutional"]),
+	description: z.string().min(1).max(400),
+	focus: z.array(z.string().min(1).max(40)),
+	cadence: z.string().nullable(),
+	activity: z.string().min(1),
+	followers: metric,
+	followersAsOf: z.union([z.iso.date(), z.literal("")]),
+	profileUrl: z.url(),
+	avatar: z.string().nullable(),
+	languages: z.array(languageCode),
+	rank: z.number().int().min(1).max(30).optional(),
+});
+const feedSchema = z.object({
+	version: z.literal(1),
+	digestWindow: z.object({ from: z.iso.date(), to: z.iso.date() }),
+	freshness: z.object({
+		dataSyncedAt: timestamp,
+		sourceUpdatedAt: timestamp.nullable(),
+		lastAttemptedAt: timestamp.nullable(),
+		status: z.literal("success"),
+	}),
+	posts: z.array(postSchema),
+	profiles: z.array(profileSchema).min(10),
+});
+
+async function readFeed() {
+	const body = feedLocation.startsWith("https://")
+		? await fetch(feedLocation, {
+				headers: { accept: "application/json" },
+			}).then((response) => {
+				if (response.status !== 200) {
+					throw new Error(
+						`The feed answered ${response.status}; nothing written.`,
+					);
+				}
+				return response.json();
+			})
+		: JSON.parse(readFileSync(feedLocation, "utf8"));
+	const raw = z.looseObject({}).parse(body);
+	if (!("profiles" in raw)) {
+		throw new Error(
+			"The feed fell back to the saved trader list, so Notion's list was not read; nothing written.",
+		);
+	}
+	const feed = feedSchema.parse(raw);
+	const age = Date.now() - Date.parse(feed.freshness.dataSyncedAt);
+	if (age > MAX_READ_AGE_MS) {
+		throw new Error(
+			`The feed's last Notion read is ${Math.round(age / 60_000)} minutes old; nothing written.`,
+		);
+	}
+	return feed;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** The mirror answers 5xx, 429 and even 404 intermittently; an unknown account is a redirect. */
+async function mirror(path: string): Promise<Record<string, unknown> | null> {
+	for (let attempt = 0; attempt < 4; attempt += 1) {
+		if (attempt) await sleep(2_000 * 2 ** attempt);
+		await sleep(MIRROR_SPACING_MS);
+		try {
+			const response = await fetch(`${MIRROR}/${path}`, {
+				redirect: "manual",
+				headers: { "user-agent": "tradely-options-traders-sync" },
+			});
+			if (response.status === 200) {
+				return z.looseObject({}).parse(await response.json());
+			}
+			if (
+				response.status !== 404 &&
+				response.status !== 429 &&
+				response.status < 500
+			) {
+				return null;
+			}
+		} catch {
+			// Retried below; a post or profile the mirror never answers keeps Notion's numbers.
+		}
+	}
+	return null;
+}
+
+const count = (value: unknown) =>
+	typeof value === "number" && Number.isInteger(value) && value >= 0
+		? value
+		: null;
+const field = (body: Record<string, unknown> | null, key: string) =>
+	body && typeof body[key] === "object" && body[key] !== null
+		? (body[key] as Record<string, unknown>)
+		: null;
+
+const feed = await readFeed();
+const today = new Date().toISOString().slice(0, 10);
+const to = feed.digestWindow.to;
+const from = new Date(
+	Date.parse(`${to}T00:00:00Z`) - (WINDOW_DAYS - 1) * 86_400_000,
+)
+	.toISOString()
+	.slice(0, 10);
+
+const listedOnX = new Set(
+	feed.profiles
+		.filter((profile) => profile.platform === "x.com")
+		.map((profile) => profile.handle.toLowerCase()),
+);
+const inWindow = feed.posts.filter(
+	(post) =>
+		listedOnX.has(post.handle.toLowerCase()) &&
+		post.postedAt.slice(0, 10) >= from &&
+		post.postedAt.slice(0, 10) <= to,
+);
+
+let postsMeasured = 0;
+const droppedPosts: string[] = [];
+const measured: z.infer<typeof postSchema>[] = [];
+for (const post of inWindow) {
+	const tweet = field(
+		await mirror(`${post.handle}/status/${post.id}`),
+		"tweet",
+	);
+	if (!tweet) {
+		measured.push(post);
+		continue;
+	}
+	const author = String(field(tweet, "author")?.screen_name ?? "");
+	if (author.toLowerCase() !== post.handle.toLowerCase() || tweet.replying_to) {
+		droppedPosts.push(`${post.handle}/${post.id}`);
+		continue;
+	}
+	postsMeasured += 1;
+	measured.push({
+		...post,
+		views: count(tweet.views),
+		likes: count(tweet.likes),
+		reposts: count(tweet.retweets),
+		metricsCapturedAt: today,
+	});
+}
+const perAuthor = new Map<string, number>();
+const posts = measured
+	.sort((a, b) => (b.views ?? -1) - (a.views ?? -1) || a.id.localeCompare(b.id))
+	.filter((post) => {
+		const key = post.handle.toLowerCase();
+		const seen = perAuthor.get(key) ?? 0;
+		perAuthor.set(key, seen + 1);
+		return seen < MAX_POSTS_PER_AUTHOR;
+	});
+
+mkdirSync(avatarDirectory, { recursive: true });
+const avatarFiles = new Set(readdirSync(avatarDirectory));
+const avatarFor = (platform: keyof typeof AVATAR_KEYS, handle: string) => {
+	const stem = `${AVATAR_KEYS[platform]}-${handle.toLowerCase()}`;
+	return ["jpg", "png"]
+		.map((ext) => `${stem}.${ext}`)
+		.find((file) => avatarFiles.has(file));
 };
 
-const ranks = new Map(
-	adapter
-		.getOptionsInfluencers()
-		.map((person) => [person.handle.toLowerCase(), person.rank]),
-);
+let followersRead = 0;
+const unreadFollowers: string[] = [];
+const avatarsAdded: string[] = [];
+const profiles: z.infer<typeof profileSchema>[] = [];
+for (const profile of feed.profiles) {
+	let next = { ...profile, avatar: null as string | null };
+	if (profile.platform === "x.com") {
+		const user = field(
+			await mirror(encodeURIComponent(profile.handle)),
+			"user",
+		);
+		const sameAccount =
+			String(user?.screen_name ?? "").toLowerCase() ===
+			profile.handle.toLowerCase();
+		if (user && sameAccount && count(user.followers) !== null) {
+			followersRead += 1;
+			next = {
+				...next,
+				followers: count(user.followers),
+				followersAsOf: today,
+			};
+		} else {
+			unreadFollowers.push(profile.handle);
+		}
+		const avatarUrl =
+			typeof user?.avatar_url === "string" ? user.avatar_url : "";
+		if (sameAccount && !avatarFor("x.com", profile.handle) && avatarUrl) {
+			const url = new URL(avatarUrl);
+			const response = url.hostname === AVATAR_HOST ? await fetch(url) : null;
+			const type = response?.headers.get("content-type") ?? "";
+			const bytes = response?.ok
+				? Buffer.from(await response.arrayBuffer())
+				: null;
+			const ext =
+				type === "image/png" ? "png" : type === "image/jpeg" ? "jpg" : null;
+			if (bytes && ext && bytes.length <= MAX_AVATAR_BYTES) {
+				const file = `x-${profile.handle.toLowerCase()}.${ext}`;
+				writeFileSync(join(avatarDirectory, file), bytes);
+				avatarFiles.add(file);
+				avatarsAdded.push(file);
+			}
+		}
+	}
+	const file = avatarFor(profile.platform, profile.handle);
+	profiles.push({ ...next, avatar: file ? `${AVATAR_PATH}/${file}` : null });
+}
 
-/** An explicit field list: a column added upstream stays out until someone adds it here. */
-const profiles = adapter.getInfluencerDirectory().flatMap((group) =>
-	group.entries.map((entry) => ({
-		platform: entry.platform,
-		handle: entry.handle,
-		name: entry.name,
-		type: entry.type,
-		description: entry.description,
-		focus: entry.focus,
-		cadence: entry.cadence,
-		activity: entry.activity,
-		followers: entry.followers,
-		followersAsOf: entry.followersAsOf,
-		profileUrl: entry.profileUrl,
-		avatar: entry.avatar ? `${AVATAR_PATH}/${basename(entry.avatar)}` : null,
-		languages: entry.languages,
-		...(entry.platform === "x.com" && ranks.has(entry.handle.toLowerCase())
-			? { rank: ranks.get(entry.handle.toLowerCase()) }
-			: {}),
-	})),
+// A trader taken off the list takes their picture with them.
+const published = new Set(
+	profiles.flatMap((profile) =>
+		profile.avatar ? [profile.avatar.split("/").pop()] : [],
+	),
 );
+const avatarsRemoved = [...avatarFiles].filter((file) => !published.has(file));
+for (const file of avatarsRemoved) rmSync(join(avatarDirectory, file));
 
 mkdirSync(dataDirectory, { recursive: true });
 const profilesPath = join(dataDirectory, "profiles.json");
@@ -93,30 +299,39 @@ const postsPath = join(dataDirectory, "posts.json");
 writeFileSync(profilesPath, `${JSON.stringify(profiles, null, "\t")}\n`);
 writeFileSync(
 	postsPath,
-	`${JSON.stringify(adapter.getInitialOptionsSnapshot(), null, "\t")}\n`,
+	`${JSON.stringify(
+		{
+			version: 1,
+			digestWindow: { from, to },
+			freshness: feed.freshness,
+			posts,
+		},
+		null,
+		"\t",
+	)}\n`,
 );
-
-// Replace the folder so a retired profile's image does not stay published.
-rmSync(avatarDirectory, { recursive: true, force: true });
-mkdirSync(avatarDirectory, { recursive: true });
-const sourceAvatars = join(source, "public/images/options-influencers/avatars");
-const published = new Set(
-	profiles.flatMap((profile) =>
-		profile.avatar ? [basename(profile.avatar)] : [],
-	),
-);
-for (const file of readdirSync(sourceAvatars)) {
-	if (published.has(file)) {
-		copyFileSync(join(sourceAvatars, file), join(avatarDirectory, file));
-	}
-}
-
 execFileSync(
 	"pnpm",
 	["exec", "biome", "format", "--write", profilesPath, postsPath],
-	{ cwd: webRoot, stdio: "inherit" },
+	{
+		cwd: webRoot,
+		stdio: "inherit",
+	},
 );
 
+const ranked = profiles.filter((profile) => profile.rank !== undefined).length;
 console.log(
-	`Synced ${profiles.length} profiles (${ranks.size} ranked) and ${published.size} avatars.`,
+	[
+		`Posts ${from} to ${to}: ${posts.length} saved, ${postsMeasured} re-measured on the mirror, ${inWindow.length - postsMeasured - droppedPosts.length} kept Notion's numbers.`,
+		droppedPosts.length
+			? `Left out (reply or different author on X): ${droppedPosts.join(", ")}.`
+			: "",
+		`Traders: ${profiles.length} listed (${ranked} ranked); followers re-read for ${followersRead} on X.`,
+		unreadFollowers.length
+			? `Followers kept from Notion: ${unreadFollowers.join(", ")}.`
+			: "",
+		`Avatars: ${published.size} published, ${avatarsAdded.length} added, ${avatarsRemoved.length} removed.`,
+	]
+		.filter(Boolean)
+		.join("\n"),
 );
