@@ -10,7 +10,8 @@ import {
 import { type ComponentType, useState } from "react";
 import type { GuideSlug } from "@/content/guides";
 
-const loaders = {
+const loaders: Record<GuideSlug, () => Promise<{ default: ComponentType }>> = {
+	"choose-strike-and-expiration": () => import("./strike-expiry-demo"),
 	"gamma-exposure": () => import("./gex-demo"),
 	"open-interest-vs-volume": () => import("./oi-volume-demo"),
 	"iv-crush": () => import("./iv-crush-demo"),

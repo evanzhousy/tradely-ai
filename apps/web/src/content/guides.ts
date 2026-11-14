@@ -1,5 +1,6 @@
 /** Deliberately public material. Never import paid teaching units or scenarios here. */
 export type GuideSlug =
+	| "choose-strike-and-expiration"
 	| "gamma-exposure"
 	| "open-interest-vs-volume"
 	| "iv-crush";
@@ -14,7 +15,62 @@ export type Guide = {
 	lessonIds: string[];
 };
 
+/**
+ * Beginner guides come first, in the order of their lessons: this order is the order on the home
+ * page and /guides.
+ * Their figures are literals copied from the matching lesson's model (this file stays free of
+ * imports, since it is in the root bundle); each guide's demo computes from that model itself.
+ */
 export const guides: Guide[] = [
+	{
+		slug: "choose-strike-and-expiration",
+		title: "How to choose a strike price and expiration date for an option",
+		description:
+			"Compare three strikes and three expiries on one view of a $100 stock: what each call costs, where it breaks even, what time decay takes and what the spread costs.",
+		updated: "2026-11-14",
+		minutes: 7,
+		lessonIds: ["strike-and-expiry", "premium-payoff"],
+		sections: [
+			{
+				id: "view",
+				title: "Start from a view: direction, size and time",
+				body: "A strike and an expiry are how a trade turns your view into a contract. Before comparing contracts, write the view down: what you expect the stock to do, by how much and by when. This guide follows one view: ALFA, a made-up stock at **$100** on Sep 16, higher within about a month.\n\nEvery call below agrees with that direction. They differ in how far ALFA has to move, how soon, and what each costs if the view is wrong. All figures are for one contract (100 shares) bought at the ask, before fees.",
+			},
+			{
+				id: "strike",
+				title: "Three strikes, one expiry",
+				body: "Three Oct 18 calls, 32 days from expiry:\n\n- **95 call (in the money):** costs $730, breaks even at $102.30, delta 0.70.\n- **100 call (at the money):** costs $420, breaks even at $104.20, delta 0.52.\n- **105 call (out of the money):** costs $215, breaks even at $107.15, delta 0.33.\n\nSay ALFA ends at **$106** on Oct 18. The view was right, but the results differ: the 95 call makes **+$370** (+51%), the 100 call **+$180** (+43%), and the 105 call ends at **−$115** (−53%) because it needed $107.15. A cheaper strike needs a bigger move. Only from about $110 does the 105 call’s percentage return pass the 95 call’s.\n\nIf ALFA ends unchanged at $100, the 95 call loses $230, since it is still $5 in the money. The 100 and 105 calls lose all they cost.",
+			},
+			{
+				id: "expiry",
+				title: "One strike, three expiries",
+				body: "Now one strike, the 100 call, at three expiries. Each day’s decay is the course model’s figure for Sep 16:\n\n- **Sep 20, 4 days left:** costs $145 and loses about **$17.20 a day** to time decay.\n- **Oct 18, 32 days left:** costs $420 and loses about $6.50 a day.\n- **Nov 15, 60 days left:** costs $545 and loses about $4.40 a day.\n\nThe shortest call is the cheapest, but it leaves four days for the move to happen. Compare the other two on Oct 18. If ALFA is still at $100, the Oct 18 call expires worthless (−$420), while the Nov 15 call can still be sold, at a modeled bid, for −$190. If ALFA is at $106, the two end close: +$180 and +$185. From about $107 up, the shorter call does at least as well.\n\nMore time costs more up front. It also loses value more slowly each day and leaves room for a move that comes late.",
+			},
+			{
+				id: "liquidity",
+				title: "Check the quote before you choose",
+				body: "A contract can fit your view and still be expensive to trade. Look at the bid, the ask and the open interest before choosing:\n\n- **Oct 18 105 call:** $2.05 bid, $2.15 ask, 1,200 contracts open. The spread is 10¢, about 5% of the ask.\n- **Dec 20 110 call:** $2.20 bid, $2.65 ask, 3 contracts open. The spread is 45¢, about 17% of the ask.\n\nBuying at the ask and selling at the bid straight away costs the spread. Five Dec 20 110 calls give up **$225** that way before the stock moves at all. A wide spread and little open interest make a contract costlier to get into and out of.\n\n**A checklist, not a rule:** how much time your view needs, the break-even against the move you expect, the decay you pay each day, and the spread. Which strike and expiry fit is yours to decide; the lesson below lets you try each combination.",
+			},
+		],
+		sources: [
+			{
+				title: "OIC: Options basics",
+				href: "https://www.optionseducation.org/optionsoverview/options-basics",
+			},
+			{
+				title: "OIC: Understanding options Greeks",
+				href: "https://www.optionseducation.org/advancedconcepts/understanding-options-greeks",
+			},
+			{
+				title: "OIC: Bid and ask",
+				href: "https://www.optionseducation.org/news/understanding-the-bid-and-ask-prices-for-options",
+			},
+			{
+				title: "OIC: Open interest — why it matters",
+				href: "https://www.optionseducation.org/news/open-interest-why-it-matters",
+			},
+		],
+	},
 	{
 		slug: "gamma-exposure",
 		title: "Gamma Exposure (GEX), explained with examples",
