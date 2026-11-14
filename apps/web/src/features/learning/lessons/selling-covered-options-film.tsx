@@ -86,7 +86,7 @@ const monthDay = (date: string): Copy => {
 function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room, type: T } = frame;
-	const left = margin + (narrow ? 50 : 66);
+	const left = margin + (narrow ? 54 : 66);
 	const right = margin + room;
 	const top = H * (narrow ? 0.3 : 0.28);
 	const bottom = H * 0.84;
@@ -112,7 +112,8 @@ function layout(width: number) {
 		top,
 		bottom,
 		label,
-		tick: T.small * (narrow ? 1.1 : 1.15),
+		// On a phone the chart's labels are set at body size, a step up from the small type.
+		tick: narrow ? T.body * 1.05 : T.small * 1.15,
 		heroSize,
 		sizeSize,
 		sizeY,
@@ -218,6 +219,8 @@ const copy = {
 		`ALFA 跌到 $0 时，最多亏 ${whole(-SECURED_WORST)}。`,
 	],
 	axis: [`profit on ${EXPIRY[0]}, per contract`, `${EXPIRY[1]}盈亏，每张合约`],
+	xAxis: [`ALFA's price on ${EXPIRY[0]}`, `${EXPIRY[1]} ALFA 股价`],
+	xAxisShort: [`ALFA on ${EXPIRY[0]}`, `${EXPIRY[1]} ALFA 股价`],
 	sellMark: [`sell ${PUT.strike}`, `卖出 ${PUT.strike}`],
 	ceil: [" at most", " 封顶"],
 	heroTag: ["worst case · per contract", "最坏情况 · 每张合约"],
@@ -297,6 +300,8 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	/** A card's second line: on a phone a step up from the small type, so it reads at 1.5×. */
+	const subText = narrow ? T.body : T.small * 1.1;
 	const row = (
 		name: string,
 		i: number,
@@ -328,7 +333,7 @@ function Scene({
 					x={margin + 14}
 					y={lineY(1)}
 					className="wt-film-type wt-film-dim"
-					style={{ fontSize: T.small * 1.1 }}
+					style={{ fontSize: subText }}
 				>
 					{t(sub)}
 				</text>
@@ -346,7 +351,7 @@ function Scene({
 					y={lineY(1)}
 					textAnchor="end"
 					className="wt-film-type wt-film-dim"
-					style={{ fontSize: T.small * 1.1 }}
+					style={{ fontSize: subText }}
 				>
 					{t(valueSub)}
 				</text>
@@ -542,6 +547,14 @@ function Scene({
 								{`$${v}`}
 							</text>
 						))}
+						<text
+							x={L.left}
+							y={L.bottom + 16 + L.tick * 1.5}
+							className="wt-small"
+							style={{ fontSize: L.tick }}
+						>
+							{t(narrow ? copy.xAxisShort : copy.xAxis)}
+						</text>
 						<g>
 							<circle
 								cx={L.x(PUT.strike)}
