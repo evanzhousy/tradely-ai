@@ -2,6 +2,7 @@
 export type GuideSlug =
 	| "choose-strike-and-expiration"
 	| "how-many-option-contracts"
+	| "covered-call-vs-cash-secured-put"
 	| "gamma-exposure"
 	| "open-interest-vs-volume"
 	| "iv-crush";
@@ -114,6 +115,60 @@ export const guides: Guide[] = [
 			{
 				title: "Investor.gov: Understanding order types",
 				href: "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-14",
+			},
+		],
+	},
+	{
+		slug: "covered-call-vs-cash-secured-put",
+		title: "Covered call vs cash-secured put, worked through on one stock",
+		description:
+			"Compare a covered call and a cash-secured put on one $100 stock: the premium kept, the break-even, the best and worst case, and what assignment does to each.",
+		updated: "2026-11-14",
+		minutes: 7,
+		lessonIds: ["selling-covered-options", "expiration-settlement"],
+		sections: [
+			{
+				id: "obligation",
+				title: "What you agree to when you sell an option",
+				body: "Selling an option pays you a premium now in exchange for an obligation. Sell a call and you may have to sell 100 shares at its strike. Sell a put and you may have to buy 100 shares at its strike. The premium is yours to keep whatever happens next.\n\nA **covered call** covers that obligation with 100 shares you already own. A **cash-secured put** covers it with the strike × 100 in cash, set aside until the put expires or you buy it back. Covered means the worst outcome is giving up or buying shares you can deliver or pay for. It does not mean the trade cannot lose money.\n\nBrokers grant options approval in levels and decide which level covers covered calls, cash-secured puts, spreads and uncovered writing. The levels and their names differ by broker, so check yours before you sell.",
+			},
+			{
+				id: "covered-call",
+				title: "A covered call, worked through",
+				body: "The example uses ALFA, a made-up stock at **$100** on Sep 16. You own 100 shares bought at $100 and sell one Oct 18 **105 call** at its $2.05 bid, so you keep **$205**. All figures are for one contract at expiry, before fees.\n\n- **Break-even: $97.95.** That is the $100 you paid for each share, less the $2.05 premium.\n- **Best case: +$705.** At $105 or above, the call is assigned and your shares are sold at $105: +$500 on the shares plus the $205 premium.\n- **The cap: $107.05.** Above it, the shares on their own would have done better. At $115 the shares alone make +$1,500; with the call sold, the result is still +$705.\n- **Worst case: −$9,795**, if ALFA fell to $0. The premium cushions only the first $2.05 a share of a fall.\n\nAt $90 the call expires worthless and you keep both the shares and the premium: −$1,000 on the shares and +$205 kept, so −$795 overall.",
+			},
+			{
+				id: "cash-secured-put",
+				title: "A cash-secured put, worked through",
+				body: "Now start from cash instead of shares. You set aside **$9,500**, the 95 strike × 100, and sell one Oct 18 **95 put** at its $2.05 bid, so you keep **$205**.\n\n- **At $95 or above**, the put expires worthless. You keep the $205 and the cash is free again.\n- **Below $95**, the put is assigned and you buy 100 shares at $95 with the cash you set aside. With the premium, that is a net **$92.95 a share**, which is also the break-even.\n- **Worst case: −$9,295**, if ALFA fell to $0: $9,500 paid for shares worth nothing, less the $205 kept.\n\nAt $90 you are assigned. Shares bought for $9,500 are worth $9,000, and with the $205 premium the result is −$295. The $9,500 set aside is 95% of a $10,000 account, so that account can secure only one of these puts at a time.",
+			},
+			{
+				id: "compare",
+				title: "Covered call vs cash-secured put at three closing prices",
+				body: "In this example both options happen to have a $2.05 bid, so each keeps $205. Here is each result for one contract at expiry:\n\n- **ALFA at $90:** the covered call is at −$795 and still owns the shares. The cash-secured put is at −$295 and now owns shares bought at $95.\n- **ALFA at $100:** both are at +$205. Neither is assigned.\n- **ALFA at $110:** the covered call is at +$705, its shares sold at $105. The cash-secured put is at +$205.\n\nThe gap comes from where each trade starts. The covered call already owns shares bought at $100, so it carries the whole fall from $100. The put buys shares only if ALFA ends below $95. Both trade away gains above a point for the premium, and both still take most of the loss if the stock collapses. Whether either fits depends on whether you want to own the stock, and at what price. This guide does not say which to sell.",
+			},
+			{
+				id: "assignment",
+				title: "Assignment can come before expiry",
+				body: "ALFA’s options, like US equity options generally, are American-style: the holder can exercise on any trading day, so the seller can be assigned on any of them. At expiry, an equity option that is a cent or more in the money is normally exercised automatically unless its holder instructs otherwise.\n\nEarly assignment is most likely when an option is deep in the money with little time value left. Say ALFA is at **$86 on Oct 14**, four days before expiry. Your 95 put is $9 in the money and, in the course’s model, has no time value left, so its holder gains little by waiting. Buying the put back at its modeled $9.20 ask locks in **−$715**. Being assigned that night instead means buying 100 shares at $95 while ALFA is at $86: **−$695** with the premium, before whatever the shares do next.\n\nFor calls, early exercise most often comes just before an ex-dividend date, when the holder wants the dividend. Either way, a covered seller can meet the assignment: the shares or the cash are already there.",
+			},
+		],
+		sources: [
+			{
+				title: "OIC: Covered call (buy/write)",
+				href: "https://www.optionseducation.org/strategies/all-strategies/covered-call-buy-write",
+			},
+			{
+				title: "OIC: Cash-secured put",
+				href: "https://www.optionseducation.org/strategies/all-strategies/cash-secured-put",
+			},
+			{
+				title: "OIC: Options assignment",
+				href: "https://www.optionseducation.org/referencelibrary/faq/options-assignment",
+			},
+			{
+				title: "FINRA: Regulatory Notice 21-15 (options account approval)",
+				href: "https://www.finra.org/rules-guidance/notices/21-15",
 			},
 		],
 	},
