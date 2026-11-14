@@ -4,11 +4,10 @@
 		"from": "2026-10-24",
 		"to": "2026-11-13"
 	},
-	"metricsCapturedAt": "2026-11-14",
 	"freshness": {
-		"dataSyncedAt": "2026-11-14T06:57:05.221Z",
+		"dataSyncedAt": "2026-11-14T17:32:32.608Z",
 		"sourceUpdatedAt": "2026-11-13T15:27:33Z",
-		"lastAttemptedAt": "2026-11-14T06:57:05.221Z",
+		"lastAttemptedAt": "2026-11-14T17:32:32.608Z",
 		"status": "success"
 	},
 	"posts": [
@@ -44,7 +43,7 @@
 			"tickers": [],
 			"structure": "Other",
 			"bias": "Neutral",
-			"views": 25254,
+			"views": 25263,
 			"likes": 131,
 			"reposts": 7
 		},
@@ -62,7 +61,7 @@
 			"tickers": ["SPX", "VIX"],
 			"structure": "0DTE",
 			"bias": "Neutral",
-			"views": 24916,
+			"views": 24922,
 			"likes": 212,
 			"reposts": 19
 		},
@@ -98,7 +97,7 @@
 			"tickers": [],
 			"structure": "Other",
 			"bias": "Neutral",
-			"views": 22134,
+			"views": 22135,
 			"likes": 73,
 			"reposts": 6
 		},
@@ -116,7 +115,7 @@
 			"tickers": ["Other"],
 			"structure": "Spread",
 			"bias": "Bearish",
-			"views": 15236,
+			"views": 15252,
 			"likes": 42,
 			"reposts": 3
 		},
@@ -152,7 +151,7 @@
 			"tickers": ["SPX"],
 			"structure": "0DTE",
 			"bias": "Neutral",
-			"views": 11210,
+			"views": 11213,
 			"likes": 23,
 			"reposts": 5
 		},
@@ -170,7 +169,7 @@
 			"tickers": ["SPX", "SPY", "VIX"],
 			"structure": "0DTE",
 			"bias": "Neutral",
-			"views": 10971,
+			"views": 10974,
 			"likes": 50,
 			"reposts": 5
 		},
@@ -206,7 +205,7 @@
 			"tickers": ["SPX", "SPY", "VIX"],
 			"structure": "0DTE",
 			"bias": "Neutral",
-			"views": 9353,
+			"views": 9385,
 			"likes": 42,
 			"reposts": 1
 		},
@@ -242,7 +241,7 @@
 			"tickers": ["VIX"],
 			"structure": "IV",
 			"bias": "Neutral",
-			"views": 8928,
+			"views": 8933,
 			"likes": 63,
 			"reposts": 3
 		},
@@ -260,7 +259,7 @@
 			"tickers": ["SPY"],
 			"structure": "Flow",
 			"bias": "Neutral",
-			"views": 8899,
+			"views": 8909,
 			"likes": 30,
 			"reposts": 1
 		},
@@ -278,27 +277,9 @@
 			"tickers": ["SPX"],
 			"structure": "IV",
 			"bias": "Bullish",
-			"views": 8564,
+			"views": 8567,
 			"likes": 30,
 			"reposts": 2
-		},
-		{
-			"id": "2113759188338004211",
-			"handle": "3PeaksTrading",
-			"url": "https://x.com/3PeaksTrading/status/2113759188338004211",
-			"postedAt": "2026-10-23T22:27:16.000Z",
-			"digestDate": "2026-10-26",
-			"capturedAt": null,
-			"metricsCapturedAt": "2026-11-14",
-			"text": "$SPX options for next week price in a full weeks move of +/- 152 points. Would not surprise me to see any Monday weakness bought into and after the Fed meeting Wednesday.",
-			"language": "en",
-			"authorLanguages": ["en"],
-			"tickers": ["SPX"],
-			"structure": "IV",
-			"bias": "Bullish",
-			"views": 8362,
-			"likes": 54,
-			"reposts": 3
 		},
 		{
 			"id": "2115903301560508756",
@@ -386,7 +367,7 @@
 			"tickers": [],
 			"structure": "Other",
 			"bias": "Neutral",
-			"views": 4752,
+			"views": 4753,
 			"likes": 51,
 			"reposts": 5
 		},
@@ -422,7 +403,7 @@
 			"tickers": ["SPY"],
 			"structure": "Flow",
 			"bias": "Bullish",
-			"views": 2625,
+			"views": 2635,
 			"likes": 8,
 			"reposts": 0
 		},
@@ -440,7 +421,7 @@
 			"tickers": ["SPX", "SPY", "QQQ", "VIX", "AMZN"],
 			"structure": "IV",
 			"bias": "Neutral",
-			"views": 2321,
+			"views": 2335,
 			"likes": 22,
 			"reposts": 2
 		},
@@ -458,7 +439,7 @@
 			"tickers": ["QQQ"],
 			"structure": "Flow",
 			"bias": "Bullish",
-			"views": 2241,
+			"views": 2244,
 			"likes": 6,
 			"reposts": 0
 		},
@@ -476,7 +457,7 @@
 			"tickers": ["AAPL"],
 			"structure": "Flow",
 			"bias": "Bullish",
-			"views": 2201,
+			"views": 2204,
 			"likes": 10,
 			"reposts": 2
 		},
@@ -494,7 +475,7 @@
 			"tickers": ["SPX", "Other", "SPY", "QQQ", "IWM", "ES", "NQ", "VIX"],
 			"structure": "IV",
 			"bias": "Neutral",
-			"views": 1934,
+			"views": 1985,
 			"likes": 11,
 			"reposts": 2
 		},
@@ -512,7 +493,7 @@
 			"tickers": ["SPX"],
 			"structure": "0DTE",
 			"bias": "Bearish",
-			"views": 1809,
+			"views": 1808,
 			"likes": 24,
 			"reposts": 0
 		},
@@ -530,7 +511,7 @@
 			"tickers": ["EWZ", "OBE"],
 			"structure": "Put",
 			"bias": "Neutral",
-			"views": 1765,
+			"views": 1766,
 			"likes": 6,
 			"reposts": 1
 		},
@@ -656,7 +637,7 @@
 			"tickers": ["SPX", "SPY"],
 			"structure": "0DTE",
 			"bias": "Neutral",
-			"views": 897,
+			"views": 898,
 			"likes": 10,
 			"reposts": 0
 		},
@@ -890,7 +871,7 @@
 			"tickers": ["SPY", "VIX"],
 			"structure": "Flow",
 			"bias": "Bearish",
-			"views": 119,
+			"views": 120,
 			"likes": 1,
 			"reposts": 0
 		},
@@ -908,7 +889,7 @@
 			"tickers": ["SPY", "VIX"],
 			"structure": "IV",
 			"bias": "Bearish",
-			"views": 114,
+			"views": 115,
 			"likes": 1,
 			"reposts": 0
 		},
