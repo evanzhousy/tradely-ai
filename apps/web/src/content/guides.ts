@@ -1,6 +1,7 @@
 /** Deliberately public material. Never import paid teaching units or scenarios here. */
 export type GuideSlug =
 	| "choose-strike-and-expiration"
+	| "how-many-option-contracts"
 	| "gamma-exposure"
 	| "open-interest-vs-volume"
 	| "iv-crush";
@@ -68,6 +69,51 @@ export const guides: Guide[] = [
 			{
 				title: "OIC: Open interest — why it matters",
 				href: "https://www.optionseducation.org/news/open-interest-why-it-matters",
+			},
+		],
+	},
+	{
+		slug: "how-many-option-contracts",
+		title: "How many option contracts to buy: size from the worst case",
+		description:
+			"Work out how many contracts fit a loss budget from what one contract can lose. A worked example with a $10,000 account, an example 2% rule and an answer of zero.",
+		updated: "2026-11-14",
+		minutes: 6,
+		lessonIds: ["size-and-exit", "first-spread-trade"],
+		sections: [
+			{
+				id: "worst-case",
+				title: "Start from what one contract can lose",
+				body: "When you buy an option, the most you can lose is what you paid: the premium per share × 100 shares, plus fees. That worst case is the unit to size with, not the price per share and not how many you can afford.\n\nThen set a loss budget: the most you are willing to lose on this one trade if the worst happens. A common rule of thumb sets it as a small percentage of the account. This guide uses **2% of a $10,000 account, so $200**, as an example to do arithmetic with. It is not a recommendation; your percentage is yours to set.\n\n**Contracts = loss budget ÷ worst case of one contract, rounded down.** Round down, never up: rounding up puts more at risk than the budget.",
+			},
+			{
+				id: "worked-example",
+				title: "A worked example: three candidates, one budget",
+				body: "ALFA, a made-up stock, is at $100. Here are three ways to bet on a rise, each with the worst case of one contract:\n\n- **Oct 18 100 call at $4.20:** worst case $420. $200 ÷ $420 rounds down to **0**.\n- **Nov 15 110 call at $1.80:** worst case $180. $200 ÷ $180 rounds down to **1**, with $180 at risk.\n- **Oct 18 105/110 call spread at $1.30 net:** worst case $130. $200 ÷ $130 rounds down to **1**, with $130 at risk.\n\n**Zero is an answer.** Under this example rule the $420 call does not fit at all; it fits only once the rule reaches 4.5%. The cheaper call fits, but it is cheaper because it needs a bigger move. Fitting the budget does not make it a better trade.",
+			},
+			{
+				id: "streak",
+				title: "Why the percentage matters: ten losses in a row",
+				body: "A run of losses can happen to any plan. Suppose ten trades in a row each lose their full budget, with the budget reset each time as a share of what is left:\n\n- **At 2% a trade:** $10,000 becomes **$8,171**. Getting back to $10,000 then takes a gain of about **22%**.\n- **At 20% a trade:** $10,000 becomes **$1,074**. Getting back takes a gain of about **831%**.\n\nLosses and gains are not symmetric: after a loss, it takes a larger percentage gain to get back. A small percentage keeps a run of losses survivable.",
+			},
+			{
+				id: "exits",
+				title: "A planned exit is not a cap on the loss",
+				body: "Write the exit plan down on the day you buy. One example plan for the $1.80 Nov 15 call: sell at **$3.60**, twice the premium (+$180); sell at **$0.90**, half the premium (−$90); and sell on **Oct 25**, with three weeks left, whatever the price.\n\nThe plan does not cap the loss at −$90. Options do not trade overnight. If ALFA reports earnings after the close and opens at $94 the next morning, with implied volatility lower, the call’s first price can be far below $0.90. In the course’s model it opens at **$0.20**. Sold there, the result is **−$160**, not the planned −$90. Held to expiry out of the money, it loses the whole **$180**.\n\nThat is why the size comes from the worst case, not from the planned exit: $180 a contract is what the budget has to hold.",
+			},
+		],
+		sources: [
+			{
+				title: "OIC: Getting started with options",
+				href: "https://www.optionseducation.org/optionsoverview/getting-started-with-options",
+			},
+			{
+				title: "FINRA: Options",
+				href: "https://www.finra.org/investors/investing/investment-products/options",
+			},
+			{
+				title: "Investor.gov: Understanding order types",
+				href: "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins-14",
 			},
 		],
 	},

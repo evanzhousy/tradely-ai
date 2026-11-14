@@ -12,6 +12,7 @@ import type { GuideSlug } from "@/content/guides";
 
 const loaders: Record<GuideSlug, () => Promise<{ default: ComponentType }>> = {
 	"choose-strike-and-expiration": () => import("./strike-expiry-demo"),
+	"how-many-option-contracts": () => import("./contract-size-demo"),
 	"gamma-exposure": () => import("./gex-demo"),
 	"open-interest-vs-volume": () => import("./oi-volume-demo"),
 	"iv-crush": () => import("./iv-crush-demo"),

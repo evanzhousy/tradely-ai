@@ -6,6 +6,7 @@ import { LessonInfographic } from "./lesson-infographic";
 
 const subjects = {
 	"choose-strike-and-expiration": "strike-and-expiry",
+	"how-many-option-contracts": "size-and-exit",
 	"gamma-exposure": "gamma-exposure",
 	"open-interest-vs-volume": "session-flow-vs-structure",
 	"iv-crush": "implied-realized-volatility",
