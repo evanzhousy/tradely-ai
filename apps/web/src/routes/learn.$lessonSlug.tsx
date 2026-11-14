@@ -28,6 +28,7 @@ import {
 	getNextLesson,
 	getPreviousLesson,
 } from "@/content/course";
+import { guidesForLesson } from "@/content/guides";
 import { buildsOn, coursePaths } from "@/content/syllabus";
 import { getTradingFlowLab } from "@/content/tradingflow-labs";
 import { parseLearningSearch } from "@/domain/guest-learning";
@@ -93,6 +94,8 @@ function LessonPage() {
 	const course = getLocalizedCourse(locale);
 	const lesson = source ? getLocalizedLesson(source, locale) : null;
 	const builds = lesson && buildsOn[lesson.id];
+	/** Free guides on this lesson's topic: a short read with a worked example, in English. */
+	const guides = lesson ? guidesForLesson(lesson.id) : [];
 	const earlierLessons = builds
 		? course.lessons.filter((item) => builds.lessons.includes(item.id))
 		: [];
@@ -351,6 +354,32 @@ function LessonPage() {
 							</LessonSurfaceBoundary>
 						) : null}
 					</DisclosurePanel>
+					{guides.length ? (
+						<p className="max-w-[68ch] text-muted-foreground text-sm leading-6">
+							<span className="font-medium text-foreground">
+								{locale === "zh"
+									? "相关指南："
+									: guides.length > 1
+										? "Related guides:"
+										: "Related guide:"}{" "}
+							</span>
+							{guides.map((guide, i) => (
+								<span key={guide.slug}>
+									{i > 0 ? (locale === "zh" ? "、" : " and ") : null}
+									<Link
+										to="/guides/$guideSlug"
+										params={{ guideSlug: guide.slug }}
+										className="underline underline-offset-4"
+									>
+										{guide.title}
+									</Link>
+								</span>
+							))}
+							{locale === "zh"
+								? "（免费英文指南，附可操作的示例）"
+								: ". A free short read with a worked example you can change."}
+						</p>
+					) : null}
 					<section id="study-mark" className="flex flex-col gap-4">
 						{progress.pending || progress.unavailable ? (
 							<CourseProgress
