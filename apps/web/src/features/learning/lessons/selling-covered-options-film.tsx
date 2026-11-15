@@ -215,7 +215,7 @@ const copy = {
 	netBShort: [" each", ""],
 	hHead: ["What can one put lose?", "一张看跌最多能亏多少？"],
 	h2Head: [
-		`Up to ${whole(-SECURED_WORST)}, if ALFA falls to $0.`,
+		`${whole(-SECURED_WORST)}, if ALFA falls to $0.`,
 		`ALFA 跌到 $0 时，最多亏 ${whole(-SECURED_WORST)}。`,
 	],
 	axis: [`profit on ${EXPIRY[0]}, per contract`, `${EXPIRY[1]}盈亏，每张合约`],
@@ -227,14 +227,8 @@ const copy = {
 	heroTagShort: ["worst, per contract", "最坏情况 · 每张合约"],
 	sizeA: ["set aside: ", "预留 "],
 	sizeB: [` of ${whole(ACCOUNT)}`, `（账户 ${whole(ACCOUNT)}）`],
-	aHead: [
-		"Both can be assigned on any trading day.",
-		"两者都可能在任一交易日被指派。",
-	],
-	a2Head: [
-		"Only buying the option back first stops it.",
-		"只有先买回平仓，才能确保不被指派。",
-	],
+	aHead: ["Both can be assigned any day.", "两者都可能在任一交易日被指派。"],
+	a2Head: ["Only buying back first stops it.", "只有先买回平仓，才能避免。"],
 	calNote: ["you can't tell which day", "无法预知是哪一天"],
 	calMore: [
 		"likelier: in the money, little time value left",
