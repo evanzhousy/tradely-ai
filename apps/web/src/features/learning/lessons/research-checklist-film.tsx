@@ -77,8 +77,8 @@ const baseSlot = (id: string) =>
 	id === EARNINGS.id || id === "flow" ? at(EDITED, id) : 0;
 /** Concise row copy, kept the same as checklist rows move into notes. */
 const shortText: Record<string, Copy> = {
-	vol: ["ALFA IV vs realized volatility", "ALFA 隐含与已实现波动率"],
-	gex: ["GEX / OI structure", "GEX / OI 结构"],
+	vol: ["ALFA implied vs realized volatility", "ALFA 隐含与已实现波动率"],
+	gex: ["Gamma exposure and open interest", "Gamma 敞口与未平仓量"],
 	trade: [
 		"Call spread, liquidity, open interest",
 		"看涨价差、流动性、未平仓量",
@@ -106,8 +106,8 @@ function layout(width: number) {
 		numW,
 		rowX: margin + numW,
 		rowW: room - numW,
-		rowText: narrow ? T.small * 1.1 : T.body,
-		toolText: narrow ? T.small : T.small * 1.15,
+		rowText: narrow ? T.body : frame.type.body,
+		toolText: narrow ? T.body : T.small * 1.15,
 		bubbleW: narrow ? room : room * 0.62,
 		bubbleText: narrow ? T.small * 1.1 : T.body,
 		bubblePad: narrow ? 8 : 14,
@@ -401,7 +401,7 @@ function Scene({
 									y={toolY + offset}
 									textAnchor={narrow ? "start" : "end"}
 									className={`wt-film-type ${toneClass.caution}`}
-									style={{ fontSize: L.toolText }}
+									style={{ fontSize: narrow ? T.small : L.toolText }}
 								>
 									{t(copy.forecastNote)}
 								</text>
@@ -448,7 +448,7 @@ function Scene({
 					name="notes-expiry"
 					x={L.noteX}
 					y={H * 0.75}
-					size={T.small}
+					size={narrow ? T.body : T.small}
 					anchor="start"
 					className="wt-film-type wt-film-dim"
 				>
