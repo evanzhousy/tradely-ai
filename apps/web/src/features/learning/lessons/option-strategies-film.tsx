@@ -90,6 +90,13 @@ function layout(width: number) {
 		resultX: left + (narrow ? 78 : 110),
 		resultY: top + readoutSize * 5.5,
 		resultSize: frame.type.num * 1.8,
+		costX: (expressionWidth: number, spotWidth: number) =>
+			narrow
+				? Math.max(margin + 12, right - spotWidth - 6 - expressionWidth)
+				: left + 12,
+		costY: narrow
+			? top + readoutSize * 5.5 - frame.type.num * 1.8 * 1.5 - 6
+			: top + readoutSize * 1.2,
 		x: (spot: number) =>
 			left + ((spot - RANGE[0]) / (RANGE[1] - RANGE[0])) * (right - left),
 		y: (dollars: number) =>
@@ -138,8 +145,8 @@ const copy = {
 	readoutTotal: ["total", "合计"],
 	together: ["payoff", "到期价值"],
 	lessCost: [
-		`${dollars(spreadPayoff(SPOT))} − ${dollars(NET)}`,
-		`${dollars(spreadPayoff(SPOT))} − ${dollars(NET)}`,
+		`${dollars(spreadPayoff(SPOT))} payoff − ${dollars(NET)} paid`,
+		`到期价值 ${dollars(spreadPayoff(SPOT))} − 成本 ${dollars(NET)}`,
 	],
 	spot: [`ALFA $${SPOT}`, `ALFA $${SPOT}`],
 	rHead: ["Sell October, buy November.", "卖出十月，买入十一月。"],
@@ -202,6 +209,10 @@ function Scene({
 		/>
 	);
 	const text = T.body;
+	const costX = L.costX(
+		textWidth(t(copy.lessCost), text),
+		textWidth(t(copy.spot), text),
+	);
 	/** The second line of a roll's row: a phone sets it at body size. */
 	const rowSub = narrow ? T.body : T.small * 1.1;
 	const tick = { fontSize: L.tick };
@@ -512,24 +523,26 @@ function Scene({
 							22,
 							"end",
 						)}
-						{tag(
-							"g-long",
-							narrow ? SPOT - 2 : RANGE[1],
-							longLeg,
-							copy.long105,
-							"wt-halo",
-							-T.small * 1.2,
-							"end",
-						)}
-						{tag(
-							"g-short",
-							narrow ? SPOT - 2 : RANGE[1],
-							shortLeg110,
-							copy.short110,
-							"wt-halo",
-							T.small * 1.8,
-							"end",
-						)}
+						{!narrow &&
+							tag(
+								"g-long",
+								RANGE[1],
+								longLeg,
+								copy.long105,
+								"wt-halo",
+								-T.small * 1.2,
+								"end",
+							)}
+						{!narrow &&
+							tag(
+								"g-short",
+								RANGE[1],
+								shortLeg110,
+								copy.short110,
+								"wt-halo",
+								T.small * 1.8,
+								"end",
+							)}
 						<Word
 							name="g-spread"
 							x={L.left}
@@ -629,8 +642,8 @@ function Scene({
 
 			<Word
 				name="cost"
-				x={L.left + 12}
-				y={L.top + text * 1.2}
+				x={costX}
+				y={L.costY}
 				size={text}
 				anchor="start"
 				className="wt-film-type wt-film-dim"
@@ -912,19 +925,37 @@ function build(context: FilmContext) {
 	show([one("k-105"), one("k-110")], 21.45);
 	draw(line("long"), 23.2);
 	show(readouts[0], 23.7, "right");
-	tl.fromTo(one("g-long"), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 23.7);
+	if (!L.narrow) {
+		tl.fromTo(
+			one("g-long"),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.5 },
+			23.7,
+		);
+	}
 	// Each completed readout gets a full second before the next construction.
-	tl.to([line("long"), one("g-long")], { opacity: 0.3, duration: 0.4 }, 25.2);
+	tl.to(
+		[line("long"), ...(!L.narrow ? [one("g-long")] : [])],
+		{ opacity: 0.3, duration: 0.4 },
+		25.2,
+	);
 	draw(line("short"), 25.2);
 	show(readouts[1], 25.7, "right");
-	tl.fromTo(
-		one("g-short"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.5 },
-		25.7,
-	);
+	if (!L.narrow) {
+		tl.fromTo(
+			one("g-short"),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.5 },
+			25.7,
+		);
+	}
 	tl.to(
-		[line("long"), one("g-long"), line("short"), one("g-short")],
+		[
+			line("long"),
+			...(!L.narrow ? [one("g-long")] : []),
+			line("short"),
+			...(!L.narrow ? [one("g-short")] : []),
+		],
 		{ opacity: 0.3, duration: 0.4 },
 		27.2,
 	);
@@ -935,9 +966,9 @@ function build(context: FilmContext) {
 	hide(
 		[
 			line("long"),
-			one("g-long"),
+			...(!L.narrow ? [one("g-long")] : []),
 			line("short"),
-			one("g-short"),
+			...(!L.narrow ? [one("g-short")] : []),
 			one("spot-guide"),
 		],
 		29.3,
