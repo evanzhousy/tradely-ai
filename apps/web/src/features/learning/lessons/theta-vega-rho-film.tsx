@@ -199,7 +199,7 @@ const copy = {
 		`Compare: one vol point = ${price(VEGA, 3)}`,
 		`对比：一个波动率点 = ${price(VEGA, 3)}`,
 	],
-	sumHead: ["Back to the puzzle: add each part.", "回到开头：逐项相加。"],
+	sumHead: ["Now the puzzle: add each part.", "回到开头：逐项相加。"],
 	sumHeadShort: ["Back to the puzzle.", "回到开头：逐项相加。"],
 	sumAnswer: [
 		"Time and IV outweighed the move.",
