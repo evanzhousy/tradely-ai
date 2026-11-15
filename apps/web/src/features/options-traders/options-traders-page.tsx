@@ -21,6 +21,7 @@ import { savedProfiles, savedSnapshot } from "./saved-data";
 import {
 	FreshnessPanel,
 	OpenOptionTrades,
+	RemovalContact,
 	recordedDate,
 	useLatestSnapshot,
 } from "./snapshot-ui";
@@ -243,7 +244,7 @@ export function OptionsTradersPage() {
 				>
 					risk disclosure
 				</AppLink>
-				.
+				. <RemovalContact />
 			</p>
 		</main>
 	);

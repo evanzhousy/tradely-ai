@@ -102,6 +102,24 @@ export function FreshnessPanel({
 	);
 }
 
+const REMOVAL_EMAIL = "support@tradely.ai";
+
+/** Both directory pages name real people, so each says how to be taken off. */
+export function RemovalContact() {
+	return (
+		<>
+			To ask for a profile or post to be removed, email{" "}
+			<a
+				href={`mailto:${REMOVAL_EMAIL}`}
+				className="trader-link underline underline-offset-4"
+			>
+				{REMOVAL_EMAIL}
+			</a>
+			.
+		</>
+	);
+}
+
 export function OpenOptionTrades({
 	surface,
 	variant,

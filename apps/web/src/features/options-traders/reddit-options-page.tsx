@@ -45,6 +45,7 @@ import {
 	FreshnessPanel,
 	isDelayed,
 	OpenOptionTrades,
+	RemovalContact,
 	recordedDate,
 	useLatestSnapshot,
 } from "./snapshot-ui";
@@ -443,7 +444,7 @@ export function RedditOptionsPage() {
 				>
 					risk disclosure
 				</AppLink>
-				.
+				. <RemovalContact />
 			</p>
 		</main>
 	);

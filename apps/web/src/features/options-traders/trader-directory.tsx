@@ -399,6 +399,11 @@ export function TraderDirectory({
 						This recorded selection follows the profile and language filters; it
 						is not every post by these accounts.
 					</p>
+					<p className="max-w-3xl text-muted-foreground text-sm leading-relaxed">
+						Posts are shown as written. Some promote the author's paid rooms,
+						newsletters or trade alerts; Tradely has not reviewed or endorsed
+						any of them.
+					</p>
 				</div>
 				{featured.length > 0 ? (
 					<div className="flex flex-col gap-4">
