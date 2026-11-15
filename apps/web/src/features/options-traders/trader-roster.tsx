@@ -3,6 +3,7 @@ import { ArrowUpRightIcon } from "lucide-react";
 
 import {
 	formatCompact,
+	formatDate,
 	formatHandle,
 	languageLabel,
 	type PostSummary,
@@ -16,12 +17,23 @@ function TraderCard({
 	profile,
 	summary,
 	hidden,
+	followerRead,
 }: {
 	profile: TraderProfile;
 	summary?: PostSummary;
 	hidden: boolean;
+	followerRead?: string;
 }) {
 	const platform = platformOf(profile);
+	// A count read on another day than the page's says when, so an old number never passes for a new one.
+	const countDate =
+		profile.followersAsOf && profile.followersAsOf !== followerRead
+			? formatDate(profile.followersAsOf)
+			: null;
+	// A quiet account's usual pace is history, not what a reader should expect now.
+	const cadence = profile.cadence
+		? `${profile.activity === "Active" ? "Posts" : "Used to post"} ${profile.cadence.toLowerCase()}`
+		: null;
 	return (
 		<li
 			id={profileAnchor(profile)}
@@ -52,6 +64,9 @@ function TraderCard({
 							{formatCompact(profile.followers)}
 						</span>{" "}
 						{platform.audience}
+						{countDate ? (
+							<span className="block text-right">as of {countDate}</span>
+						) : null}
 					</span>
 				) : null}
 			</div>
@@ -98,12 +113,10 @@ function TraderCard({
 			) : null}
 
 			<p className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 text-muted-foreground text-xs">
-				{profile.cadence ? (
-					<span>Posts {profile.cadence.toLowerCase()}</span>
-				) : null}
+				{cadence ? <span>{cadence}</span> : null}
 				{summary ? (
 					<>
-						{profile.cadence ? <span aria-hidden="true">·</span> : null}
+						{cadence ? <span aria-hidden="true">·</span> : null}
 						<a
 							href={`#post-${summary.topPostId}`}
 							className="trader-link font-medium"
@@ -128,10 +141,12 @@ export function TraderRoster({
 	profiles,
 	visible,
 	summaries,
+	followerRead,
 }: {
 	profiles: readonly TraderProfile[];
 	visible: ReadonlySet<string>;
 	summaries: ReadonlyMap<string, PostSummary>;
+	followerRead?: string;
 }) {
 	return (
 		<ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -147,6 +162,7 @@ export function TraderRoster({
 								: undefined
 						}
 						hidden={!visible.has(anchor)}
+						followerRead={followerRead}
 					/>
 				);
 			})}

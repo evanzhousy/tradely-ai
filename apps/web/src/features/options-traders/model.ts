@@ -86,6 +86,32 @@ export type PostSnapshot = {
 /** The feed adds the trader list only when it came from Notion, so a copy of it is never a fallback. */
 export type LiveSnapshot = PostSnapshot & { profiles?: TraderProfile[] };
 
+/**
+ * Notion's list decides who is listed and how they are described and ranked, so an edit there shows
+ * on the next load. Pictures, and any follower count read more recently, come from the saved list:
+ * the weekly sync measures X followers but never writes them back to Notion.
+ */
+export function withLiveRoster(
+	saved: readonly TraderProfile[],
+	live: readonly TraderProfile[] | undefined,
+): readonly TraderProfile[] {
+	if (!live) return saved;
+	const key = (profile: TraderProfile) =>
+		`${profile.platform}:${profile.handle.toLowerCase()}`;
+	const savedByKey = new Map(saved.map((profile) => [key(profile), profile]));
+	return live.map((profile) => {
+		const known = savedByKey.get(key(profile));
+		if (!known) return profile;
+		const newerCount = known.followersAsOf > profile.followersAsOf;
+		return {
+			...profile,
+			avatar: known.avatar,
+			followers: newerCount ? known.followers : profile.followers,
+			followersAsOf: newerCount ? known.followersAsOf : profile.followersAsOf,
+		};
+	});
+}
+
 export type PostWithAuthor = SavedPost & { author: TraderProfile };
 
 export type DirectoryFilters = {

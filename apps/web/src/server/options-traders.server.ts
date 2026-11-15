@@ -36,6 +36,7 @@ const OPTIONS_TRADERS_SOURCE = "41891446-9b98-811c-9e45-000b4fb5fe3b";
 const READ_TIMEOUT_MS = 60_000;
 /** The same window and author cap the saved snapshot uses, so both look alike. */
 const WINDOW_DAYS = 21;
+const DAY_MS = 86_400_000;
 const MAX_POSTS_PER_AUTHOR = 3;
 
 const timestamp = z.iso.datetime({ offset: true });
@@ -179,9 +180,10 @@ export function createNotionReader(
 			throw new SourceUnavailable("partial", "invalid_source_times");
 		}
 
-		// Starts on a whole minute, as `Posted at` does, so the query and the check below agree on that minute's rows.
+		// The same 21 calendar days the saved snapshot keeps. Midnight UTC is a whole minute, as
+		// `Posted at` is, so the query and the check below agree on that minute's rows.
 		const from = new Date(
-			toMinute(through - WINDOW_DAYS * 24 * 60 * 60 * 1000) * 60_000,
+			Math.floor(through / DAY_MS) * DAY_MS - (WINDOW_DAYS - 1) * DAY_MS,
 		).toISOString();
 		const rows = await paginate(
 			`data_sources/${OPTIONS_IDEAS_SOURCE}/query?${fieldsQuery(Object.keys(PROPERTY_TYPES))}`,
@@ -348,8 +350,19 @@ export function buildLiveSnapshot(
 	saved: PostSnapshot,
 	read: NotionRead,
 	syncedAt: string,
+	listedHandles: ReadonlySet<string>,
 ): PostSnapshot {
-	const posts = mergeLivePosts(saved.posts, read.posts);
+	// A saved post leaves with its author's listing. Inside the window this read covered, Notion is
+	// the record: a saved post it no longer returns was removed there.
+	const readIds = new Set(read.posts.map((post) => post.id));
+	const readFrom = Date.parse(read.from);
+	const readThrough = Date.parse(read.coverageThrough);
+	const kept = saved.posts.filter((post) => {
+		if (!listedHandles.has(post.handle.toLowerCase())) return false;
+		const posted = Date.parse(post.postedAt);
+		return readIds.has(post.id) || posted < readFrom || posted > readThrough;
+	});
+	const posts = mergeLivePosts(kept, read.posts);
 	return {
 		version: 1,
 		digestWindow: {
@@ -565,15 +578,13 @@ export const optionsTradersFeedResponse = createSnapshotFeed<LiveSnapshot>({
 	refresh: async (token, lastGood, attemptedAt) => {
 		const signal = AbortSignal.timeout(READ_TIMEOUT_MS);
 		const roster = await readRoster(token, signal);
-		const read = await createNotionReader(token)(
-			reviewedHandlesOf(roster ?? savedProfiles),
-			signal,
-		);
+		const listed = reviewedHandlesOf(roster ?? savedProfiles);
+		const read = await createNotionReader(token)(listed, signal);
 		const known = lastGood.freshness.sourceUpdatedAt;
 		if (known && Date.parse(read.sourceUpdatedAt) < Date.parse(known)) {
 			throw new SourceUnavailable("partial", "source_regressed");
 		}
-		const snapshot = buildLiveSnapshot(lastGood, read, attemptedAt);
+		const snapshot = buildLiveSnapshot(lastGood, read, attemptedAt, listed);
 		return roster ? { ...snapshot, profiles: roster } : snapshot;
 	},
 });

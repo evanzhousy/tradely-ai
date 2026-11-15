@@ -70,10 +70,12 @@ export function TraderDirectory({
 	profiles,
 	posts,
 	windowLabel,
+	followerRead,
 }: {
 	profiles: readonly TraderProfile[];
 	posts: readonly PostWithAuthor[];
 	windowLabel: string;
+	followerRead?: string;
 }) {
 	const id = useId();
 	const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -213,7 +215,13 @@ export function TraderDirectory({
 									placeholder="Name, handle or topic"
 									value={filters.query}
 									onChange={(event) =>
-										changeFilters({ ...filters, query: event.target.value })
+										changeFilters({
+											...filters,
+											query: event.target.value,
+											// Search, topic and activity reach the whole directory, as platform and
+											// language do: most matches sit outside the Top 30.
+											view: event.target.value ? "all" : filters.view,
+										})
 									}
 								/>
 							</Field>
@@ -265,7 +273,13 @@ export function TraderDirectory({
 								id={`${id}-topic`}
 								label="Topic"
 								value={filters.topic}
-								onChange={(topic) => changeFilters({ ...filters, topic })}
+								onChange={(topic) =>
+									changeFilters({
+										...filters,
+										topic,
+										view: topic === "all" ? filters.view : "all",
+									})
+								}
 							>
 								<NativeSelectOption value="all">All topics</NativeSelectOption>
 								{topics.map((topic) => (
@@ -278,7 +292,13 @@ export function TraderDirectory({
 								id={`${id}-activity`}
 								label="Activity"
 								value={filters.activity}
-								onChange={(activity) => changeFilters({ ...filters, activity })}
+								onChange={(activity) =>
+									changeFilters({
+										...filters,
+										activity,
+										view: activity === "all" ? filters.view : "all",
+									})
+								}
 							>
 								<NativeSelectOption value="all">
 									Any activity
@@ -329,6 +349,7 @@ export function TraderDirectory({
 						profiles={profiles}
 						visible={visible}
 						summaries={summaries}
+						followerRead={followerRead}
 					/>
 					{selected.profiles.length === 0 ? (
 						<Empty>
