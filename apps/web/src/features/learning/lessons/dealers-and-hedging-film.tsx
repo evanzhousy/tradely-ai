@@ -580,7 +580,7 @@ function Scene({
 							? L.side.calc + L.side.calcSize * 1.35 + L.expressionSize * 1.55
 							: L.side.calc
 					}
-					size={narrow ? L.expressionSize : T.small}
+					size={narrow ? T.body : T.small}
 					anchor="start"
 					className="wt-film-type wt-film-dim"
 				>
