@@ -112,7 +112,7 @@ const copy = {
 		`它重放 ${BLOCK} 张大单后的即时决策。`,
 	],
 	qBig: ["Which price may it use?", "它可以用哪个价格？"],
-	cHead: ["Monday's facts, in order of arrival.", "周一的事实，按到达顺序。"],
+	cHead: ["Monday's facts, in arrival order.", "周一的事实，按到达顺序。"],
 	c2Head: [
 		`At ${openingDecisionTime[0]} it may use only ${usd(REPORTED)}.`,
 		`${openingDecisionTime[1]} 时只能用 ${usd(REPORTED)}。`,
