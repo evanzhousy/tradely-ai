@@ -50,7 +50,7 @@ import {
  * still. Then the calls' +$1,050 as sixteen contracts in two lots, and a question: sold
  * at the bid, is it still +$1,050? Six sold oldest first leave +$330 realized and +$645
  * unrealized, and the two become +$975: the bid, not the mid. Last, Ben's ten short
- * calls: $4,100 received, and no floor.
+ * calls: $4,100 received, and a loss with no limit as ALFA rises.
  *
  *   open      0–4        "P&L"
  *   question  4–10.4     $29,960 → $36,159.60: how much did you earn?
@@ -190,7 +190,14 @@ const copy = {
 		`不：看涨价格盈亏 ${signed(fifo.realized + fifo.unrealized)}，未扣费。`,
 	],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
-	fifo: ["FIFO: sell the oldest 6", "先进先出：卖出最早的 6 张"],
+	fifo: [
+		"First in, first out (FIFO): sell the oldest 6",
+		"先进先出：卖出最早的 6 张",
+	],
+	fifoPhone: [
+		"First in, first out: sell the oldest 6",
+		"先进先出：卖出最早的 6 张",
+	],
 	saleInput: [`sale: bid ${price(SALE)}`, `卖出：买价 ${price(SALE)}`],
 	markInput: [`mark: mid ${price(MARK)}`, `估值：中间价 ${price(MARK)}`],
 	heldFormula: [
@@ -206,10 +213,10 @@ const copy = {
 	],
 	benHeadShort: [`Ben wrote ${BEN} calls.`, `Ben 卖出 ${BEN} 张。`],
 	expiryHead: [
-		"At expiry, his loss has no floor.",
+		"As ALFA rises, his loss has no limit.",
 		"到期时，他的亏损没有上限。",
 	],
-	expiryHeadShort: ["At expiry: no floor.", "到期：亏损无上限。"],
+	expiryHeadShort: ["His loss has no limit.", "到期：亏损无上限。"],
 	benAxis: [
 		`Ben · short ${BEN} Oct 18 100 calls`,
 		`Ben · 空头 ${BEN} 张 10月18日 100 看涨`,
@@ -438,6 +445,7 @@ function Scene({
 							y={L.by(tick) + 4}
 							textAnchor="end"
 							className="wt-small"
+							style={narrow ? { fontSize: T.body } : undefined}
 						>
 							{tick === 0 ? "$0" : `−$${-tick / 1000}k`}
 						</text>
@@ -450,6 +458,7 @@ function Scene({
 						y={L.bBottom + 16}
 						textAnchor={tick === 140 ? "end" : "middle"}
 						className="wt-small"
+						style={narrow ? { fontSize: T.body } : undefined}
 					>
 						{`$${tick}`}
 					</text>
@@ -469,6 +478,7 @@ function Scene({
 					y={L.by(RECEIVED / 100) - 8}
 					textAnchor="end"
 					className={`wt-small wt-halo ${toneClass.up}`}
+					style={narrow ? { fontSize: T.body } : undefined}
 				>
 					{t(copy.received)}
 				</text>
@@ -501,6 +511,7 @@ function Scene({
 					y={markY + 20}
 					textAnchor={narrow ? "start" : "end"}
 					className="wt-halo wt-loss wt-marker-label"
+					style={narrow ? { fontSize: T.body } : undefined}
 				>
 					{t(copy.benMark)}
 				</text>
@@ -785,7 +796,12 @@ function Scene({
 									className="wt-film-bar"
 									data-tone={l === 0 ? "total" : "neutral"}
 								/>
-								<text x={x + 18} y={y} className="wt-small">
+								<text
+									x={x + 18}
+									y={y}
+									className="wt-small"
+									style={narrow ? { fontSize: T.body } : undefined}
+								>
 									{`${narrow ? "" : `${lot.time} · `}${lot.quantity} @ ${price(lot.price)}`}
 								</text>
 							</g>
@@ -800,7 +816,7 @@ function Scene({
 					className="wt-film-type wt-film-accent"
 					style={{ fontSize: T.body }}
 				>
-					{t(copy.fifo)}
+					{narrow ? t(copy.fifoPhone) : t(copy.fifo)}
 				</text>
 				{([copy.saleInput, copy.markInput] as const).map((input, i) => (
 					<Lines
