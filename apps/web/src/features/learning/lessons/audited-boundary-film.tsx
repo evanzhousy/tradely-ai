@@ -310,12 +310,28 @@ function Scene({
 	);
 	const text = L.chartSize;
 	const claimSize = (i: number) => (i === STORY_CARD ? L.storySize : text);
+	const claimTextSize = (i: number) =>
+		narrow && i !== STORY_CARD ? T.body : claimSize(i);
 	const claimText = (i: number) =>
 		t(
 			narrow || (i === STORY_CARD && locale === "en")
 				? claims[i].short
 				: claims[i].text,
 		);
+	const claimTagSize = (i: number) => {
+		if (!narrow || i === UNKNOWN_CARD) return T.small * 0.95;
+		const textX = L.claimX + 12 + (i === SPREAD_CARD ? 20 : 0);
+		const textWidthAtSize = textWidth(
+			claimText(i),
+			claimTextSize(i) * (locale === "zh" ? 0.95 : 0.86),
+		);
+		const tagRight = L.claimX + L.claimW - 12;
+		const tagWidth =
+			textWidth(t(copy[claims[i].evidence]).toUpperCase(), T.body) * 1.2;
+		return tagRight - tagWidth - (textX + textWidthAtSize) >= 10
+			? T.body
+			: T.small * 0.95;
+	};
 	const id = useId().replace(/:/g, "");
 	const leaderRow = SERIES.indexOf(LEADER);
 	const answerSize = L.answerSize;
@@ -473,7 +489,7 @@ function Scene({
 							x={margin}
 							y={L.barRowY(i) + L.barH / 2 + text * 0.36}
 							className="wt-film-num"
-							style={{ fontSize: text }}
+							style={{ fontSize: narrow ? T.body : text }}
 						>
 							{row.strike}
 						</text>
@@ -517,7 +533,7 @@ function Scene({
 									x={L.barX + Math.max(2, (row.volume / MAX) * L.barMax) + 8}
 									y={L.barRowY(i) + L.barH / 2 + text * 0.36}
 									className="wt-film-num"
-									style={{ fontSize: text }}
+									style={{ fontSize: narrow ? T.body : text }}
 								>
 									{count(row.volume)}
 								</text>
@@ -584,7 +600,7 @@ function Scene({
 							x={L.claimX + 12 + (i === SPREAD_CARD ? 20 : 0)}
 							y={L.claimY(i) + L.claimH(i) / 2 + claimSize(i) * 0.36}
 							className={`wt-film-type ${claim.evidence === "unknown" ? "wt-film-dim" : ""}`}
-							style={{ fontSize: claimSize(i) }}
+							style={{ fontSize: claimTextSize(i) }}
 						>
 							{claimText(i)}
 						</text>
@@ -620,7 +636,7 @@ function Scene({
 						textAnchor={i === UNKNOWN_CARD ? "start" : "end"}
 						className={`wt-film-tag ${tone[claim.evidence]}`}
 						style={{
-							fontSize: T.small * 0.95,
+							fontSize: claimTagSize(i),
 							fill:
 								claim.evidence === "observed" || claim.evidence === "calculated"
 									? "var(--tone-ink)"
@@ -899,6 +915,9 @@ function build(context: FilmContext) {
 	);
 	const fieldRows = fields.map((_, i) => one(`field-${i}`));
 	const strikeRows = SERIES.map((_, i) => one(`strike-${i}`));
+	const nonHeroStrikeRows = strikeRows.filter(
+		(_, i) => i !== SERIES.indexOf(LEADER),
+	);
 	const strikeLabels = SERIES.map((_, i) => one(`strike-label-${i}`));
 	const strikeData = SERIES.map((_, i) => one(`strike-data-${i}`));
 	const claimRows = claims.map((_, i) => one(`claim-${i}`));
@@ -1093,6 +1112,8 @@ function build(context: FilmContext) {
 		{ opacity: 0.65, duration: 0.45 },
 		27.95,
 	);
+	tl.to(nonHeroStrikeRows, { opacity: 0.35, duration: 0.45 }, 27.95);
+	tl.to(nonHeroStrikeRows, { opacity: 1, duration: 0.3 }, 30.05);
 	d.lock(lockClaim, 27.95, { around: claimRows[2], pad: L.narrow ? 4 : 6 });
 	tl.addLabel("hero-lock", 27.95);
 	show(heads[2], 27.95);
