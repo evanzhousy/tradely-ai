@@ -146,7 +146,7 @@ const copy = {
 	],
 	american: ["American", "美式"],
 	european: ["European", "欧式"],
-	pinHead: ["At expiry: a $100-strike call.", "到期：$100 行权价看涨。"],
+	pinHead: ["Expiry: a $100-strike call.", "到期：$100 行权价看涨。"],
 	autoHead: ["Broker threshold sets auto-exercise.", "券商门槛决定自动行权。"],
 	holderClose: ["holder · Oct 18 close", "持有人 · 10月18日收盘"],
 	writerClose: ["ALFA · close", "ALFA · 收盘"],
