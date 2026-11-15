@@ -148,9 +148,9 @@ const copy = {
 		`买 ${count(BIG)} 股：逐档往上买。`,
 	],
 	diff: ["Last trade is neither.", "最新成交不是报价。"],
-	asks: ["asks · what sellers will take", "卖价 · 卖方"],
+	asks: ["asks · sellers' prices", "卖价 · 卖方"],
 	asksShort: ["asks · sellers' prices", "卖价 · 卖方"],
-	bids: ["bids · what buyers will pay", "买价 · 买方"],
+	bids: ["bids · buyers' prices", "买价 · 买方"],
 	bidsShort: ["bids · buyers' prices", "买价 · 买方"],
 	last: ["last", "最新"],
 	fill: ["10 shares · you pay", "10 股 · 你付出"],
@@ -1019,8 +1019,7 @@ function build(context: FilmContext) {
 	hide([heads[1], ...flat("slice")], 16.55);
 	show(heads[2], 16.9);
 	// Bring the full book scaffold in together, then give it a full second before the rows.
-	fadeIn([one("asks-tag"), one("bids-tag")], L.narrow ? 16.55 : 16.85);
-	fadeIn([one("spread"), one("last")], 16.55);
+	fadeIn([one("asks-tag"), one("bids-tag"), one("spread"), one("last")], 16.55);
 	fadeIn(levels, 17.85);
 	// Buy 10, then sell 10: each highlighted level explains the settled payment.
 	// The trades stay done: the levels keep what they lost.
