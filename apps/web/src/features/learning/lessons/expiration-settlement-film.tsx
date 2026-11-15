@@ -13,6 +13,7 @@ import {
 	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	ALFA_AT,
 	AUTO_EXERCISE_THRESHOLD,
@@ -49,7 +50,7 @@ import {
  *   window    25.3–29.7  American trading days; European at expiry
  *   pin       29.7–35.05  the close minus strike makes a bracketed expiry value
  *   writer    35.05–40.6 settled close/after-hours pair, exercise, then Monday short shares
- *   claim     40.6–45.0 a few cents can mean shares; close before expiry if you don't want them
+ *   claim     40.6–45.0 a few cents can mean shares; closing before expiry avoids the shares
  *   next      45.0–47.5 Next: the module checkpoint
  */
 
@@ -75,11 +76,20 @@ function layout(width: number) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
 	const barTop = H * (narrow ? 0.34 : 0.32);
-	const barBottom = H * (narrow ? 0.72 : 0.74);
+	const barBottom = H * (narrow ? 0.64 : 0.74);
 	const top = OCT4.bid;
 	const barH = (cents: number) => (cents / top) * (barBottom - barTop);
 	const barX = (i: number) =>
 		width / 2 + (i === 0 ? -1 : 1) * room * (narrow ? 0.2 : 0.16);
+	const amountWidth = textWidth(
+		`${usd(OCT4.bid * 100, 0)} a contract`,
+		frame.type.body,
+	);
+	const amountShift = narrow
+		? Math.max(0, (amountWidth + 8 - (barX(1) - barX(0))) / 2)
+		: 0;
+	const amountX = (i: number) =>
+		barX(i) + (i === 0 ? -amountShift : amountShift);
 	const barW = Math.min(room * 0.22, 120);
 	const capY = (time: number) => barBottom - barH(OCT4.intrinsic + time / 2);
 	const capLabelY = (time: number) =>
@@ -98,8 +108,11 @@ function layout(width: number) {
 		barH,
 		barX,
 		barW,
+		dateY: narrow ? H * 0.82 : H * 0.91,
+		basisY: narrow ? H * 0.92 : H * 0.97,
 		capLabelY,
 		capLink,
+		amountX,
 		dayX: (day: number) => margin + (day / WINDOW_DAYS) * room,
 		dayY: (row: number) => H * (row === 0 ? 0.39 : 0.64),
 		priceX: width * 0.64,
@@ -122,6 +135,14 @@ const copy = {
 	qTagShort: ["Oct 4 · 95 call · ALFA $102", "10月4日 · 95 看涨 · ALFA $102"],
 	sell: ["sell at the bid", "按买价卖出"],
 	exercise: ["exercise", "行权"],
+	sellContract: [
+		`${usd(OCT4.bid * 100, 0)} a contract`,
+		`每张 ${usd(OCT4.bid * 100, 0)}`,
+	],
+	exerciseContract: [
+		`${usd(OCT4.intrinsic * 100, 0)} a contract`,
+		`每张 ${usd(OCT4.intrinsic * 100, 0)}`,
+	],
 	qLine: ["Which gets you more?", "哪个拿到的更多？"],
 	exitHead: ["Exercise gives up the time value.", "行权会放弃时间价值。"],
 	exitHeadShort: ["Exercise drops the time value.", "行权丢掉时间价值。"],
@@ -156,8 +177,8 @@ const copy = {
 	modelThreshold: ["model threshold", "模型门槛"],
 	holderExercises: ["Holder exercises", "持有人选择行权"],
 	writerHead: [
-		"A writer can be assigned after hours.",
-		"义务方在盘后也可能被指派。",
+		"After the close, a holder can still exercise.",
+		"收盘后，持有人仍可以行权。",
 	],
 	strike: ["strike $100", "行权价 $100"],
 	sharesUnit: ["shares", "股"],
@@ -168,8 +189,8 @@ const copy = {
 	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
 	claimBig: ["A few cents can mean shares.", "几美分也能变成股票。"],
 	claimSub: [
-		"Don't want shares? Close before expiry.",
-		"不想要股票？到期前平仓。",
+		"Closing before expiry avoids the shares.",
+		"到期前平仓，就不会拿到股票。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["contracts and money, on a new day", "在新的一天里运用合约与金额"],
@@ -334,6 +355,24 @@ function Scene({
 				))}
 				{(
 					[
+						["amount-sell", 0, copy.sellContract],
+						["amount-ex", 1, copy.exerciseContract],
+					] as const
+				).map(([name, i, label]) => (
+					<text
+						key={name}
+						data-f={name}
+						x={L.amountX(i)}
+						y={L.barBottom + text * 1.6 + T.body * 1.25}
+						textAnchor="middle"
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: T.body }}
+					>
+						{t(label)}
+					</text>
+				))}
+				{(
+					[
 						["v-sell", 0, usd(OCT4.bid), OCT4.bid],
 						["v-ex", 1, usd(OCT4.intrinsic), OCT4.intrinsic],
 					] as const
@@ -362,7 +401,7 @@ function Scene({
 				<Word
 					name="exit-basis"
 					x={W / 2}
-					y={H * 0.88}
+					y={L.basisY}
 					size={T.small}
 					className="wt-film-tag"
 				>
@@ -426,7 +465,7 @@ function Scene({
 						key={name}
 						data-f={name}
 						x={W / 2}
-						y={L.barBottom + text * 3.4}
+						y={L.dateY}
 						textAnchor="middle"
 						className="wt-film-tag"
 						style={{ fontSize: T.small }}
@@ -830,7 +869,7 @@ function Scene({
 				<Word
 					name="writer-short"
 					x={W / 2}
-					y={H * 0.88}
+					y={narrow ? H * 0.92 : H * 0.88}
 					size={T.title}
 					className={`wt-film-num ${toneClass.focus}`}
 				>
@@ -961,10 +1000,13 @@ function build(context: FilmContext) {
 	);
 	show([one("d-oct4"), one("exit-basis")], 9.1);
 	show([one("l-sell"), one("l-ex")], 9.2);
+	show([one("amount-sell"), one("amount-ex")], 9.2);
 	d.carry(g("q-sell-num"), g("v-sell"), 10.7, { duration: 0.4, arc: "y" });
 	d.carry(g("q-ex-num"), g("v-ex"), 10.8, { duration: 0.4, arc: "y" });
 	const cap = one("b-sell-tv");
 	const sale = one("v-sell");
+	const sellAmount = one("amount-sell");
+	const exerciseAmount = one("amount-ex");
 	const timeLabel = one("component-tv-amount");
 	const timeLink = one("component-tv-link");
 	// The zero-height authored cap is prepared while its whole bar is still hidden.
@@ -980,7 +1022,14 @@ function build(context: FilmContext) {
 		11.2,
 	);
 	fade([one("b-sell"), one("b-ex")], 11.2);
-	const comparisonMarks = [cap, sale, timeLabel, timeLink];
+	const comparisonMarks = [
+		cap,
+		sale,
+		timeLabel,
+		timeLink,
+		sellAmount,
+		exerciseAmount,
+	];
 	const comparisonAttributes = (time: number) => {
 		const attributes = (_: number, target: Element) => {
 			if (target === cap)
@@ -1007,6 +1056,32 @@ function build(context: FilmContext) {
 	);
 	tl.set(comparisonMarks, { attr: comparisonAttributes(OCT18.time) }, 13.2);
 	tl.set(sale, { textContent: usd(OCT18.bid) }, 13.2);
+	tl.set(
+		sellAmount,
+		{
+			textContent: pick(
+				[
+					`${usd(OCT18.bid * 100, 0)} a contract`,
+					`每张 ${usd(OCT18.bid * 100, 0)}`,
+				],
+				context.locale,
+			),
+		},
+		13.2,
+	);
+	tl.set(
+		exerciseAmount,
+		{
+			textContent: pick(
+				[
+					`${usd(OCT18.intrinsic * 100, 0)} a contract`,
+					`每张 ${usd(OCT18.intrinsic * 100, 0)}`,
+				],
+				context.locale,
+			),
+		},
+		13.2,
+	);
 	tl.set(
 		timeLabel,
 		{
@@ -1112,8 +1187,8 @@ function build(context: FilmContext) {
 export const expirationSettlementFilm: Film = {
 	id: "expiration-settlement",
 	label: [
-		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at ${usd(ALFA_AT)}, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement of the exercised 95 call in ${copy.shares[0]} shares for ${copy.cash[0]}, or in cash for IDX 500, ${usd(PAYS, 0)} paid by the writer to the holder with no shares delivered, at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; at ${usd(HOLDER_CLOSE * 100)}, the ${usd(CALL_100.strike * 100, 0)} call is ${count(HOLDER_MONEYNESS_CENTS)} cents in the money, above the modeled ${usd(AUTO_EXERCISE_THRESHOLD * 100)} trigger. If the broker threshold is met and no opt-out is sent, ${HOLDER_OUTCOME.exercised ? `automatic exercise delivers ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due Monday` : "it is not exercised automatically"}; a separate writer's call closes at ${usd(WRITER_CLOSE * 100)} and ALFA trades at ${usd(WRITER_AFTER * 100)} after hours`,
-		`到期短片：10月4日 ALFA 为 ${usd(ALFA_AT)}，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：行权的 95 看涨以 ${copy.cash[1]} 交收 ${copy.shares[1]}，IDX 500 以现金结算，由义务方向持有人支付 ${usd(PAYS, 0)}、不交收股票，按官方的 ${count(INDEX_SETTLES)} 而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；${usd(HOLDER_CLOSE * 100)} 收盘时，${usd(CALL_100.strike * 100, 0)} 看涨实值 ${count(HOLDER_MONEYNESS_CENTS)} 美分，高于模型 ${usd(AUTO_EXERCISE_THRESHOLD * 100)} 触发值。若券商门槛也达成且未发出放弃指示，${HOLDER_OUTCOME.exercised ? `期权会自动行权，周一持有 ${count(CALL_100_DELIVERY.shares)} 股并应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}` : "期权不会自动行权"}；另一位义务方的看涨收于 ${usd(WRITER_CLOSE * 100)}，ALFA 盘后升至 ${usd(WRITER_AFTER * 100)}，持有人行权后可能导致周一被指派`,
+		`Expiration, as a short film: on Oct 4 the 95 call bids ${usd(OCT4.bid)} with ALFA at ${usd(ALFA_AT)}, where selling captures $7.00 of intrinsic value and $0.40 of time value and exercising only the $7.00, until Oct 18 when they are equal; settlement of the exercised 95 call in ${copy.shares[0]} shares for ${copy.cash[0]}, or in cash for IDX 500, ${usd(PAYS, 0)} paid by the writer to the holder with no shares delivered, at the official ${count(INDEX_SETTLES)} rather than Thursday's ${count(INDEX_LAST)}; American exercise on any trading day against European only at expiry; at ${usd(HOLDER_CLOSE * 100)}, the ${usd(CALL_100.strike * 100, 0)} call is ${count(HOLDER_MONEYNESS_CENTS)} cents in the money, above the modeled ${usd(AUTO_EXERCISE_THRESHOLD * 100)} trigger. If the broker threshold is met and no opt-out is sent, ${HOLDER_OUTCOME.exercised ? `automatic exercise delivers ${count(CALL_100_DELIVERY.shares)} shares with ${usd(CALL_100_DELIVERY.cashCents, 0)} due Monday` : "it is not exercised automatically"}; a separate writer's call closes at ${usd(WRITER_CLOSE * 100)} and ALFA trades at ${usd(WRITER_AFTER * 100)} after hours, so the holder can still exercise after the close`,
+		`到期短片：10月4日 ALFA 为 ${usd(ALFA_AT)}，95 看涨买价 ${usd(OCT4.bid)}，卖出拿到 $7.00 内在价值加 $0.40 时间价值，行权只拿 $7.00，到 10月18日 两者相等；结算：行权的 95 看涨以 ${copy.cash[1]} 交收 ${copy.shares[1]}，IDX 500 以现金结算，由义务方向持有人支付 ${usd(PAYS, 0)}、不交收股票，按官方的 ${count(INDEX_SETTLES)} 而不是周四的 ${count(INDEX_LAST)}；美式任一交易日都能行权，欧式只在到期日；${usd(HOLDER_CLOSE * 100)} 收盘时，${usd(CALL_100.strike * 100, 0)} 看涨实值 ${count(HOLDER_MONEYNESS_CENTS)} 美分，高于模型 ${usd(AUTO_EXERCISE_THRESHOLD * 100)} 触发值。若券商门槛也达成且未发出放弃指示，${HOLDER_OUTCOME.exercised ? `期权会自动行权，周一持有 ${count(CALL_100_DELIVERY.shares)} 股并应付 ${usd(CALL_100_DELIVERY.cashCents, 0)}` : "期权不会自动行权"}；另一位义务方的看涨收于 ${usd(WRITER_CLOSE * 100)}，ALFA 盘后升至 ${usd(WRITER_AFTER * 100)}，因此收盘后持有人仍可以行权`,
 	],
 	stage: "dark",
 	shots: [
