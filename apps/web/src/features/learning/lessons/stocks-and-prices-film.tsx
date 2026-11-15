@@ -148,8 +148,10 @@ const copy = {
 		`买 ${count(BIG)} 股：逐档往上买。`,
 	],
 	diff: ["Last trade is neither.", "最新成交不是报价。"],
-	asks: ["asks · sellers", "卖价 · 卖方"],
-	bids: ["bids · buyers", "买价 · 买方"],
+	asks: ["asks · what sellers will take", "卖价 · 卖方"],
+	asksShort: ["asks · sellers' prices", "卖价 · 卖方"],
+	bids: ["bids · what buyers will pay", "买价 · 买方"],
+	bidsShort: ["bids · buyers' prices", "买价 · 买方"],
 	last: ["last", "最新"],
 	fill: ["10 shares · you pay", "10 股 · 你付出"],
 	fillBig: ["1,000 shares · you pay", "1,000 股 · 你付出"],
@@ -163,23 +165,24 @@ const copy = {
 	avg: ["average", "均价"],
 	avgShort: ["avg", "均价"],
 	kindsHead: [
-		"Stock, ETF, index: how options settle.",
+		"Stock, ETF, index: what options deliver.",
 		"股票、ETF、指数：期权如何交割？",
 	],
 	kindsHeadShort: [
-		"Stock, ETF, index: how options settle.",
+		"Stock, ETF, index: what options deliver.",
 		"股票、ETF、指数：期权如何交割？",
 	],
 	buyableBoth: ["Yes, both", "两者均可"],
 	indexNumber: ["a number", "一个数"],
+	etfFund: ["a fund", "一只基金"],
 	rowLabels: {
 		buy: ["buy it?", "能买吗"],
-		settle: ["options settle in", "期权交割"],
+		settle: ["an option delivers", "期权交割"],
 	},
 	/** On a phone the row labels have 64 px beside the columns. */
 	rowLabelsShort: {
 		buy: ["buy it?", "能买吗"],
-		settle: ["settles in", "交割"],
+		settle: ["delivers", "交割"],
 	},
 	claimBig: [
 		"Trades execute at quotes, not last prices.",
@@ -214,9 +217,13 @@ function Scene({
 		/>
 	);
 	const rowText = narrow ? T.small * 1.15 : T.body;
+	const bookTagText = T.small;
 	const lastY = narrow
 		? L.askY(0) - T.small * 0.9
 		: L.spreadY + L.rowStep * 0.2 - 5;
+	const asksText = t(narrow ? copy.asksShort : copy.asks).toUpperCase();
+	const bidsText = t(narrow ? copy.bidsShort : copy.bids).toUpperCase();
+	const lastText = `${t(copy.last)} ${usd(alfaStockBook.last)}`;
 	/** A phone's after-beat: beside the bids, the free space nearest the hero. */
 	const phoneVsY = L.bidY(0) + T.small;
 	const level = (
@@ -412,11 +419,11 @@ function Scene({
 				<text
 					data-f="asks-tag"
 					x={L.bookX}
-					y={L.askY(0) - T.small * 0.9}
+					y={L.askY(0) - bookTagText * 0.9}
 					className="wt-film-tag"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: bookTagText }}
 				>
-					{t(copy.asks).toUpperCase()}
+					{asksText}
 				</text>
 				{ASKS.map((at, i) => level("ask", i, at))}
 				<path
@@ -434,17 +441,17 @@ function Scene({
 					className="wt-film-num wt-film-dim"
 					style={{ fontSize: T.small }}
 				>
-					{`${t(copy.last)} ${usd(alfaStockBook.last)}`}
+					{lastText}
 				</text>
 				{BIDS.map((at, i) => level("bid", i, at))}
 				<text
 					data-f="bids-tag"
 					x={L.bookX}
-					y={L.bidY(BIDS.length - 1) + L.rowH + T.small * 1.4}
+					y={L.bidY(BIDS.length - 1) + L.rowH + bookTagText * 1.4}
 					className="wt-film-tag"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: bookTagText }}
 				>
-					{t(copy.bids).toUpperCase()}
+					{bidsText}
 				</text>
 			</g>
 			<g data-f="panel">
@@ -669,6 +676,17 @@ function Scene({
 							>
 								{t(copy.indexNumber).toUpperCase()}
 							</text>
+						) : kind === "etf" ? (
+							<text
+								data-f="etf-note"
+								x={L.colX(i) + L.colW / 2}
+								y={H * 0.27 + T.small * 2.2 + T.head * 1.5 + T.small * 1.6}
+								textAnchor="middle"
+								className="wt-film-tag"
+								style={{ fontSize: T.small }}
+							>
+								{t(copy.etfFund).toUpperCase()}
+							</text>
 						) : null}
 						{ROWS.map((row, r) =>
 							row === "buy" && kind !== "index" ? null : (
@@ -693,7 +711,7 @@ function Scene({
 						x={margin}
 						y={H * (0.52 + r * 0.13)}
 						className="wt-film-type wt-film-dim"
-						style={{ fontSize: narrow ? T.small : T.body }}
+						style={{ fontSize: T.body }}
 					>
 						{t(narrow ? copy.rowLabelsShort[row] : copy.rowLabels[row])}
 					</text>
@@ -1001,7 +1019,8 @@ function build(context: FilmContext) {
 	hide([heads[1], ...flat("slice")], 16.55);
 	show(heads[2], 16.9);
 	// Bring the full book scaffold in together, then give it a full second before the rows.
-	fadeIn([one("asks-tag"), one("bids-tag"), one("spread"), one("last")], 16.55);
+	fadeIn([one("asks-tag"), one("bids-tag")], L.narrow ? 16.55 : 16.85);
+	fadeIn([one("spread"), one("last")], 16.55);
 	fadeIn(levels, 17.85);
 	// Buy 10, then sell 10: each highlighted level explains the settled payment.
 	// The trades stay done: the levels keep what they lost.
@@ -1255,7 +1274,7 @@ function build(context: FilmContext) {
 export const stocksAndPricesFilm: Film = {
 	id: "stocks-and-prices",
 	label: [
-		`Stocks and prices, as a short film: ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an ETF and an index, the last a number you can't buy whose options settle in cash`,
+		`Stocks and prices, as a short film: ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an ETF, a fund, and an index, the last a number you can't buy whose options deliver cash`,
 		`股票与价格短片：ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 ${MINE} 股就多 $${MINE}；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price(BUY_BIG.notional / BUY_BIG.filled)}；以及股票、ETF 和指数，指数是一个不能买入的数，它的期权以现金结算`,
 	],
 	stage: "dark",
