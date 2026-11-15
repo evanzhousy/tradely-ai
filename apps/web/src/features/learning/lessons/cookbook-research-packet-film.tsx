@@ -114,7 +114,7 @@ const copy = {
 	],
 	qBig: ["Would someone else get the same?", "别人重跑会得到同样的数吗？"],
 	pHead: [
-		"One row per series, traced to trades.",
+		"A row per series, traced to trades.",
 		"每个序列一行，可追溯到成交。",
 	],
 	p2Head: [
@@ -142,7 +142,7 @@ const copy = {
 		`+${dollars(TUESDAY - MONDAY)} · R5：周一数据延迟`,
 	],
 	fHead: ["A reader reruns it from its fields.", "读者按它的字段重跑。"],
-	f2Head: ["Drop a field, and the number breaks.", "少一个字段，数字就错了。"],
+	f2Head: ["Drop one: the number breaks.", "少一个字段，数字就错了。"],
 	reader: ["a reader's rerun", "读者重跑"],
 	lHead: ["Save each rerun as its own record.", "每次重跑另存一条记录。"],
 	l2Head: ["A new method is a new question.", "新方法就是新问题。"],
