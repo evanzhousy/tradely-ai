@@ -231,8 +231,8 @@ const copy = {
 	],
 
 	sharesDue: [
-		`${SHARES} shares · ${dollars(BETWEEN.due)}`,
-		`${SHARES} 股 · ${dollars(BETWEEN.due)}`,
+		`buy ${SHARES} shares · pay ${dollars(BETWEEN.due)}`,
+		`买入 ${SHARES} 股 · 付 ${dollars(BETWEEN.due)}`,
 	],
 	closeNote: [
 		"So many close the spread before expiry.",
