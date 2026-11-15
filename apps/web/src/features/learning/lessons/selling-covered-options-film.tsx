@@ -3,6 +3,7 @@ import {
 	type Copy,
 	dayLabel,
 	expiries,
+	percent,
 	pick,
 	signedUsd,
 	usd,
@@ -29,6 +30,7 @@ import {
 	CALL_BID,
 	CALL_PREMIUM,
 	CASH,
+	CASH_SHARE,
 	COVERED_BEST,
 	COVERED_CAP,
 	COVERED_EVEN,
@@ -54,16 +56,16 @@ import {
  * 18 95 put at its $2.05 bid with $9,500 set aside: assigned, 100 shares cost a net $92.95. On
  * the chart the put's line keeps +$205 above $95 and falls all the way to $0; the hero is its
  * worst case, −$9,295, locked as the pen reaches ALFA $0, then the $9,500 it ties up of a
- * $10,000 account, and the +$205 it can keep. Last, both can be assigned on any of the 25
- * trading days to Oct 18, likelier in the money with little time value left; only buying the
- * option back rules that out.
+ * $10,000 account (95%), and the +$205 it can keep. Last, both can be assigned on any of the 25
+ * trading days to Oct 18, likelier in the money with little time value left; buying the option
+ * back prevents it.
  *
  *   open      0–4        "Selling an option you can cover"
  *   question  4–8.6      you own 100 ALFA shares: get paid to wait?
  *   call      8.6–17.7   the call and the shares; +$705, $97.95, −$9,795; above $107.05
  *   put       17.7–24.2  the put and the cash set aside; assigned, a net $92.95
  *   payoff    24.2–33.9  the put's line down to $0; hero: −$9,295 (28.2); $9,500; +$205
- *   assign    33.9–40.5  any of 25 trading days; likelier in the money; only buying it back
+ *   assign    33.9–40.5  any of 25 trading days; likelier in the money; buying the option back prevents it
  *   claim     40.5–45.0  selling pays you to take on an obligation
  *   next      45.0–47.5  Next: the module checkpoint
  */
@@ -105,6 +107,9 @@ function layout(width: number) {
 	const cellTop = H * (narrow ? 0.32 : 0.325);
 	const pitch = H * (narrow ? 0.075 : 0.09);
 	const noteSize = narrow ? T.body : T.body * 1.2;
+	const cellSize = narrow ? T.body : T.small * 1.15;
+	const cellH = narrow ? Math.max(pitch - 6, cellSize * 1.8) : pitch - 7;
+	const cellsBottom = cellTop + 4 * pitch + cellH;
 	return {
 		...frame,
 		left,
@@ -133,13 +138,13 @@ function layout(width: number) {
 		col,
 		calHeadY,
 		cellY: (week: number) => cellTop + week * pitch,
-		cellH: pitch - (narrow ? 6 : 7),
-		cellSize: narrow ? T.small : T.small * 1.15,
-		cellsBottom: cellTop + 4 * pitch + pitch - (narrow ? 6 : 7),
+		cellH,
+		cellSize,
+		cellsBottom,
 		noteSize,
 		noteX: narrow ? margin : margin + room * 0.56,
 		noteRoom: narrow ? room : room * 0.42,
-		noteY: narrow ? cellTop + 5 * pitch + noteSize * 1.6 : H * 0.38,
+		noteY: narrow ? cellsBottom + 6 + noteSize * 1.6 : H * 0.38,
 	};
 }
 
@@ -226,9 +231,12 @@ const copy = {
 	heroTag: ["worst case · per contract", "最坏情况 · 每张合约"],
 	heroTagShort: ["worst, per contract", "最坏情况 · 每张合约"],
 	sizeA: ["set aside: ", "预留 "],
-	sizeB: [` of ${whole(ACCOUNT)}`, `（账户 ${whole(ACCOUNT)}）`],
+	sizeB: [
+		` of ${whole(ACCOUNT)}, or ${percent(CASH_SHARE, 0)}`,
+		`（账户 ${whole(ACCOUNT)} 的 ${percent(CASH_SHARE, 0)}）`,
+	],
 	aHead: ["Both can be assigned any day.", "两者都可能在任一交易日被指派。"],
-	a2Head: ["Only buying back first stops it.", "只有先买回平仓，才能避免。"],
+	a2Head: ["Buying the option back prevents it.", "只有先买回平仓，才能避免。"],
 	calNote: ["you can't tell which day", "无法预知是哪一天"],
 	calMore: [
 		"likelier: in the money, little time value left",
@@ -634,7 +642,7 @@ function Scene({
 						y={L.calHeadY}
 						textAnchor="middle"
 						className="wt-film-tag"
-						style={{ fontSize: T.small }}
+						style={{ fontSize: narrow ? T.body : T.small }}
 					>
 						{t(day).toUpperCase()}
 					</text>
@@ -858,8 +866,8 @@ function build(context: FilmContext) {
 export const sellingCoveredOptionsFilm: Film = {
 	id: "selling-covered-options",
 	label: [
-		`Selling an option you can cover, as a short film: on Mon Sep 16, with ALFA at $100, you own ${SHARES} shares bought at ${usd(STOCK_COST, 0)} and sell one ${EXPIRY[0]} ${CALL.strike} call against them at its ${usd(CALL_BID)} bid, keeping ${whole(CALL_PREMIUM)}; if the call is assigned the shares are sold at $${CALL.strike}; the pair makes ${signedWhole(COVERED_BEST)} at best, breaks even at ${usd(COVERED_EVEN)} and loses ${signedWhole(COVERED_WORST)} if ALFA falls to $0, and above ${usd(COVERED_CAP)} the shares alone make more; or you sell one Oct 18 ${PUT.strike} put at its ${usd(PUT_BID)} bid with ${whole(CASH)} in cash set aside, and if it is assigned you buy ${SHARES} shares at $${PUT.strike}, a net ${usd(NET_PRICE)} a share; the put's profit on Oct 18 is ${signedWhole(SECURED_BEST)} at most and falls to ${signedWhole(SECURED_WORST)} if ALFA falls to $0, while the cash it ties up is ${whole(CASH)} of a ${whole(ACCOUNT)} account; both can be assigned on any of the ${TRADING_DAYS.length} trading days to Oct 18, more likely in the money with little time value left, and only buying the option back prevents it`,
-		`卖出有保障的期权短片：9月16日周一，ALFA 为 $100，你持有以 ${usd(STOCK_COST, 0)} 买入的 ${SHARES} 股，并按买价 ${usd(CALL_BID)} 对着它们卖出一张 10月18日 ${CALL.strike} 看涨，留下 ${whole(CALL_PREMIUM)}；如果看涨被指派，股票以 $${CALL.strike} 卖出；这一组最多赚 ${signedWhole(COVERED_BEST)}，盈亏平衡点 ${usd(COVERED_EVEN)}，ALFA 跌到 $0 时亏 ${signedWhole(COVERED_WORST)}，而高于 ${usd(COVERED_CAP)} 时只持股赚得更多；或者，按买价 ${usd(PUT_BID)} 卖出一张 10月18日 ${PUT.strike} 看跌，并预留 ${whole(CASH)} 现金，如果被指派就以 $${PUT.strike} 买入 ${SHARES} 股，每股净价 ${usd(NET_PRICE)}；这张看跌在 10月18日最多赚 ${signedWhole(SECURED_BEST)}，ALFA 跌到 $0 时亏到 ${signedWhole(SECURED_WORST)}，而它占用的现金是 ${whole(ACCOUNT)} 账户中的 ${whole(CASH)}；两者都可能在到 10月18日为止的 ${TRADING_DAYS.length} 个交易日中的任何一天被指派，处于实值且时间价值所剩无几时更可能，只有把期权买回平仓才能确保不被指派`,
+		`Selling an option you can cover, as a short film: on Mon Sep 16, with ALFA at $100, you own ${SHARES} shares bought at ${usd(STOCK_COST, 0)} and sell one ${EXPIRY[0]} ${CALL.strike} call against them at its ${usd(CALL_BID)} bid, keeping ${whole(CALL_PREMIUM)}; if the call is assigned the shares are sold at $${CALL.strike}; the pair makes ${signedWhole(COVERED_BEST)} at best, breaks even at ${usd(COVERED_EVEN)} and loses ${signedWhole(COVERED_WORST)} if ALFA falls to $0, and above ${usd(COVERED_CAP)} the shares alone make more; or you sell one Oct 18 ${PUT.strike} put at its ${usd(PUT_BID)} bid with ${whole(CASH)} in cash set aside, and if it is assigned you buy ${SHARES} shares at $${PUT.strike}, a net ${usd(NET_PRICE)} a share; the put's profit on Oct 18 is ${signedWhole(SECURED_BEST)} at most and falls to ${signedWhole(SECURED_WORST)} if ALFA falls to $0, while the cash it ties up is ${whole(CASH)} of a ${whole(ACCOUNT)} account, or ${percent(CASH_SHARE, 0)}; both can be assigned on any of the ${TRADING_DAYS.length} trading days to Oct 18, more likely in the money with little time value left, and buying the option back prevents it`,
+		`卖出有保障的期权短片：9月16日周一，ALFA 为 $100，你持有以 ${usd(STOCK_COST, 0)} 买入的 ${SHARES} 股，并按买价 ${usd(CALL_BID)} 对着它们卖出一张 10月18日 ${CALL.strike} 看涨，留下 ${whole(CALL_PREMIUM)}；如果看涨被指派，股票以 $${CALL.strike} 卖出；这一组最多赚 ${signedWhole(COVERED_BEST)}，盈亏平衡点 ${usd(COVERED_EVEN)}，ALFA 跌到 $0 时亏 ${signedWhole(COVERED_WORST)}，而高于 ${usd(COVERED_CAP)} 时只持股赚得更多；或者，按买价 ${usd(PUT_BID)} 卖出一张 10月18日 ${PUT.strike} 看跌，并预留 ${whole(CASH)} 现金，如果被指派就以 $${PUT.strike} 买入 ${SHARES} 股，每股净价 ${usd(NET_PRICE)}；这张看跌在 10月18日最多赚 ${signedWhole(SECURED_BEST)}，ALFA 跌到 $0 时亏到 ${signedWhole(SECURED_WORST)}，而它占用的现金是 ${whole(CASH)}，占 ${whole(ACCOUNT)} 账户的 ${percent(CASH_SHARE, 0)}；两者都可能在到 10月18日为止的 ${TRADING_DAYS.length} 个交易日中的任何一天被指派，处于实值且时间价值所剩无几时更可能，只有把期权买回平仓才能确保不被指派`,
 	],
 	stage: "dark",
 	shots: [
