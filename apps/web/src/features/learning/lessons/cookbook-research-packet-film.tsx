@@ -78,13 +78,11 @@ function layout(width: number) {
 	const { height: H, narrow, room } = frame;
 	return {
 		...frame,
-		rowY: (i: number) =>
-			H * (narrow ? 0.27 : 0.27) + i * H * (narrow ? 0.075 : 0.075),
-		rowH: H * (narrow ? 0.06 : 0.06),
+		rowY: (i: number) => H * 0.27 + i * H * 0.075,
+		rowH: H * 0.06,
 		traceY: H * (narrow ? 0.68 : 0.7),
-		fieldY: (i: number) =>
-			H * (narrow ? 0.26 : 0.27) + i * H * (narrow ? 0.095 : 0.095),
-		fieldH: H * (narrow ? 0.078 : 0.078),
+		fieldY: (i: number) => H * (narrow ? 0.26 : 0.27) + i * H * 0.095,
+		fieldH: H * 0.078,
 		/** Wide enough for the widest label, which the mono tag sets with some tracking. */
 		labelW: Math.max(
 			narrow ? room * 0.32 : room * 0.2,
@@ -131,9 +129,14 @@ const copy = {
 	],
 	p1Says: [`P1: ${dollars(MONDAY)}`, `P1：${dollars(MONDAY)}`],
 	whyFormula: [reruns.formula.why[0], reruns.formula.why[1]],
+	/** The film names what T-2 and M2 are; the playground's shorter strings stay in the model. */
+	exclusionsValue: [
+		"trade T-2 cancelled; message M2 repeats T-1",
+		"成交 T-2 已取消；消息 M2 重复 T-1",
+	],
 	whyExclusions: [
-		`+${dollars(reruns.exclusions.cents - MONDAY)} · ${reruns.exclusions.why[0]}`,
-		`+${dollars(reruns.exclusions.cents - MONDAY)} · ${reruns.exclusions.why[1]}`,
+		`+${dollars(reruns.exclusions.cents - MONDAY)} · counted trade T-2 and message M2`,
+		`+${dollars(reruns.exclusions.cents - MONDAY)} · 计入了成交 T-2 和消息 M2`,
 	],
 	noData: ["no data yet", "尚无数据"],
 	coveredZero: ["covered, zero", "已覆盖，零"],
@@ -169,6 +172,8 @@ function Scene({
 }) {
 	const unknownHatch = `cookbook-r5-${useId().replace(/:/g, "")}`;
 	const t = (value: Copy) => pick(value, locale);
+	const fieldValue = (field: (typeof fields)[number]) =>
+		field.id === "exclusions" ? t(copy.exclusionsValue) : t(field.value);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
@@ -245,6 +250,29 @@ function Scene({
 			/>
 			{mondayPacket.map((row, i) => {
 				const premium = rowPremium(row);
+				const seriesText = t([`${row.strike} call`, `${row.strike} 看涨`]);
+				const contractsText =
+					rowContracts(row) === null
+						? ""
+						: premium === 0
+							? t(copy.coveredZero)
+							: count(rowContracts(row) ?? 0);
+				const premiumText =
+					premium === null ? t(copy.noData) : dollars(premium);
+				const seriesFits =
+					textWidth(row.id, text) + textWidth(seriesText, T.body) + 8 <=
+					44 - 12;
+				const contractsFit =
+					textWidth(seriesText, T.body) +
+						textWidth(contractsText, T.body) +
+						8 <=
+						room * 0.62 - 44 &&
+					textWidth(contractsText, T.body) +
+						textWidth(premiumText, T.body) +
+						8 <=
+						room * 0.38 - 12;
+				const premiumFits =
+					textWidth(premiumText, T.body) + 8 <= room * 0.38 - 12;
 				return (
 					<g key={row.id} data-f={`row-${i}`}>
 						<rect
@@ -278,22 +306,22 @@ function Scene({
 							x={margin + (narrow ? 44 : 70)}
 							y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 							className="wt-film-type"
-							style={{ fontSize: text }}
+							style={{
+								fontSize: narrow && seriesFits ? T.body : text,
+							}}
 						>
-							{t([`${row.strike} call`, `${row.strike} 看涨`])}
+							{seriesText}
 						</text>
 						<text
 							x={margin + room * (narrow ? 0.62 : 0.6)}
 							y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 							textAnchor="end"
 							className="wt-film-num wt-film-dim"
-							style={{ fontSize: text }}
+							style={{
+								fontSize: narrow && contractsFit ? T.body : text,
+							}}
 						>
-							{rowContracts(row) === null
-								? ""
-								: premium === 0
-									? t(copy.coveredZero)
-									: count(rowContracts(row) ?? 0)}
+							{contractsText}
 						</text>
 						<text
 							data-f={`row-${i}-premium`}
@@ -301,9 +329,11 @@ function Scene({
 							y={L.rowY(i) + L.rowH / 2 + text * 0.36}
 							textAnchor="end"
 							className={`wt-film-num ${premium === null ? toneClass.caution : premium === 0 ? "wt-film-dim" : ""}`}
-							style={{ fontSize: text }}
+							style={{
+								fontSize: narrow && premiumFits ? T.body : text,
+							}}
 						>
-							{premium === null ? t(copy.noData) : dollars(premium)}
+							{premiumText}
 						</text>
 					</g>
 				);
@@ -401,14 +431,45 @@ function Scene({
 					>
 						{t(field.label).toUpperCase()}
 					</text>
-					<text
-						x={margin + L.labelW}
-						y={L.fieldY(i) + L.fieldH / 2 + text * 0.36}
-						className="wt-film-type"
-						style={{ fontSize: text }}
-					>
-						{t(field.value)}
-					</text>
+					{narrow &&
+					field.id === "exclusions" &&
+					textWidth(fieldValue(field), T.body) > room - L.labelW - 8 ? (
+						// Two plain rows inside the card, like the other fields' values: a label, not a
+						// sentence of its own. It breaks after the semicolon in both languages.
+						<text
+							x={margin + L.labelW}
+							y={L.fieldY(i) + T.body}
+							className="wt-film-type"
+							style={{ fontSize: T.body }}
+						>
+							{fieldValue(field)
+								.split(/(?<=[;；])\s*/)
+								.map((part, k) => (
+									<tspan
+										key={part}
+										x={margin + L.labelW}
+										dy={k === 0 ? 0 : T.body * 1.2}
+									>
+										{part}
+									</tspan>
+								))}
+						</text>
+					) : (
+						<text
+							x={margin + L.labelW}
+							y={L.fieldY(i) + L.fieldH / 2 + text * 0.36}
+							className="wt-film-type"
+							style={{
+								fontSize:
+									narrow &&
+									textWidth(fieldValue(field), T.body) + 8 <= room - L.labelW
+										? T.body
+										: text,
+							}}
+						>
+							{fieldValue(field)}
+						</text>
+					)}
 				</g>
 			))}
 			<text
@@ -578,13 +639,23 @@ function Scene({
 				const contribution = i === 1 ? TUESDAY - MONDAY : spreadLegs;
 				const suffix = `${dollars(contribution)} = `;
 				const resultSize = narrow ? T.head : T.head * 1.1;
-				const equationSize = narrow
+				const originalEquationSize = narrow
 					? Math.min(
 							T.head,
 							((room - 32) * 0.98 - textWidth(dollars(result), resultSize)) /
 								textWidth(expression + suffix, 1),
 						)
 					: T.body;
+				const equationSize =
+					narrow &&
+					i === 2 &&
+					originalEquationSize < T.body &&
+					textWidth(expression + suffix, T.body) +
+						textWidth(dollars(result), resultSize) +
+						8 <=
+						room - 32
+						? T.body
+						: originalEquationSize;
 				const operandX = margin + 16 + textWidth(expression, equationSize);
 				const equationY = L.recY(i) + L.recH * 0.6;
 				return (
@@ -702,6 +773,7 @@ function build(context: FilmContext) {
 	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
+	const logP3At = 37.25;
 	const { tl, one, kids, show, hide } = d;
 	const flat = (name: string) =>
 		kids(name).flatMap((el) =>
@@ -933,7 +1005,7 @@ function build(context: FilmContext) {
 	);
 	// The complete P2 equation reads quietly until its operands clear at 35.95.
 	saveResult(35.95);
-	show(heads[5], 37.25, "below", 0.3);
+	show(heads[5], logP3At, "below", 0.3);
 	show(
 		[
 			recs[2],
@@ -943,14 +1015,14 @@ function build(context: FilmContext) {
 			one("log-2-equals"),
 			one("log-2-result"),
 		],
-		37.25,
+		logP3At,
 		"below",
 		0.3,
 	);
 	tl.to(
 		[recs[0], recs[1], one("log-1-result"), one("log-r5-cause")],
 		{ opacity: 0.45, duration: 0.3 },
-		37.25,
+		logP3At,
 	);
 	// P3's two-leg proof and subtraction hold through the claim handoff.
 
