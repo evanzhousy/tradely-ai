@@ -175,7 +175,7 @@ const copy = {
 	],
 	bpTag: ["buying power", "购买力"],
 	lotsHead: [
-		`Sell ${SOLD} at the bid instead: still ${signed(held.unrealized)}?`,
+		`Sell ${SOLD} at the bid: still ${signed(held.unrealized)}?`,
 		`如果以买价卖出 ${SOLD} 张：还是 ${signed(held.unrealized)} 吗？`,
 	],
 	lotsHeadShort: [
@@ -186,7 +186,7 @@ const copy = {
 	unrealized: ["unrealized", "未实现"],
 	totalTag: ["realized + unrealized", "已实现 + 未实现"],
 	totalHead: [
-		`No: calls’ price P&L ${signed(fifo.realized + fifo.unrealized)} before fees.`,
+		`No: calls’ P&L ${signed(fifo.realized + fifo.unrealized)} before fees.`,
 		`不：看涨价格盈亏 ${signed(fifo.realized + fifo.unrealized)}，未扣费。`,
 	],
 	/** Where the $75 comes from: six sold at the bid, not the mid. */
