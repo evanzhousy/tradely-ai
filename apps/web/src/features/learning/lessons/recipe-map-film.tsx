@@ -64,6 +64,10 @@ function layout(width: number) {
 	const nodeH = H * (narrow ? 0.075 : 0.065);
 	const span = (INPUTS.length - 1) * step + nodeH;
 	const inputY = (i: number) => nodeTop + i * step;
+	const legendX = colX(0);
+	const legendY = narrow
+		? H - 16
+		: inputY(INPUTS.length - 1) + nodeH + T.small * 1.8;
 	const sourceY = (j: number) =>
 		nodeTop + span * (j === 0 ? 0.22 : 0.62) - nodeH / 2;
 	const cellY = (i: number) =>
@@ -94,6 +98,8 @@ function layout(width: number) {
 		colX,
 		nodeH,
 		inputY,
+		legendX,
+		legendY,
 		sourceY,
 		cellY,
 		curve,
@@ -127,6 +133,7 @@ const copy = {
 	takeHead: ["The Takeaways have no line in.", "要点没有任何输入线。"],
 	takeHeadShort: ["Takeaways: no line in.", "要点：没有输入线。"],
 	inputs: ["Inputs", "输入"],
+	mapLegend: ["OI: open interest · DTE: days to expiry", "OI：未平仓量"],
 	live: ["Live data", "实时数据"],
 	cells: ["Cells", "单元格"],
 	runHead: [
@@ -150,12 +157,12 @@ const copy = {
 	tableHeadShort: ["Monday's ranked table.", "周一的排名表格。"],
 	topThree: [`Top ${TOP_N} · volume/OI`, `前 ${TOP_N} 名 · 成交量/OI`],
 	restHead: [
-		`${MONDAY.passed.length - TOP_N} more passed but aren't loaded.`,
-		`另外 ${MONDAY.passed.length - TOP_N} 份也通过了，只是没有载入。`,
+		`Top ${TOP_N} loaded; ${MONDAY.passed.length - TOP_N} more passed.`,
+		`表格只载入前 ${TOP_N} 名；另有 ${MONDAY.passed.length - TOP_N} 份通过。`,
 	],
 	restHeadShort: [
-		`${MONDAY.passed.length - TOP_N} passed, not loaded.`,
-		`${MONDAY.passed.length - TOP_N} 份通过，未载入。`,
+		`Top ${TOP_N} loaded; ${MONDAY.passed.length - TOP_N} more passed.`,
+		`只载入前 ${TOP_N} 名；另 ${MONDAY.passed.length - TOP_N} 份通过。`,
 	],
 	contract: ["Contract", "合约"],
 	volume: ["Volume", "成交量"],
@@ -435,7 +442,16 @@ function Scene({
 							/>
 						))}
 						{INPUTS.map((input, i) =>
-							node(input.id, L.colX(0), L.inputY(i), t(input.short)),
+							node(
+								input.id,
+								L.colX(0),
+								L.inputY(i),
+								t(
+									!narrow && ["volOi", "relVol"].includes(input.id)
+										? input.label
+										: input.short,
+								),
+							),
 						)}
 						{SOURCES.map((source, j) =>
 							node(source.id, L.colX(1), L.sourceY(j), t(source.short)),
@@ -444,6 +460,16 @@ function Scene({
 							node(cell.id, L.colX(2), L.cellY(i), t(cell.label)),
 						)}
 					</g>
+					<Word
+						name="map-legend"
+						x={narrow ? W / 2 : L.legendX}
+						y={L.legendY}
+						size={narrow ? T.body : T.small}
+						anchor={narrow ? "middle" : "start"}
+						className={narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"}
+					>
+						{t(copy.mapLegend)}
+					</Word>
 
 					{/* The screen: key figures, the loaded rows, and the rest. */}
 					<g data-f="screen">
@@ -805,6 +831,7 @@ function build(context: FilmContext) {
 		one("screen"),
 		...[0, 1, 2].map((i) => one(`col-${i}`)),
 		one("edges"),
+		one("map-legend"),
 		one("trace-cell"),
 		...traceIns,
 		...ids.flatMap((id) => [...nodes(id), one(`f-${id}`)]),
@@ -847,6 +874,7 @@ function build(context: FilmContext) {
 	tl.addLabel("map", 9.6);
 	hide(flat("q"), 9.6);
 	show(one("m-head"), 9.8, "above");
+	show(one("map-legend"), 9.8);
 	rise(9.9);
 	[0, 1, 2].forEach((i) => {
 		show(one(`col-${i}`), 9.8 + i * 0.25);
@@ -898,6 +926,7 @@ function build(context: FilmContext) {
 	// ——— content: computed and written ———
 	tl.addLabel("content", 19.6);
 	hide([one("m-head"), one("t-head")], 19.6);
+	hide(one("map-legend"), 19.6);
 	sink(19.6);
 	show(one("r-head"), 19.95, "above");
 	show(one("run-mon"), 20.2);
