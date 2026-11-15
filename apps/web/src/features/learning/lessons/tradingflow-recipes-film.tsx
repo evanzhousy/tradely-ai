@@ -159,7 +159,7 @@ const copy = {
 	screenHead: ["A screen compares the whole market.", "筛选比较整个市场。"],
 	screenHeadShort: ["Across the market: a screen.", "覆盖整个市场：筛选。"],
 	openHead: [
-		"You open it Tuesday, 8:00, before the open.",
+		"Open it Tuesday, 8:00, before the open.",
 		"你在周二 8:00、开盘前打开它。",
 	],
 	openHeadShort: ["Tuesday, 8:00, before the open.", "周二 8:00，开盘前。"],
@@ -177,7 +177,7 @@ const copy = {
 	],
 	screenerShort: ["UOA Screener", "UOA Screener"],
 	mondayHead: [
-		"Open it Monday at 10:00: still trading.",
+		"Open it Monday, 10:00: still trading.",
 		"周一 10:00 打开：仍在交易。",
 	],
 	mondayHeadShort: [
@@ -197,7 +197,7 @@ const copy = {
 	],
 	forkHeadShort: ["Fork: a private copy.", "分叉：私有副本。"],
 	colleagueHead: [
-		"A colleague opens it: the official recipe, unchanged.",
+		"Colleagues see the official, unchanged.",
 		"同事打开它：未改动的官方 Recipe。",
 	],
 	colleagueHeadShort: ["A colleague: the official one.", "同事：官方版本。"],
