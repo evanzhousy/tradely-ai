@@ -13,13 +13,16 @@ import {
 	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	arrivals,
 	BLOCK,
 	BUCKET,
 	best,
+	CONTRACT_MULTIPLIER,
 	CORRECTED,
 	cutoffs,
+	FIRST_PRICE,
 	HOLDOUT,
 	history,
 	LOWER,
@@ -80,8 +83,8 @@ function layout(width: number) {
 	return {
 		...frame,
 		/** Rows leave a gap above each one for the decision rule and its label. */
-		arrY: (i: number) => H * 0.29 + i * H * 0.155,
-		arrH: H * 0.095,
+		arrY: (i: number) => H * 0.29 + i * H * (narrow ? 0.175 : 0.155),
+		arrH: narrow ? frame.type.body * 4.6 : H * 0.095,
 		timeW,
 		histTop,
 		histBottom,
@@ -255,28 +258,47 @@ function Scene({
 						rx={10}
 						className="wt-panel-shape"
 					/>
-					{/* On a phone the arrival time drops to the second line, beside the event time. */}
+					{/* Phone rows show the fact, contract value, then arrival and event times. */}
 					<text
 						x={margin + 14}
-						y={L.arrY(i) + L.arrH * (narrow ? 0.76 : 0.42)}
+						y={
+							L.arrY(i) +
+							(narrow ? T.body * (a.contract ? 4 : 2.7) : L.arrH * 0.42)
+						}
 						className="wt-film-num wt-film-dim"
-						style={{ fontSize: text }}
+						style={{ fontSize: narrow ? T.body : text }}
 					>
 						{t(a.arrived)}
 					</text>
 					<text
 						x={margin + 14 + (narrow ? 0 : L.timeW)}
-						y={L.arrY(i) + L.arrH * 0.42}
+						y={L.arrY(i) + (narrow ? T.body * 1.4 : L.arrH * 0.42)}
 						className="wt-film-type"
-						style={{ fontSize: text }}
+						style={{ fontSize: narrow ? T.body : text }}
 					>
-						{t(a.fact)}
+						{narrow
+							? t(a.fact)
+							: a.contract
+								? `${t(a.fact)} · ${t(a.contract)}`
+								: t(a.fact)}
 					</text>
+					{narrow && a.contract ? (
+						<text
+							x={margin + 14}
+							y={L.arrY(i) + T.body * 2.7}
+							className="wt-film-type wt-film-dim"
+							style={{ fontSize: T.body }}
+						>
+							{t(a.contract)}
+						</text>
+					) : null}
 					<text
-						x={margin + 14 + (narrow ? room * 0.48 : L.timeW)}
-						y={L.arrY(i) + L.arrH * 0.76}
+						x={
+							margin + 14 + (narrow ? (a.contract ? room * 0.48 : 0) : L.timeW)
+						}
+						y={L.arrY(i) + (narrow ? T.body * 4 : L.arrH * 0.76)}
 						className="wt-film-num wt-film-dim"
-						style={{ fontSize: T.small }}
+						style={{ fontSize: narrow ? T.body : T.small }}
 					>
 						{t(a.event)}
 					</text>
@@ -287,11 +309,15 @@ function Scene({
 					<text
 						key={`${a.id}-${state}`}
 						data-f={`arr-${i}-${state}`}
-						x={margin + room - 14}
-						y={L.arrY(i) + L.arrH * 0.42}
-						textAnchor="end"
+						x={
+							narrow
+								? margin + 14 + textWidth(t(a.fact), T.body) + 12
+								: margin + room - 14
+						}
+						y={L.arrY(i) + (narrow ? T.body * 1.4 : L.arrH * 0.42)}
+						textAnchor={narrow ? "start" : "end"}
 						className="wt-film-tag wt-film-dim"
-						style={{ fontSize: T.small }}
+						style={{ fontSize: narrow ? T.body : T.small }}
 					>
 						{t(copy[state]).toUpperCase()}
 					</text>
@@ -301,7 +327,7 @@ function Scene({
 			{decisionCutoffs.map(({ before, time }) => (
 				<g key={before} data-f={`cut-${before}`}>
 					<path
-						d={`M${margin - 6} ${L.arrY(before) - 5}H${margin + room + 6}`}
+						d={`M${margin - 6} ${L.arrY(before) - (narrow ? 3 : 5)}H${narrow ? margin + room - textWidth(`${t(copy.decision).toUpperCase()} · ${t(time)}`, T.body) - 8 : margin + room + 6}`}
 						style={{
 							stroke: "var(--diagram-accent)",
 							strokeWidth: 2,
@@ -310,10 +336,10 @@ function Scene({
 					/>
 					<text
 						x={margin + room}
-						y={L.arrY(before) - 10}
+						y={L.arrY(before) - (narrow ? 6 : 10)}
 						textAnchor="end"
 						className="wt-film-tag wt-film-accent"
-						style={{ fontSize: T.small }}
+						style={{ fontSize: narrow ? T.body : T.small }}
 					>
 						{`${t(copy.decision).toUpperCase()} · ${t(time)}`}
 					</text>
@@ -348,9 +374,9 @@ function Scene({
 						{i % 2 === 0 ? (
 							<text
 								x={L.histX(i)}
-								y={L.histBottom + T.small * 1.6}
+								y={L.histBottom + (narrow ? T.body * 1.35 : T.small * 1.6)}
 								className="wt-film-num wt-film-dim"
-								style={{ fontSize: T.small }}
+								style={{ fontSize: narrow ? T.body : T.small }}
 							>
 								{`${b.from}×`}
 							</text>
@@ -359,10 +385,10 @@ function Scene({
 				))}
 				<text
 					x={margin + room}
-					y={L.histBottom + T.small * 3.2}
+					y={L.histBottom + (narrow ? T.body * 2.7 : T.small * 3.2)}
 					textAnchor="end"
 					className="wt-film-tag"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: narrow ? T.body : T.small }}
 				>
 					{t(copy.axis).toUpperCase()}
 				</text>
@@ -389,7 +415,7 @@ function Scene({
 							y={L.histBottom - L.histH(b.days) - 8}
 							textAnchor="middle"
 							className={`wt-film-num ${b.from + BUCKET <= TODAY ? "wt-film-accent" : "wt-film-dim"}`}
-							style={{ fontSize: T.small }}
+							style={{ fontSize: narrow ? T.body : T.small }}
 						>
 							{b.days}
 						</text>
@@ -409,8 +435,8 @@ function Scene({
 				name="today-context"
 				text={t(copy.todayContext)}
 				x={W / 2}
-				y={H * 0.86}
-				size={T.small}
+				y={H * (narrow ? 0.84 : 0.86)}
+				size={narrow ? T.body : T.small}
 				maxWidth={room}
 				className="wt-film-type wt-film-dim"
 			/>
@@ -424,12 +450,15 @@ function Scene({
 					y={L.histTop - 14}
 					textAnchor="start"
 					className="wt-film-num wt-film-accent"
-					style={{ fontSize: T.small * 1.1 }}
+					style={{ fontSize: narrow ? T.body : T.small * 1.1 }}
 				>
 					{narrow ? (
 						<>
 							<tspan>{t(["today", "今天"])}</tspan>
-							<tspan x={L.todayX + 12} dy={T.small * 1.4}>
+							<tspan
+								x={L.todayX + 12}
+								dy={narrow ? T.body * 1.4 : T.small * 1.4}
+							>
 								{`${TODAY}×`}
 							</tspan>
 						</>
@@ -451,7 +480,7 @@ function Scene({
 			<text
 				data-f="not-chance"
 				x={L.misreadingRight}
-				y={L.heroY + T.num * 1.3 + 32}
+				y={narrow ? L.histTop + T.num * 3.7 : L.heroY + T.num * 1.3 + 32}
 				textAnchor="end"
 				className={`wt-film-type ${toneClass.caution}`}
 				style={{ fontSize: text, textDecoration: "line-through" }}
@@ -483,10 +512,10 @@ function Scene({
 				/>
 				<text
 					x={margin + room}
-					y={L.pctY(50) - 6}
+					y={L.pctY(50) - (narrow ? T.body * 0.6 : 6)}
 					textAnchor="end"
 					className="wt-film-num wt-film-dim wt-halo"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: narrow ? T.body : T.small }}
 				>
 					50%
 				</text>
@@ -496,18 +525,18 @@ function Scene({
 				/>
 				<text
 					x={margin}
-					y={L.histTop - 14}
+					y={L.histTop - (narrow ? T.body : 14)}
 					className="wt-film-tag"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: narrow ? T.body : T.small }}
 				>
 					{t(copy.rose).toUpperCase()}
 				</text>
 				<text
 					x={margin + room}
-					y={L.histBottom + T.small * 3.2}
+					y={L.histBottom + (narrow ? T.body * 2.7 : T.small * 3.2)}
 					textAnchor="end"
 					className="wt-film-tag"
-					style={{ fontSize: T.small }}
+					style={{ fontSize: narrow ? T.body : T.small }}
 				>
 					{t(copy.axis).toUpperCase()}
 				</text>
@@ -527,10 +556,10 @@ function Scene({
 					{!narrow || i % 2 === 1 ? (
 						<text
 							x={L.barX(i) + L.barSlot / 2}
-							y={L.histBottom + T.small * 1.6}
+							y={L.histBottom + (narrow ? T.body * 1.35 : T.small * 1.6)}
 							textAnchor="middle"
 							className="wt-film-num wt-film-dim"
-							style={{ fontSize: T.small }}
+							style={{ fontSize: narrow ? T.body : T.small }}
 						>
 							{`${r.threshold}×`}
 						</text>
@@ -561,15 +590,11 @@ function Scene({
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 3 }}
 				/>
 				<text
-					x={
-						narrow
-							? L.barX(BEST_INDEX) - L.barSlot * 0.7
-							: L.barX(BEST_INDEX) + L.barSlot * 1.7
-					}
-					y={L.pctY(HOLDOUT) + T.small * 0.4}
-					textAnchor={narrow ? "end" : "start"}
+					x={narrow ? W / 2 : L.barX(BEST_INDEX) + L.barSlot * 1.7}
+					y={narrow ? H * 0.83 : L.pctY(HOLDOUT) + T.small * 0.4}
+					textAnchor={narrow ? "middle" : "start"}
 					className="wt-film-num wt-film-accent wt-halo"
-					style={{ fontSize: narrow ? T.small : text }}
+					style={{ fontSize: narrow ? T.body : text }}
 				>
 					{t(copy.holdout)}
 				</text>
@@ -645,7 +670,11 @@ function build(context: FilmContext) {
 		Number(misreading.getAttribute("y")) - misreadingBox.y;
 	misreading.setAttribute(
 		"y",
-		String(pctBox.y + pctBox.height + HERO_PAD + 24 + 12 + misreadingAscent),
+		String(
+			L.narrow
+				? misreading.getAttribute("y")
+				: pctBox.y + pctBox.height + HERO_PAD + 24 + 12 + misreadingAscent,
+		),
 	);
 	const arrs = arrivals.map((_, i) => one(`arr-${i}`));
 	const marks = arrivals.flatMap((_, i) => [
@@ -853,8 +882,8 @@ function build(context: FilmContext) {
 export const pointInTimeResearchFilm: Film = {
 	id: "point-in-time-research",
 	label: [
-		`Backtests, as a short film: Monday's facts about the Oct 18 105 call in the order they arrived, where a decision replayed at ${openingDecisionTime[0]} may use only the block's first report at ${usd(REPORTED)}, one at ${timeOnly(correctionCutoff.time)[0]} the corrected ${usd(CORRECTED)}, and none the 120 call's volume that arrives Tuesday; today's ${TODAY}× against ${SESSIONS} past sessions, the ${PERCENTILE}th percentile, which is a rank and not a ${PERCENTILE}% chance of a rise; and ${tried.length} thresholds tried on Jan–Jun, the best followed by a rise ${best.rose}% of the time, and the same rule frozen and run once on Jul–Aug at ${HOLDOUT}%`,
-		`回测短片：周一关于 10月18日 105 看涨的事实按到达顺序排列：在 ${openingDecisionTime[1]} 重放的决策只能用大单首次报告的 ${usd(REPORTED)}，${timeOnly(correctionCutoff.time)[1]} 的决策可以用更正后的 ${usd(CORRECTED)}，而周二才到的 120 看涨成交量哪个都不能用；今天的 ${TODAY}× 对照过去 ${SESSIONS} 个交易日，是第 ${PERCENTILE} 百分位，这是排名而不是 ${PERCENTILE}% 的上涨概率；以及在 1–6 月数据上试验的 ${tried.length} 个门槛，最好的一个之后上涨比例 ${best.rose}%，同一规则冻结后在 7–8 月只跑一次，结果为 ${HOLDOUT}%`,
+		`Backtests, as a short film: Monday's facts about the Oct 18 105 call in the order they arrived, including T-1 at ${usd(FIRST_PRICE)} (${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)} a contract); a decision replayed at ${openingDecisionTime[0]} may use only the block's first report at ${usd(REPORTED)} (${usd(REPORTED * CONTRACT_MULTIPLIER, 0)} a contract), one at ${timeOnly(correctionCutoff.time)[0]} the corrected ${usd(CORRECTED)} (${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)} a contract), and none the 120 call's volume that arrives Tuesday; today's ${TODAY}× against ${SESSIONS} past sessions, the ${PERCENTILE}th percentile, which is a rank and not a ${PERCENTILE}% chance of a rise; and ${tried.length} thresholds tried on Jan–Jun, the best followed by a rise ${best.rose}% of the time, and the same rule frozen and run once on Jul–Aug at ${HOLDOUT}%`,
+		`回测短片：周一关于 10月18日 105 看涨的事实按到达顺序排列，包括 T-1 的 ${usd(FIRST_PRICE)}（每张 ${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)}）；在 ${openingDecisionTime[1]} 重放的决策只能用大单首次报告的 ${usd(REPORTED)}（每张 ${usd(REPORTED * CONTRACT_MULTIPLIER, 0)}），${timeOnly(correctionCutoff.time)[1]} 的决策可以用更正后的 ${usd(CORRECTED)}（每张 ${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)}），而周二才到的 120 看涨成交量哪个都不能用；今天的 ${TODAY}× 对照过去 ${SESSIONS} 个交易日，是第 ${PERCENTILE} 百分位，这是排名而不是 ${PERCENTILE}% 的上涨概率；以及在 1–6 月数据上试验的 ${tried.length} 个门槛，最好的一个之后上涨比例 ${best.rose}%，同一规则冻结后在 7–8 月只跑一次，结果为 ${HOLDOUT}%`,
 	],
 	stage: "dark",
 	shots: [

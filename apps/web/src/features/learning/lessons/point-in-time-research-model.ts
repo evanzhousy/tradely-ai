@@ -13,18 +13,25 @@ export const correction = oct105CallMessages.find(
 export const REPORTED = report?.price ?? 0;
 export const CORRECTED = correction?.price ?? 0;
 export const CORRECTED_AT = correction?.received ?? "";
+export const FIRST_PRICE = 200;
+export const CONTRACT_MULTIPLIER = 100;
 
 /** Monday's facts in the order they reached the system, each with the time it happened. */
 export const arrivals: readonly {
 	id: string;
 	arrived: Copy;
 	fact: Copy;
+	contract?: Copy;
 	event: Copy;
 }[] = [
 	{
 		id: "t1",
 		arrived: ["Mon 10:12:05.1", "周一 10:12:05.1"],
-		fact: ["T-1: 5 @ $2.00", "T-1：5 张 @ $2.00"],
+		fact: [`T-1: 5 @ ${usd(FIRST_PRICE)}`, `T-1：5 张 @ ${usd(FIRST_PRICE)}`],
+		contract: [
+			`${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)} a contract`,
+			`每张 ${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)}`,
+		],
 		event: ["event 10:12:05.0", "事件 10:12:05.0"],
 	},
 	{
@@ -34,6 +41,10 @@ export const arrivals: readonly {
 			`周一 ${report?.received ?? ""}`,
 		],
 		fact: [`T-3: 500 @ ${usd(REPORTED)}`, `T-3：500 张 @ ${usd(REPORTED)}`],
+		contract: [
+			`${usd(REPORTED * CONTRACT_MULTIPLIER, 0)} a contract`,
+			`每张 ${usd(REPORTED * CONTRACT_MULTIPLIER, 0)}`,
+		],
 		event: [`event ${oct105CallBlock.time}`, `事件 ${oct105CallBlock.time}`],
 	},
 	{
@@ -42,6 +53,10 @@ export const arrivals: readonly {
 		fact: [
 			`T-3 corrected to ${usd(CORRECTED)}`,
 			`T-3 更正为 ${usd(CORRECTED)}`,
+		],
+		contract: [
+			`${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)} a contract`,
+			`每张 ${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)}`,
 		],
 		event: [`event ${oct105CallBlock.time}`, `事件 ${oct105CallBlock.time}`],
 	},
