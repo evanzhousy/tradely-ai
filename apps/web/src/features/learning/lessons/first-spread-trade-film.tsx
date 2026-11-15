@@ -98,6 +98,10 @@ function layout(width: number) {
 		rowY: (i: number) =>
 			H * (narrow ? 0.3 : 0.33) + i * H * (narrow ? 0.17 : 0.18),
 		rowH: H * (narrow ? 0.14 : 0.15),
+		// The three ends. A phone's cards are taller and start higher: three larger lines each.
+		endY: (i: number) =>
+			H * (narrow ? 0.27 : 0.33) + i * H * (narrow ? 0.195 : 0.18),
+		endH: H * (narrow ? 0.175 : 0.15),
 		sumY: H * (narrow ? 0.7 : 0.75),
 	};
 }
@@ -196,18 +200,21 @@ const copy = {
 		"your call ends in the money: exercised automatically",
 		"你买入的看涨是实值，会被自动行权",
 	],
-	// A phone's cards read in two lines: the same facts in fewer words.
-	belowPhone: [
-		`both expire worthless · lose the ${dollars(MAX_LOSS)} paid`,
-		`两张看涨都作废 · 亏掉付出的 ${dollars(MAX_LOSS)}`,
+	// A phone's cards say the same facts in three short lines, set larger.
+	belowPhoneMore: [
+		`you lose the ${dollars(MAX_LOSS)} paid`,
+		`亏掉付出的 ${dollars(MAX_LOSS)}`,
 	],
 	betweenPhone: [
-		`${LONG.strike} call exercised · unless closed first`,
-		`${LONG.strike} 看涨被行权 · 除非先平仓`,
+		`your call is exercised: buy ${SHARES} shares`,
+		`你的看涨被行权：买入 ${SHARES} 股`,
 	],
-	abovePhone: [
-		`buy shares at $${LONG.strike}, must sell at $${SHORT.strike}`,
-		`以 $${LONG.strike} 买入股票，须以 $${SHORT.strike} 卖出`,
+	betweenPhoneMore: ["unless closed first", "除非先平仓"],
+	duePhone: [`pay ${dollars(BETWEEN.due)}`, `付 ${dollars(BETWEEN.due)}`],
+	abovePhone: [`buy shares at $${LONG.strike}`, `以 $${LONG.strike} 买入股票`],
+	abovePhoneMore: [
+		`must sell them at $${SHORT.strike}`,
+		`须以 $${SHORT.strike} 卖出`,
 	],
 	betweenMore: [
 		"the sold call expires worthless · unless closed first",
@@ -232,8 +239,8 @@ const copy = {
 		"所以很多人会在到期前平掉价差。",
 	],
 	claimBig: [
-		"Know the worst case before you order.",
-		"下单之前，先知道最坏情况。",
+		"The worst case is known before the order.",
+		"下单之前，最坏情况已经确定。",
 	],
 	claimSub: [
 		"The best case, break-even and exits too.",
@@ -280,6 +287,13 @@ function Scene({
 		/>
 	);
 	const text = narrow ? T.small * 1.1 : T.body;
+	/** An end's card: on a phone its key line and its two reasons are set a step larger. */
+	const endBox = (i: number) => ({
+		y: L.endY(i),
+		h: L.endH,
+		text: narrow ? T.body * 1.08 : text,
+		sub: narrow ? T.body : T.small * 1.1,
+	});
 	const row = (
 		name: string,
 		i: number,
@@ -289,16 +303,23 @@ function Scene({
 		valueClass: string,
 		valueSub?: Copy,
 		more?: Copy,
+		/** A card's own place and type sizes, where it differs from the legs' rows. */
+		box: { y: number; h: number; text: number; sub: number } = {
+			y: L.rowY(i),
+			h: L.rowH,
+			text,
+			sub: T.small * 1.1,
+		},
 	) => {
 		const at = more ? [0.3, 0.58, 0.86] : [0.42, 0.76];
-		const lineY = (k: number) => L.rowY(i) + L.rowH * at[k];
+		const lineY = (k: number) => box.y + box.h * at[k];
 		return (
 			<g key={name} data-f={name}>
 				<rect
 					x={margin}
-					y={L.rowY(i)}
+					y={box.y}
 					width={room}
-					height={L.rowH}
+					height={box.h}
 					rx={12}
 					className="wt-panel-shape"
 				/>
@@ -306,7 +327,7 @@ function Scene({
 					x={margin + 14}
 					y={lineY(0)}
 					className="wt-film-num"
-					style={{ fontSize: text }}
+					style={{ fontSize: box.text }}
 				>
 					{t(line)}
 				</text>
@@ -314,7 +335,7 @@ function Scene({
 					x={margin + 14}
 					y={lineY(1)}
 					className="wt-film-type wt-film-dim"
-					style={{ fontSize: T.small * 1.1 }}
+					style={{ fontSize: box.sub }}
 				>
 					{t(sub)}
 				</text>
@@ -323,7 +344,7 @@ function Scene({
 					y={lineY(0)}
 					textAnchor="end"
 					className={valueClass}
-					style={{ fontSize: text }}
+					style={{ fontSize: box.text }}
 				>
 					{value}
 				</text>
@@ -343,7 +364,7 @@ function Scene({
 						x={margin + 14}
 						y={lineY(2)}
 						className="wt-film-type wt-film-dim"
-						style={{ fontSize: T.small * 1.1 }}
+						style={{ fontSize: box.sub }}
 					>
 						{t(more)}
 					</text>
@@ -644,21 +665,23 @@ function Scene({
 				"end-0",
 				0,
 				narrow ? copy.belowShort : copy.below,
-				narrow ? copy.belowPhone : copy.bothExpire,
+				copy.bothExpire,
 				signedDollars(spreadProfit(ENDS.below)),
 				`wt-film-num ${toneClass.down}`,
 				undefined,
-				narrow ? undefined : copy.belowMore,
+				narrow ? copy.belowPhoneMore : copy.belowMore,
+				endBox(0),
 			)}
 			{row(
 				"end-1",
 				1,
 				narrow ? copy.betweenShort : copy.between,
 				narrow ? copy.betweenPhone : copy.betweenWhy,
-				t(copy.sharesDue),
+				t(narrow ? copy.duePhone : copy.sharesDue),
 				"wt-film-num wt-film-accent",
 				undefined,
-				narrow ? undefined : copy.betweenMore,
+				narrow ? copy.betweenPhoneMore : copy.betweenMore,
+				endBox(1),
 			)}
 			{row(
 				"end-2",
@@ -668,12 +691,13 @@ function Scene({
 				signedDollars(spreadProfit(ENDS.above)),
 				`wt-film-num ${toneClass.up}`,
 				undefined,
-				narrow ? undefined : copy.aboveMore,
+				narrow ? copy.abovePhoneMore : copy.aboveMore,
+				endBox(2),
 			)}
 			<Word
 				name="close-note"
 				x={margin}
-				y={L.rowY(2) + L.rowH + T.body * 1.9}
+				y={L.endY(2) + L.endH + T.body * 1.9}
 				size={T.body}
 				anchor="start"
 				className="wt-film-type"
