@@ -128,7 +128,7 @@ const copy = {
 	qBig: ["What do I check before selling a call?", "卖出看涨前，查什么？"],
 	qLine: ["A friend's list has one odd step.", "朋友清单里有一步不合适。"],
 	friendHead: [
-		"A friend's checklist for selling an ALFA call.",
+		"A friend's checklist for selling a call.",
 		"朋友列的卖出 ALFA 看涨清单。",
 	],
 	friendHeadShort: ["A friend's checklist.", "朋友的清单。"],
@@ -152,12 +152,12 @@ const copy = {
 	noteExpiry: ["before Oct 18 expiry", "在10月18日到期前"],
 	homeReset: ["Home reset", "Home 已重置"],
 	askHead: [
-		"Customize with AI asks one question first.",
+		"Customize with AI asks first.",
 		"Customize with AI 先问一个问题。",
 	],
 	askHeadShort: ["The AI asks first.", "AI 先提问。"],
 	proposeHead: [
-		"Then it proposes a step. Nothing is saved.",
+		"It proposes a step. Nothing is saved.",
 		"然后提出一步建议。什么都没保存。",
 	],
 	proposeHeadShort: ["A proposal; nothing saved.", "提出建议；未保存。"],
