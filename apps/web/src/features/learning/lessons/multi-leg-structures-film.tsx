@@ -77,7 +77,7 @@ const C_Y = [-450, 400] as const;
 const S_TICKS = [-1000, 0, 1000, 2000];
 const C_TICKS = [-400, -200, 0, 200];
 
-function layout(width: number) {
+function layout(width: number, straddleHeadLines = 1) {
 	const frame = filmFrame(width);
 	const { height: H, narrow, margin, room } = frame;
 	const left = margin + (narrow ? 36 : 56);
@@ -91,6 +91,24 @@ function layout(width: number) {
 	const totalY = rowY(LEGS.length);
 	const cardY = H * (narrow ? 0.735 : 0.775);
 	const cardH = H * (narrow ? 0.215 : 0.15);
+	const axisLabelY = bottom + 16;
+	const axisDetailY = axisLabelY + frame.type.body * 1.8;
+	const axisDetailFits = axisDetailY + frame.type.body * 1.65 + 12 <= H;
+	const headlineDetailY =
+		frame.headY +
+		(straddleHeadLines - 1) * frame.type.head * 1.35 +
+		frame.type.body * 2.43;
+	const straddleDetailY = narrow
+		? axisDetailFits
+			? axisDetailY
+			: headlineDetailY
+		: H * 0.16;
+	const straddleCaptionY =
+		narrow &&
+		!axisDetailFits &&
+		headlineDetailY + frame.type.body * 2.7 < top - 8
+			? headlineDetailY + frame.type.body * 2.7
+			: top - 25;
 	return {
 		...frame,
 		left,
@@ -107,6 +125,8 @@ function layout(width: number) {
 		worstY: totalY + rowH + (cardY - totalY - rowH) * 0.68,
 		cardY,
 		cardH,
+		straddleDetailY,
+		straddleCaptionY,
 		closeY: cardY + cardH * (narrow ? 0.36 : 0.42),
 		closeResultY: cardY + cardH * (narrow ? 0.76 : 0.82),
 	};
@@ -165,6 +185,10 @@ const copy = {
 		`${perContract(-STRADDLE_COST)} paid`,
 		`支付 ${perContract(-STRADDLE_COST)}`,
 	],
+	straddleSource: [
+		`${usd(CENTS(STRADDLE_COST / 2))} call + ${usd(CENTS(STRADDLE_COST / 2))} put = ${share(STRADDLE_COST)} a share · ${usd(CENTS(STRADDLE_COST) * 100, 0)} a straddle`,
+		`看涨 ${usd(CENTS(STRADDLE_COST / 2))} + 看跌 ${usd(CENTS(STRADDLE_COST / 2))} = 每股 ${share(STRADDLE_COST)} · 每组 ${usd(CENTS(STRADDLE_COST) * 100, 0)}`,
+	],
 	pHead: ["Your condor goes in as one order.", "你的铁鹰作为一张订单下达。"],
 	p2Head: [
 		`At $${CLOSE} the condor loses ${usd(-CLOSE_RESULT, 0)}.`,
@@ -199,7 +223,13 @@ function Scene({
 	locale: Locale;
 }) {
 	const t = (value: Copy) => pick(value, locale);
-	const L = layout(width);
+	const frame = filmFrame(width);
+	const straddleHeadLines = lineCount(
+		t(copy.sHead),
+		frame.narrow ? frame.room : frame.room * 0.74,
+		frame.type.head,
+	);
+	const L = layout(width, straddleHeadLines);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
 	const headline = (name: string, text: Copy) => (
@@ -361,7 +391,7 @@ function Scene({
 					<text
 						data-f="s-value-caption"
 						x={L.left}
-						y={L.top - 25}
+						y={L.straddleCaptionY}
 						className="wt-small"
 					>
 						{t(copy.valueAxis)}
@@ -369,7 +399,7 @@ function Scene({
 					<text
 						data-f="s-profit-caption"
 						x={L.left}
-						y={L.top - 25}
+						y={L.straddleCaptionY}
 						className="wt-small"
 					>
 						{t(copy.straddleAxis)}
@@ -408,6 +438,27 @@ function Scene({
 						t(copy.paid),
 						"wt-film-loss",
 					)}
+					<text
+						data-f="s-cost-source"
+						x={W / 2}
+						y={L.straddleDetailY}
+						textAnchor="middle"
+						className="wt-film-type"
+						style={{ fontSize: T.body }}
+					>
+						{narrow ? (
+							<>
+								<tspan x={W / 2}>
+									{t(copy.straddleSource).split(" = ")[0]}
+								</tspan>
+								<tspan x={W / 2} dy={T.body * 1.35}>
+									= {t(copy.straddleSource).split(" = ")[1]}
+								</tspan>
+							</>
+						) : (
+							t(copy.straddleSource)
+						)}
+					</text>
 					<path
 						data-f="s-deduct"
 						d={`M${L.x(100)} ${L.y(S_Y, 0)}V${L.y(S_Y, -STRADDLE_COST * 100)}m-4 -6 4 6 4 -6`}
@@ -743,7 +794,7 @@ function build(context: FilmContext) {
 	draw(p("s-put"), 10.4);
 	show(one("s-put-tag"), 10.4);
 	// The component value V settles at 11.1; deduction begins after 1 s of quiet.
-	fadeIn(one("s-cost"), 12.1);
+	fadeIn([one("s-cost"), one("s-cost-source")], 12.1);
 	d.trace(p("s-deduct"), 12.1, { duration: 0.5, ease: "power2.out" });
 	// The premium deduction settles at 12.6, then stands for a full second.
 	hide(one("s-value-caption"), 12.1, 0.3, 0);
@@ -767,6 +818,7 @@ function build(context: FilmContext) {
 			p("s-profit"),
 			p("s-deduct"),
 			one("s-cost"),
+			one("s-cost-source"),
 			one("s-low"),
 			one("s-high"),
 		],
