@@ -66,10 +66,11 @@ const userUrl = (name: string) => `https://www.reddit.com/user/${name}/`;
 const metricsRead = (posts: readonly RedditPost[]) =>
 	formatMetricsChecked(posts.filter((post) => post.metricsCapturedAt));
 
-const postTags = (post: RedditPost) =>
-	post.structure && post.structure !== "Other"
-		? [...post.tickers, post.structure]
-		: post.tickers;
+/** "Other" is the database's placeholder, not a ticker or a structure a reader can look up. */
+const postTags = (post: RedditPost) => [
+	...post.tickers.filter((ticker) => ticker !== "Other"),
+	...(post.structure && post.structure !== "Other" ? [post.structure] : []),
+];
 
 function ExternalText({
 	href,
@@ -131,9 +132,21 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 								<p className="mt-1.5 text-muted-foreground text-sm leading-snug">
 									{post.summary}
 								</p>
+								{/* Phones lose the Where column, and the smallest the Comments column too. */}
 								<p className="mt-1.5 text-muted-foreground text-xs md:hidden">
-									r/{post.subreddit} · u/{post.author} ·{" "}
-									{formatDate(post.postedAt)}
+									<ExternalText href={subredditUrl(post.subreddit)}>
+										r/{post.subreddit}
+									</ExternalText>{" "}
+									·{" "}
+									<ExternalText href={userUrl(post.author)}>
+										u/{post.author}
+									</ExternalText>{" "}
+									· {formatDate(post.postedAt)}
+									<span className="sm:hidden">
+										{" "}
+										· {formatMetric(post.comments)}{" "}
+										{post.comments === 1 ? "comment" : "comments"}
+									</span>
 								</p>
 								{post.metricsCapturedAt ? (
 									<p className="mt-1 text-muted-foreground text-xs">
@@ -241,7 +254,7 @@ const METHOD = [
 	},
 	{
 		title: "Where the data comes from",
-		body: "Each row is reviewed and stored in our own database. We link to the original post and write the summary ourselves rather than copying the post. Tradely is not affiliated with or endorsed by Reddit.",
+		body: "Each week a third-party Reddit data service suggests candidate posts and reads their upvotes and comments. We read every candidate and list only the ones we approve, keeping them in our own database. We link to the original post and write the summary ourselves rather than copying the post. Tradely is not affiliated with or endorsed by Reddit.",
 	},
 ];
 
@@ -278,6 +291,11 @@ export function RedditOptionsPage() {
 						variant="outline"
 					/>
 				</div>
+				<p className="max-w-[65ch] text-muted-foreground text-xs leading-relaxed">
+					Listing is not an endorsement or financial advice. Option Trades is
+					part of TradingFlow, a separate product that needs its own account and
+					a free trial or paid plan.
+				</p>
 			</PageIntro>
 
 			<section
@@ -340,8 +358,10 @@ export function RedditOptionsPage() {
 					</h2>
 					<p className="max-w-3xl text-muted-foreground text-sm leading-relaxed">
 						{contributors.length} users who have named levels or prints in
-						public posts, in alphabetical order. This is not a ranking, and
-						inclusion is not an endorsement. Reddit karma is not tracked.
+						public posts, in alphabetical order. They are tracked separately:
+						the posts above come from anyone on Reddit and are chosen one by
+						one. This is not a ranking, and inclusion is not an endorsement.
+						Reddit karma is not tracked.
 					</p>
 				</div>
 				<TraderRoster
