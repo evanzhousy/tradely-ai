@@ -44,7 +44,7 @@ import { fixed2 } from "./gamma-model";
  * calls, and asks about the other side: a market maker, or dealer, sells them, so is the
  * dealer betting against you? Subject: the dealer's hedge, two bars one under the other,
  * the shares the sold calls move like and the shares bought against them. They match at
- * 260, so direction is hedged and the spread is what the dealer aims to keep. Then ALFA
+ * 260, so direction is hedged and the quoted spread is what the dealer hopes to earn. Then ALFA
  * walks up $2: delta, the first bar and its figure move from one value, the second bar
  * doesn't, and the hero is the 40 shares between them, which the dealer must buy. Last,
  * one strike with 2,500 contracts open: the same arithmetic gives 6,650 shares a $1 either
@@ -124,9 +124,11 @@ function layout(width: number) {
 			? {
 					oi: H * 0.26,
 					calc: H * 0.33,
-					column: H * 0.45,
-					rows: [H * 0.56, H * 0.72] as const,
-					unknown: H * 0.88,
+					calcSize: T.body * 1.25,
+					column: H * 0.485,
+					columnSize: T.body,
+					rows: [H * 0.59, H * 0.74] as const,
+					unknown: H * 0.885,
 					result: T.num,
 					label: T.head,
 					tag: T.body,
@@ -134,7 +136,9 @@ function layout(width: number) {
 			: {
 					oi: H * 0.29,
 					calc: H * 0.385,
+					calcSize: T.small * 1.1,
 					column: H * 0.47,
+					columnSize: T.small,
 					rows: [H * 0.59, H * 0.74] as const,
 					unknown: H * 0.9,
 					result: T.num * 0.8,
@@ -178,8 +182,8 @@ const copy = {
 		`净额 ${count(short.net)} 股：ALFA 的方向已被对冲。`,
 	],
 	spread: [
-		`The dealer aims to keep the spread: ${usd(SPREAD)} a share, ${usd(perContract(SPREAD), 0)} a contract.`,
-		`做市商想赚的是价差：每股 ${usd(SPREAD)}，每张 ${usd(perContract(SPREAD), 0)}。`,
+		`The dealer hopes to earn the quoted spread: ${usd(SPREAD)} a share, ${usd(perContract(SPREAD), 0)} a contract.`,
+		`做市商希望赚到报价的价差：每股 ${usd(SPREAD)}，每张 ${usd(perContract(SPREAD), 0)}。`,
 	],
 	moveHead: ["Then ALFA rises.", "接着 ALFA 上涨。"],
 	moveAnswer: [
@@ -211,9 +215,14 @@ const copy = {
 		`Open interest: ${count(OPEN_INTEREST)} Oct 18 ${STRIKE} calls.`,
 		`未平仓量：${count(OPEN_INTEREST)} 张 10月18日 ${STRIKE} 看涨。`,
 	],
-	sideCalcNarrow: [
-		`${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = ${count(STRIKE_SHARES)} per $1`,
-		`${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER} = 每 $1 ${count(STRIKE_SHARES)} 股`,
+	// A phone sets the arithmetic on two rows, larger: the product, then what it comes to.
+	sideCalcProduct: [
+		`gamma ${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER}`,
+		`Gamma ${STRIKE_GAMMA} × ${count(OPEN_INTEREST)} × ${MULTIPLIER}`,
+	],
+	sideCalcResult: [
+		`= ${count(STRIKE_SHARES)} shares per $1`,
+		`= 每 $1 ${count(STRIKE_SHARES)} 股`,
 	],
 	sideColumnNarrow: ["If ALFA rises $1", "ALFA 上涨 $1 时"],
 	sideColumn: [
@@ -538,26 +547,40 @@ function Scene({
 					maxWidth={room}
 					anchor="start"
 				/>
-				{/* The arithmetic is its own row, with gamma's gloss beside it or, on a phone, under it. */}
+				{/* The arithmetic is its own row with gamma's gloss beside it; a phone sets it larger,
+				    on two rows, with the gloss under them. */}
 				<Word
 					name="s-calc"
 					x={margin}
 					y={L.side.calc}
-					size={narrow ? T.body : T.small * 1.1}
+					size={L.side.calcSize}
 					anchor="start"
 					className={narrow ? "wt-film-num" : "wt-film-num wt-film-dim"}
 				>
-					{t(narrow ? copy.sideCalcNarrow : copy.sideCalc)}
+					{narrow ? (
+						<>
+							<tspan x={margin}>{t(copy.sideCalcProduct)}</tspan>
+							<tspan x={margin} dy={L.side.calcSize * 1.35}>
+								{t(copy.sideCalcResult)}
+							</tspan>
+						</>
+					) : (
+						t(copy.sideCalc)
+					)}
 				</Word>
 				<Word
 					name="s-gloss"
 					x={
 						narrow
 							? margin
-							: margin + textWidth(t(copy.sideCalc), T.small * 1.1) + 16
+							: margin + textWidth(t(copy.sideCalc), L.side.calcSize) + 16
 					}
-					y={narrow ? L.side.calc + T.small * 1.5 : L.side.calc}
-					size={T.small}
+					y={
+						narrow
+							? L.side.calc + L.side.calcSize * 1.35 + L.expressionSize * 1.55
+							: L.side.calc
+					}
+					size={narrow ? L.expressionSize : T.small}
 					anchor="start"
 					className="wt-film-type wt-film-dim"
 				>
@@ -567,7 +590,7 @@ function Scene({
 					name="s-column"
 					x={L.right}
 					y={L.side.column}
-					size={T.small}
+					size={L.side.columnSize}
 					anchor="end"
 					className="wt-film-tag"
 				>
@@ -812,7 +835,7 @@ function build(context: FilmContext) {
 	fade([one("b-held-figure"), one("b-held-unit")], 15.0);
 	// Both bars match: the direction is hedged, and the spread is what is left.
 	fade(one("h-net"), 16.2, 0.4);
-	fade(one("h-spread"), 17.8, 0.4);
+	fade(one("h-spread"), 17.6, 0.4);
 
 	// ——— move: ALFA rises $2 and the hedge is 40 shares short ———
 	tl.addLabel("move", 21.4);
