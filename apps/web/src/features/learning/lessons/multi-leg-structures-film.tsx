@@ -187,7 +187,7 @@ const copy = {
 		`每组最好 ${signedUsd(NET_CASH, 0)}，最坏 ${signedUsd(WORST_CASH, 0)}。`,
 	],
 	nextBig: ["Next: size and exit", "下一课：仓位与出场"],
-	nextSub: ["decide both before you buy", "买入前就定好"],
+	nextSub: ["how many contracts, and when to exit", "买几张、何时出场"],
 } as const satisfies Record<string, Copy>;
 
 function Scene({
