@@ -232,8 +232,8 @@ const copy = {
 		"两者都可能在任一交易日被指派。",
 	],
 	a2Head: [
-		"Only buying the option back prevents it.",
-		"只有买回平仓，才能确保不被指派。",
+		"Only buying the option back first prevents it.",
+		"只有先买回平仓，才能确保不被指派。",
 	],
 	calNote: ["you can't tell which day", "无法预知是哪一天"],
 	calMore: [
