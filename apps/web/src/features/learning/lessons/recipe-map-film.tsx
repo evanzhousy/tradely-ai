@@ -117,7 +117,7 @@ const copy = {
 	qTag: ["Bottom line · Monday's run", "核心结论 · 周一的运行"],
 	qLine: ["Where does this sentence come from?", "这句话从哪里来？"],
 	mapHead: [
-		"Trace the Bottom line back to its inputs.",
+		"Trace the Bottom line to its inputs.",
 		"把核心结论追溯回它的输入。",
 	],
 	mapHeadShort: [
