@@ -137,14 +137,8 @@ const copy = {
 	],
 	bookHead: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
 	bookHeadShort: ["Buyers bid; sellers ask.", "买方出价，卖方要价。"],
-	buyHead: [
-		"Buy 10 and sell 10: two prices.",
-		"买 10 股和卖 10 股：两个价格。",
-	],
-	buyHeadShort: [
-		"Buy 10, sell 10: two prices.",
-		"买 10 股、卖 10 股：两个价。",
-	],
+	buyHead: ["Buy, sell: two prices.", "买 10 股和卖 10 股：两个价格。"],
+	buyHeadShort: ["Buy, sell: two prices.", "买 10 股、卖 10 股：两个价。"],
 	bigHead: [
 		`Buy ${count(BIG)} at once: you climb the book.`,
 		`一次买 ${count(BIG)} 股：一档档往上买。`,
@@ -153,7 +147,7 @@ const copy = {
 		`Buy ${count(BIG)}: you climb the book.`,
 		`买 ${count(BIG)} 股：逐档往上买。`,
 	],
-	diff: ["Last trade isn’t an offer.", "最新成交不是报价。"],
+	diff: ["Last trade is neither.", "最新成交不是报价。"],
 	asks: ["asks · sellers", "卖价 · 卖方"],
 	bids: ["bids · buyers", "买价 · 买方"],
 	last: ["last", "最新"],
