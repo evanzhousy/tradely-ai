@@ -64,3 +64,5 @@ elif kind == "timing":
     if rows:
         for r in d["rows"]:
             print(f"     {r}")
+        for p in d.get("pairs", []):
+            print(f"    pair {p}")

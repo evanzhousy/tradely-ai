@@ -1,6 +1,7 @@
 // One page of the film audit (run by film-audit.sh in ego-browser). Audits a film's timing and
 // copy from its timeline: every headline's hold, the question line, the claim and its second
-// line, headline length and figures, the hero lock's share of the runtime (label "hero-lock"),
+// line, headline length and figures, a two-line headline's length and span, the hero lock's
+// share of the runtime (label "hero-lock"),
 // the runtime, class names, and headlines stacked on one another. Then its motion: entrances
 // and exits of at least 0.3 s, a hero that stands 1.5 s, no empty or faint stage between beats,
 // and no crossfade printing one line over another, and the title card's name and subtitle each
@@ -1017,6 +1018,70 @@ for (const x of out.sentences) {
 	if (figures(x.text) > 2)
 		fails.push(`figures ${x.name}: ${figures(x.text)} "${x.text}"`);
 }
+// A two-line headline: two lines at headline size that stand together for a second or more.
+// The pair runs at most 12 words (27 Chinese characters) and three figures in all. It may
+// run to 14 words (32 characters) when its first line stands alone for 5 s and neither line
+// is over 36 characters, a phone's single row. A pair over one headline's length (8 words,
+// 18 characters) spans at least 5.5 s, from the first line's entry to the exit of whichever
+// line leaves last.
+// A headline line is one at headline size in the headline's place: no lower than three and
+// a half lines under the top of the highest headline. Large type on the stage is not one.
+const headTop = Math.min(
+	...out.sentences.filter((x) => /-head$/.test(x.name)).map((x) => x.top),
+);
+const headlines = out.sentences.filter(
+	(x) =>
+		x.kind === "type" &&
+		(/-head$/.test(x.name) || sized(x)) &&
+		x.top <= headTop + out.headSize * 3.5 &&
+		!/^q-|^z-/.test(x.name) &&
+		!isClaim(x),
+);
+const pairs = [];
+const length = (t) => (zh ? cjk(t) : words(t));
+const paired = new Set();
+for (const a of headlines)
+	for (const b of headlines) {
+		if (a.name === b.name || a.from > b.from) continue;
+		if (a.from === b.from && a.name > b.name) continue;
+		const together =
+			Math.min(a.from + a.hold, b.from + b.hold) - Math.max(a.from, b.from);
+		if (together < 1) continue;
+		const key = `${a.name}+${b.name}`;
+		if (paired.has(key)) continue;
+		paired.add(key);
+		const total = length(a.text) + length(b.text);
+		const unit = zh ? "chars" : "words";
+		const span =
+			Math.round((Math.max(a.from + a.hold, b.from + b.hold) - a.from) * 10) /
+			10;
+		const alone = Math.round((b.from - a.from) * 10) / 10;
+		// A line's own length is its words or Chinese characters; its row is its characters.
+		const row = (t) => (zh ? cjk(t) : t.length);
+		const rows = `${row(a.text)} / ${row(b.text)}`;
+		const oneRow = Math.max(row(a.text), row(b.text)) <= (zh ? 18 : 36);
+		const quote = `"${a.text} / ${b.text}"`;
+		if (total > (zh ? 32 : 14))
+			fails.push(
+				`pair ${a.name} + ${b.name}: ${total} ${unit} > ${zh ? 32 : 14} ${quote}`,
+			);
+		else if (total > (zh ? 27 : 12) && !(alone >= 5 && oneRow))
+			fails.push(
+				`pair ${a.name} + ${b.name}: ${total} ${unit} > ${zh ? 27 : 12}, and not the longer pair (first line alone ${alone}s of 5, lines of ${rows} characters of ${zh ? 18 : 36}) ${quote}`,
+			);
+		else if (total > (zh ? 18 : 8) && span < 5.5)
+			fails.push(
+				`pair ${a.name} + ${b.name}: ${total} ${unit} span ${span}s < 5.5`,
+			);
+		const count = figures(`${a.text} ${b.text}`);
+		pairs.push(
+			`${a.name} + ${b.name}: ${total} ${unit} (${length(a.text)} + ${length(b.text)}), lines of ${rows} characters, ${count} figures, alone ${alone}s, together ${Math.round(together * 10) / 10}s, span ${span}s ${quote}`,
+		);
+		if (count > 3)
+			fails.push(
+				`figures pair ${a.name} + ${b.name}: ${count} "${a.text} / ${b.text}"`,
+			);
+	}
 // The claim's second line, found by role: what comes up with it, under it.
 if (out.claim)
 	for (const x of out.sentences)
@@ -1122,6 +1187,7 @@ console.log(
 				([at, length]) => `still ${length.toFixed(1)} s at ${at.toFixed(1)}`,
 			),
 		],
+		pairs,
 		rows: out.rows.map(
 			(r) => `${r.show.toFixed(2)} ${r.hold.toFixed(2)} ${r.name} ${r.text}`,
 		),
