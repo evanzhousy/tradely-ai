@@ -257,7 +257,7 @@ const copy = {
 	calls: ["calls", "看涨"],
 	puts: ["puts", "看跌"],
 	fHead: ["Frame it so someone can check it.", "把问题框定到别人能核对。"],
-	aHead: ["Then tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
+	aHead: ["Tag each claim by its evidence.", "再按证据给每个结论贴标签。"],
 	a2Head: [
 		"“Favor 110” is interpretation, not fact.",
 		"“偏好 110”是解读，不是事实。",
@@ -268,7 +268,7 @@ const copy = {
 	calculated: ["calculated", "计算"],
 	interpretation: ["interpretation", "解读"],
 	unknown: ["unknown", "未知"],
-	gHead: ["Keep a record of every answer.", "为每个答案留一份记录。"],
+	gHead: ["Every answer gets a record.", "为每个答案留一份记录。"],
 	g2Head: [
 		"Revise in place; new question, new record.",
 		"原题修订；新题新建记录。",
