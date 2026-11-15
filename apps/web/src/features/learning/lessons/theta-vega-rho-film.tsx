@@ -49,7 +49,7 @@ import {
  * claims; a decay chart and a waterfall take turns as the proof.
  *
  *   open       0–4        "Theta, vega and rho"
- *   question   4–9.5      ALFA +$1, six days later, IV −3 points; call −$0.19. Why?
+ *   question   4–9.5      ALFA +$1, six days later, implied volatility (IV) −3 points; call −$0.19. Why?
  *   theta      9.5–19.55  the value drains to expiry, slowly then fast; cut to −$0.065 a day
  *   vega       19.55–25.45 "IV up 3%": three points is +$0.35, 3% of 35% only +$0.12
  *   sum        25.45–31.95 hero: the waterfall, +0.52, +0.02, −0.39, −0.35 = −$0.20 beside
@@ -128,6 +128,16 @@ function layout(width: number) {
 		top,
 		bottom,
 		waterfallBottom,
+		heldAxisY: bottom + (narrow ? 36 : 32),
+		questionIVY: height * 0.57,
+		questionIVGlossY: (lines: number) =>
+			height * 0.57 +
+			lines * frame.type.body * 1.35 +
+			(narrow ? frame.type.body : frame.type.small) * 1.25,
+		questionLineY: (glossY: number) =>
+			narrow
+				? Math.max(height * 0.72, glossY + frame.type.body * 1.8)
+				: height * 0.72,
 		xT,
 		yT,
 		yW,
@@ -157,7 +167,14 @@ const copy = {
 	qTagLeft: ["ALFA, 6 days later", "ALFA，六天后"],
 	qLeft: [`ALFA +$${SCENARIO.move}`, `ALFA +$${SCENARIO.move}`],
 	qTagRight: ["the call, per share", "看涨，每股"],
-	qIV: [`IV −${-SCENARIO.volPoints} points`, `IV −${-SCENARIO.volPoints} 点`],
+	qIV: [
+		`implied volatility (IV) −${-SCENARIO.volPoints} points`,
+		`隐含波动率（IV）−${-SCENARIO.volPoints} 点`,
+	],
+	qIVGloss: [
+		"the size of move that option prices imply",
+		"期权价格所隐含的波动幅度",
+	],
 	qRight: [
 		`call ${signedPrice(scenario.repriced)}`,
 		`看涨 ${signedPrice(scenario.repriced)}`,
@@ -274,6 +291,10 @@ function Scene({
 	const { height: H, type: T, room, narrow } = L;
 	const W = width;
 	const sumHeadline = t(narrow ? copy.sumHeadShort : copy.sumHead);
+	const qIV = t(copy.qIV);
+	const qIVWidth = narrow ? 170 : room;
+	const qIVGlossSize = narrow ? T.body : T.small;
+	const qIVGlossY = L.questionIVGlossY(lineCount(qIV, qIVWidth, T.body));
 	// The stage that holds the sum's shrunk copy shares the hero's glyph centre.
 	const stageY = L.heroY - 0.33 * (T.num * 1.4 - L.factorSize);
 	const stageHalf =
@@ -349,6 +370,7 @@ function Scene({
 										y={L.yT(tick) + 4}
 										textAnchor="end"
 										className="wt-small"
+										style={narrow ? { fontSize: T.body } : undefined}
 									>
 										{`$${tick}`}
 									</text>
@@ -363,19 +385,26 @@ function Scene({
 									i === 0 ? "start" : i === ticksT.length - 1 ? "end" : "middle"
 								}
 								className="wt-small"
+								style={narrow ? { fontSize: T.body } : undefined}
 							>
 								{dateAfter(tick, locale)}
 							</text>
 						))}
 						<text
 							x={L.right}
-							y={L.bottom + 32}
+							y={L.heldAxisY}
 							textAnchor="end"
 							className="wt-small"
+							style={narrow ? { fontSize: T.body } : undefined}
 						>
 							{t(copy.heldAxis)}
 						</text>
-						<text x={L.left} y={L.top - 12} className="wt-small">
+						<text
+							x={L.left}
+							y={L.top - 12}
+							className="wt-small"
+							style={narrow ? { fontSize: T.body } : undefined}
+						>
 							{t(copy.valueAxis)}
 						</text>
 						<g clipPath={`url(#decay-${id})`}>
@@ -399,6 +428,7 @@ function Scene({
 							x={L.xT(0) + 12}
 							y={L.yT(TODAY.price) - 12}
 							className="wt-halo wt-accent wt-marker-label"
+							style={narrow ? { fontSize: T.body } : undefined}
 						>
 							{t(copy.today)}
 						</text>
@@ -587,20 +617,29 @@ function Scene({
 						</Word>
 					</g>
 				))}
-				<Word
+				<Lines
 					name="q-iv"
+					text={qIV}
 					x={W / 2}
-					y={H * 0.57}
+					y={L.questionIVY}
 					size={T.body}
+					maxWidth={qIVWidth}
 					className="wt-film-type wt-film-loss"
+				/>
+				<Word
+					name="q-iv-gloss"
+					x={W / 2}
+					y={qIVGlossY}
+					size={qIVGlossSize}
+					className="wt-film-type wt-film-dim"
 				>
-					{t(copy.qIV)}
+					{t(copy.qIVGloss)}
 				</Word>
 				<Lines
 					name="q-line"
 					text={t(copy.qLine)}
 					x={W / 2}
-					y={H * 0.72}
+					y={L.questionLineY(qIVGlossY)}
 					size={T.body}
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
@@ -889,6 +928,7 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag-0"), 4.6);
 	show(one("q-iv"), 4.6);
+	show(one("q-iv-gloss"), 4.6);
 	land(one("q-num-0"), 4.8);
 	show(one("q-tag-1"), 5.3);
 	land(one("q-num-1"), 5.5);
