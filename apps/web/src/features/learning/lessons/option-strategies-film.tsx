@@ -15,6 +15,7 @@ import {
 	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	BUY_NOV,
 	CALL_105,
@@ -61,6 +62,8 @@ const COVERED_TOP = structures.covered(RANGE[1]);
 const SPREAD_LOW = structures.spread(RANGE[0]);
 const SPREAD_HIGH = structures.spread(RANGE[1]);
 const profit = (spot: number) => spreadPayoff(spot) - NET;
+/** Where the call sold alone stops making money: its strike plus the premium. */
+const ALONE_EVEN = CALL_105.strike + SOLD / 100;
 const stockLine = (spot: number) => (spot - STOCK_COST) * 100;
 /** Dollars per contract as a whole-dollar figure: "$500", "+$375". */
 const dollars = (value: number) => usd(value * 100, 0);
@@ -73,13 +76,17 @@ function layout(width: number) {
 	const right = margin + room;
 	const top = H * (narrow ? 0.3 : 0.28);
 	const bottom = H * 0.84;
-	const readoutSize = narrow ? frame.type.small * 1.1 : frame.type.body;
+	const readoutSize = frame.type.body;
 	return {
 		...frame,
 		left,
 		right,
 		top,
 		bottom,
+		/** Axis ticks, captions and the legend: a phone sets them at body size. */
+		tick: narrow ? frame.type.body : 11,
+		/** A curve's own label. */
+		label: narrow ? frame.type.body : frame.type.small * 1.1,
 		resultX: left + (narrow ? 78 : 110),
 		resultY: top + readoutSize * 5.5,
 		resultSize: frame.type.num * 1.8,
@@ -98,12 +105,19 @@ const copy = {
 	title: ["Strategies", "策略"],
 	titleSub: ["one leg, many positions", "一条腿，多种可能的持仓"],
 	qTag: ["Oct 18 105C · BID", "10/18 105C · 买价成交"],
-	qLine: [`Sold for ${usd(SOLD)}.`, `以 ${usd(SOLD)} 卖出。`],
+	qLine: [
+		`Sold for ${usd(SOLD)} a share, ${dollars(SOLD)} a contract.`,
+		`以每股 ${usd(SOLD)} 卖出，每张 ${dollars(SOLD)}。`,
+	],
 	qBig: ["A bet ALFA won't rise?", "押注 ALFA 不涨？"],
 	lHead: ["Alone, its loss has no limit.", "单独卖出：亏损没有上限。"],
 	cHead: ["100 shares: a covered call.", "100 股：备兑看涨。"],
 	sHead: ["Long 100 call: capped spread.", "加上 100 看涨多头：价差封顶。"],
 	sold: ["105 call, sold", "105 看涨，卖出"],
+	even: [
+		`break-even $${ALONE_EVEN.toFixed(2)}`,
+		`盈亏平衡 $${ALONE_EVEN.toFixed(2)}`,
+	],
 	stock: [`stock · entry $${STOCK_COST}`, `股票 · 买入价 $${STOCK_COST}`],
 	covered: ["covered call", "备兑看涨"],
 	spread: [
@@ -187,7 +201,16 @@ function Scene({
 			anchor="start"
 		/>
 	);
-	const text = narrow ? T.small * 1.1 : T.body;
+	const text = T.body;
+	/** The second line of a roll's row: a phone sets it at body size. */
+	const rowSub = narrow ? T.body : T.small * 1.1;
+	const tick = { fontSize: L.tick };
+	// The legend's keys follow the measured width of what stands before them.
+	const payoffKeyX = L.left + textWidth(t(copy.axisBoth), L.tick) + 20;
+	const legendAt = [
+		payoffKeyX,
+		payoffKeyX + 20 + textWidth(t(copy.together), L.tick) + 12,
+	];
 	const path = (f: (s: number) => number) =>
 		[RANGE[0], 100, 105, 110, RANGE[1]]
 			.map(
@@ -210,7 +233,7 @@ function Scene({
 			y={L.y(f(at)) + dy}
 			textAnchor={anchor}
 			className={`wt-film-type ${className}`}
-			style={{ fontSize: T.small * 1.1 }}
+			style={{ fontSize: L.label }}
 		>
 			{t(label)}
 		</text>
@@ -303,16 +326,17 @@ function Scene({
 								x={L.left}
 								y={L.top - 12}
 								className="wt-small"
+								style={tick}
 							>
 								{t(label)}
 							</text>
 						))}
 						<g data-f="axis-both">
-							<text x={L.left} y={L.top - 12} className="wt-small">
+							<text x={L.left} y={L.top - 12} className="wt-small" style={tick}>
 								{t(copy.axisBoth)}
 							</text>
 							{[copy.together, copy.profitLabel].map((label, i) => {
-								const x = L.left + (i === 0 ? 60 : 132);
+								const x = legendAt[i];
 								return (
 									<g key={i === 0 ? "payoff" : "profit"}>
 										<path
@@ -320,7 +344,12 @@ function Scene({
 											className="wt-line-position"
 											strokeDasharray={i === 0 ? "4 3" : undefined}
 										/>
-										<text x={x + 20} y={L.top - 12} className="wt-small">
+										<text
+											x={x + 20}
+											y={L.top - 12}
+											className="wt-small"
+											style={tick}
+										>
 											{t(label)}
 										</text>
 									</g>
@@ -338,6 +367,7 @@ function Scene({
 									y={L.y(v) + 4}
 									textAnchor="end"
 									className="wt-small"
+									style={tick}
 								>
 									{v === 0
 										? "$0"
@@ -349,11 +379,12 @@ function Scene({
 							<text
 								key={v}
 								x={L.x(v)}
-								y={L.bottom + 16}
+								y={L.bottom + L.tick * 1.45}
 								textAnchor={
 									v === RANGE[1] ? "end" : v === RANGE[0] ? "start" : "middle"
 								}
 								className="wt-small"
+								style={tick}
 							>
 								{`$${v}`}
 							</text>
@@ -361,15 +392,18 @@ function Scene({
 						<g data-f="spot">
 							<path
 								data-f="spot-guide"
-								d={`M${L.x(SPOT)} ${L.top}V${L.bottom}`}
+								d={`M${L.x(SPOT)} ${narrow ? L.top + L.tick * 2.2 : L.top}V${L.bottom}`}
 								className="wt-bracket"
 								strokeDasharray="4 3"
 							/>
+							{/* Beside the caption on the wide frame; a phone has no room there, so it
+							    stands in the chart's top corner. */}
 							<text
-								x={L.x(SPOT)}
-								y={L.top - 12}
-								textAnchor="middle"
+								x={narrow ? L.right : L.x(SPOT)}
+								y={narrow ? L.top + L.tick * 1.5 : L.top - 12}
+								textAnchor={narrow ? "end" : "middle"}
 								className="wt-small wt-halo"
+								style={tick}
 							>
 								{t(copy.spot)}
 							</text>
@@ -443,6 +477,23 @@ function Scene({
 							`wt-film-dim ${toneClass.focus}`,
 							-10,
 						)}
+						<g data-f="g-even">
+							<circle
+								cx={L.x(ALONE_EVEN)}
+								cy={L.y(0)}
+								r={3.5}
+								className="wt-film-ghost"
+							/>
+							<text
+								x={L.x(ALONE_EVEN) - 8}
+								y={L.y(0) + L.label * 1.5}
+								textAnchor="end"
+								className="wt-film-type wt-film-dim"
+								style={{ fontSize: L.label }}
+							>
+								{t(copy.even)}
+							</text>
+						</g>
 						{tag(
 							"g-stock",
 							115,
@@ -483,7 +534,7 @@ function Scene({
 							name="g-spread"
 							x={L.left}
 							y={L.top + text * 1.5}
-							size={T.small * 1.1}
+							size={L.label}
 							anchor="start"
 							className={`wt-film-type wt-film-dim ${toneClass.focus}`}
 						>
@@ -512,8 +563,13 @@ function Scene({
 						<Word
 							name="g-spread-short"
 							x={L.x(CALL_105.strike + 2)}
-							y={L.y(SPREAD_HIGH) + T.small * 1.5}
-							size={T.small * 1.1}
+							// Under the line on the wide frame; a phone's line is too near the axis, so under that.
+							y={
+								narrow
+									? L.y(0) + L.label * 1.35
+									: L.y(SPREAD_HIGH) + L.label * 1.4
+							}
+							size={L.label}
 							anchor="start"
 							className="wt-film-type wt-film-dim"
 						>
@@ -529,10 +585,10 @@ function Scene({
 								/>
 								<text
 									x={L.x(c.strike)}
-									y={L.bottom + 32}
+									y={L.bottom + L.tick * 2.9}
 									textAnchor={c.strike === CALL_105.strike ? "end" : "start"}
 									className="wt-small"
-									style={{ fill: "var(--tone-ink)" }}
+									style={{ fill: "var(--tone-ink)", ...tick }}
 								>
 									{t(
 										c.strike === CALL_105.strike ? copy.long105 : copy.short110,
@@ -640,7 +696,7 @@ function Scene({
 						x={margin + 14}
 						y={L.rowY(i) + L.rowH * 0.76}
 						className="wt-film-type wt-film-dim"
-						style={{ fontSize: T.small * 1.1 }}
+						style={{ fontSize: rowSub }}
 					>
 						{`${t(sub)} · `}
 						<tspan className={i === 0 ? "wt-film-gain" : "wt-film-loss"}>
@@ -652,7 +708,7 @@ function Scene({
 						y={L.rowY(i) + L.rowH * 0.76}
 						textAnchor="end"
 						className="wt-film-num"
-						style={{ fontSize: T.small * 1.1 }}
+						style={{ fontSize: rowSub }}
 					>
 						{t(work)}
 					</text>
@@ -807,8 +863,9 @@ function build(context: FilmContext) {
 	show(one("axis-profit"), 9.1);
 	draw(line("alone"), 10.65);
 	show(one("g-alone"), 11.25);
+	tl.fromTo(one("g-even"), { opacity: 0 }, { opacity: 1, duration: 0.4 }, 11.7);
 	d.swap(heads[0], heads[1], 13.35);
-	hide([line("alone"), one("g-alone")], 13.35, 0.3);
+	hide([line("alone"), one("g-alone"), one("g-even")], 13.35, 0.3);
 	draw(line("stock"), 13.75);
 	show(one("g-stock"), 14.25);
 	draw(line("covered"), 14.35);
