@@ -90,12 +90,14 @@ function layout(width: number) {
 	const colW = (width - 2 * margin) / days.length;
 	const dayX = (date: string) => margin + days.indexOf(date) * colW;
 	const cardH = H * (narrow ? 0.11 : 0.1);
-	const screenCardH = H * (narrow ? 0.225 : 0.22);
+	const screenCardLift = narrow ? 16 : 32;
+	const baseScreenCardH = H * (narrow ? 0.225 : 0.22);
+	const screenCardH = baseScreenCardH + screenCardLift;
 	// Reserve the label's full type height above its baseline, plus 10 px of
 	// clearance from UOA. Keep the report cards 12 px inside the frame too.
 	const reportY = Math.max(
 		H * (narrow ? 0.86 : 0.85),
-		H * 0.6 + screenCardH + 10 + frame.type.small + 8,
+		H * 0.6 + baseScreenCardH + 10 + frame.type.small + 8,
 	);
 	const reportCardH = Math.min(cardH, H - 12 - reportY);
 	return {
@@ -108,12 +110,20 @@ function layout(width: number) {
 		rowY: (k: number) =>
 			k === 0 ? H * (narrow ? 0.3 : 0.27) : k === 1 ? H * 0.6 : reportY,
 		cardH,
+		screenCardLift,
+		screenCardY: (_k: number) => H * 0.6 - screenCardLift,
 		screenCardH,
 		screenProof: {
 			width: width - 2 * margin,
-			size: narrow ? frame.type.num : frame.type.body,
+			size: frame.type.body,
 			barW: Math.min(120, (width - 2 * margin) * 0.33),
-			volumeY: H * 0.6 + frame.type.body * 2.4 + 10 + frame.type.num * 1.35,
+			lineStep: frame.type.body * 1.35,
+			volumeY:
+				H * 0.6 -
+				screenCardLift +
+				frame.type.body +
+				10 +
+				frame.type.body * (narrow ? 1.8 : 2.7),
 		},
 		reportCardH,
 		// The calendar.
@@ -405,7 +415,7 @@ function Scene({
 								<text
 									data-f={`kind-${kind}`}
 									x={margin}
-									y={L.rowY(k) - 8}
+									y={(k === 1 ? L.screenCardY(k) : L.rowY(k)) - 8}
 									className="wt-film-tag"
 									style={{ fontSize: T.small }}
 								>
@@ -418,7 +428,7 @@ function Scene({
 											<rect
 												data-f={`panel-${recipe.id}`}
 												x={L.cardX(i)}
-												y={L.rowY(k)}
+												y={recipe.id === SCREEN ? L.screenCardY(k) : L.rowY(k)}
 												width={L.half}
 												height={
 													recipe.id === SCREEN
@@ -433,7 +443,7 @@ function Scene({
 											<rect
 												data-f={`focus-${recipe.id}`}
 												x={L.cardX(i)}
-												y={L.rowY(k)}
+												y={recipe.id === SCREEN ? L.screenCardY(k) : L.rowY(k)}
 												width={L.half}
 												height={
 													recipe.id === SCREEN
@@ -448,7 +458,9 @@ function Scene({
 											<text
 												x={L.cardX(i) + 14}
 												y={
-													L.rowY(k) +
+													(recipe.id === SCREEN
+														? L.screenCardY(k)
+														: L.rowY(k)) +
 													(recipe.id === SCREEN
 														? T.body + 10
 														: (kind === "report" ? L.reportCardH : L.cardH) /
@@ -462,32 +474,43 @@ function Scene({
 											</text>
 											{recipe.id === SCREEN ? (
 												<g data-f="uoa-proof">
-													<Word
-														name="uoa-contract"
-														x={L.cardX(i) + 14}
-														y={L.rowY(k) + T.body * 2.4 + 10}
-														size={T.body}
-														anchor="start"
-														className="wt-film-type wt-film-dim"
-													>
-														{`${SCREEN_EXAMPLE.symbol} · ${SCREEN_EXAMPLE.strike}${SCREEN_EXAMPLE.right === "put" ? "P" : "C"}`}
-													</Word>
+													{!L.narrow ? (
+														<Word
+															name="uoa-contract"
+															x={L.cardX(i) + 14}
+															y={L.screenProof.volumeY - L.screenProof.lineStep}
+															size={T.body}
+															anchor="start"
+															className="wt-film-type wt-film-dim"
+														>
+															{`${SCREEN_EXAMPLE.symbol} · ${SCREEN_EXAMPLE.strike}${SCREEN_EXAMPLE.right === "put" ? "P" : "C"}`}
+														</Word>
+													) : null}
 													{(
 														[
 															[
 																"volume",
-																t(["Vol", "成交"]),
+																t(["Volume", "成交量"]),
 																SCREEN_EXAMPLE.volume,
+																t([
+																	"contracts traded Monday",
+																	"周一成交的张数",
+																]),
 															],
 															[
 																"oi",
-																t(["OI", "未平仓"]),
+																t(["Open interest", "未平仓量"]),
 																SCREEN_EXAMPLE.openInterest,
+																t(["contracts still open", "仍未平仓的张数"]),
 															],
 														] as const
-													).map(([name, label, value], j) => {
-														const y = L.rowY(k) + T.body * (3.8 + j * 1.4) + 10;
-														const barW = Math.min(100, L.half * 0.26);
+													).map(([name, label, value, description], j) => {
+														const y =
+															L.screenProof.volumeY +
+															j * L.screenProof.lineStep * 2;
+														const barW = L.narrow
+															? 0
+															: Math.min(100, L.half * 0.26);
 														return (
 															<g key={name} data-f={`uoa-${name}`}>
 																<Word
@@ -499,6 +522,16 @@ function Scene({
 																	className="wt-film-type"
 																>
 																	{`${label} ${value.toLocaleString("en-US")}`}
+																</Word>
+																<Word
+																	name={`uoa-${name}-description`}
+																	x={L.cardX(i) + 14}
+																	y={y + L.screenProof.lineStep}
+																	size={T.body}
+																	anchor="start"
+																	className="wt-film-type wt-film-dim"
+																>
+																	{description}
 																</Word>
 																<rect
 																	data-f={`uoa-${name}-bar`}
@@ -823,7 +856,7 @@ function Scene({
 			<Word
 				name="screen-signal"
 				x={margin}
-				y={L.rowY(1) - T.small * 2.6}
+				y={L.rowY(1) - T.small * 2.6 - L.screenCardLift}
 				size={T.body}
 				anchor="start"
 				className="wt-film-type wt-film-accent"
@@ -1044,12 +1077,14 @@ function build(context: FilmContext) {
 	// The question's answer: the session screen.
 	// Settled model values and bars enter together: no counted value can contradict
 	// its comparison. The shorter OI bar shares the volume bar's scale.
-	tl.fromTo(
-		one("uoa-contract"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3 },
-		12.75,
-	);
+	if (!L.narrow) {
+		tl.fromTo(
+			one("uoa-contract"),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3 },
+			12.75,
+		);
+	}
 	["uoa-volume", "uoa-oi"].forEach((name, i) => {
 		tl.fromTo(
 			one(name),
@@ -1086,9 +1121,9 @@ function build(context: FilmContext) {
 			12.95,
 		);
 		["volume", "oi"].forEach((name, i) => {
-			const y = L.screenProof.volumeY + i * L.screenProof.size * 1.25;
-			const oldY = L.rowY(1) + L.type.body * (3.8 + i * 1.4) + 10;
-			const oldBarW = Math.min(100, L.half * 0.26);
+			const y = L.screenProof.volumeY + i * L.screenProof.lineStep * 2;
+			const oldY = y;
+			const oldBarW = L.narrow ? 0 : Math.min(100, L.half * 0.26);
 			const value =
 				name === "volume" ? SCREEN_EXAMPLE.volume : SCREEN_EXAMPLE.openInterest;
 			const ratio = value / SCREEN_EXAMPLE.volume;
