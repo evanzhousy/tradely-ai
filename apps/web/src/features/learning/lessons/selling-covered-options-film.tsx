@@ -53,19 +53,20 @@ import {
  * paid to wait? Sell one Oct 18 105 call against them at its $2.05 bid and keep $205; if it is
  * assigned the shares go at $105. The pair makes +$705 at best, breaks even at $97.95 and loses
  * −$9,795 if ALFA falls to $0, and above $107.05 the shares alone make more. Or sell one Oct
- * 18 95 put at its $2.05 bid with $9,500 set aside: assigned, 100 shares cost a net $92.95. On
+ * 18 95 put at its $2.05 bid with $9,500 set aside, 95% of the $10,000 example account:
+ * assigned, 100 shares cost a net $92.95. On
  * the chart the put's line keeps +$205 above $95 and falls all the way to $0; the hero is its
  * worst case, −$9,295, locked as the pen reaches ALFA $0, then the $9,500 it ties up of a
- * $10,000 account (95%), and the +$205 it can keep. Last, both can be assigned on any of the 25
- * trading days to Oct 18, likelier in the money with little time value left; buying the option
- * back prevents it.
+ * $10,000 account, and the +$205 it can keep. Last, both can be assigned on any of the 25
+ * trading days from Sep 16 to Oct 18, likelier in the money with little time value left; buying
+ * the option back prevents it.
  *
  *   open      0–4        "Selling an option you can cover"
  *   question  4–8.6      you own 100 ALFA shares: get paid to wait?
  *   call      8.6–17.7   the call and the shares; +$705, $97.95, −$9,795; above $107.05
  *   put       17.7–24.2  the put and the cash set aside; assigned, a net $92.95
  *   payoff    24.2–33.9  the put's line down to $0; hero: −$9,295 (28.2); $9,500; +$205
- *   assign    33.9–40.5  any of 25 trading days; likelier in the money; buying the option back prevents it
+ *   assign    33.9–40.5  25 trading days, Sep 16 to Oct 18; likelier in the money; buying the option back prevents it
  *   claim     40.5–45.0  selling pays you to take on an obligation
  *   next      45.0–47.5  Next: the module checkpoint
  */
@@ -132,6 +133,7 @@ function layout(width: number) {
 		rowY: (i: number) =>
 			H * (narrow ? 0.3 : 0.33) + i * H * (narrow ? 0.17 : 0.18),
 		rowH: H * (narrow ? 0.14 : 0.15),
+		putNetY: H * (narrow ? 0.7 : 0.78),
 		sumY: H * (narrow ? 0.7 : 0.75),
 		sumSize: narrow ? T.body : T.body * 1.2,
 		calX: (i: number) => margin + col * (i + 0.5),
@@ -206,6 +208,10 @@ const copy = {
 		`$${PUT.strike} strike × ${SHARES} shares`,
 		`行权价 $${PUT.strike} × ${SHARES} 股`,
 	],
+	cashAccount: [
+		`${percent(CASH_SHARE, 0)} of a ${whole(ACCOUNT)} example account`,
+		`${whole(ACCOUNT)} 示例账户的 ${percent(CASH_SHARE, 0)}`,
+	],
 	cashWhy: [`buys ${SHARES} shares if assigned`, "被指派时用来买股"],
 	cashWhyShort: ["if assigned", "被指派时用"],
 	netA: [
@@ -231,12 +237,13 @@ const copy = {
 	heroTag: ["worst case · per contract", "最坏情况 · 每张合约"],
 	heroTagShort: ["worst, per contract", "最坏情况 · 每张合约"],
 	sizeA: ["set aside: ", "预留 "],
-	sizeB: [
-		` of ${whole(ACCOUNT)}, or ${percent(CASH_SHARE, 0)}`,
-		`（账户 ${whole(ACCOUNT)} 的 ${percent(CASH_SHARE, 0)}）`,
-	],
+	sizeB: [` of ${whole(ACCOUNT)}`, `（账户 ${whole(ACCOUNT)}）`],
 	aHead: ["Both can be assigned any day.", "两者都可能在任一交易日被指派。"],
 	a2Head: ["Buying the option back prevents it.", "只有先买回平仓，才能避免。"],
+	calSpan: [
+		`${TRADING_DAYS.length} trading days, ${monthDay(TRADING_DAYS[0])[0]} to ${monthDay(TRADING_DAYS[TRADING_DAYS.length - 1])[0]}`,
+		`${monthDay(TRADING_DAYS[0])[1]}至${monthDay(TRADING_DAYS[TRADING_DAYS.length - 1])[1]}，共 ${TRADING_DAYS.length} 个交易日`,
+	],
 	calNote: ["you can't tell which day", "无法预知是哪一天"],
 	calMore: [
 		"likelier: in the money, little time value left",
@@ -311,15 +318,16 @@ function Scene({
 		sub: Copy,
 		value: ReactNode,
 		valueSub: Copy,
+		third?: Copy,
 	) => {
-		const lineY = (k: number) => L.rowY(i) + L.rowH * [0.42, 0.76][k];
+		const lineY = (k: number) => L.rowY(i) + L.rowH * [0.42, 0.76, 1.1][k];
 		return (
 			<g key={name} data-f={name}>
 				<rect
 					x={margin}
 					y={L.rowY(i)}
 					width={room}
-					height={L.rowH}
+					height={L.rowH * (third ? 1.3 : 1)}
 					rx={12}
 					className="wt-panel-shape"
 				/>
@@ -357,6 +365,16 @@ function Scene({
 				>
 					{t(valueSub)}
 				</text>
+				{third && (
+					<text
+						x={margin + 14}
+						y={lineY(2)}
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: subText }}
+					>
+						{t(third)}
+					</text>
+				)}
 			</g>
 		);
 	};
@@ -492,11 +510,12 @@ function Scene({
 				copy.cashHow,
 				whole(CASH),
 				narrow ? copy.cashWhyShort : copy.cashWhy,
+				copy.cashAccount,
 			)}
 			<Word
 				name="p-net"
 				x={margin}
-				y={L.sumY}
+				y={L.putNetY}
 				size={L.sumSize}
 				anchor="start"
 				className="wt-film-type"
@@ -679,10 +698,26 @@ function Scene({
 				</g>
 			</g>
 			<Lines
+				name="cal-span"
+				text={t(copy.calSpan)}
+				x={L.noteX}
+				y={L.noteY}
+				size={L.noteSize}
+				maxWidth={L.noteRoom}
+				anchor="start"
+				className="wt-film-type wt-film-dim"
+			/>
+			<Lines
 				name="cal-note"
 				text={t(copy.calNote)}
 				x={L.noteX}
-				y={L.noteY}
+				y={
+					L.noteY +
+					lineCount(t(copy.calSpan), L.noteRoom, L.noteSize) *
+						L.noteSize *
+						1.35 +
+					L.noteSize * 0.6
+				}
 				size={L.noteSize}
 				maxWidth={L.noteRoom}
 				anchor="start"
@@ -693,6 +728,10 @@ function Scene({
 				x={L.noteX}
 				y={
 					L.noteY +
+					lineCount(t(copy.calSpan), L.noteRoom, L.noteSize) *
+						L.noteSize *
+						1.35 +
+					L.noteSize * 0.6 +
 					lineCount(t(copy.calNote), L.noteRoom, L.noteSize) *
 						L.noteSize *
 						1.35 +
@@ -768,7 +807,7 @@ function build(context: FilmContext) {
 	// The kit's glow uses this local alias too, so it matches the signed loss's brackets.
 	lock.style.setProperty("--diagram-accent", toneColor("down"));
 	const axes = kids("chart").filter((el) => !el.hasAttribute("data-f"));
-	const notes = [one("cal-note"), one("cal-more")];
+	const notes = [one("cal-span"), one("cal-note"), one("cal-more")];
 
 	d.hidden([
 		...flat("q"),
@@ -844,6 +883,7 @@ function build(context: FilmContext) {
 	d.sink(33.9);
 	show(head("a"), 34.25);
 	show(one("cal"), 34.5);
+	show(one("cal-span"), 34.5);
 	show(one("cal-note"), 35.5);
 	show(one("cal-more"), 36.3);
 	// Bought back, the option has no day left on which it can be assigned.
@@ -866,8 +906,8 @@ function build(context: FilmContext) {
 export const sellingCoveredOptionsFilm: Film = {
 	id: "selling-covered-options",
 	label: [
-		`Selling an option you can cover, as a short film: on Mon Sep 16, with ALFA at $100, you own ${SHARES} shares bought at ${usd(STOCK_COST, 0)} and sell one ${EXPIRY[0]} ${CALL.strike} call against them at its ${usd(CALL_BID)} bid, keeping ${whole(CALL_PREMIUM)}; if the call is assigned the shares are sold at $${CALL.strike}; the pair makes ${signedWhole(COVERED_BEST)} at best, breaks even at ${usd(COVERED_EVEN)} and loses ${signedWhole(COVERED_WORST)} if ALFA falls to $0, and above ${usd(COVERED_CAP)} the shares alone make more; or you sell one Oct 18 ${PUT.strike} put at its ${usd(PUT_BID)} bid with ${whole(CASH)} in cash set aside, and if it is assigned you buy ${SHARES} shares at $${PUT.strike}, a net ${usd(NET_PRICE)} a share; the put's profit on Oct 18 is ${signedWhole(SECURED_BEST)} at most and falls to ${signedWhole(SECURED_WORST)} if ALFA falls to $0, while the cash it ties up is ${whole(CASH)} of a ${whole(ACCOUNT)} account, or ${percent(CASH_SHARE, 0)}; both can be assigned on any of the ${TRADING_DAYS.length} trading days to Oct 18, more likely in the money with little time value left, and buying the option back prevents it`,
-		`卖出有保障的期权短片：9月16日周一，ALFA 为 $100，你持有以 ${usd(STOCK_COST, 0)} 买入的 ${SHARES} 股，并按买价 ${usd(CALL_BID)} 对着它们卖出一张 10月18日 ${CALL.strike} 看涨，留下 ${whole(CALL_PREMIUM)}；如果看涨被指派，股票以 $${CALL.strike} 卖出；这一组最多赚 ${signedWhole(COVERED_BEST)}，盈亏平衡点 ${usd(COVERED_EVEN)}，ALFA 跌到 $0 时亏 ${signedWhole(COVERED_WORST)}，而高于 ${usd(COVERED_CAP)} 时只持股赚得更多；或者，按买价 ${usd(PUT_BID)} 卖出一张 10月18日 ${PUT.strike} 看跌，并预留 ${whole(CASH)} 现金，如果被指派就以 $${PUT.strike} 买入 ${SHARES} 股，每股净价 ${usd(NET_PRICE)}；这张看跌在 10月18日最多赚 ${signedWhole(SECURED_BEST)}，ALFA 跌到 $0 时亏到 ${signedWhole(SECURED_WORST)}，而它占用的现金是 ${whole(CASH)}，占 ${whole(ACCOUNT)} 账户的 ${percent(CASH_SHARE, 0)}；两者都可能在到 10月18日为止的 ${TRADING_DAYS.length} 个交易日中的任何一天被指派，处于实值且时间价值所剩无几时更可能，只有把期权买回平仓才能确保不被指派`,
+		`Selling an option you can cover, as a short film: on Mon Sep 16, with ALFA at $100, you own ${SHARES} shares bought at ${usd(STOCK_COST, 0)} and sell one ${EXPIRY[0]} ${CALL.strike} call against them at its ${usd(CALL_BID)} bid, keeping ${whole(CALL_PREMIUM)}; if the call is assigned the shares are sold at $${CALL.strike}; the pair makes ${signedWhole(COVERED_BEST)} at best, breaks even at ${usd(COVERED_EVEN)} and loses ${signedWhole(COVERED_WORST)} if ALFA falls to $0, and above ${usd(COVERED_CAP)} the shares alone make more; or you sell one ${EXPIRY[0]} ${PUT.strike} put at its ${usd(PUT_BID)} bid with ${whole(CASH)} in cash set aside, and if it is assigned you buy ${SHARES} shares at $${PUT.strike}, a net ${usd(NET_PRICE)} a share; the put shot shows ${percent(CASH_SHARE, 0)} of a ${whole(ACCOUNT)} example account beside the cash set aside; the put's profit on ${EXPIRY[0]} is ${signedWhole(SECURED_BEST)} at most and falls to ${signedWhole(SECURED_WORST)} if ALFA falls to $0, while the cash it ties up is ${whole(CASH)} of ${whole(ACCOUNT)}; both can be assigned on any of the ${TRADING_DAYS.length} trading days, ${monthDay(TRADING_DAYS[0])[0]} to ${monthDay(TRADING_DAYS[TRADING_DAYS.length - 1])[0]}, likelier in the money with little time value left, and buying the option back prevents it`,
+		`卖出有保障的期权短片：9月16日周一，ALFA 为 $100，你持有以 ${usd(STOCK_COST, 0)} 买入的 ${SHARES} 股，并按买价 ${usd(CALL_BID)} 对着它们卖出一张 ${EXPIRY[1]} ${CALL.strike} 看涨，留下 ${whole(CALL_PREMIUM)}；如果看涨被指派，股票以 $${CALL.strike} 卖出；这一组最多赚 ${signedWhole(COVERED_BEST)}，盈亏平衡点 ${usd(COVERED_EVEN)}，ALFA 跌到 $0 时亏 ${signedWhole(COVERED_WORST)}，而高于 ${usd(COVERED_CAP)} 时只持股赚得更多；或者，按买价 ${usd(PUT_BID)} 卖出一张 ${EXPIRY[1]} ${PUT.strike} 看跌，并预留 ${whole(CASH)} 现金，如果被指派就以 $${PUT.strike} 买入 ${SHARES} 股，每股净价 ${usd(NET_PRICE)}；看跌镜头在现金旁显示 ${whole(ACCOUNT)} 示例账户的 ${percent(CASH_SHARE, 0)}；这张看跌在 ${EXPIRY[1]} 最多赚 ${signedWhole(SECURED_BEST)}，ALFA 跌到 $0 时亏到 ${signedWhole(SECURED_WORST)}，而它占用的现金是 ${whole(CASH)}，占 ${whole(ACCOUNT)} 账户；两者都可能在 ${monthDay(TRADING_DAYS[0])[1]}至${monthDay(TRADING_DAYS[TRADING_DAYS.length - 1])[1]}，共 ${TRADING_DAYS.length} 个交易日中的任何一天被指派，处于实值且时间价值所剩无几时更可能，只有把期权买回平仓才能确保不被指派`,
 	],
 	stage: "dark",
 	shots: [
