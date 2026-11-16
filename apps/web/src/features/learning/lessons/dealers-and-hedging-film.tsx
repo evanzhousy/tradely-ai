@@ -262,8 +262,8 @@ const copy = {
 		"做市商要对冲，对冲就得买卖股票。",
 	],
 	claimSub: [
-		"It's mechanical, and nobody outside sees their books.",
-		"这是机械操作；外界看不到他们的持仓。",
+		"It's mechanical, and open interest doesn't show their side.",
+		"这是机械操作；未平仓量看不出他们在哪一边。",
 	],
 	nextBig: ["Next: 0DTE", "下一课：0DTE"],
 	nextSub: ["options on their last day", "最后一天的期权"],
