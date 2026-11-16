@@ -136,7 +136,7 @@ Reliability events are `$exception`, `$web_vitals`, `server_route_timing`, and `
 
 Authentication telemetry includes `auth_sign_in_opened` for entry intent, `auth_sign_in_completed` for a Tradely-started flow that reaches an identified session, and `auth_session_established` for signed-in session readiness including restored sessions. None of these is labeled account creation because the application does not have a trustworthy Neon new-user boundary.
 
-Small terminal browser events (`analytics_consent_updated`, `billing_action_redirected`, `lesson_completed`, `lesson_video_completed`, `tradingflow_link_opened`, and `visual_lesson_scene_completed`) use PostHog's immediate `sendBeacon` transport so navigation or unload is less likely to drop them.
+Small terminal browser events (`analytics_consent_updated`, `billing_action_redirected`, `lesson_completed`, `lesson_video_completed`, `options_post_opened`, `options_profile_opened`, `options_subreddit_opened`, `tradingflow_link_opened`, and `visual_lesson_scene_completed`) use PostHog's immediate `sendBeacon` transport so navigation or unload is less likely to drop them.
 
 The live project has proven production delivery for the core route, consent, identity, lesson, and reliability events. Newly added `visual_lesson_*` and `auth_sign_in_completed` definitions should be promoted into saved PostHog actions/insights only after a deployed consented session establishes their live property shapes. The browser and Node `before_send` boundaries drop unregistered custom events and prune undeclared non-system properties.
 
