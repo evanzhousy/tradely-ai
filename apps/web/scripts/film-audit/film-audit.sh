@@ -2,7 +2,8 @@
 # Browser acceptance checks for the lesson films (docs/runbook/create-svg-animation.md, §7).
 #
 #   film-audit.sh check LESSON END          scan + flight + timing, problems only
-#   film-audit.sh scan LESSON END           every 0.5 s at 1440 and 390, EN and ZH; contact sheets
+#   film-audit.sh scan LESSON END           every 0.5 s at 1440 and 390, EN and ZH; contact sheets,
+#                                           and each capture's on-screen text by frame (*-text.txt)
 #   film-audit.sh flight LESSON END         every 0.1 s: marks in flight, entrances, carries
 #   film-audit.sh timing LESSON [rows]      holds, copy length, figures, hero-lock, class names
 #   film-audit.sh frames LESSON PREFIX TIMES SIZE LOCALE    screenshots at given times
@@ -121,12 +122,12 @@ cmd_frames() { # LESSON PREFIX TIMES SIZE LOCALE [DIR]
 cmd_scan() { # LESSON END
 	local L=$1 END=$2 dir="$OUT/scan-$1" label
 	mkdir -p "$dir"
-	find "$dir" -maxdepth 1 -type f -name '*.png' -delete
+	find "$dir" -maxdepth 1 -type f \( -name '*.png' -o -name '*-text.txt' \) -delete
 	label="$(stamp "$L")"
 	echo "stamp $label"
 	for c in $CONFIGS; do
 		local SZ=${c%%:*} LOC=${c##*:}
-		cmd_frames "$L" "${SZ%%x*}-$LOC" "0:$(python3 -c "print($END-2)"):0.5" "$SZ" "$LOC" "$dir" | python3 "$HERE/report.py" scan "$L $SZ $LOC"
+		cmd_frames "$L" "${SZ%%x*}-$LOC" "0:$(python3 -c "print($END-2)"):0.5" "$SZ" "$LOC" "$dir" | python3 "$HERE/report.py" scan "$L $SZ $LOC" "$dir/${SZ%%x*}-$LOC-text.txt" "$label"
 	done
 	sheets "$dir" 1440-en 5 6 380 "$label"
 	sheets "$dir" 390-zh 6 6 300 "$label"

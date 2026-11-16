@@ -6,6 +6,7 @@
 //   overlaps   settled texts whose glyph boxes cross (a text held at a scale is settled)
 //   crossings  settled text struck by a visible stroked line (not grid, axes or masks)
 //   edges      text or lock brackets within 12 px of a phone frame's sides (6 px wider)
+//   text       every stage text a viewer can see in each frame, for the scan's text list
 
 const task = await taskSpace(Number(env.SPACE));
 const page = task.page("p1");
@@ -65,6 +66,7 @@ const spills = [];
 const overlaps = [];
 const crossings = [];
 const edges = [];
+const text = [];
 for (let i = 0; i < times.length; i++) {
 	await page.evaluate((t) => {
 		const tl = window.__tradelyFilm;
@@ -241,7 +243,48 @@ for (let i = 0; i < times.length; i++) {
 			)
 				edge.push(k.getAttribute("data-f") || "lock");
 		}
+		// Text: what the frame says, as rendered. Wrapped lines join into one sentence, CSS
+		// capitals are applied, and copies in flight are left out (their source is listed).
+		const wide = (c) => (c?.codePointAt(0) ?? 0) > 0x2e80;
+		const said = (t) => {
+			let out = "";
+			for (const n of t.childNodes) {
+				const part = n.textContent;
+				const breaks =
+					n.nodeType === 1 &&
+					n.hasAttribute("dy") &&
+					Number(n.getAttribute("dy"));
+				if (breaks && !(wide(out.at(-1)) && wide(part.trim()[0]))) out += " ";
+				out += part;
+			}
+			out = out.replace(/\s+/g, " ").trim();
+			return getComputedStyle(t).textTransform === "uppercase"
+				? out.toUpperCase()
+				: out;
+		};
+		const stage = [];
+		svg.querySelectorAll("text").forEach((t, id) => {
+			if (!t.textContent.trim() || layer?.contains(t)) return;
+			const a = alpha(t);
+			if (a < 0.15) return;
+			const q = t.getBoundingClientRect();
+			const inside =
+				q.width &&
+				q.right > box.left &&
+				q.left < box.right &&
+				q.bottom > box.top &&
+				q.top < box.bottom;
+			if (!inside) return;
+			stage.push([
+				id,
+				said(t),
+				a >= 0.6 ? 1 : 0,
+				Math.round(q.left - box.left),
+				Math.round(q.top - box.top),
+			]);
+		});
 		return {
+			stage,
 			spills,
 			overlaps: [...new Set(hits)],
 			crossings: [...new Set(cross)],
@@ -252,6 +295,7 @@ for (let i = 0; i < times.length; i++) {
 	if (r.overlaps.length) overlaps.push([times[i], r.overlaps]);
 	if (r.crossings.length) crossings.push([times[i], r.crossings]);
 	if (r.edges.length) edges.push([times[i], r.edges]);
+	text.push(r.stage);
 }
 console.log(
 	JSON.stringify({
@@ -265,6 +309,8 @@ console.log(
 		overlaps,
 		crossings,
 		edges,
+		times,
+		text,
 	}),
 );
 await page.cdp("Emulation.setDeviceMetricsOverride", {
