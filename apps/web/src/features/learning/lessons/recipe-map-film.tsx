@@ -160,8 +160,13 @@ const copy = {
 	tableHead: ["Monday's ranked table.", "周一的排名表格。"],
 	tableHeadShort: ["Monday's ranked table.", "周一的排名表格。"],
 	topThree: [
-		`Top ${TOP_N} by volume ÷ open interest`,
-		`前 ${TOP_N} 名 · 成交量 ÷ 未平仓量`,
+		`Top ${TOP_N} by volume-to-open-interest ratio`,
+		`前 ${TOP_N} 名 · 按成交量与未平仓量之比`,
+	],
+	// The phone's column is 286 px: the hyphenated form runs past the cards' edge.
+	topThreePhone: [
+		`Top ${TOP_N} by volume/open interest ratio`,
+		`前 ${TOP_N} 名 · 按成交量与未平仓量之比`,
 	],
 	wideVolOi: ["Min vol / open interest", "最低成交量/未平仓量"],
 	wideOi: ["Min open interest", "最低未平仓量"],
@@ -177,7 +182,7 @@ const copy = {
 	],
 	contract: ["Contract", "合约"],
 	volume: ["Volume", "成交量"],
-	oi: ["OI", "未平仓量"],
+	oi: ["Open interest", "未平仓量"],
 	volOi: ["Vol/OI", "成交量/OI"],
 	notLoaded: ["passed, not loaded", "已入选，未载入"],
 	flagged: ["contracts flagged", "入选合约"],
@@ -185,6 +190,11 @@ const copy = {
 	symbols: ["symbols", "标的"],
 	median: ["median vol/OI", "成交量/OI 中位数"],
 	highest: ["highest vol/OI", "成交量/OI 最高"],
+	// The stage's first "OI": the Bottom line cell spells it out, just before the Takeaways use it.
+	highestFirst: [
+		"highest volume/open interest (OI)",
+		"成交量/未平仓量（OI）最高",
+	],
 	leader: ["leader", "最高"],
 	claimBig: ["Trace it, label it, count it.", "追溯、标注、计数。"],
 	claimSub: [
@@ -230,7 +240,7 @@ function Scene({
 	const showLegend = narrow
 		? !(locale === "zh" && phoneVolOiFits)
 		: !wideInputLabelsFit;
-	const topThreeText = t(copy.topThree);
+	const topThreeText = t(narrow ? copy.topThreePhone : copy.topThree);
 	const topThreePhoneFits =
 		measureTextWidth(topThreeText, T.small) <= W - margin - 12;
 	const headline = (name: string, text: Copy, short: Copy) => (
@@ -386,7 +396,7 @@ function Scene({
 		? ([[copy.volOi, W - margin - L.pad]] as const)
 		: ([
 				[copy.volume, W * 0.6],
-				[copy.oi, W * 0.74],
+				[copy.oi, W * 0.76],
 				[copy.volOi, W - margin - L.pad],
 			] as const);
 	const cells = (row: ScreenContract) =>
@@ -745,7 +755,8 @@ function Scene({
 					anchor="start"
 					className="wt-film-tag"
 				>
-					{t(copy.highest)}
+					{/* The English phone has no room for the words; its map legend expands OI. */}
+					{narrow && locale === "en" ? t(copy.highest) : t(copy.highestFirst)}
 				</Word>
 				<Word
 					name="bl-unit"
