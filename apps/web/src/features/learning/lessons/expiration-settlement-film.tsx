@@ -162,7 +162,7 @@ const copy = {
 	thursday: ["Not Thu close", "不计周四收盘"],
 	noShares: ["no shares", "不交收股票"],
 	windowHead: [
-		"American: any session; European: expiry.",
+		"American: any trading day; European: expiry.",
 		"美式：交易日；欧式：仅到期日。",
 	],
 	american: ["American", "美式"],
