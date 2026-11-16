@@ -20,6 +20,7 @@ import {
 	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth as measureTextWidth } from "../walkthrough/text-measure";
 import {
 	CELLS,
 	INPUTS,
@@ -35,14 +36,14 @@ import {
  * which runs on the session and all five thresholds, while the Takeaways have no line in at
  * all. Run the screen for Tuesday and the Bottom line changes while the Takeaways read word
  * for word the same: live data against recipe content. Last, the table shows the top three
- * contracts by volume/OI, the key figures count five, and two passed without being loaded.
+ * contracts by volume ÷ open interest, the key figures count five, and two passed without being loaded.
  *
  *   open        0–4        "Read a recipe like an auditor"
  *   question    4–9.6      "Monday: 5 contracts flagged." — where does it come from?
  *   map         9.6–19.6   inputs, live data, cells; trace the Bottom line; the Takeaways
  *   content     19.6–32.3  Monday's two cells; Tuesday replaces only the result; assemble both
  *                          session counts above the unchanged Takeaways, locked
- *   population  32.3–44.6  top three; five counted, two not loaded; cut: the claim
+ *   population  32.3–44.6  top three by volume ÷ open interest; five counted, two not loaded; cut: the claim
  *   next        44.6–47.1  Next: change the inputs, keep the question
  */
 
@@ -77,12 +78,12 @@ function layout(width: number) {
 	// The two text cells.
 	const boxText = narrow ? T.body : T.head * 0.75;
 	const pad = narrow ? 10 : Math.min(20, H * 0.025);
-	const textWidth = frame.room - 2 * pad;
+	const textRoom = frame.room - 2 * pad;
 	const boxHeight = (texts: readonly Copy[], locale: Locale) =>
 		pad * 2 +
 		T.small * 1.6 +
 		Math.max(
-			...texts.map((text) => lineCount(pick(text, locale), textWidth, boxText)),
+			...texts.map((text) => lineCount(pick(text, locale), textRoom, boxText)),
 		) *
 			boxText *
 			1.35;
@@ -104,9 +105,12 @@ function layout(width: number) {
 		cellY,
 		curve,
 		nodeText: narrow ? T.small : T.body,
+		fitsNodeLabel: (text: string, padding: number) =>
+			measureTextWidth(text, narrow ? T.small : T.body) * (narrow ? 1 : 0.85) <=
+			colW - 2 * padding,
 		boxText,
 		pad,
-		textWidth,
+		textWidth: textRoom,
 		boxHeight,
 		boxTop: H * (narrow ? 0.27 : 0.3),
 		kpiY,
@@ -155,7 +159,14 @@ const copy = {
 	contentTag: ["recipe content", "Recipe 内容"],
 	tableHead: ["Monday's ranked table.", "周一的排名表格。"],
 	tableHeadShort: ["Monday's ranked table.", "周一的排名表格。"],
-	topThree: [`Top ${TOP_N} · volume/OI`, `前 ${TOP_N} 名 · 成交量/OI`],
+	topThree: [
+		`Top ${TOP_N} by volume ÷ open interest`,
+		`前 ${TOP_N} 名 · 成交量 ÷ 未平仓量`,
+	],
+	wideVolOi: ["Min vol / open interest", "最低成交量/未平仓量"],
+	wideOi: ["Min open interest", "最低未平仓量"],
+	wideDte: ["Max days to expiry", "最长到期天数"],
+	phoneVolOi: ["Min vol/OI", "最低量/未平仓"],
 	restHead: [
 		`Top ${TOP_N} loaded; ${MONDAY.passed.length - TOP_N} more passed.`,
 		`表格只载入前 ${TOP_N} 名；另有 ${MONDAY.passed.length - TOP_N} 份通过。`,
@@ -209,6 +220,19 @@ function Scene({
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
+	const [wideVolOiFits, wideOiFits, wideDteFits] = [
+		copy.wideVolOi,
+		copy.wideOi,
+		copy.wideDte,
+	].map((label) => L.fitsNodeLabel(t(label), 8));
+	const wideInputLabelsFit = wideVolOiFits && wideOiFits && wideDteFits;
+	const phoneVolOiFits = L.fitsNodeLabel(t(copy.phoneVolOi), 6);
+	const showLegend = narrow
+		? !(locale === "zh" && phoneVolOiFits)
+		: !wideInputLabelsFit;
+	const topThreeText = t(copy.topThree);
+	const topThreePhoneFits =
+		measureTextWidth(topThreeText, T.small) <= W - margin - 12;
 	const headline = (name: string, text: Copy, short: Copy) => (
 		<Lines
 			name={name}
@@ -374,6 +398,17 @@ function Scene({
 					volumeToOi(row).toFixed(2),
 				];
 	const rowText = (i: number) => L.rowY(i) + L.rowH / 2 + L.nodeText * 0.36;
+	const inputLabel = (id: string, label: Copy, short: Copy) => {
+		if (!narrow) {
+			if (id === "volOi") return wideVolOiFits ? copy.wideVolOi : label;
+			if (id === "oi") return wideOiFits ? copy.wideOi : short;
+			if (id === "dte") return wideDteFits ? copy.wideDte : short;
+			return ["relVol", "volume"].includes(id) ? label : short;
+		}
+		if (locale === "zh" && id === "volOi" && phoneVolOiFits)
+			return copy.phoneVolOi;
+		return short;
+	};
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -446,11 +481,7 @@ function Scene({
 								input.id,
 								L.colX(0),
 								L.inputY(i),
-								t(
-									!narrow && ["volOi", "relVol"].includes(input.id)
-										? input.label
-										: input.short,
-								),
+								t(inputLabel(input.id, input.label, input.short)),
 							),
 						)}
 						{SOURCES.map((source, j) =>
@@ -468,7 +499,7 @@ function Scene({
 						anchor={narrow ? "middle" : "start"}
 						className={narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"}
 					>
-						{t(copy.mapLegend)}
+						{showLegend ? t(copy.mapLegend) : ""}
 					</Word>
 
 					{/* The screen: key figures, the loaded rows, and the rest. */}
@@ -775,7 +806,9 @@ function Scene({
 				anchor="start"
 				className="wt-film-tag"
 			>
-				{t(copy.topThree)}
+				{narrow && !topThreePhoneFits
+					? t([`Top ${TOP_N} · volume/OI`, `前 ${TOP_N} 名 · 成交量/OI`])
+					: topThreeText}
 			</Word>
 			{headline("x-head", copy.restHead, copy.restHeadShort)}
 			{claim("claim", copy.claimBig, copy.claimSub)}
@@ -1057,8 +1090,8 @@ function build(context: FilmContext) {
 export const recipeMapFilm: Film = {
 	id: "recipe-map",
 	label: [
-		`Reading a recipe like an auditor, as a short film: a sentence from the screener's Bottom line and the question of where it comes from; the recipe map tracing the Bottom line to Live data 1 and from there to the session and five thresholds, while the Takeaways have no line in; Monday's and Tuesday's runs, where the Bottom line changes and the Takeaways read word for word the same; and the screen's table of the top ${TOP_N} by volume/OI against key figures that count ${MONDAY.passed.length} contracts, ${MONDAY.passed.length - TOP_N} of them passed but not loaded`,
-		`像审计员一样读 Recipe 短片：筛选器核心结论里的一句话，以及它从哪里来；Recipe 地图把核心结论追溯到实时数据 1，再到交易时段和五个阈值，而要点没有任何输入线；周一和周二两次运行，核心结论变了，要点一字不差；以及筛选的成交量/OI 前 ${TOP_N} 名表格，对照关键数字统计的 ${MONDAY.passed.length} 份合约，其中 ${MONDAY.passed.length - TOP_N} 份通过但未载入`,
+		`Reading a recipe like an auditor, as a short film: a sentence from the screener's Bottom line and the question of where it comes from; the recipe map tracing the Bottom line to Live data 1 and from there to the session and five thresholds, while the Takeaways have no line in; Monday's and Tuesday's runs, where the Bottom line changes and the Takeaways read word for word the same; and the screen's table of the top ${TOP_N} by volume ÷ open interest against key figures that count ${MONDAY.passed.length} contracts, ${MONDAY.passed.length - TOP_N} of them passed but not loaded`,
+		`像审计员一样读 Recipe 短片：筛选器核心结论里的一句话，以及它从哪里来；Recipe 地图把核心结论追溯到实时数据 1，再到交易时段和五个阈值，而要点没有任何输入线；周一和周二两次运行，核心结论变了，要点一字不差；以及筛选的成交量 ÷ 未平仓量前 ${TOP_N} 名表格，对照关键数字统计的 ${MONDAY.passed.length} 份合约，其中 ${MONDAY.passed.length - TOP_N} 份通过但未载入`,
 	],
 	stage: "dark",
 	shots: [
