@@ -21,6 +21,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import type { OptionsListFilter } from "@/analytics/events";
 
+import { analyticsPlatformFilter } from "./analytics";
 import {
 	availableLanguages,
 	DEFAULT_FILTERS,
@@ -312,7 +313,7 @@ export function TraderDirectory({
 											view: platform === "all" ? filters.view : "all",
 										},
 										"platform",
-										platform,
+										analyticsPlatformFilter(platform),
 									)
 								}
 							>
