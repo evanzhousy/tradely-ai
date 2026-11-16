@@ -141,7 +141,7 @@ function layout(width: number) {
 const copy = {
 	title: ["Stocks and prices", "股票与价格"],
 	titleSub: ["what options are built on", "期权的基础"],
-	qTag: ["ALFA · last trade", "ALFA · 最新成交"],
+	qTag: ["ALFA · last price paid", "ALFA · 最新成交价"],
 	qLine: [`Cost to buy ${MINE} shares now?`, "现在买 10 股要花多少？"],
 	sliceHead: ["A share is one slice of ALFA.", "一股是 ALFA 的一份。"],
 	sliceHeadShort: ["A share: one slice of ALFA.", "一股：ALFA 的一份。"],
