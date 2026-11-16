@@ -41,14 +41,14 @@ import {
  * may it use for the block? The arrivals answer: only the first report, $2.51; the
  * correction to $2.15 arrives later, and the 120 call's volume not until Tuesday. The hero
  * is a percentile: today's 4.2× beats 58 of 60 sessions, the 97th percentile, and glowing
- * brackets lock on a rank that is not a probability. Last, ten thresholds tried on
+ * brackets lock on a rank that is not a chance of a rise. Last, ten thresholds tried on
  * Jan–Jun, the best at 70%, and the same rule frozen and run once on Jul–Aug: 52%.
  *
  *   open      0–4        "Backtests"
  *   question  4–8.6      a decision at the first cutoff: which price?
  *   cutoff    8.6–20.2   arrivals; first report, correction at the next cutoff; Tuesday's data
- *   rank      20.2–29.3  hero: 60 sessions; 4.2× at the 97th percentile; not a probability
- *   holdout   29.3–38.0  ten thresholds; the winner 70%; the holdout 52%
+ *   rank      20.2–29.3  hero: 60 sessions; 4.2× at the 97th percentile; not a chance of a rise
+ *   holdout   29.3–38.0  ten thresholds; the winner 70%; the holdout 52% rose next day
  *   claim     38.0–42.4  only what was known, and test once
  *   next      42.4–44.9  Next: the module checkpoint
  */
@@ -98,6 +98,9 @@ function layout(width: number) {
 		histH: (days: number) => (days / MAX_DAYS) * (histBottom - histTop),
 		barSlot,
 		barX: (i: number) => margin + i * barSlot,
+		holdoutX: narrow ? width / 2 : margin + (BEST_INDEX + 1.7) * barSlot,
+		holdoutY: H * 0.83,
+		frozenRuleY: H * 0.89,
 		pctY: (pct: number) =>
 			histBottom - ((pct - 40) / 40) * (histBottom - histTop),
 	};
@@ -154,7 +157,11 @@ const copy = {
 		`Frozen rule: volume above ${best.threshold}× typical.`,
 		`冻结规则：成交量超过常态的 ${best.threshold}×。`,
 	],
-	holdout: [`Jul–Aug observed ${HOLDOUT}%`, `7–8 月样本外实测：${HOLDOUT}%`],
+	holdout: [`Jul–Aug, same rule: ${HOLDOUT}%`, `7–8 月，同一规则：${HOLDOUT}%`],
+	notChance: [
+		`not a ${PERCENTILE}% chance of a rise`,
+		`不是 ${PERCENTILE}% 的上涨概率`,
+	],
 	claimBig: [
 		"Use only what was known, and test once.",
 		"只用当时已知的，并且只检验一次。",
@@ -483,9 +490,16 @@ function Scene({
 				y={narrow ? L.histTop + T.num * 3.7 : L.heroY + T.num * 1.3 + 32}
 				textAnchor="end"
 				className={`wt-film-type ${toneClass.caution}`}
-				style={{ fontSize: text, textDecoration: "line-through" }}
+				style={{ fontSize: text }}
 			>
-				{`${PERCENTILE}% ${t(["chance of a rise", "上涨概率"])}`}
+				{(narrow && locale === "en"
+					? t(copy.notChance).split(/ (?=of )/)
+					: [t(copy.notChance)]
+				).map((line, i) => (
+					<tspan key={line} x={L.misreadingRight} dy={i === 0 ? 0 : text * 1.3}>
+						{line}
+					</tspan>
+				))}
 			</text>
 
 			{/* Many rules tried, one test kept. */}
@@ -580,7 +594,7 @@ function Scene({
 				name="frozen-rule"
 				text={t(copy.frozen)}
 				x={W / 2}
-				y={H * 0.89}
+				y={L.frozenRuleY}
 				size={T.body}
 				maxWidth={room}
 			/>
@@ -590,13 +604,17 @@ function Scene({
 					style={{ stroke: "var(--diagram-accent)", strokeWidth: 3 }}
 				/>
 				<text
-					x={narrow ? W / 2 : L.barX(BEST_INDEX) + L.barSlot * 1.7}
-					y={narrow ? H * 0.83 : L.pctY(HOLDOUT) + T.small * 0.4}
+					x={L.holdoutX}
+					y={narrow ? L.holdoutY : L.pctY(HOLDOUT) + T.small * 0.4}
 					textAnchor={narrow ? "middle" : "start"}
 					className="wt-film-num wt-film-accent wt-halo"
-					style={{ fontSize: narrow ? T.body : text }}
+					style={{ fontSize: T.body }}
 				>
-					{t(copy.holdout)}
+					{[t(copy.holdout)].map((line, i) => (
+						<tspan key={line} x={L.holdoutX} dy={i === 0 ? 0 : T.body * 1.35}>
+							{line.trim()}
+						</tspan>
+					))}
 				</text>
 			</g>
 
@@ -882,8 +900,8 @@ function build(context: FilmContext) {
 export const pointInTimeResearchFilm: Film = {
 	id: "point-in-time-research",
 	label: [
-		`Backtests, as a short film: Monday's facts about the Oct 18 105 call in the order they arrived, including T-1 at ${usd(FIRST_PRICE)} (${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)} a contract); a decision replayed at ${openingDecisionTime[0]} may use only the block's first report at ${usd(REPORTED)} (${usd(REPORTED * CONTRACT_MULTIPLIER, 0)} a contract), one at ${timeOnly(correctionCutoff.time)[0]} the corrected ${usd(CORRECTED)} (${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)} a contract), and none the 120 call's volume that arrives Tuesday; today's ${TODAY}× against ${SESSIONS} past sessions, the ${PERCENTILE}th percentile, which is a rank and not a ${PERCENTILE}% chance of a rise; and ${tried.length} thresholds tried on Jan–Jun, the best followed by a rise ${best.rose}% of the time, and the same rule frozen and run once on Jul–Aug at ${HOLDOUT}%`,
-		`回测短片：周一关于 10月18日 105 看涨的事实按到达顺序排列，包括 T-1 的 ${usd(FIRST_PRICE)}（每张 ${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)}）；在 ${openingDecisionTime[1]} 重放的决策只能用大单首次报告的 ${usd(REPORTED)}（每张 ${usd(REPORTED * CONTRACT_MULTIPLIER, 0)}），${timeOnly(correctionCutoff.time)[1]} 的决策可以用更正后的 ${usd(CORRECTED)}（每张 ${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)}），而周二才到的 120 看涨成交量哪个都不能用；今天的 ${TODAY}× 对照过去 ${SESSIONS} 个交易日，是第 ${PERCENTILE} 百分位，这是排名而不是 ${PERCENTILE}% 的上涨概率；以及在 1–6 月数据上试验的 ${tried.length} 个门槛，最好的一个之后上涨比例 ${best.rose}%，同一规则冻结后在 7–8 月只跑一次，结果为 ${HOLDOUT}%`,
+		`Backtests, as a short film: Monday's facts about the Oct 18 105 call in the order they arrived, including T-1 at ${usd(FIRST_PRICE)} (${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)} a contract); a decision replayed at ${openingDecisionTime[0]} may use only the block's first report at ${usd(REPORTED)} (${usd(REPORTED * CONTRACT_MULTIPLIER, 0)} a contract), one at ${timeOnly(correctionCutoff.time)[0]} the corrected ${usd(CORRECTED)} (${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)} a contract), and none the 120 call's volume that arrives Tuesday; today's ${TODAY}× against ${SESSIONS} past sessions, the ${PERCENTILE}th percentile, which is a rank, not a ${PERCENTILE}% chance of a rise; and ${tried.length} thresholds tried on Jan–Jun, the best followed by a rise ${best.rose}% of the time, and the same rule frozen and run once on Jul–Aug: ${HOLDOUT}% rose next day`,
+		`回测短片：周一关于 10月18日 105 看涨的事实按到达顺序排列，包括 T-1 的 ${usd(FIRST_PRICE)}（每张 ${usd(FIRST_PRICE * CONTRACT_MULTIPLIER, 0)}）；在 ${openingDecisionTime[1]} 重放的决策只能用大单首次报告的 ${usd(REPORTED)}（每张 ${usd(REPORTED * CONTRACT_MULTIPLIER, 0)}），${timeOnly(correctionCutoff.time)[1]} 的决策可以用更正后的 ${usd(CORRECTED)}（每张 ${usd(CORRECTED * CONTRACT_MULTIPLIER, 0)}），而周二才到的 120 看涨成交量哪个都不能用；今天的 ${TODAY}× 对照过去 ${SESSIONS} 个交易日，是第 ${PERCENTILE} 百分位，这是排名，不是 ${PERCENTILE}% 的上涨概率；以及在 1–6 月数据上试验的 ${tried.length} 个门槛，最好的一个之后上涨比例 ${best.rose}%，同一规则冻结后在 7–8 月只跑一次：${HOLDOUT}% 次日上涨`,
 	],
 	stage: "dark",
 	shots: [
