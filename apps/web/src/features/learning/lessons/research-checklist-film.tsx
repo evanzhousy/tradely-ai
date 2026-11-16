@@ -153,8 +153,8 @@ const copy = {
 		"做市商可能需要对冲的位置 · 仍未平仓的合约",
 	],
 	proposalCaption: [
-		"expected move: the move that option prices imply",
-		"预期波动：期权价格所隐含的涨跌幅",
+		"expected move: the price range option prices imply by expiry",
+		"预期波动：期权价格隐含的到期前价格区间",
 	],
 	notes: ["Your notes", "你的笔记"],
 	noteEarnings: ["Earnings Oct 3", "10月3日财报"],
