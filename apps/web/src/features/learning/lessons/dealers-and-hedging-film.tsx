@@ -185,6 +185,11 @@ const copy = {
 		`The dealer hopes to earn the quoted spread: ${usd(SPREAD)} a share, ${usd(perContract(SPREAD), 0)} a contract.`,
 		`做市商希望赚到报价的价差：每股 ${usd(SPREAD)}，每张 ${usd(perContract(SPREAD), 0)}。`,
 	],
+	// Where the spread comes from: the quote's two sides, under the line that states it.
+	quote: [
+		`${usd(QUOTE.ask)} ask − ${usd(QUOTE.bid)} bid`,
+		`卖价 ${usd(QUOTE.ask)} − 买价 ${usd(QUOTE.bid)}`,
+	],
 	moveHead: ["Then ALFA rises.", "接着 ALFA 上涨。"],
 	moveAnswer: [
 		`The dealer buys ${count(BUY_AFTER_RISE)} more.`,
@@ -496,6 +501,19 @@ function Scene({
 				anchor="start"
 				className="wt-film-type wt-film-dim"
 			/>
+			<Word
+				name="h-quote"
+				x={margin}
+				y={
+					L.notes.spread +
+					lineCount(t(copy.spread), room, noteSize) * noteSize * 1.35
+				}
+				size={L.expressionSize}
+				anchor="start"
+				className="wt-film-num wt-film-dim"
+			>
+				{t(copy.quote)}
+			</Word>
 
 			{/* The hero: the shares the dealer must buy, made by the walk above it. */}
 			<Word
@@ -785,6 +803,7 @@ function build(context: FilmContext) {
 		gap,
 		one("h-net"),
 		one("h-spread"),
+		one("h-quote"),
 		heroFigure,
 		heroCaption,
 		one("m-fall"),
@@ -835,11 +854,11 @@ function build(context: FilmContext) {
 	fade([one("b-held-figure"), one("b-held-unit")], 15.0);
 	// Both bars match: the direction is hedged, and the spread is what is left.
 	fade(one("h-net"), 16.2, 0.4);
-	fade(one("h-spread"), 17.6, 0.4);
+	fade([one("h-spread"), one("h-quote")], 17.6, 0.4);
 
 	// ——— move: ALFA rises $2 and the hedge is 40 shares short ———
 	tl.addLabel("move", 21.4);
-	hide([one("h-net"), one("h-spread")], 21.4);
+	hide([one("h-net"), one("h-spread"), one("h-quote")], 21.4);
 	swap(one("h-head"), one("m-head"), 21.4);
 	// One walk drives the price, delta, the share-equivalent and its bar, so every frame agrees.
 	const walk = { move: 0 };
