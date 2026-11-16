@@ -208,6 +208,15 @@ const copy = {
 	],
 	saleInput: [`sale: bid ${price(SALE)}`, `卖出：买价 ${price(SALE)}`],
 	markInput: [`mark: mid ${price(MARK)}`, `估值：中间价 ${price(MARK)}`],
+	// The wide frame has the room to say each price as contract dollars too.
+	saleInputWide: [
+		`sale: bid ${price(SALE)} · ${dollars(SALE * 100)} a contract`,
+		`卖出：买价 ${price(SALE)} · 每张 ${dollars(SALE * 100)}`,
+	],
+	markInputWide: [
+		`mark: mid ${price(MARK)} · ${dollars(MARK * 100)} a contract`,
+		`估值：中间价 ${price(MARK)} · 每张 ${dollars(MARK * 100)}`,
+	],
 	heldFormula: [
 		"P&L = contracts × (mid − cost per share) × 100 shares",
 		"盈亏 = 张数 × (中间价 − 每股成本) × 100 股",
@@ -828,7 +837,10 @@ function Scene({
 				>
 					{narrow ? t(copy.fifoPhone) : t(copy.fifo)}
 				</text>
-				{([copy.saleInput, copy.markInput] as const).map((input, i) => (
+				{(narrow
+					? ([copy.saleInput, copy.markInput] as const)
+					: ([copy.saleInputWide, copy.markInputWide] as const)
+				).map((input, i) => (
 					<Lines
 						key={i === 0 ? "sale-input" : "mark-input"}
 						name={i === 0 ? "sale-input" : "mark-input"}
@@ -836,7 +848,7 @@ function Scene({
 						x={L.gridLeft + i * L.gridWidth}
 						y={L.gridBottom + T.body * 4.2 + T.small * 2.4}
 						size={T.body}
-						maxWidth={L.gridWidth / 2 - 12}
+						maxWidth={narrow ? L.gridWidth / 2 - 12 : L.gridWidth * 0.53}
 						anchor={i === 0 ? "start" : "end"}
 						className="wt-film-type wt-film-dim"
 					/>
