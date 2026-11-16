@@ -209,8 +209,8 @@ const copy = {
 	],
 	rhoWord: ["rho", "rho"],
 	rhoSub: [
-		"Per rate point; small in 1-month calls.",
-		"每个利率点；一个月期权影响小。",
+		"Per 1 percentage point of interest rates; small in 1-month calls.",
+		"利率每变动 1 个百分点；一个月期权影响小。",
 	],
 	rhoCompare: [
 		`Compare: one vol point = ${price(VEGA, 3)}`,
