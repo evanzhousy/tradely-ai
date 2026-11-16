@@ -182,6 +182,14 @@ const copy = {
 		`Sell ${SOLD} at the bid: ${signed(held.unrealized)}?`,
 		`按买价卖 ${SOLD} 张：${signed(held.unrealized)}？`,
 	],
+	firstLot: [
+		`${lots[0].time} · ${lots[0].quantity} @ ${price(lots[0].price)} · ${dollars(lots[0].price * 100)} a contract`,
+		`${lots[0].time} · ${lots[0].quantity} @ ${price(lots[0].price)} · 每张 ${dollars(lots[0].price * 100)}`,
+	],
+	secondLot: [
+		`${lots[1].time} · ${lots[1].quantity} @ ${price(lots[1].price)} · ${dollars(lots[1].price * 100)} a contract`,
+		`${lots[1].time} · ${lots[1].quantity} @ ${price(lots[1].price)} · 每张 ${dollars(lots[1].price * 100)}`,
+	],
 	realized: ["realized", "已实现"],
 	unrealized: ["unrealized", "未实现"],
 	totalTag: ["realized + unrealized", "已实现 + 未实现"],
@@ -802,7 +810,9 @@ function Scene({
 									className="wt-small"
 									style={narrow ? { fontSize: T.body } : undefined}
 								>
-									{`${narrow ? "" : `${lot.time} · `}${lot.quantity} @ ${price(lot.price)}`}
+									{narrow
+										? `${lot.quantity} @ ${price(lot.price)}`
+										: t(l === 0 ? copy.firstLot : copy.secondLot)}
 								</text>
 							</g>
 						);
