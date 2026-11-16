@@ -174,7 +174,7 @@ const copy = {
 	afterHours: ["ALFA · after hours", "ALFA · 盘后"],
 	inTheMoney: ["in the money · per share", "实值 · 每股"],
 	defaultAction: ["No action; threshold met.", "未操作；门槛已达。"],
-	modelThreshold: ["model threshold", "模型门槛"],
+	autoThreshold: ["auto-exercise threshold", "自动行权门槛"],
 	holderExercises: ["Holder exercises", "持有人选择行权"],
 	writerHead: [
 		"After the close, a holder can still exercise.",
@@ -796,7 +796,7 @@ function Scene({
 				size={narrow ? T.small : T.body}
 				className="wt-film-num"
 			>
-				{`${usd(HOLDER_MONEYNESS_CENTS)} > ${usd(Math.round(AUTO_EXERCISE_THRESHOLD * 100))} ${t(copy.modelThreshold)}`}
+				{`${usd(HOLDER_MONEYNESS_CENTS)} > ${usd(Math.round(AUTO_EXERCISE_THRESHOLD * 100))} ${t(copy.autoThreshold)}`}
 			</Word>
 			<Lines
 				name="pin-default"
