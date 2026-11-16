@@ -13,8 +13,10 @@ import {
 	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	CALL_100,
+	CALL_105,
 	CALL_CREDIT,
 	CLOSE,
 	CLOSE_OWED,
@@ -28,6 +30,7 @@ import {
 	legPrice,
 	MAX_LOSS,
 	NET_CASH,
+	PUT_95,
 	PUT_100,
 	PUT_CREDIT,
 	putSpread,
@@ -54,7 +57,7 @@ import {
  *   open      0–4        "Straddles and condors"
  *   question  4–8.6      no view on direction: is there still a trade?
  *   straddle  8.6–18.2   call and put; a V at $100; break-even $91.60 and $108.40
- *   condor    18.2–30.5  hero: put spread and call spread; together; it sells a range
+ *   condor    18.2–30.5  hero: put spread and call spread; it sells a range, with break-evens
  *   package   30.5–41.3  one order, four legs; net credit; worst case; a close at $108
  *   claim     41.3–45.6  four legs, one trade
  *   next      45.6–47.2  Next: size and exit
@@ -76,6 +79,8 @@ const S_Y = [-1500, 2100] as const;
 const C_Y = [-450, 400] as const;
 const S_TICKS = [-1000, 0, 1000, 2000];
 const C_TICKS = [-400, -200, 0, 200];
+const CONDOR_BREAK_EVEN_LOW = PUT_95.strike - CREDIT;
+const CONDOR_BREAK_EVEN_HIGH = CALL_105.strike + CREDIT;
 
 function layout(width: number, straddleHeadLines = 1) {
 	const frame = filmFrame(width);
@@ -84,6 +89,22 @@ function layout(width: number, straddleHeadLines = 1) {
 	const right = margin + room;
 	const top = H * (narrow ? 0.3 : 0.28);
 	const bottom = H * 0.84;
+	const condorZeroY =
+		bottom - ((0 - C_Y[0]) / (C_Y[1] - C_Y[0])) * (bottom - top);
+	const evenLowX =
+		left +
+		((CONDOR_BREAK_EVEN_LOW - RANGE[0]) / (RANGE[1] - RANGE[0])) *
+			(right - left);
+	const evenHighX =
+		left +
+		((CONDOR_BREAK_EVEN_HIGH - RANGE[0]) / (RANGE[1] - RANGE[0])) *
+			(right - left);
+	const evenType = frame.type.body;
+	const evenPriceLeft =
+		evenLowX - 7 - textWidth(share(CONDOR_BREAK_EVEN_LOW), evenType);
+	const evenTagWidths = ["break-even", "盈亏平衡"].map(
+		(value) => textWidth(value, evenType) + value.length * evenType * 0.12,
+	);
 	const rowY = (i: number) =>
 		H * (narrow ? 0.26 : 0.27) + i * H * (narrow ? 0.085 : 0.09);
 	const rowH = H * (narrow ? 0.07 : 0.075);
@@ -115,6 +136,13 @@ function layout(width: number, straddleHeadLines = 1) {
 		right,
 		top,
 		bottom,
+		condorZeroY,
+		evenLowX,
+		evenHighX,
+		evenLowLabelX: evenLowX - 7,
+		evenHighLabelX: evenHighX + 7,
+		evenTagX: evenPriceLeft - 8 - Math.max(...evenTagWidths),
+		evenLabelY: condorZeroY - 13,
 		x: (spot: number) =>
 			left + ((spot - RANGE[0]) / (RANGE[1] - RANGE[0])) * (right - left),
 		y: (range: readonly [number, number], dollars: number) =>
@@ -181,6 +209,7 @@ const copy = {
 	valueAxis: ["Oct 18 value · 100 shares/leg", "10月18日价值 · 每腿100股"],
 	straddleAxis: ["Oct 18 profit · per straddle", "10月18日盈亏 · 每组跨式"],
 	condorAxis: ["Oct 18 profit · per condor", "10月18日盈亏 · 每组铁鹰"],
+	condorEvenTag: ["break-even", "盈亏平衡"],
 	paid: [
 		`${perContract(-STRADDLE_COST)} paid`,
 		`支付 ${perContract(-STRADDLE_COST)}`,
@@ -493,6 +522,52 @@ function Scene({
 						d={path(C_Y, condor)}
 						className="wt-line-position"
 					/>
+					<g data-f="c-even">
+						{[
+							[
+								"low",
+								CONDOR_BREAK_EVEN_LOW,
+								L.evenLowX,
+								L.evenLowLabelX,
+								"end",
+							],
+							[
+								"high",
+								CONDOR_BREAK_EVEN_HIGH,
+								L.evenHighX,
+								L.evenHighLabelX,
+								"start",
+							],
+						].map(([side, spot, x, labelX, anchor]) => (
+							<g key={side}>
+								<circle
+									cx={x as number}
+									cy={L.condorZeroY}
+									r={2.5}
+									className="wt-film-accent"
+								/>
+								<text
+									x={labelX as number}
+									y={L.evenLabelY}
+									textAnchor={anchor as "start" | "end"}
+									className="wt-film-num wt-halo wt-film-accent"
+									style={{ fontSize: T.body }}
+								>
+									{share(spot as number)}
+								</text>
+							</g>
+						))}
+						{!narrow && (
+							<text
+								x={L.evenTagX}
+								y={L.evenLabelY}
+								className="wt-film-tag wt-film-accent"
+								style={{ fontSize: T.body }}
+							>
+								{t(copy.condorEvenTag)}
+							</text>
+						)}
+					</g>
 					<text
 						data-f="c-put-tag"
 						x={L.right - 6}
@@ -841,7 +916,7 @@ function build(context: FilmContext) {
 	hide(one("c-call-tag"), 22.9, 0.3);
 	draw(p("c-sum"), 22.6);
 	// One result construction: emphasize the plateau, credit and bounded loss.
-	fadeIn([one("c-range"), one("c-keep"), one("c-risk")], 24.3);
+	fadeIn([one("c-range"), one("c-keep"), one("c-risk"), one("c-even")], 24.3);
 	draw(p("c-plateau"), 24.3);
 	// Range settles at 25.0 and stands 2.0 s before the hero lock.
 	d.lock(lockKeep, 26.9, { around: one("c-keep"), pad: 6 });
@@ -903,8 +978,8 @@ function build(context: FilmContext) {
 export const multiLegStructuresFilm: Film = {
 	id: "multi-leg-structures",
 	label: [
-		`Straddles and condors, as a short film: with no view on which way ALFA goes, a long Oct 18 100 straddle bought for ${share(STRADDLE_COST)}, a V with break-evens at ${share(STRADDLE_LOW)} and ${share(STRADDLE_HIGH)}; an iron condor sold for ${share(CREDIT)} as a 95/90 put spread and a 105/110 call spread, keeping ${perContract(CREDIT)} between $95 and $105 and losing at most ${perContract(-MAX_LOSS)}; and that condor entered as one order of four legs, ${LEGS.map((leg) => signedUsd(legCash(leg), 0)).join(", ")} a contract, a net credit of ${signedUsd(NET_CASH, 0)}, which loses ${usd(-CLOSE_RESULT, 0)} if ALFA closes at $${CLOSE}`,
-		`跨式与铁鹰短片：不判断 ALFA 涨跌时，以 ${share(STRADDLE_COST)} 买入 10月18日 100 跨式，一个 V 字，盈亏平衡在 ${share(STRADDLE_LOW)} 和 ${share(STRADDLE_HIGH)}；以 ${share(CREDIT)} 卖出的铁鹰，由 95/90 看跌价差和 105/110 看涨价差组成，$95 到 $105 之间保留 ${perContract(CREDIT)}，最多亏 ${perContract(-MAX_LOSS)}；这组铁鹰作为一张四条腿的订单下达，每张合约分别为 ${LEGS.map((leg) => signedUsd(legCash(leg), 0)).join("、")}，净收入 ${signedUsd(NET_CASH, 0)}，ALFA 收于 $${CLOSE} 时亏 ${usd(-CLOSE_RESULT, 0)}`,
+		`Straddles and condors, as a short film: with no view on which way ALFA goes, a long Oct 18 100 straddle bought for ${share(STRADDLE_COST)}, a V with break-evens at ${share(STRADDLE_LOW)} and ${share(STRADDLE_HIGH)}; an iron condor sold for ${share(CREDIT)} as a 95/90 put spread and a 105/110 call spread, with break-evens at ${share(CONDOR_BREAK_EVEN_LOW)} and ${share(CONDOR_BREAK_EVEN_HIGH)}, keeping ${perContract(CREDIT)} between $95 and $105 and losing at most ${perContract(-MAX_LOSS)}; and that condor entered as one order of four legs, ${LEGS.map((leg) => signedUsd(legCash(leg), 0)).join(", ")} a contract, a net credit of ${signedUsd(NET_CASH, 0)}, which loses ${usd(-CLOSE_RESULT, 0)} if ALFA closes at $${CLOSE}`,
+		`跨式与铁鹰短片：不判断 ALFA 涨跌时，以 ${share(STRADDLE_COST)} 买入 10月18日 100 跨式，一个 V 字，盈亏平衡在 ${share(STRADDLE_LOW)} 和 ${share(STRADDLE_HIGH)}；以 ${share(CREDIT)} 卖出的铁鹰，由 95/90 看跌价差和 105/110 看涨价差组成，盈亏平衡点为 ${share(CONDOR_BREAK_EVEN_LOW)} 和 ${share(CONDOR_BREAK_EVEN_HIGH)}，$95 到 $105 之间保留 ${perContract(CREDIT)}，最多亏 ${perContract(-MAX_LOSS)}；这组铁鹰作为一张四条腿的订单下达，每张合约分别为 ${LEGS.map((leg) => signedUsd(legCash(leg), 0)).join("、")}，净收入 ${signedUsd(NET_CASH, 0)}，ALFA 收于 $${CLOSE} 时亏 ${usd(-CLOSE_RESULT, 0)}`,
 	],
 	stage: "dark",
 	shots: [
