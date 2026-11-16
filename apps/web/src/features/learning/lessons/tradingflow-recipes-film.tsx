@@ -90,7 +90,7 @@ function layout(width: number) {
 	const colW = (width - 2 * margin) / days.length;
 	const dayX = (date: string) => margin + days.indexOf(date) * colW;
 	const cardH = H * (narrow ? 0.11 : 0.1);
-	const screenCardLift = narrow ? 16 : 32;
+	const screenCardLift = narrow ? 16 + frame.type.body * 0.8 : 32;
 	const baseScreenCardH = H * (narrow ? 0.225 : 0.22);
 	const screenCardH = baseScreenCardH + screenCardLift;
 	// Reserve the label's full type height above its baseline, plus 10 px of
@@ -123,7 +123,7 @@ function layout(width: number) {
 				screenCardLift +
 				frame.type.body +
 				10 +
-				frame.type.body * (narrow ? 1.8 : 2.7),
+				frame.type.body * (narrow ? 2.6 : 2.7),
 		},
 		reportCardH,
 		// The calendar.
@@ -474,6 +474,21 @@ function Scene({
 											</text>
 											{recipe.id === SCREEN ? (
 												<g data-f="uoa-proof">
+													{L.narrow ? (
+														<Word
+															name="uoa-expansion"
+															x={L.cardX(i) + 14}
+															y={L.screenCardY(k) + T.body + 10 + T.body * 1.3}
+															size={T.body}
+															anchor="start"
+															className="wt-film-type wt-film-dim"
+														>
+															{t([
+																"UOA: Unusual Options Activity",
+																"UOA：异常期权成交",
+															])}
+														</Word>
+													) : null}
 													{!L.narrow ? (
 														<Word
 															name="uoa-contract"
@@ -1083,6 +1098,14 @@ function build(context: FilmContext) {
 			{ opacity: 0 },
 			{ opacity: 1, duration: 0.3 },
 			12.75,
+		);
+	}
+	if (L.narrow) {
+		tl.fromTo(
+			one("uoa-expansion"),
+			{ opacity: 0 },
+			{ opacity: 1, duration: 0.3 },
+			12.9,
 		);
 	}
 	["uoa-volume", "uoa-oi"].forEach((name, i) => {
