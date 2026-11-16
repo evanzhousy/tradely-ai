@@ -24,6 +24,7 @@ import {
 	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	companyValue,
 	type Kind,
@@ -40,7 +41,7 @@ import {
  * sell 10 and reveal what you get, $1,000.00 at the $100.00 bid: 50¢ apart,
  * neither is the last trade. Those trades stay done. The hero: 1,000 shares at once climb
  * the offers that are left, one level after another, to an average of $100.061. Last, a
- * stock, an ETF and an index.
+ * stock, an exchange-traded fund (ETF) and an index.
  *
  *   open      0–4        "Stocks and prices"
  *   question  4–9        last $100.02: what do 10 shares cost?
@@ -84,6 +85,25 @@ function layout(width: number) {
 	// The book takes the left of the frame and what you pay sits beside it, on a phone too.
 	const bookW = room * (narrow ? 0.6 : 0.56);
 	const panelX = margin + room * (narrow ? 0.65 : 0.62);
+	const colW = (room - (narrow ? 64 : room * 0.24)) / 3;
+	const kindNoteY =
+		H * 0.27 +
+		frame.type.small * 2.2 +
+		frame.type.head * 1.5 +
+		frame.type.small * 1.6;
+	const columnStep = (room - (narrow ? 64 : room * 0.24)) / 3;
+	const trackedTagWidth = (text: string) =>
+		textWidth(text, frame.type.small) +
+		Math.max(0, [...text].length - 1) * frame.type.small * 0.12;
+	// On phones the two glosses use the plain mono small face, without tag tracking.
+	const etfPhoneGap =
+		columnStep -
+		(textWidth("EXCHANGE-TRADED", frame.type.small) +
+			textWidth("A NUMBER", frame.type.small)) /
+			2;
+	const etfWideGap =
+		columnStep -
+		(trackedTagWidth("EXCHANGE-TRADED FUND") + trackedTagWidth("A NUMBER")) / 2;
 	return {
 		...frame,
 		rowStep,
@@ -110,7 +130,11 @@ function layout(width: number) {
 			margin +
 			(narrow ? 64 : room * 0.24) +
 			i * ((room - (narrow ? 64 : room * 0.24)) / 3),
-		colW: (room - (narrow ? 64 : room * 0.24)) / 3,
+		colW,
+		kindNoteY,
+		kindNoteLineStep: frame.type.small * 1.35,
+		etfGlossPhoneFits: etfPhoneGap >= 6,
+		etfGlossWideFits: etfWideGap >= 10,
 	};
 }
 
@@ -174,7 +198,7 @@ const copy = {
 	],
 	buyableBoth: ["Yes, both", "两者均可"],
 	indexNumber: ["a number", "一个数"],
-	etfFund: ["a fund", "一只基金"],
+	etfFund: ["exchange-traded fund", "交易所交易基金"],
 	rowLabels: {
 		buy: ["buy it?", "能买吗"],
 		settle: ["an option delivers", "期权交割"],
@@ -669,24 +693,43 @@ function Scene({
 							<text
 								data-f="index-note"
 								x={L.colX(i) + L.colW / 2}
-								y={H * 0.27 + T.small * 2.2 + T.head * 1.5 + T.small * 1.6}
+								y={L.kindNoteY}
 								textAnchor="middle"
-								className="wt-film-tag"
+								className={narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"}
 								style={{ fontSize: T.small }}
 							>
-								{t(copy.indexNumber).toUpperCase()}
+								{narrow
+									? t(copy.indexNumber)
+									: t(copy.indexNumber).toUpperCase()}
 							</text>
 						) : kind === "etf" ? (
-							<text
-								data-f="etf-note"
-								x={L.colX(i) + L.colW / 2}
-								y={H * 0.27 + T.small * 2.2 + T.head * 1.5 + T.small * 1.6}
-								textAnchor="middle"
-								className="wt-film-tag"
-								style={{ fontSize: T.small }}
-							>
-								{t(copy.etfFund).toUpperCase()}
-							</text>
+							(narrow || L.etfGlossWideFits) && (
+								<text
+									data-f="etf-note"
+									x={L.colX(i) + L.colW / 2}
+									y={L.kindNoteY}
+									textAnchor="middle"
+									className={
+										narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"
+									}
+									style={{ fontSize: T.small }}
+								>
+									{(narrow && locale === "en"
+										? ["exchange-traded", "fund"]
+										: narrow
+											? [t(copy.etfFund)]
+											: [t(copy.etfFund).toUpperCase()]
+									).map((line, lineIndex) => (
+										<tspan
+											key={line}
+											x={L.colX(i) + L.colW / 2}
+											dy={lineIndex === 0 ? 0 : L.kindNoteLineStep}
+										>
+											{line}
+										</tspan>
+									))}
+								</text>
+							)
 						) : null}
 						{ROWS.map((row, r) =>
 							row === "buy" && kind !== "index" ? null : (
@@ -1273,8 +1316,8 @@ function build(context: FilmContext) {
 export const stocksAndPricesFilm: Film = {
 	id: "stocks-and-prices",
 	label: [
-		`Stocks and prices, as a short film: ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an ETF, a fund, and an index, the last a number you can't buy whose options deliver cash`,
-		`股票与价格短片：ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 ${MINE} 股就多 $${MINE}；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price(BUY_BIG.notional / BUY_BIG.filled)}；以及股票、ETF 和指数，指数是一个不能买入的数，它的期权以现金结算`,
+		`Stocks and prices, as a short film: ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an exchange-traded fund (ETF), and an index, the last a number you can't buy whose options deliver cash`,
+		`股票与价格短片：ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 ${MINE} 股就多 $${MINE}；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price(BUY_BIG.notional / BUY_BIG.filled)}；以及股票、交易所交易基金（ETF）和指数，指数是一个不能买入的数，它的期权以现金结算`,
 	],
 	stage: "dark",
 	shots: [
