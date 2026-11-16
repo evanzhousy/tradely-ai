@@ -14,6 +14,7 @@ import {
 	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	EARNINGS,
 	EDITED,
@@ -147,6 +148,14 @@ const copy = {
 		"先抄步骤，再刷新 Home。",
 	],
 	forecastNote: ["a forecast, not a check", "这是预测，不是核查"],
+	rowGloss: [
+		"where dealers may have to hedge · contracts still open",
+		"做市商可能需要对冲的位置 · 仍未平仓的合约",
+	],
+	proposalCaption: [
+		"expected move: the move that option prices imply",
+		"预期波动：期权价格所隐含的涨跌幅",
+	],
 	notes: ["Your notes", "你的笔记"],
 	noteEarnings: ["Earnings Oct 3", "10月3日财报"],
 	noteExpiry: ["before Oct 18 expiry", "在10月18日到期前"],
@@ -229,6 +238,13 @@ function Scene({
 	const y0 = L.slotY(0);
 	const textY = narrow ? y0 + L.rowH * 0.4 : y0 + L.rowH / 2 + L.rowText * 0.36;
 	const toolY = narrow ? y0 + L.rowH * 0.78 : textY;
+	const gexTitleY =
+		y0 + L.rowH / 2 + (L.rowText * 0.8 - T.small * 1.35 - T.small * 0.2) / 2;
+	const gexGlossY = gexTitleY + T.small * 1.35;
+	const gexGloss = t(copy.rowGloss);
+	const gexToolWidth = textWidth(t(TEMPLATE[1].tool), L.toolText);
+	const gexGlossFits =
+		textWidth(gexGloss, T.small) + gexToolWidth + 40 <= L.rowW;
 	// The chat, in two pages of two bubbles.
 	const proposalSize = T.body * (narrow ? 1.1 : 1.15);
 	const bubbleH = (text: Copy, size = L.bubbleText) =>
@@ -248,6 +264,17 @@ function Scene({
 		) +
 		H * 0.055 +
 		T.body;
+	const proposalCaptionLines = lineCount(t(copy.proposalCaption), room, T.body);
+	const proposalBottom = bubbleY(3) + bubbleH(PROPOSAL_INSERT, proposalSize);
+	// `Lines` takes its first line's baseline; the status line clears the caption's last line.
+	const proposalCaptionY = proposalBottom + T.body * 0.8 + 8;
+	const settledStatusY = Math.max(
+		statusY,
+		proposalCaptionY +
+			(proposalCaptionLines - 1) * T.body * 1.35 +
+			T.body * 1.35 +
+			8,
+	);
 	return (
 		<>
 			<Backdrop frame={L} />
@@ -380,7 +407,11 @@ function Scene({
 							<text
 								data-f={`step-${row.id}`}
 								x={L.rowX + 14}
-								y={textY + offset}
+								y={
+									row.id === "gex" && !narrow
+										? gexTitleY + offset
+										: textY + offset
+								}
 								className={
 									forecast
 										? `wt-film-type ${toneClass.caution}`
@@ -394,6 +425,17 @@ function Scene({
 										: shortText[row.id],
 								)}
 							</text>
+							{row.id === "gex" && !narrow && gexGlossFits ? (
+								<text
+									data-f="gex-gloss"
+									x={L.rowX + 14}
+									y={gexGlossY + offset}
+									className="wt-film-type wt-film-dim"
+									style={{ fontSize: T.small }}
+								>
+									{gexGloss}
+								</text>
+							) : null}
 							{forecast ? (
 								<text
 									data-f="forecast-note"
@@ -562,6 +604,18 @@ function Scene({
 								maxWidth={L.bubbleW - 2 * L.bubblePad}
 								anchor="start"
 							/>
+							{message.id === "proposal" ? (
+								<Lines
+									name="ai-proposal-caption"
+									text={t(copy.proposalCaption)}
+									x={x + L.bubblePad}
+									y={proposalCaptionY}
+									size={T.body}
+									maxWidth={room - L.bubblePad}
+									anchor="start"
+									className="wt-film-type wt-film-dim"
+								/>
+							) : null}
 						</g>
 					);
 				})}
@@ -570,7 +624,7 @@ function Scene({
 				name="ai-status"
 				text={t(FILM_RECIPE_STATUS)}
 				x={margin}
-				y={statusY}
+				y={settledStatusY}
 				size={T.body}
 				maxWidth={room}
 				anchor="start"
