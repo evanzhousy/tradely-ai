@@ -9,6 +9,8 @@ import {
 } from "@tradely/ui/components/table";
 import { ArrowUpRightIcon } from "lucide-react";
 
+import { useAnalytics } from "@/analytics/context";
+
 import {
 	formatDate,
 	formatHandle,
@@ -30,9 +32,10 @@ const postTags = (post: PostWithAuthor) => [
 
 /** A saved copy of the post: X's own embed would add its script and cookies to this page. */
 export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
+	const { capture } = useAnalytics();
 	return (
 		<ul className="grid gap-4 md:grid-cols-2">
-			{posts.map((post) => (
+			{posts.map((post, index) => (
 				<li
 					key={post.id}
 					className="trader-surface flex min-w-0 flex-col gap-3 p-6"
@@ -65,6 +68,16 @@ export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
 							target="_blank"
 							rel="noopener noreferrer"
 							className="trader-link inline-flex items-center gap-1 font-medium text-sm"
+							onClick={() =>
+								capture("options_post_opened", {
+									surface: "options_traders",
+									placement: "featured",
+									platform: "x",
+									post_id: post.id,
+									position: index + 1,
+									handle: post.author.handle,
+								})
+							}
 						>
 							Open on X
 							<ArrowUpRightIcon aria-hidden="true" size={14} />
@@ -77,6 +90,7 @@ export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
 }
 
 export function PostsTable({ posts }: { posts: readonly PostWithAuthor[] }) {
+	const { capture } = useAnalytics();
 	const maxViews = Math.max(posts[0]?.views ?? 0, 1);
 	return (
 		<Table>
@@ -130,6 +144,16 @@ export function PostsTable({ posts }: { posts: readonly PostWithAuthor[] }) {
 										target="_blank"
 										rel="noopener noreferrer"
 										className="trader-link inline-flex items-center gap-0.5 font-medium text-foreground"
+										onClick={() =>
+											capture("options_post_opened", {
+												surface: "options_traders",
+												placement: "posts_table",
+												platform: "x",
+												post_id: post.id,
+												position: index + 1,
+												handle: post.author.handle,
+											})
+										}
 									>
 										Open on X
 										<ArrowUpRightIcon aria-hidden="true" size={12} />
@@ -163,6 +187,15 @@ export function PostsTable({ posts }: { posts: readonly PostWithAuthor[] }) {
 											target="_blank"
 											rel="noopener noreferrer"
 											className="trader-link font-mono text-xs"
+											onClick={() =>
+												capture("options_profile_opened", {
+													surface: "options_traders",
+													placement: "post_author",
+													platform: "x",
+													handle: post.author.handle,
+													rank: post.author.rank,
+												})
+											}
 										>
 											{formatHandle(post.author)}
 										</a>

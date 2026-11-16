@@ -1,6 +1,10 @@
 import { cn } from "@tradely/ui/lib/utils";
 import { ArrowUpRightIcon } from "lucide-react";
 
+import { useAnalytics } from "@/analytics/context";
+import type { OptionsTradersSurface } from "@/analytics/events";
+
+import { analyticsPlatform } from "./analytics";
 import {
 	formatCompact,
 	formatDate,
@@ -13,17 +17,25 @@ import {
 } from "./model";
 import { TraderAvatar } from "./trader-avatar";
 
+type RosterPlacement = {
+	surface: OptionsTradersSurface;
+	placement: "directory" | "contributors";
+};
+
 function TraderCard({
 	profile,
 	summary,
 	hidden,
 	followerRead,
-}: {
+	surface,
+	placement,
+}: RosterPlacement & {
 	profile: TraderProfile;
 	summary?: PostSummary;
 	hidden: boolean;
 	followerRead?: string;
 }) {
+	const { capture } = useAnalytics();
 	const platform = platformOf(profile);
 	// A count read on another day than the page's says when, so an old number never passes for a new one.
 	const countDate =
@@ -82,6 +94,15 @@ function TraderCard({
 						target="_blank"
 						rel="noopener noreferrer"
 						className="trader-link mt-0.5 inline-flex w-fit items-center gap-1 font-mono text-sm [overflow-wrap:anywhere]"
+						onClick={() =>
+							capture("options_profile_opened", {
+								surface,
+								placement,
+								platform: analyticsPlatform(profile.platform),
+								handle: profile.handle,
+								rank: profile.rank,
+							})
+						}
 					>
 						{formatHandle(profile)}
 						<ArrowUpRightIcon aria-hidden="true" size={14} />
@@ -142,7 +163,9 @@ export function TraderRoster({
 	visible,
 	summaries,
 	followerRead,
-}: {
+	surface,
+	placement,
+}: RosterPlacement & {
 	profiles: readonly TraderProfile[];
 	visible: ReadonlySet<string>;
 	summaries: ReadonlyMap<string, PostSummary>;
@@ -163,6 +186,8 @@ export function TraderRoster({
 						}
 						hidden={!visible.has(anchor)}
 						followerRead={followerRead}
+						surface={surface}
+						placement={placement}
 					/>
 				);
 			})}

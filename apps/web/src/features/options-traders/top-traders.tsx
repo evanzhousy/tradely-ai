@@ -1,10 +1,14 @@
 import { ArrowUpRightIcon } from "lucide-react";
 
+import { useAnalytics } from "@/analytics/context";
+
+import { analyticsPlatform } from "./analytics";
 import { formatCompact, formatHandle, type TraderProfile } from "./model";
 import { TraderAvatar } from "./trader-avatar";
 
 /** The answer a visitor came for, on the first screen: each row opens that trader's profile. */
 export function TopTraders({ traders }: { traders: TraderProfile[] }) {
+	const { capture } = useAnalytics();
 	return (
 		<ol className="trader-surface top-traders">
 			{traders.map((trader) => (
@@ -14,6 +18,15 @@ export function TopTraders({ traders }: { traders: TraderProfile[] }) {
 						target="_blank"
 						rel="noopener noreferrer"
 						className="top-trader-row"
+						onClick={() =>
+							capture("options_profile_opened", {
+								surface: "options_traders",
+								placement: "top_five",
+								platform: analyticsPlatform(trader.platform),
+								handle: trader.handle,
+								rank: trader.rank,
+							})
+						}
 					>
 						<span className="w-6 shrink-0 font-mono text-muted-foreground text-sm tabular-nums">
 							{String(trader.rank).padStart(2, "0")}
