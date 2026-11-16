@@ -114,7 +114,7 @@ const copy = {
 		`回测 · ${openingCutoff.time[1]}`,
 	],
 	qLine: [
-		`Decision is replayed just after the ${BLOCK}-lot block.`,
+		`Decision is replayed just after a ${BLOCK}-contract block trade.`,
 		`它重放 ${BLOCK} 张大单后的即时决策。`,
 	],
 	qBig: ["Which price may it use?", "它可以用哪个价格？"],
@@ -150,8 +150,8 @@ const copy = {
 	],
 	rose: ["rose next day · 40–80%", "次日上涨 · 40–80%"],
 	best: [
-		`above ${best.threshold}× typical · ${best.rose}%`,
-		`超过常态 ${best.threshold}× · ${best.rose}%`,
+		`Jan–Jun, above ${best.threshold}× typical: ${best.rose}%`,
+		`上半年，超过常态 ${best.threshold}×：${best.rose}%`,
 	],
 	frozen: [
 		`Frozen rule: volume above ${best.threshold}× typical.`,
