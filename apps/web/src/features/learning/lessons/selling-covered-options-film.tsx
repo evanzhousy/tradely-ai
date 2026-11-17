@@ -213,7 +213,8 @@ const copy = {
 		`${whole(ACCOUNT)} 示例账户的 ${percent(CASH_SHARE, 0)}`,
 	],
 	cashWhy: [`buys ${SHARES} shares if assigned`, "被指派时用来买股"],
-	cashWhyShort: ["if assigned", "被指派时用"],
+	// The Chinese fits the phone card in full; the English has room for the condition only.
+	cashWhyShort: ["if assigned", "被指派时用来买股"],
 	netA: [
 		`if assigned: ${SHARES} shares at $${PUT.strike}, net `,
 		`如果被指派：以 $${PUT.strike} 买入 ${SHARES} 股，每股净价 `,
