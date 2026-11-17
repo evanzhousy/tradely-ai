@@ -173,7 +173,12 @@ const copy = {
 	holderClose: ["holder · Oct 18 close", "持有人 · 10月18日收盘"],
 	writerClose: ["ALFA · close", "ALFA · 收盘"],
 	afterHours: ["ALFA · after hours", "ALFA · 盘后"],
-	inTheMoney: ["in the money · per share", "实值 · 每股"],
+	// The hero's unit, with its contract dollars. The tag sits between the bracket's corners, so
+	// the English leaves "in the money" to the headline and the subtraction above the figure.
+	heroUnit: [
+		`a share · ${usd(HOLDER_MONEYNESS_CENTS * 100, 0)} a contract`,
+		`实值 · 每股 · 每张 ${usd(HOLDER_MONEYNESS_CENTS * 100, 0)}`,
+	],
 	// The lesson's rule: automatic unless the holder tells the broker otherwise before its cutoff.
 	defaultAction: [
 		"Broker not told otherwise before its cutoff; threshold met.",
@@ -199,8 +204,8 @@ const copy = {
 	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
 	claimBig: ["A few cents can mean shares.", "几美分也能变成股票。"],
 	claimSub: [
-		"Closing before expiry avoids the shares.",
-		"到期前平仓，就不会拿到股票。",
+		"Closing the option before expiry avoids the shares.",
+		"到期前平掉期权，就没有股票交收。",
 	],
 	nextBig: ["Next: the module checkpoint", "下一步：本模块检查点"],
 	nextSub: ["contracts and money, on a new day", "在新的一天里运用合约与金额"],
@@ -795,7 +800,7 @@ function Scene({
 				size={T.small}
 				className="wt-film-tag"
 			>
-				{t(copy.inTheMoney)}
+				{t(copy.heroUnit)}
 			</Word>
 			{/* The threshold comparison sits with the default-action line it explains, clear of
 			    the hero's figure and unit. */}
