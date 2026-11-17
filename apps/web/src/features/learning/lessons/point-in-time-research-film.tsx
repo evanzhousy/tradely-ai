@@ -147,8 +147,8 @@ const copy = {
 	axis: ["volume ÷ typical", "成交量 ÷ 常态"],
 	hHead: ["Thresholds tried on Jan–Jun.", "在上半年数据上试验门槛。"],
 	h2Head: [
-		`Frozen, then run once: ${HOLDOUT}%.`,
-		`冻结后只跑一次：${HOLDOUT}%。`,
+		`Frozen, run once on the holdout: ${HOLDOUT}%.`,
+		`冻结后在保留集上只跑一次：${HOLDOUT}%。`,
 	],
 	rose: ["rose next day · 40–80%", "次日上涨 · 40–80%"],
 	best: [
@@ -168,10 +168,7 @@ const copy = {
 		"Use only what was known, and test once.",
 		"只用当时已知的，并且只检验一次。",
 	],
-	claimSub: [
-		"Freeze the rule before the holdout.",
-		"打开样本外数据前先冻结规则。",
-	],
+	claimSub: ["Freeze the rule before the holdout.", "打开保留集前先冻结规则。"],
 	nextBig: ["Next: the module checkpoint", "下一步：模块检查点"],
 	nextSub: [
 		"comparison and investigation, on a new day",
@@ -923,7 +920,7 @@ export const pointInTimeResearchFilm: Film = {
 		{ id: "question", label: ["The question", "问题"] },
 		{ id: "cutoff", label: ["What was known", "当时已知"] },
 		{ id: "rank", label: ["A percentile", "百分位"] },
-		{ id: "holdout", label: ["The holdout", "样本外"] },
+		{ id: "holdout", label: ["The holdout", "保留集"] },
 		{ id: "claim", label: ["The claim", "结论"] },
 		{ id: "next", label: ["Next", "下一步"] },
 	],
