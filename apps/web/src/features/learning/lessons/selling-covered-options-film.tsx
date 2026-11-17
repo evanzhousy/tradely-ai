@@ -235,8 +235,16 @@ const copy = {
 	xAxisShort: [`ALFA on ${EXPIRY[0]}`, `${EXPIRY[1]} ALFA 股价`],
 	sellMark: [`sell ${PUT.strike}`, `卖出 ${PUT.strike}`],
 	ceil: [" at most", " 封顶"],
-	heroTag: ["worst case · per contract", "最坏情况 · 每张合约"],
-	heroTagShort: ["worst, per contract", "最坏情况 · 每张合约"],
+	// The lesson's derivation: the worst case is the net price if assigned, times 100. The chart's
+	// axis and the headline already say it is per contract, and the tag has no room for both.
+	heroTag: [
+		`worst case · ${usd(NET_PRICE)} × ${SHARES}`,
+		`最坏情况 · ${usd(NET_PRICE)} × ${SHARES}`,
+	],
+	heroTagShort: [
+		`worst: ${usd(NET_PRICE)} × ${SHARES}`,
+		`最坏 ${usd(NET_PRICE)} × ${SHARES}`,
+	],
 	sizeA: ["set aside: ", "预留 "],
 	sizeB: [` of ${whole(ACCOUNT)}`, `（账户 ${whole(ACCOUNT)}）`],
 	aHead: ["Both can be assigned any day.", "两者都可能在任一交易日被指派。"],
@@ -614,6 +622,19 @@ function Scene({
 							</tspan>
 							{narrow ? "" : t(copy.ceil)}
 						</text>
+						{/* Where the line crosses $0: the net price if assigned, left of the strike. Its own
+						    name keeps it out of the axes, which are the chart's unnamed children. */}
+						<text
+							data-f="g-even"
+							x={L.x(NET_PRICE / 100) - (narrow ? 16 : 8)}
+							y={L.y(0) - 10}
+							textAnchor="end"
+							className="wt-film-type wt-film-dim"
+							style={{ fontSize: L.label }}
+						>
+							{t(copy.even)}
+							<tspan className="wt-film-num">{usd(NET_PRICE)}</tspan>
+						</text>
 					</g>
 				</g>
 			</g>
@@ -876,11 +897,14 @@ function build(context: FilmContext) {
 	tl.addLabel("hero-lock", 28.2);
 	// After the hero's 1.5-second stand: the cash it ties up, then the most it can keep.
 	show(one("size-line"), 30.2);
-	fade(one("g-ceil"), 31.3);
+	fade([one("g-ceil"), one("g-even")], 31.3);
 
 	// ——— assign: any trading day, and the one way to rule it out ———
 	tl.addLabel("assign", 33.9);
-	hide([head("h"), head("h2"), ...hero, lock, one("g-ceil")], 33.9);
+	hide(
+		[head("h"), head("h2"), ...hero, lock, one("g-ceil"), one("g-even")],
+		33.9,
+	);
 	d.sink(33.9);
 	show(head("a"), 34.25);
 	show(one("cal"), 34.5);
