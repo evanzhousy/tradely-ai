@@ -107,8 +107,8 @@ const copy = {
 		"研究包 P1 · 10月18日 看涨 · 周一",
 	],
 	qLine: [
-		`P1 reports at least ${dollars(MONDAY)}.`,
-		`P1 报告至少 ${dollars(MONDAY)}。`,
+		`P1 reports at least ${dollars(MONDAY)} in call premium.`,
+		`P1 报告看涨权利金至少 ${dollars(MONDAY)}。`,
 	],
 	qBig: ["Would someone else get the same?", "别人重跑会得到同样的数吗？"],
 	pHead: [
@@ -352,6 +352,17 @@ function Scene({
 				style={{ fontSize: T.small }}
 			>
 				{t(["CONTRACTS", "张数"])}
+			</text>
+			{/* What the dollar column measures, over its right edge. */}
+			<text
+				data-f="premium-head"
+				x={margin + room - 12}
+				y={L.rowY(0) - T.small * 0.65}
+				textAnchor="end"
+				className="wt-film-tag"
+				style={{ fontSize: T.small }}
+			>
+				{t(["PREMIUM", "权利金"])}
 			</text>
 			<g data-f="trace">
 				{R2_TRADES.map((trade, i) => (
@@ -835,6 +846,7 @@ function build(context: FilmContext) {
 		...heads,
 		...rows,
 		one("contracts-head"),
+		one("premium-head"),
 		one("trace"),
 		one("trace-result"),
 		one("sum-ge"),
@@ -876,7 +888,7 @@ function build(context: FilmContext) {
 	tl.addLabel("rows", 8.6);
 	hide(flat("q"), 8.6);
 	show(heads[0], 8.8);
-	show(one("contracts-head"), 9.2);
+	show([one("contracts-head"), one("premium-head")], 9.2);
 	rows.forEach((row, i) => {
 		show(row, 10.7 + i * 0.1, "right", 0.35);
 	});
@@ -915,6 +927,7 @@ function build(context: FilmContext) {
 			one("sum-ge"),
 			one("subtotal"),
 			one("contracts-head"),
+			one("premium-head"),
 		],
 		18.6,
 	);
