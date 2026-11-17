@@ -173,7 +173,16 @@ const copy = {
 	writerClose: ["ALFA · close", "ALFA · 收盘"],
 	afterHours: ["ALFA · after hours", "ALFA · 盘后"],
 	inTheMoney: ["in the money · per share", "实值 · 每股"],
-	defaultAction: ["No action; threshold met.", "未操作；门槛已达。"],
+	// The lesson's rule: automatic unless the holder tells the broker otherwise before its cutoff.
+	defaultAction: [
+		"Broker not told otherwise before its cutoff; threshold met.",
+		"券商截止时间前未另行指示；门槛已达。",
+	],
+	// One line on a phone: the Monday account card lands straight under the comparison.
+	defaultActionShort: [
+		"Broker not told otherwise; threshold met.",
+		"券商截止时间前未另行指示；门槛已达。",
+	],
 	autoThreshold: ["auto-exercise threshold", "自动行权门槛"],
 	holderExercises: ["Holder exercises", "持有人选择行权"],
 	writerHead: [
@@ -800,7 +809,7 @@ function Scene({
 			</Word>
 			<Lines
 				name="pin-default"
-				text={t(copy.defaultAction)}
+				text={t(narrow ? copy.defaultActionShort : copy.defaultAction)}
 				// Under the holder's close it follows from; on a phone, below the hero.
 				x={narrow ? W / 2 : L.priceX}
 				y={narrow ? H * 0.74 : L.priceY + T.num * 1.05}
