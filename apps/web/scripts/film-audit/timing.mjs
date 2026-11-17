@@ -724,12 +724,19 @@ const out = await page.evaluate(() => {
 		.filter((tw) => tw.duration() > 0.01 && tw.duration() < 10)
 		.map((tw) => [tw.startTime(), tw.startTime() + tw.duration()])
 		.sort((a, b) => a[0] - b[0]);
-	// The question shot and the closing claim are read standing still; measure between them.
+	// The question shot and the closing claim are read standing still, so they are left out.
+	// A film that asks straight after the title card is measured from the shot after the
+	// question. A film that asks later (stocks-and-prices defines a share first) is measured
+	// from its first shot, with the question shot counted as motion.
 	const labels = Object.values(tl.labels).sort((a, b) => a - b);
-	const from =
-		labels.find((t) => t > (tl.labels.question ?? 2)) ??
-		tl.labels.question ??
-		2;
+	const asked = tl.labels.question ?? 2;
+	const afterAsked = labels.find((t) => t > asked) ?? asked;
+	const firstShot = labels.find((t) => t > 0) ?? asked;
+	const from = firstShot < asked ? firstShot : afterAsked;
+	if (firstShot < asked) {
+		runs.push([asked, afterAsked]);
+		runs.sort((a, b) => a[0] - b[0]);
+	}
 	const claim = [...svg.querySelectorAll("[data-f]")].find((el) =>
 		/^(z|c|claim)-big$/.test(el.getAttribute("data-f")),
 	);
