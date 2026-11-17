@@ -146,8 +146,8 @@ const copy = {
 		"净支出：付出的减去收到的",
 	],
 	legNote: [
-		"One order: sent apart, one leg can fill alone.",
-		"用一张订单：分开下，可能只成交一条腿。",
+		"One order: both legs fill together, or it waits.",
+		"一张订单：两条腿成对成交，否则继续等。",
 	],
 	pHead: ["Its loss and its gain are capped.", "亏损和盈利都有上限。"],
 	axis: ["profit on Oct 18, per spread", "10月18日盈亏，每组价差"],
