@@ -140,6 +140,11 @@ const copy = {
 	],
 	noData: ["no data yet", "尚无数据"],
 	coveredZero: ["covered, zero", "已覆盖，零"],
+	// P3 says what its method leaves out; the stage has not named the spread before this.
+	spreadWhy: [
+		"method v2: without one spread's two legs",
+		"方法 v2：去掉一笔价差的两条腿",
+	],
 	r5Cause: [
 		`+${dollars(TUESDAY - MONDAY)} · R5: late Monday data`,
 		`+${dollars(TUESDAY - MONDAY)} · R5：周一数据延迟`,
@@ -590,7 +595,10 @@ function Scene({
 							className="wt-film-type wt-film-dim"
 							style={{ fontSize: T.small * 1.05 }}
 						>
-							{t(i === 0 ? copy.savedCoverage : record.note)}
+							{/* P2's note carries R5 through to its dollars: × 100 shares a contract. */}
+							{i === 0
+								? t(copy.savedCoverage)
+								: `${t(record.note)} × 100 = ${dollars(TUESDAY - MONDAY)}`}
 						</text>
 					)}
 					{i === 0 && (
@@ -626,6 +634,15 @@ function Scene({
 					style={{ fontSize: spreadProofSize }}
 				>
 					{t(spreadProof[1])}
+				</text>
+				{/* Beside the sum on the wide frame; on its own line under it on a phone. */}
+				<text
+					x={margin + 16}
+					y={spreadProofY + spreadProofSize * (narrow ? 2.5 : 1.25)}
+					className="wt-film-type wt-film-dim"
+					style={{ fontSize: T.small * 1.05 }}
+				>
+					{t(copy.spreadWhy)}
 				</text>
 			</g>
 
