@@ -209,10 +209,14 @@ const copy = {
 		settle: ["delivers", "交割"],
 	},
 	claimBig: [
-		"Trades execute at quotes, not last prices.",
+		"Trades happen at quotes, not last prices.",
 		"成交按报价，不按最新成交价。",
 	],
-	claimSub: ["Buy at ask; sell at bid.", "按卖价买，按买价卖。"],
+	// The claim keeps the lesson's word, quotes, and says what they are.
+	claimSub: [
+		"Quotes: the ask to buy, the bid to sell.",
+		"报价：买入用卖价，卖出用买价。",
+	],
 	nextBig: ["Next: options, a paid right", "下一课：期权，付费的权利"],
 	nextSub: ["what a call and a put give you", "看涨与看跌赋予你什么"],
 } as const;
