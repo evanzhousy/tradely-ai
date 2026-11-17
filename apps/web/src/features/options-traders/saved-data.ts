@@ -6,8 +6,12 @@ import { formatHandle, type PostSnapshot, type TraderProfile } from "./model";
 export const savedProfiles = profiles as TraderProfile[];
 export const savedSnapshot = posts as PostSnapshot;
 
+/** Only the Top 30 shows before a reader filters, so structured data lists only what is on screen. */
 export const directoryListItems = () =>
-	savedProfiles.map((profile) => ({
-		name: `${profile.name} (${formatHandle(profile)})`,
-		url: profile.profileUrl,
-	}));
+	savedProfiles
+		.filter((profile) => profile.rank !== undefined)
+		.sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+		.map((profile) => ({
+			name: `${profile.name} (${formatHandle(profile)})`,
+			url: profile.profileUrl,
+		}));

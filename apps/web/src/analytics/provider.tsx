@@ -67,6 +67,9 @@ const SEND_BEACON_EVENTS = new Set<AnalyticsEventName>([
 	"guest_work_import_succeeded",
 	"lesson_completed",
 	"lesson_video_completed",
+	"options_post_opened",
+	"options_profile_opened",
+	"options_subreddit_opened",
 	"tradingflow_link_opened",
 	"visual_lesson_scene_completed",
 ]);

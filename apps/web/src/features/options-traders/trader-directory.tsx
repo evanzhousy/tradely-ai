@@ -16,8 +16,12 @@ import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "@tradely/ui/components/toggle-group";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
+import { useAnalytics } from "@/analytics/context";
+import type { OptionsListFilter } from "@/analytics/events";
+
+import { analyticsPlatformFilter } from "./analytics";
 import {
 	availableLanguages,
 	DEFAULT_FILTERS,
@@ -70,13 +74,17 @@ export function TraderDirectory({
 	profiles,
 	posts,
 	windowLabel,
+	followerRead,
 }: {
 	profiles: readonly TraderProfile[];
 	posts: readonly PostWithAuthor[];
 	windowLabel: string;
+	followerRead?: string;
 }) {
 	const id = useId();
+	const { capture } = useAnalytics();
 	const [filters, setFilters] = useState(DEFAULT_FILTERS);
+	const lastSearch = useRef("");
 	const hash = useLocation({
 		select: (location) => location.hash.toLowerCase(),
 	});
@@ -141,8 +149,44 @@ export function TraderDirectory({
 		if (target && !target.hidden) target.scrollIntoView();
 	}, [hash, filters]);
 
-	function changeFilters(next: DirectoryFilters) {
+	// A search counts once the visitor pauses typing; its text never leaves the page.
+	const searched = filters.query.trim();
+	const searchProfiles = selected.profiles.length;
+	const searchPosts = selected.posts.length;
+	useEffect(() => {
+		if (!searched) {
+			lastSearch.current = "";
+			return;
+		}
+		if (searched === lastSearch.current) return;
+		const timer = window.setTimeout(() => {
+			lastSearch.current = searched;
+			capture("options_list_filtered", {
+				surface: "options_traders",
+				filter: "search",
+				matching_profiles: searchProfiles,
+				matching_posts: searchPosts,
+			});
+		}, 1000);
+		return () => window.clearTimeout(timer);
+	}, [capture, searched, searchProfiles, searchPosts]);
+
+	function changeFilters(
+		next: DirectoryFilters,
+		filter: OptionsListFilter,
+		value?: string,
+	) {
 		setFilters(next);
+		if (filter !== "search") {
+			const matching = selectDirectory(profiles, posts, next);
+			capture("options_list_filtered", {
+				surface: "options_traders",
+				filter,
+				...(value === undefined ? {} : { value }),
+				matching_profiles: matching.profiles.length,
+				matching_posts: matching.posts.length,
+			});
+		}
 		// Lets a later click on the same anchor navigate and reveal it again.
 		if (window.location.hash) {
 			window.history.replaceState(
@@ -153,7 +197,7 @@ export function TraderDirectory({
 		}
 	}
 	const clearFilters = () =>
-		changeFilters({ ...DEFAULT_FILTERS, view: filters.view });
+		changeFilters({ ...DEFAULT_FILTERS, view: filters.view }, "clear");
 
 	return (
 		<>
@@ -188,11 +232,15 @@ export function TraderDirectory({
 							value={[filters.view]}
 							onValueChange={(values) => {
 								if (values[0]) {
-									changeFilters({
-										...DEFAULT_FILTERS,
-										view: values[0] as DirectoryFilters["view"],
-										language: filters.language,
-									});
+									changeFilters(
+										{
+											...DEFAULT_FILTERS,
+											view: values[0] as DirectoryFilters["view"],
+											language: filters.language,
+										},
+										"view",
+										values[0],
+									);
 								}
 							}}
 						>
@@ -213,7 +261,16 @@ export function TraderDirectory({
 									placeholder="Name, handle or topic"
 									value={filters.query}
 									onChange={(event) =>
-										changeFilters({ ...filters, query: event.target.value })
+										changeFilters(
+											{
+												...filters,
+												query: event.target.value,
+												// Search, topic and activity reach the whole directory, as platform and
+												// language do: most matches sit outside the Top 30.
+												view: event.target.value ? "all" : filters.view,
+											},
+											"search",
+										)
 									}
 								/>
 							</Field>
@@ -222,13 +279,17 @@ export function TraderDirectory({
 								label="Content language"
 								value={filters.language}
 								onChange={(language) =>
-									changeFilters({
-										...filters,
+									changeFilters(
+										{
+											...filters,
+											language,
+											// A specific language opens the directory: the U.S.-focused
+											// Top 30 would otherwise hide most of that audience.
+											view: language === "all" ? filters.view : "all",
+										},
+										"language",
 										language,
-										// A specific language opens the directory: the U.S.-focused
-										// Top 30 would otherwise hide most of that audience.
-										view: language === "all" ? filters.view : "all",
-									})
+									)
 								}
 							>
 								<NativeSelectOption value="all">
@@ -245,11 +306,15 @@ export function TraderDirectory({
 								label="Platform"
 								value={filters.platform}
 								onChange={(platform) =>
-									changeFilters({
-										...filters,
-										platform,
-										view: platform === "all" ? filters.view : "all",
-									})
+									changeFilters(
+										{
+											...filters,
+											platform,
+											view: platform === "all" ? filters.view : "all",
+										},
+										"platform",
+										analyticsPlatformFilter(platform),
+									)
 								}
 							>
 								<NativeSelectOption value="all">
@@ -265,7 +330,17 @@ export function TraderDirectory({
 								id={`${id}-topic`}
 								label="Topic"
 								value={filters.topic}
-								onChange={(topic) => changeFilters({ ...filters, topic })}
+								onChange={(topic) =>
+									changeFilters(
+										{
+											...filters,
+											topic,
+											view: topic === "all" ? filters.view : "all",
+										},
+										"topic",
+										topic,
+									)
+								}
 							>
 								<NativeSelectOption value="all">All topics</NativeSelectOption>
 								{topics.map((topic) => (
@@ -278,7 +353,17 @@ export function TraderDirectory({
 								id={`${id}-activity`}
 								label="Activity"
 								value={filters.activity}
-								onChange={(activity) => changeFilters({ ...filters, activity })}
+								onChange={(activity) =>
+									changeFilters(
+										{
+											...filters,
+											activity,
+											view: activity === "all" ? filters.view : "all",
+										},
+										"activity",
+										activity,
+									)
+								}
 							>
 								<NativeSelectOption value="all">
 									Any activity
@@ -329,6 +414,9 @@ export function TraderDirectory({
 						profiles={profiles}
 						visible={visible}
 						summaries={summaries}
+						followerRead={followerRead}
+						surface="options_traders"
+						placement="directory"
 					/>
 					{selected.profiles.length === 0 ? (
 						<Empty>
@@ -341,7 +429,7 @@ export function TraderDirectory({
 							<Button
 								variant="outline"
 								onClick={() =>
-									changeFilters({ ...DEFAULT_FILTERS, view: "all" })
+									changeFilters({ ...DEFAULT_FILTERS, view: "all" }, "clear")
 								}
 							>
 								Show all profiles
@@ -377,6 +465,11 @@ export function TraderDirectory({
 							: ""}
 						This recorded selection follows the profile and language filters; it
 						is not every post by these accounts.
+					</p>
+					<p className="max-w-3xl text-muted-foreground text-sm leading-relaxed">
+						Posts are shown as written. Some promote the author's paid rooms,
+						newsletters or trade alerts; Tradely has not reviewed or endorsed
+						any of them.
 					</p>
 				</div>
 				{featured.length > 0 ? (

@@ -9,16 +9,19 @@ import {
 	formatDate,
 	formatDateRange,
 	formatMetricsChecked,
+	type LiveSnapshot,
 	latestPostAt,
 	PLATFORMS,
 	type PostSnapshot,
 	profileAnchor,
+	withLiveRoster,
 	withObservedLanguages,
 } from "./model";
 import { savedProfiles, savedSnapshot } from "./saved-data";
 import {
 	FreshnessPanel,
 	OpenOptionTrades,
+	RemovalContact,
 	recordedDate,
 	useLatestSnapshot,
 } from "./snapshot-ui";
@@ -31,12 +34,20 @@ const FEED_PATH = "/api/options-traders";
 function Freshness({
 	snapshot,
 	postsThrough,
+	followerRead,
 }: {
 	snapshot: PostSnapshot;
 	postsThrough: string | null;
+	followerRead: string | undefined;
 }) {
 	const { freshness } = snapshot;
-	const live = snapshot !== savedSnapshot && freshness.status === "success";
+	const savedThrough = latestPostAt(savedSnapshot.posts);
+	// Only a later post counts: the live feed answers with a new object even when nothing changed.
+	const newer =
+		freshness.status === "success" &&
+		postsThrough !== null &&
+		(savedThrough === null ||
+			Date.parse(postsThrough) > Date.parse(savedThrough));
 	return (
 		<FreshnessPanel
 			freshness={freshness}
@@ -56,18 +67,24 @@ function Freshness({
 					: []),
 			]}
 		>
-			These dates describe the saved posts across all languages. Follower counts
-			have separate as-of dates.
-			{live ? " Newer digest posts were added when this page loaded." : ""}
+			These dates describe the saved posts across all languages.
+			{followerRead
+				? ` Follower counts were read ${formatDate(followerRead)}; a profile read on another day shows its own date.`
+				: " Each profile shows the date its follower count was read."}
+			{newer ? " Newer digest posts were added when this page loaded." : ""}
 		</FreshnessPanel>
 	);
 }
 
 export function OptionsTradersPage() {
-	const snapshot = useLatestSnapshot(savedSnapshot, FEED_PATH);
+	const snapshot = useLatestSnapshot<LiveSnapshot>(savedSnapshot, FEED_PATH);
 	const profiles = useMemo(
-		() => withObservedLanguages(savedProfiles, snapshot.posts),
-		[snapshot.posts],
+		() =>
+			withObservedLanguages(
+				withLiveRoster(savedProfiles, snapshot.profiles),
+				snapshot.posts,
+			),
+		[snapshot.profiles, snapshot.posts],
 	);
 	const posts = useMemo(
 		() => attachAuthors(profiles, snapshot.posts),
@@ -99,11 +116,11 @@ export function OptionsTradersPage() {
 		},
 		{
 			title: "How ranking works",
-			body: "The Top 30 order favors traders whose typical post names a contract, an open-interest change or a gamma wall that can be checked against the tape. Posting pace and reach come next, and follower count carries little weight. The full directory is grouped by platform, with the same editorial order within each platform. Inclusion and rank do not measure trading returns.",
+			body: "The Top 30 order favors traders whose typical post names a contract, an open-interest change or a gamma wall that can be checked against the tape. Posting pace and reach come next, and follower count carries little weight. Only the Top 30 is ranked: the full directory lists it first, then the rest of X and YouTube by follower count, then Reddit users alphabetically. Inclusion and rank do not measure trading returns.",
 		},
 		{
 			title: "Where the data comes from",
-			body: "TradingFlow, our practice partner, researches this directory and keeps a weekday digest of public X posts. For Top 30 accounts the digest missed, it also searches X for their recent options posts. Filters select posts by directory accounts, and each post keeps the date its metrics were measured.",
+			body: "We keep this directory with TradingFlow, our practice partner, which collects a weekday digest of public X posts through an automated search of X. Only posts by listed accounts are shown. Each week we re-read follower counts and each post's views, likes and reposts from a public mirror of X, and each post keeps the date its numbers were read.",
 		},
 	];
 
@@ -162,6 +179,7 @@ export function OptionsTradersPage() {
 			<TraderDirectory
 				profiles={profiles}
 				posts={posts}
+				followerRead={followerRead}
 				windowLabel={formatDateRange(
 					snapshot.digestWindow.from,
 					snapshot.digestWindow.to,
@@ -179,6 +197,7 @@ export function OptionsTradersPage() {
 				<Freshness
 					snapshot={snapshot}
 					postsThrough={latestPostAt(snapshot.posts)}
+					followerRead={followerRead}
 				/>
 				<div className="grid gap-4 md:grid-cols-3">
 					{method.map((step) => (
@@ -225,7 +244,7 @@ export function OptionsTradersPage() {
 				>
 					risk disclosure
 				</AppLink>
-				.
+				. <RemovalContact />
 			</p>
 		</main>
 	);

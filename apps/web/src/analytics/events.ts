@@ -41,6 +41,22 @@ export type BillingAction = "portal" | "course_pass_restore";
 export type VisualLessonPlaybackMode = "autoplay" | "manual";
 export type VisualLessonSurface = "film" | "walkthrough" | "playground";
 
+/** The public options-traders pages: the X and YouTube directory, and Reddit posts. */
+export type OptionsTradersSurface =
+	| "options_traders"
+	| "options_traders_reddit";
+export type OptionsTradersPlatform = "x" | "youtube" | "reddit";
+export type OptionsListFilter =
+	| "view"
+	| "search"
+	| "language"
+	| "platform"
+	| "topic"
+	| "activity"
+	| "clear"
+	| "subreddit"
+	| "sort";
+
 type VisualLessonEventProperties = {
 	lesson_id: string;
 	scene_id: string;
@@ -212,10 +228,40 @@ export type AnalyticsEventMap = {
 			| "home_hero"
 			| "lesson_practice"
 			| "lesson_lab"
-			| "options_traders"
-			| "options_traders_reddit";
+			| OptionsTradersSurface;
 		lesson_id?: string;
 		tool?: TradingFlowPractice["tool"];
+	};
+	/** A listed profile opened from an options-traders page; handles are public accounts shown there. */
+	options_profile_opened: {
+		surface: OptionsTradersSurface;
+		placement: "top_five" | "directory" | "post_author" | "contributors";
+		platform: OptionsTradersPlatform;
+		handle: string;
+		rank?: number;
+	};
+	/** A saved X post or listed Reddit post opened; `position` is its 1-based place in that list. */
+	options_post_opened: {
+		surface: OptionsTradersSurface;
+		placement: "featured" | "posts_table";
+		platform: "x" | "reddit";
+		post_id: string;
+		position: number;
+		handle?: string;
+		subreddit?: string;
+	};
+	options_subreddit_opened: {
+		surface: "options_traders_reddit";
+		placement: "post" | "subreddit_list";
+		subreddit: string;
+	};
+	/** A list filter changed by the visitor. Search text is never sent, only that a search ran. */
+	options_list_filtered: {
+		surface: OptionsTradersSurface;
+		filter: OptionsListFilter;
+		value?: string;
+		matching_profiles?: number;
+		matching_posts: number;
 	};
 	lesson_opened: {
 		lesson_id: string;
@@ -312,6 +358,10 @@ export const ANALYTICS_EVENT_NAMES = {
 	visual_lesson_scene_replayed: true,
 	visual_lesson_rate_changed: true,
 	tradingflow_link_opened: true,
+	options_profile_opened: true,
+	options_post_opened: true,
+	options_subreddit_opened: true,
+	options_list_filtered: true,
 	lesson_opened: true,
 	lesson_video_started: true,
 	lesson_video_completed: true,
@@ -434,6 +484,30 @@ export const ANALYTICS_EVENT_PROPERTY_KEYS = {
 		"to_rate",
 	],
 	tradingflow_link_opened: ["surface", "tool", ...labPropertyKeys],
+	options_profile_opened: [
+		"surface",
+		"placement",
+		"platform",
+		"handle",
+		"rank",
+	],
+	options_post_opened: [
+		"surface",
+		"placement",
+		"platform",
+		"post_id",
+		"position",
+		"handle",
+		"subreddit",
+	],
+	options_subreddit_opened: ["surface", "placement", "subreddit"],
+	options_list_filtered: [
+		"surface",
+		"filter",
+		"value",
+		"matching_profiles",
+		"matching_posts",
+	],
 	lesson_opened: [
 		"lesson_id",
 		"lesson_order",

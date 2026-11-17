@@ -269,6 +269,7 @@ journeys below are source-based starting points, not live measurement proof:
 | Saved progress | `lesson_completed` and progress-save failures; successful persisted completion is distinct from understanding or an active learning task. |
 | Exercises/coaching | Verified current `preview_exercise_*`, `lesson_exercise_*`, or `lesson_coach_*` emitters only; match lesson/scenario/version/round and keep guest and signed-in populations separate. |
 | Outbound interest | `tradingflow_link_opened` and active `tradingflow_lab_*` events by supported surface; do not infer TradingFlow account activation or payment. |
+| Options-traders pages | `page_viewed` with `route_name=options_traders` or `options_traders_reddit` → `options_profile_opened`, `options_post_opened`, `options_subreddit_opened` by `placement`, and `options_list_filtered` by `filter`; a filter with `matching_profiles=0` or `matching_posts=0` is a dead end. Clicks show interest in an account or post, not that the visitor followed or traded. |
 | Historical billing support | Portal/restore `billing_action_*` and `course_pass_access_verified` by source; restored/existing access is not a new purchase. |
 
 Check the [player](../../apps/web/src/features/learning/walkthrough/player.tsx),

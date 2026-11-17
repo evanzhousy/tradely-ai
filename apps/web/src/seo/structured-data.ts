@@ -85,7 +85,7 @@ export function optionsTradersStructuredData(
 				},
 				{
 					"@type": "ItemList",
-					name: "Options traders to follow on X, YouTube and Reddit",
+					name: "Top 30 options traders to follow on X",
 					url,
 					numberOfItems: profiles.length,
 					itemListElement: profiles.map((profile, index) => ({

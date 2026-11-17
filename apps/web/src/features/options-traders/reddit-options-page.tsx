@@ -20,6 +20,7 @@ import {
 	TableRow,
 } from "@tradely/ui/components/table";
 import { useId, useMemo, useState } from "react";
+import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
 import { EnglishOnlyNote } from "@/components/english-only-note";
 import { PageIntro } from "@/components/page-intro";
@@ -45,6 +46,7 @@ import {
 	FreshnessPanel,
 	isDelayed,
 	OpenOptionTrades,
+	RemovalContact,
 	recordedDate,
 	useLatestSnapshot,
 } from "./snapshot-ui";
@@ -66,16 +68,19 @@ const userUrl = (name: string) => `https://www.reddit.com/user/${name}/`;
 const metricsRead = (posts: readonly RedditPost[]) =>
 	formatMetricsChecked(posts.filter((post) => post.metricsCapturedAt));
 
-const postTags = (post: RedditPost) =>
-	post.structure && post.structure !== "Other"
-		? [...post.tickers, post.structure]
-		: post.tickers;
+/** "Other" is the database's placeholder, not a ticker or a structure a reader can look up. */
+const postTags = (post: RedditPost) => [
+	...post.tickers.filter((ticker) => ticker !== "Other"),
+	...(post.structure && post.structure !== "Other" ? [post.structure] : []),
+];
 
 function ExternalText({
 	href,
+	onClick,
 	children,
 }: {
 	href: string;
+	onClick: () => void;
 	children: React.ReactNode;
 }) {
 	return (
@@ -84,6 +89,7 @@ function ExternalText({
 			target="_blank"
 			rel="noopener noreferrer"
 			className="trader-link [overflow-wrap:anywhere]"
+			onClick={onClick}
 		>
 			{children}
 			<span className="sr-only"> (opens on Reddit)</span>
@@ -92,6 +98,20 @@ function ExternalText({
 }
 
 function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
+	const { capture } = useAnalytics();
+	const openSubreddit = (subreddit: string) => () =>
+		capture("options_subreddit_opened", {
+			surface: "options_traders_reddit",
+			placement: "post",
+			subreddit,
+		});
+	const openAuthor = (author: string) => () =>
+		capture("options_profile_opened", {
+			surface: "options_traders_reddit",
+			placement: "post_author",
+			platform: "reddit",
+			handle: author,
+		});
 	return (
 		<Table>
 			<TableCaption className="sr-only">
@@ -109,7 +129,7 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{posts.map((post) => {
+				{posts.map((post, index) => {
 					const tags = postTags(post);
 					return (
 						<TableRow
@@ -124,6 +144,16 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 									rel="noopener noreferrer"
 									dir="auto"
 									className="trader-post-link line-clamp-3 font-medium leading-snug [overflow-wrap:anywhere]"
+									onClick={() =>
+										capture("options_post_opened", {
+											surface: "options_traders_reddit",
+											placement: "posts_table",
+											platform: "reddit",
+											post_id: post.id,
+											position: index + 1,
+											subreddit: post.subreddit,
+										})
+									}
 								>
 									{post.title}
 									<span className="sr-only"> (opens on Reddit)</span>
@@ -131,9 +161,27 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 								<p className="mt-1.5 text-muted-foreground text-sm leading-snug">
 									{post.summary}
 								</p>
+								{/* Phones lose the Where column, and the smallest the Comments column too. */}
 								<p className="mt-1.5 text-muted-foreground text-xs md:hidden">
-									r/{post.subreddit} · u/{post.author} ·{" "}
-									{formatDate(post.postedAt)}
+									<ExternalText
+										href={subredditUrl(post.subreddit)}
+										onClick={openSubreddit(post.subreddit)}
+									>
+										r/{post.subreddit}
+									</ExternalText>{" "}
+									·{" "}
+									<ExternalText
+										href={userUrl(post.author)}
+										onClick={openAuthor(post.author)}
+									>
+										u/{post.author}
+									</ExternalText>{" "}
+									· {formatDate(post.postedAt)}
+									<span className="sm:hidden">
+										{" "}
+										· {formatMetric(post.comments)}{" "}
+										{post.comments === 1 ? "comment" : "comments"}
+									</span>
 								</p>
 								{post.metricsCapturedAt ? (
 									<p className="mt-1 text-muted-foreground text-xs">
@@ -150,12 +198,18 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 							</TableCell>
 							<TableCell className="hidden whitespace-normal text-sm md:table-cell">
 								<span className="block">
-									<ExternalText href={subredditUrl(post.subreddit)}>
+									<ExternalText
+										href={subredditUrl(post.subreddit)}
+										onClick={openSubreddit(post.subreddit)}
+									>
 										r/{post.subreddit}
 									</ExternalText>
 								</span>
 								<span className="block font-mono text-xs">
-									<ExternalText href={userUrl(post.author)}>
+									<ExternalText
+										href={userUrl(post.author)}
+										onClick={openAuthor(post.author)}
+									>
 										u/{post.author}
 									</ExternalText>
 								</span>
@@ -183,7 +237,7 @@ function PostControls({
 	subreddits,
 }: {
 	filters: RedditFilters;
-	setFilters: (filters: RedditFilters) => void;
+	setFilters: (filters: RedditFilters, filter: "subreddit" | "sort") => void;
 	subreddits: readonly { name: string; count: number }[];
 }) {
 	const id = useId();
@@ -197,7 +251,10 @@ function PostControls({
 					className="w-full"
 					value={filters.subreddit}
 					onChange={(event) =>
-						setFilters({ ...filters, subreddit: event.target.value })
+						setFilters(
+							{ ...filters, subreddit: event.target.value },
+							"subreddit",
+						)
 					}
 				>
 					<NativeSelectOption value="all">All subreddits</NativeSelectOption>
@@ -216,10 +273,13 @@ function PostControls({
 					className="w-full"
 					value={filters.sort}
 					onChange={(event) =>
-						setFilters({
-							...filters,
-							sort: event.target.value === "newest" ? "newest" : "score",
-						})
+						setFilters(
+							{
+								...filters,
+								sort: event.target.value === "newest" ? "newest" : "score",
+							},
+							"sort",
+						)
 					}
 				>
 					<NativeSelectOption value="score">Most upvoted</NativeSelectOption>
@@ -241,13 +301,14 @@ const METHOD = [
 	},
 	{
 		title: "Where the data comes from",
-		body: "Each row is reviewed and stored in our own database. We link to the original post and write the summary ourselves rather than copying the post. Tradely is not affiliated with or endorsed by Reddit.",
+		body: "Each week a third-party Reddit data service suggests candidate posts and reads their upvotes and comments. We read every candidate and list only the ones we approve, keeping them in our own database. We link to the original post and write the summary ourselves rather than copying the post. Tradely is not affiliated with or endorsed by Reddit.",
 	},
 ];
 
 export function RedditOptionsPage() {
 	const snapshot = useLatestSnapshot(savedPosts as RedditSnapshot, FEED_PATH);
 	const { posts, freshness } = snapshot;
+	const { capture } = useAnalytics();
 	const [filters, setFilters] = useState(DEFAULT_REDDIT_FILTERS);
 	const subreddits = useMemo(() => subredditCounts(posts), [posts]);
 	// A subreddit can leave the list when a later read has no posts from it.
@@ -260,6 +321,15 @@ export function RedditOptionsPage() {
 		() => selectRedditPosts(posts, activeFilters),
 		[posts, activeFilters],
 	);
+	const changeFilters = (next: RedditFilters, filter: "subreddit" | "sort") => {
+		setFilters(next);
+		capture("options_list_filtered", {
+			surface: "options_traders_reddit",
+			filter,
+			value: next[filter],
+			matching_posts: selectRedditPosts(posts, next).length,
+		});
+	};
 
 	return (
 		<main lang="en" className="page-shell options-traders-page">
@@ -278,6 +348,11 @@ export function RedditOptionsPage() {
 						variant="outline"
 					/>
 				</div>
+				<p className="max-w-[65ch] text-muted-foreground text-xs leading-relaxed">
+					Listing is not an endorsement or financial advice. Option Trades is
+					part of TradingFlow, a separate product that needs its own account and
+					a free trial or paid plan.
+				</p>
 			</PageIntro>
 
 			<section
@@ -292,7 +367,7 @@ export function RedditOptionsPage() {
 					<>
 						<PostControls
 							filters={activeFilters}
-							setFilters={setFilters}
+							setFilters={changeFilters}
 							subreddits={subreddits}
 						/>
 						<p className="max-w-3xl text-muted-foreground text-sm leading-relaxed">
@@ -306,7 +381,16 @@ export function RedditOptionsPage() {
 							<ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
 								{subreddits.map(({ name, count }) => (
 									<li key={name}>
-										<ExternalText href={subredditUrl(name)}>
+										<ExternalText
+											href={subredditUrl(name)}
+											onClick={() =>
+												capture("options_subreddit_opened", {
+													surface: "options_traders_reddit",
+													placement: "subreddit_list",
+													subreddit: name,
+												})
+											}
+										>
 											r/{name}
 										</ExternalText>{" "}
 										<span className="text-muted-foreground">
@@ -340,14 +424,18 @@ export function RedditOptionsPage() {
 					</h2>
 					<p className="max-w-3xl text-muted-foreground text-sm leading-relaxed">
 						{contributors.length} users who have named levels or prints in
-						public posts, in alphabetical order. This is not a ranking, and
-						inclusion is not an endorsement. Reddit karma is not tracked.
+						public posts, in alphabetical order. They are tracked separately:
+						the posts above come from anyone on Reddit and are chosen one by
+						one. This is not a ranking, and inclusion is not an endorsement.
+						Reddit karma is not tracked.
 					</p>
 				</div>
 				<TraderRoster
 					profiles={contributors}
 					visible={contributorAnchors}
 					summaries={NO_SUMMARIES}
+					surface="options_traders_reddit"
+					placement="contributors"
 				/>
 			</section>
 
@@ -423,7 +511,7 @@ export function RedditOptionsPage() {
 				>
 					risk disclosure
 				</AppLink>
-				.
+				. <RemovalContact />
 			</p>
 		</main>
 	);

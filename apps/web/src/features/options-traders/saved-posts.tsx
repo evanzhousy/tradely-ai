@@ -9,6 +9,8 @@ import {
 } from "@tradely/ui/components/table";
 import { ArrowUpRightIcon } from "lucide-react";
 
+import { useAnalytics } from "@/analytics/context";
+
 import {
 	formatDate,
 	formatHandle,
@@ -22,16 +24,18 @@ import { TraderAvatar } from "./trader-avatar";
 const textLanguage = (language: string) =>
 	language === "und" ? undefined : language;
 
-const postTags = (post: PostWithAuthor) =>
-	post.structure && post.structure !== "Other"
-		? [...post.tickers, post.structure]
-		: post.tickers;
+/** "Other" is the source's placeholder, not a ticker or a structure a reader can look up. */
+const postTags = (post: PostWithAuthor) => [
+	...post.tickers.filter((ticker) => ticker !== "Other"),
+	...(post.structure && post.structure !== "Other" ? [post.structure] : []),
+];
 
 /** A saved copy of the post: X's own embed would add its script and cookies to this page. */
 export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
+	const { capture } = useAnalytics();
 	return (
 		<ul className="grid gap-4 md:grid-cols-2">
-			{posts.map((post) => (
+			{posts.map((post, index) => (
 				<li
 					key={post.id}
 					className="trader-surface flex min-w-0 flex-col gap-3 p-6"
@@ -64,6 +68,16 @@ export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
 							target="_blank"
 							rel="noopener noreferrer"
 							className="trader-link inline-flex items-center gap-1 font-medium text-sm"
+							onClick={() =>
+								capture("options_post_opened", {
+									surface: "options_traders",
+									placement: "featured",
+									platform: "x",
+									post_id: post.id,
+									position: index + 1,
+									handle: post.author.handle,
+								})
+							}
 						>
 							Open on X
 							<ArrowUpRightIcon aria-hidden="true" size={14} />
@@ -76,6 +90,7 @@ export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
 }
 
 export function PostsTable({ posts }: { posts: readonly PostWithAuthor[] }) {
+	const { capture } = useAnalytics();
 	const maxViews = Math.max(posts[0]?.views ?? 0, 1);
 	return (
 		<Table>
@@ -110,23 +125,44 @@ export function PostsTable({ posts }: { posts: readonly PostWithAuthor[] }) {
 								{String(index + 1).padStart(2, "0")}
 							</TableCell>
 							<TableCell className="min-w-0 max-w-[26rem] whitespace-normal">
-								<a
-									href={post.url}
-									target="_blank"
-									rel="noopener noreferrer"
+								{/* The text is not the link: a screen reader would read a whole post as one link name. */}
+								<p
 									lang={textLanguage(post.language)}
 									dir="auto"
-									className="trader-post-link line-clamp-3 font-medium leading-snug [overflow-wrap:anywhere]"
+									className="line-clamp-3 font-medium leading-snug [overflow-wrap:anywhere]"
 								>
 									{post.text}
-									<span className="sr-only"> (opens on X)</span>
-								</a>
+								</p>
 								<p className="mt-1.5 text-muted-foreground text-xs md:hidden">
 									{formatHandle(post.author)} · {formatDate(post.postedAt)}
 								</p>
 								<p className="mt-1 text-muted-foreground text-xs">
 									Text language: {languageLabel(post.language)} · Metrics
-									checked: {formatRecordedTime(post.metricsCapturedAt)}
+									checked: {formatRecordedTime(post.metricsCapturedAt)} ·{" "}
+									<a
+										href={post.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="trader-link inline-flex items-center gap-0.5 font-medium text-foreground"
+										onClick={() =>
+											capture("options_post_opened", {
+												surface: "options_traders",
+												placement: "posts_table",
+												platform: "x",
+												post_id: post.id,
+												position: index + 1,
+												handle: post.author.handle,
+											})
+										}
+									>
+										Open on X
+										<ArrowUpRightIcon aria-hidden="true" size={12} />
+										<span className="sr-only">
+											{" "}
+											(post by {formatHandle(post.author)},{" "}
+											{formatDate(post.postedAt)})
+										</span>
+									</a>
 								</p>
 								{tags.length > 0 ? (
 									<p className="mt-1.5 font-mono text-muted-foreground text-xs">
@@ -151,6 +187,15 @@ export function PostsTable({ posts }: { posts: readonly PostWithAuthor[] }) {
 											target="_blank"
 											rel="noopener noreferrer"
 											className="trader-link font-mono text-xs"
+											onClick={() =>
+												capture("options_profile_opened", {
+													surface: "options_traders",
+													placement: "post_author",
+													platform: "x",
+													handle: post.author.handle,
+													rank: post.author.rank,
+												})
+											}
 										>
 											{formatHandle(post.author)}
 										</a>

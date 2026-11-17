@@ -1,14 +1,16 @@
 /**
  * Rebuilds the saved options-trader snapshot from Tradely's own feed, which reads Notion: posts
  * from Options Ideas and the listed traders from Options Traders. X numbers are then re-read from
- * FxTwitter's public mirror of X, which needs no login.
+ * FxTwitter's public mirror of X, which needs no login. It also saves the Reddit page's published
+ * posts from that page's own feed.
  *
- *   pnpm --filter web options-traders:sync [--feed <url or JSON file>]
+ *   pnpm --filter web options-traders:sync [--feed <url or JSON file>] [--reddit-feed <url or JSON file>]
  *
  * Nothing is written if the feed did not read both the posts and the trader list from Notion in
  * the last two hours, or if the mirror answers for fewer than half the traders or posts. A number
  * it cannot read keeps its last saved value (or Notion's, for a new trader), and the run
- * says how many those were. The output is committed: building or running Tradely never needs Notion.
+ * says how many those were. A post the mirror cannot read is dropped only when X's own embed
+ * endpoint says it is gone. The output is committed: building or running Tradely never needs Notion.
  */
 import { execFileSync } from "node:child_process";
 import {
@@ -24,6 +26,7 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
 const DEFAULT_FEED = "https://www.tradely.ai/api/options-traders";
+const REDDIT_FEED = "https://www.tradely.ai/api/reddit-options";
 const MIRROR = "https://api.fxtwitter.com";
 const AVATAR_HOST = "pbs.twimg.com";
 /** The same 21 calendar days and author cap the live feed uses. */
@@ -181,6 +184,24 @@ const field = (body: Record<string, unknown> | null, key: string) =>
 		? (body[key] as Record<string, unknown>)
 		: null;
 
+/**
+ * X's public embed endpoint, which needs no login: 404 or 403 means the post was deleted or its
+ * account is suspended or private. Anything else is unknown, and an unknown post stays.
+ */
+async function existsOnX(url: string): Promise<boolean | null> {
+	try {
+		const response = await fetch(
+			`https://publish.x.com/oembed?omit_script=1&url=${encodeURIComponent(url)}`,
+			{ headers: { "user-agent": "tradely-options-traders-sync" } },
+		);
+		if (response.status === 200) return true;
+		if (response.status === 404 || response.status === 403) return false;
+	} catch {
+		// Unknown: the post stays.
+	}
+	return null;
+}
+
 const feed = await readFeed();
 const today = new Date().toISOString().slice(0, 10);
 const to = feed.digestWindow.to;
@@ -205,13 +226,19 @@ const inWindow = feed.posts.filter(
 let postsMeasured = 0;
 const droppedPosts: string[] = [];
 const measured: z.infer<typeof postSchema>[] = [];
+const deletedPosts: string[] = [];
 for (const post of inWindow) {
 	const tweet = field(
 		await mirror(`${post.handle}/status/${post.id}`),
 		"tweet",
 	);
 	if (!tweet) {
-		measured.push(post);
+		// The mirror also fails on live posts, so only X's own embed endpoint decides a post is gone.
+		if ((await existsOnX(post.url)) === false) {
+			deletedPosts.push(`${post.handle}/${post.id}`);
+		} else {
+			measured.push(post);
+		}
 		continue;
 	}
 	const author = String(field(tweet, "author")?.screen_name ?? "");
@@ -358,9 +385,78 @@ writeFileSync(
 		"\t",
 	)}\n`,
 );
+/**
+ * The Reddit page's saved copy, so readers without JavaScript and a failed live read still see the
+ * approved posts. Only rows the owner published (`Hidden` unticked) reach the feed. A failure here
+ * leaves the old file and does not stop the X refresh above.
+ */
+const redditPostSchema = z.object({
+	id: z.string().regex(/^[a-z0-9]{3,12}$/),
+	url: z.url(),
+	subreddit: z.string().regex(/^[A-Za-z0-9_]{2,21}$/),
+	author: z.string().regex(/^[A-Za-z0-9_-]{3,20}$/),
+	title: z.string().min(1).max(300),
+	summary: z.string().min(1).max(500),
+	postedAt: z.union([z.iso.date(), timestamp]),
+	score: metric,
+	comments: metric,
+	metricsCapturedAt: z.union([z.iso.date(), timestamp]).nullable(),
+	tickers: z.array(z.string().min(1).max(30)),
+	structure: z.string().max(100),
+});
+const redditFeedSchema = z.object({
+	version: z.literal(1),
+	freshness: z.object({
+		dataSyncedAt: timestamp,
+		sourceUpdatedAt: timestamp.nullable(),
+		lastAttemptedAt: timestamp.nullable(),
+		status: z.literal("success"),
+	}),
+	posts: z.array(redditPostSchema),
+});
+const redditPostsPath = join(dataDirectory, "reddit-posts.json");
+const redditFlag = args.indexOf("--reddit-feed");
+const redditLocation =
+	redditFlag === -1
+		? `${REDDIT_FEED}?sync=${Date.now()}`
+		: args[redditFlag + 1];
+let redditSummary: string;
+try {
+	if (!redditLocation) throw new Error("Pass --reddit-feed <url or JSON file>");
+	const body = redditLocation.startsWith("https://")
+		? await fetch(redditLocation, {
+				headers: { accept: "application/json" },
+			}).then((response) => {
+				if (response.status !== 200) {
+					throw new Error(`the feed answered ${response.status}`);
+				}
+				return response.json();
+			})
+		: JSON.parse(readFileSync(redditLocation, "utf8"));
+	const reddit = redditFeedSchema.parse(body);
+	const age = Date.now() - Date.parse(reddit.freshness.dataSyncedAt);
+	if (age > MAX_READ_AGE_MS) {
+		throw new Error(
+			`its last Notion read is ${Math.round(age / 60_000)} minutes old`,
+		);
+	}
+	writeFileSync(redditPostsPath, `${JSON.stringify(reddit, null, "\t")}\n`);
+	redditSummary = `Reddit: ${reddit.posts.length} published posts saved.`;
+} catch (error) {
+	redditSummary = `Reddit: saved copy left unchanged (${error instanceof Error ? error.message : String(error)}).`;
+}
+
 execFileSync(
 	"pnpm",
-	["exec", "biome", "format", "--write", profilesPath, postsPath],
+	[
+		"exec",
+		"biome",
+		"format",
+		"--write",
+		profilesPath,
+		postsPath,
+		redditPostsPath,
+	],
 	{
 		cwd: webRoot,
 		stdio: "inherit",
@@ -370,15 +466,19 @@ execFileSync(
 const ranked = profiles.filter((profile) => profile.rank !== undefined).length;
 console.log(
 	[
-		`Posts ${from} to ${to}: ${posts.length} saved, ${postsMeasured} re-measured on the mirror, ${inWindow.length - postsMeasured - droppedPosts.length} kept their last numbers.`,
+		`Posts ${from} to ${to}: ${posts.length} saved, ${postsMeasured} re-measured on the mirror, ${inWindow.length - postsMeasured - droppedPosts.length - deletedPosts.length} kept their last numbers.`,
 		droppedPosts.length
 			? `Left out (reply or different author on X): ${droppedPosts.join(", ")}.`
+			: "",
+		deletedPosts.length
+			? `Left out (deleted on X, or the account is private or suspended): ${deletedPosts.join(", ")}.`
 			: "",
 		`Traders: ${profiles.length} listed (${ranked} ranked); followers re-read for ${followersRead} on X.`,
 		unreadFollowers.length
 			? `Followers not re-read (last saved or Notion value kept): ${unreadFollowers.join(", ")}.`
 			: "",
 		`Avatars: ${published.size} published, ${newAvatars.length} added, ${avatarsRemoved.length} removed${avatarsRemoved.length ? ` (${avatarsRemoved.join(", ")})` : ""}.`,
+		redditSummary,
 	]
 		.filter(Boolean)
 		.join("\n"),
