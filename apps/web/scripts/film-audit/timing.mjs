@@ -578,9 +578,13 @@ const out = await page.evaluate(() => {
 	const windows = tweens
 		.filter((tw) => tw.vars.opacity === 0 || tw.vars.autoAlpha === 0)
 		.map((tw) => [tw.startTime(), tw.startTime() + tw.duration() + 0.6]);
-	// From when the question is up: the first moment after its label that something shows at
-	// full strength.
-	let dipFrom = tl.labels.question ?? 2;
+	// From when the first shot is up: the first moment after the earliest label past the title
+	// card that something shows at full strength. That label is the question in every film but
+	// one, which defines a word before it asks.
+	let dipFrom = Math.min(
+		...Object.values(tl.labels).filter((t) => t > 0),
+		tl.labels.question ?? 2,
+	);
 	for (
 		;
 		dipFrom < duration;
