@@ -124,6 +124,8 @@ const copy = {
 		`${openingDecisionTime[1]} 时只能用 ${usd(REPORTED)}。`,
 	],
 	c3Head: ["Later facts count once they arrive.", "后来的事实，到了才算数。"],
+	// The lesson's word for a row's first time: "When each fact arrived".
+	arrived: ["arrived", "到达时间"],
 	known: ["known", "已知"],
 	notYet: ["not yet", "还没到"],
 	decision: ["decision", "决策时刻"],
@@ -277,6 +279,18 @@ function Scene({
 					>
 						{t(a.arrived)}
 					</text>
+					{/* The wide row names its first time, on the event time's own line. The phone
+					    sets the two times side by side and has no room for the word. */}
+					{narrow ? null : (
+						<text
+							x={margin + 14}
+							y={L.arrY(i) + L.arrH * 0.76}
+							className="wt-film-num wt-film-dim"
+							style={{ fontSize: T.small }}
+						>
+							{t(copy.arrived)}
+						</text>
+					)}
 					<text
 						x={margin + 14 + (narrow ? 0 : L.timeW)}
 						y={L.arrY(i) + (narrow ? T.body * 1.4 : L.arrH * 0.42)}
