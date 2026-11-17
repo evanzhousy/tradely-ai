@@ -146,8 +146,8 @@ const copy = {
 		"净支出：付出的减去收到的",
 	],
 	legNote: [
-		"One order: both legs fill together, or it waits.",
-		"一张订单：两条腿成对成交，否则继续等。",
+		`One order, ${usd(DEBIT)} limit: both legs fill together, or it waits.`,
+		`一张订单，限价 ${usd(DEBIT)}：两条腿一起成交，否则继续等。`,
 	],
 	pHead: ["Its loss and its gain are capped.", "亏损和盈利都有上限。"],
 	axis: ["profit on Oct 18, per spread", "10月18日盈亏，每组价差"],
@@ -477,16 +477,17 @@ function Scene({
 			>
 				{t(copy.order)}
 			</Word>
-			<Word
+			{/* The note wraps on a phone: its limit is the net debit on the line above. */}
+			<Lines
 				name="leg-note"
+				text={t(copy.legNote)}
 				x={margin}
 				y={L.sumY + T.body * 3.4}
 				size={T.body}
+				maxWidth={room}
 				anchor="start"
 				className="wt-film-type wt-film-dim"
-			>
-				{t(copy.legNote)}
-			</Word>
+			/>
 
 			{/* The chart: the spread's floor and ceiling, then the call alone. */}
 			{headline("p-head", copy.pHead)}
