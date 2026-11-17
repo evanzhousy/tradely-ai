@@ -34,9 +34,11 @@ import {
 } from "./stocks-and-prices-model";
 
 /*
- * Stocks and prices, as a film. It opens on ALFA's last trade, $100.02, and asks what 10
- * shares cost right now. First what a share is: one of 50 million slices of a $5 billion
- * company, so each $1 move is $10 on your 10 shares and $50 million on ALFA. Then the
+ * Stocks and prices, as a film. This is the course's first lesson, so it says what a share is
+ * before its question counts ten of them: one of 50 million slices of a $5 billion company,
+ * so each $1 move is $10 on your 10 shares and $50 million on ALFA. Then ALFA's last trade,
+ * $100.02, and the question: what do 10 shares cost right now? Every other film asks first;
+ * here the question would use a word the learner has not met. Then the
  * quote: buy 10 and reveal what you pay, $1,000.50 at the $100.05 ask;
  * sell 10 and reveal what you get, $1,000.00 at the $100.00 bid: 50¢ apart,
  * neither is the last trade. Those trades stay done. The hero: 1,000 shares at once climb
@@ -44,8 +46,8 @@ import {
  * stock, an exchange-traded fund (ETF) and an index.
  *
  *   open      0–4        "Stocks and prices"
- *   question  4–9        last $100.02: what do 10 shares cost?
- *   slice     9–16.55    50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
+ *   slice     4–12       50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
+ *   question  12–16.55   last $100.02: what do 10 shares cost?
  *   quote     16.55–37.0 the book; buy 10: $1,000.50, sell 10: $1,000.00, a bracket: 50¢
  *                        more to buy; hero: buy 1,000; after it, the same 1,000 at the last
  *                        price, and what the sweep added
@@ -1002,33 +1004,28 @@ function build(context: FilmContext) {
 	tl.addLabel("open", 0);
 	d.open(0);
 
-	// ——— question: the last trade ———
-	tl.addLabel("question", 4);
+	// ——— slice: a share and the company, before the question counts ten of them ———
+	tl.addLabel("slice", 4);
 	d.tag(4.0);
-	show(one("q-tag"), 4.4);
-	word(one("q-big"), 4.6);
-	show(one("q-line"), 5.4);
-
-	// ——— slice: a share and the company ———
-	tl.addLabel("slice", 9.0);
-	hide(flat("q"), 9.0);
-	show(heads[0], 9.2);
-	show([one("px-tag"), px], 9.5);
-	show([one("mine-tag"), mineVal], 10.1);
-	show([one("co-tag"), coVal], 10.5);
+	// The title is still flying to its corner until 4.9. On a phone it crosses the end of this
+	// headline's row between 4.55 and 4.65, so the headline comes up once it has gone by.
+	show(heads[0], 4.65);
+	show([one("px-tag"), px], 4.95);
+	show([one("mine-tag"), mineVal], 5.55);
+	show([one("co-tag"), coVal], 5.95);
 	// Each $1 move, under its own headline.
-	d.swap(heads[0], heads[1], 12.7);
-	hide(one("px-tag"), 12.4);
-	show([mineChg, coChg], 12.7);
+	d.swap(heads[0], heads[1], 8.15);
+	hide(one("px-tag"), 7.85);
+	show([mineChg, coChg], 8.15);
 	tl.set(
 		[mineChg, coChg],
 		{ attr: { class: "wt-film-num wt-film-dim" } },
-		12.7,
+		8.15,
 	);
 	// Start together once the explanatory headline has settled; each count lasts one second.
-	d.count(px, OPEN + 100, 13.55, dollars, OPEN, 1);
-	d.count(mineVal, MINE * (OPEN + 100), 13.55, whole, MINE * OPEN, 1);
-	d.count(coVal, SHARES * (OPEN + 100), 13.55, company, SHARES * OPEN, 1);
+	d.count(px, OPEN + 100, 9.0, dollars, OPEN, 1);
+	d.count(mineVal, MINE * (OPEN + 100), 9.0, whole, MINE * OPEN, 1);
+	d.count(coVal, SHARES * (OPEN + 100), 9.0, company, SHARES * OPEN, 1);
 	// A rounded zero stays dim; the sign colour follows the figure actually being read.
 	[
 		{ target: mineChg, to: MINE * 100, format: signed, unit: 100 },
@@ -1057,13 +1054,24 @@ function build(context: FilmContext) {
 					);
 				},
 			},
-			13.55,
+			9.0,
 		);
 	});
 
+	// ——— question: the last trade, and what ten shares cost now ———
+	tl.addLabel("question", 12.0);
+	hide([heads[1], ...flat("slice")], 12.0);
+	// The tag comes with its number, once the slice's price has gone: a moment earlier it would
+	// label the outgoing figure.
+	show(one("q-tag"), 12.3);
+	word(one("q-big"), 12.3);
+	show(one("q-line"), 13.05);
+
 	// ——— quote: you trade against the book ———
+	// The number and its tag leave first: the book puts its own "last" tag where the number stood.
+	hide([one("q-tag"), one("q-big")], 16.25);
 	tl.addLabel("quote", 16.55);
-	hide([heads[1], ...flat("slice")], 16.55);
+	hide(flat("q"), 16.55);
 	show(heads[2], 16.9);
 	// Bring the full book scaffold in together, then give it a full second before the rows.
 	fadeIn([one("asks-tag"), one("bids-tag"), one("spread"), one("last")], 16.55);
@@ -1320,14 +1328,14 @@ function build(context: FilmContext) {
 export const stocksAndPricesFilm: Film = {
 	id: "stocks-and-prices",
 	label: [
-		`Stocks and prices, as a short film: ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an exchange-traded fund (ETF), and an index, the last a number you can't buy whose options deliver cash`,
-		`股票与价格短片：ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 ${MINE} 股就多 $${MINE}；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price(BUY_BIG.notional / BUY_BIG.filled)}；以及股票、交易所交易基金（ETF）和指数，指数是一个不能买入的数，它的期权以现金结算`,
+		`Stocks and prices, as a short film: a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; then ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price(BUY_BIG.notional / BUY_BIG.filled)}; and a stock, an exchange-traded fund (ETF), and an index, the last a number you can't buy whose options deliver cash`,
+		`股票与价格短片：一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 ${MINE} 股就多 $${MINE}；然后是 ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price(BUY_BIG.notional / BUY_BIG.filled)}；以及股票、交易所交易基金（ETF）和指数，指数是一个不能买入的数，它的期权以现金结算`,
 	],
 	stage: "dark",
 	shots: [
 		{ id: "open", label: ["Stocks and prices", "股票与价格"] },
-		{ id: "question", label: ["The question", "问题"] },
 		{ id: "slice", label: ["A share", "一股"] },
+		{ id: "question", label: ["The question", "问题"] },
 		{ id: "quote", label: ["The quote", "报价"] },
 		{ id: "kinds", label: ["Stock, ETF, index", "股票、ETF、指数"] },
 		{ id: "claim", label: ["The claim", "结论"] },
