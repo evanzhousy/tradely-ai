@@ -200,7 +200,7 @@ const copy = {
 	due: ["due", "应付"],
 	monday: ["Monday", "周一"],
 	mondayAccount: ["Monday account", "周一账户"],
-	mondayAssigned: ["Assigned Monday", "周一被指派"],
+	mondayAssigned: ["Writer assigned Monday", "义务方周一被指派"],
 	shortShares: ["ALFA shares · short", "ALFA 股 · 空头"],
 	claimBig: ["A few cents can mean shares.", "几美分也能变成股票。"],
 	claimSub: [
