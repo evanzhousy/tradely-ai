@@ -209,7 +209,11 @@ const copy = {
 		`your call is exercised: buy ${SHARES} shares`,
 		`你的看涨被行权：买入 ${SHARES} 股`,
 	],
-	betweenPhoneMore: ["unless closed first", "除非先平仓"],
+	// The phone keeps both halves of the wide line; the English drops two words to fit its card.
+	betweenPhoneMore: [
+		"sold call worthless · unless closed first",
+		"卖出的看涨作废 · 除非先平仓",
+	],
 	duePhone: [`pay ${dollars(BETWEEN.due)}`, `付 ${dollars(BETWEEN.due)}`],
 	abovePhone: [`buy shares at $${LONG.strike}`, `以 $${LONG.strike} 买入股票`],
 	abovePhoneMore: [
