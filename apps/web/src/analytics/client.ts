@@ -161,6 +161,113 @@ export function getPostHogClient(): Promise<PostHogClient> {
 	return clientPromise;
 }
 
+const ANONYMOUS_VISITS_INSTANCE = "tradely_anonymous_visits";
+type AnonymousVisitClient =
+	typeof import("posthog-js/dist/module.slim")["default"];
+let anonymousClientPromise: Promise<AnonymousVisitClient> | null = null;
+
+function whenBrowserIdle(): Promise<void> {
+	return new Promise((resolve) => {
+		const idle = (
+			window as Window & {
+				requestIdleCallback?: (
+					callback: () => void,
+					options?: { timeout: number },
+				) => number;
+			}
+		).requestIdleCallback;
+		if (idle) idle(() => resolve(), { timeout: 4000 });
+		else window.setTimeout(resolve, 1500);
+	});
+}
+
+/**
+ * A second PostHog instance that only counts page views while a visitor has not yet chosen
+ * Allow analytics or Use necessary only. Cookieless mode writes no cookies or browser storage;
+ * PostHog tells visitors apart for one day with a server-side hash. It loads the slim SDK build,
+ * after the page is idle, and sends nothing but `$pageview`.
+ */
+function getAnonymousVisitClient(): Promise<AnonymousVisitClient> {
+	if (anonymousClientPromise) return anonymousClientPromise;
+	anonymousClientPromise = whenBrowserIdle()
+		// The slim build has capture without the bundled extensions: about half the core's size.
+		.then(() => import("posthog-js/dist/module.slim"))
+		.then(({ default: posthog }) =>
+			posthog.init(
+				env.VITE_POSTHOG_KEY as string,
+				{
+					api_host: normalizePostHogHost(env.VITE_POSTHOG_HOST),
+					ui_host: "https://us.posthog.com",
+					defaults: "2026-05-30",
+					strict_script_versioning: true,
+					disable_external_dependency_loading: true,
+					disable_capture_url_hashes: true,
+					disableDeviceModel: true,
+					cookieless_mode: "always",
+					persistence: "memory",
+					persistence_name: ANONYMOUS_VISITS_INSTANCE,
+					autocapture: false,
+					rageclick: false,
+					capture_pageview: false,
+					capture_pageleave: false,
+					capture_dead_clicks: false,
+					capture_heatmaps: false,
+					capture_exceptions: false,
+					capture_performance: false,
+					disable_session_recording: true,
+					disable_surveys: true,
+					disable_conversations: true,
+					disable_product_tours: true,
+					disable_web_experiments: true,
+					advanced_disable_flags: true,
+					advanced_disable_feature_flags: true,
+					advanced_disable_feature_flags_on_first_load: true,
+					person_profiles: "never",
+					respect_dnt: true,
+					before_send: (event) => {
+						if (event?.event !== "$pageview" || !event.properties) return null;
+						sanitizeAnalyticsEventUrlProperties(event.properties);
+						event.properties.app = "tradely";
+						event.properties.event_schema_version =
+							ANALYTICS_EVENT_SCHEMA_VERSION;
+						event.properties.environment = analyticsEnvironment(
+							window.location.hostname,
+						);
+						event.properties.runtime = "browser";
+						event.properties.release = appRelease;
+						event.properties.visit_count = "anonymous";
+						return event;
+					},
+				},
+				ANONYMOUS_VISITS_INSTANCE,
+			),
+		)
+		.catch((error) => {
+			anonymousClientPromise = null;
+			throw error;
+		});
+	return anonymousClientPromise;
+}
+
+/** Counts one anonymous page view; `stillAllowed` is re-checked once the SDK has loaded. */
+export function captureAnonymousPageView(
+	properties: AnalyticsEventMap["page_viewed"],
+	stillAllowed: () => boolean,
+): void {
+	void getAnonymousVisitClient()
+		.then((client) => {
+			if (!stillAllowed()) return;
+			client.capture("$pageview", {
+				...properties,
+				$current_url: `${window.location.origin}${properties.path}`,
+				$pathname: properties.path,
+			});
+		})
+		.catch(() => {
+			// Counting is best effort and must never affect the page.
+		});
+}
+
 export function capturePostHogException(
 	error: unknown,
 	context: ExceptionContext,

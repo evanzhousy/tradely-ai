@@ -9,6 +9,7 @@ import {
 } from "react";
 import { applyBrowserCaptureConsent } from "./browser-consent";
 import {
+	captureAnonymousPageView,
 	capturePostHogException,
 	getPostHogClient,
 	type PostHogClient,
@@ -397,6 +398,19 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 		[hasPostHog],
 	);
 
+	// Before any choice, only an anonymous cookieless page view is counted. A visitor who chose
+	// Use necessary only, or whose browser sends Do Not Track, is not counted at all.
+	const countAnonymousPageView = useCallback(
+		(properties: AnalyticsEventMap["page_viewed"]): boolean => {
+			const allowed = () =>
+				consentRef.current === "unknown" && !doNotTrackEnabled();
+			if (!hasPostHog || !allowed()) return false;
+			captureAnonymousPageView(properties, allowed);
+			return true;
+		},
+		[hasPostHog],
+	);
+
 	const captureException = useCallback(capturePostHogException, []);
 
 	const identify = useCallback((userId: string): boolean => {
@@ -484,6 +498,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 			preferencesOpen,
 			capture,
 			capturePageView,
+			countAnonymousPageView,
 			captureException,
 			identify,
 			resetIdentity,
@@ -496,6 +511,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 			captureException,
 			capturePageView,
 			consent,
+			countAnonymousPageView,
 			identify,
 			isCapturing,
 			isPostHogCapturing,

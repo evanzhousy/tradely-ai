@@ -45,6 +45,10 @@ export type AnalyticsContextValue = {
 	preferencesOpen: boolean;
 	capture: CaptureAnalyticsEvent;
 	capturePageView: (properties: AnalyticsEventMap["page_viewed"]) => boolean;
+	/** Counts an anonymous, cookieless page view while no analytics choice has been made. */
+	countAnonymousPageView: (
+		properties: AnalyticsEventMap["page_viewed"],
+	) => boolean;
 	captureException: (error: unknown, context: ExceptionContext) => boolean;
 	identify: (userId: string) => boolean;
 	resetIdentity: () => void;
