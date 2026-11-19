@@ -180,8 +180,6 @@ const copy = {
 	diff: ["Last trade is neither.", "最新成交不是报价。"],
 	/** What the 1,000 shares cost above the same 1,000 at the last price. */
 	overLast: [`${OVER_LAST} over last`, `比最新价多付 ${OVER_LAST}`],
-	avg: [`average of ${count(BIG)} shares`, `${count(BIG)} 股的均价`],
-	avgShort: [`avg of ${count(BIG)}`, `${count(BIG)} 股的均价`],
 	kindsHead: [
 		"Stock, ETF, index: what options deliver.",
 		"股票、ETF、指数：期权如何交割？",
@@ -206,6 +204,12 @@ const copy = {
 	nextBig: ["Next: options, a paid right", "下一课：期权，付费的权利"],
 	nextSub: ["what a call and a put give you", "看涨与看跌赋予你什么"],
 } as const;
+
+/** The average's tag names the shares filled so far, so it is true while the order fills. */
+const averageOf = (shares: number, narrow: boolean): Copy =>
+	narrow
+		? [`avg of ${count(shares)}`, `${count(shares)} 股的均价`]
+		: [`average of ${count(shares)} shares`, `${count(shares)} 股的均价`];
 
 function Scene({
 	width,
@@ -600,7 +604,7 @@ function Scene({
 				className="wt-film-tag"
 				style={{ fontSize: T.small }}
 			>
-				{t(narrow ? copy.avgShort : copy.avg).toUpperCase()}
+				{t(averageOf(BIG, narrow)).toUpperCase()}
 			</text>
 			<Word
 				name="p-avg"
@@ -1111,6 +1115,7 @@ function build(context: FilmContext) {
 	const avg = one<SVGTextElement>("p-avg");
 	/** How many shares the big order has taken at a level so far. */
 	const taken = (cents: number) => one(`n-ask-${cents}`);
+	const avgTag = one("p-avg-tag");
 	const avgPointer = one("pt-avg");
 	/** What the 10-share buy had already taken of a level. */
 	const before = (cents: number) =>
@@ -1135,6 +1140,7 @@ function build(context: FilmContext) {
 		}
 		const at = filled ? paid / filled : BUY_BIG.fills[0].price;
 		avg.textContent = price3(at);
+		avgTag.textContent = d.t(averageOf(filled, L.narrow)).toUpperCase();
 		avgPointer.setAttribute("d", `M${L.railX + 1.5} ${L.priceY(at)}l9 -6v12z`);
 	};
 	// Each level takes a full second, so its count can be read and the climb watched; the
@@ -1172,11 +1178,11 @@ function build(context: FilmContext) {
 			climbAt[i],
 		);
 	});
-	fadeIn([avgPointer, one("p-avg-tag"), avg], 26.8);
+	fadeIn([avgPointer, avgTag, avg], 26.8);
 	// The climb settles at 30.1; the brackets lock on the average at 30.5 and it stands,
 	// bright and still, until 32.9.
 	d.lock(one<SVGGraphicsElement>("lock-avg"), 30.5, {
-		around: [one("p-avg-tag"), avg],
+		around: [avgTag, avg],
 		pad: L.narrow ? 8 : 10,
 	});
 	tl.addLabel("hero-lock", 30.5);
