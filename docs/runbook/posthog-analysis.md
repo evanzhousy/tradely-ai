@@ -244,6 +244,14 @@ routes, devices, people, and immature samples.
 SEO impressions, rankings, ad costs, and total customer acquisition are outside
 PostHog-only evidence. Do not use search clicks as a consented-person denominator.
 
+Reach before consent: `$pageview` with `visit_count = 'anonymous'` counts page
+views from visitors who have not chosen yet (cookieless; `distinct_id` is a
+one-day hash, so unique visitors are only meaningful within a day and never
+across days). Consented visitors appear through `page_viewed`. Report the two
+streams side by side rather than adding unique visitors: a visitor who allows
+analytics mid-visit is counted once in each for that page, and visitors who chose
+necessary only or send Do Not Track are in neither.
+
 ### 4. Analyze learning, sign-in, saved work, and retention
 
 Use ordered native funnels or a documented sequential query, never ratios of

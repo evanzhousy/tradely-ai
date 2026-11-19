@@ -9,7 +9,10 @@ imports restricted to the shared browser and server clients.
 ## Shared rules
 
 - Browser events require analytics consent and respect Do Not Track. Unknown or
-  denied consent does not load the PostHog SDK. Server events require the same-site
+  denied consent does not load the full PostHog SDK. The only exception: while
+  consent is unknown, a separate cookieless instance counts one anonymous
+  `$pageview` per path (`visit_count=anonymous`, no cookies or storage; see
+  [OBSERVABILITY.md](OBSERVABILITY.md#consent-and-privacy-contract)). Server events require the same-site
   `tradely_analytics_consent_v2=granted` cookie. Version 2 includes masked replay
   and heatmaps; the previous event-only consent does not opt visitors into them.
 - PostHog events carry `app=tradely`, `environment`, `runtime`, `release`, and
