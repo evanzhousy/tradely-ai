@@ -3,10 +3,15 @@
     report.py scan|flight|timing|play LABEL [rows]
     report.py scan LABEL TEXTFILE STAMP    also writes the capture's on-screen text list
 
+A scan with text also prints two load notes: how much there is to read at once (see
+`stage_load`).
+
 An empty result is a failure of the run, not a clean result: it prints NO OUTPUT. A config with
 nothing to report ends its line with "clean", which `film-audit.sh check` leaves out.
 """
 import json
+import re
+import statistics
 import sys
 
 kind, label = sys.argv[1], sys.argv[2]
@@ -132,6 +137,66 @@ def stage_text(d, title):
     return "\n".join([title, *lines]) + "\n"
 
 
+# What a learner is asked to read at once. A target set for the stocks-and-prices pilot on
+# 2026-11-19, before it was built: a note in the scan, never a failure.
+LOAD_BUDGET = (7, 4, 15)
+
+
+def stage_load(d):
+    """How much there is to read at once: texts, figures and words at full strength, per frame.
+
+    Counted from the first shot to the claim. The corner title is left out, since it stands
+    for the whole film; so are the title card, the claim and the end card, which are read as
+    cards. A text under 0.6 is context and is counted apart. English is counted in words and
+    Chinese in characters / 2.25, the runbook's ratio of 8 words to 18 characters.
+    """
+    times, frames, labels = d["times"], d["text"], d.get("labels") or {}
+    after_title = [t for t in labels.values() if t > 0]
+    start = min(after_title) if after_title else 0
+    end = labels.get("claim", times[-1] + 1)
+    seen = {}
+    for items in frames:
+        for i, *_ in items:
+            seen[i] = seen.get(i, 0) + 1
+    corner = {i for i, n in seen.items() if n >= 0.9 * len(frames)}
+
+    def words(said):
+        wide = sum(1 for c in said if ord(c) > 0x2E80)
+        rest = "".join(" " if ord(c) > 0x2E80 else c for c in said)
+        return sum(1 for w in rest.split() if re.search(r"\w", w)) + round(wide / 2.25)
+
+    rows = []
+    for k, items in enumerate(frames):
+        if not start <= times[k] < end:
+            continue
+        full = [said for i, said, bright, *_ in items if bright and i not in corner]
+        dim = sum(1 for i, said, bright, *_ in items if not bright and i not in corner)
+        rows.append((len(full), sum(len(re.findall(r"\d[\d,.]*", s)) for s in full),
+                     sum(words(s) for s in full), dim, times[k]))
+    if not rows:
+        return []
+    med = [statistics.median(r[n] for r in rows) for n in range(4)]
+    peak = [max(rows, key=lambda r: r[n]) for n in range(3)]
+    over = [r for r in rows if any(r[n] > LOAD_BUDGET[n] for n in range(3))]
+    spans, run = [], None
+    for r in over:
+        if run and r[4] - run[1] <= 0.5:
+            run[1] = r[4]
+        else:
+            run = [r[4], r[4]]
+            spans.append(run)
+    where = ", ".join(f"{a:g}" if a == b else f"{a:g}-{b:g}" for a, b in spans)
+    budget = "/".join(str(n) for n in LOAD_BUDGET)
+    return [
+        "    note load, full strength, first shot to claim: median %g texts, %g figures, %g words"
+        "; peak %d texts at %g s, %d figures at %g s, %d words at %g s; dimmed median %g"
+        % (med[0], med[1], med[2], peak[0][0], peak[0][4], peak[1][1], peak[1][4],
+           peak[2][2], peak[2][4], med[3]),
+        "    note load over %s (texts/figures/words) in %d of %d frames%s"
+        % (budget, len(over), len(rows), f": {where} s" if over else ""),
+    ]
+
+
 if kind == "scan":
     if len(sys.argv) > 3 and d.get("text"):
         stamp = sys.argv[4] if len(sys.argv) > 4 else ""
@@ -144,6 +209,9 @@ if kind == "scan":
     for tag, items in (("overlap", o), ("cross", c), ("edge", e)):
         for name, ts in items:
             print(f"    {tag} {name} @ {ts[0]} .. {ts[-1]} ({len(ts)})")
+    if d.get("text"):
+        for line in stage_load(d):
+            print(line)
 elif kind == "flight":
     print(f"{label} flight hits={len(d)}{'' if d else ' clean'}")
     for name, ts in sorted(d.items(), key=lambda kv: kv[1][0]):
