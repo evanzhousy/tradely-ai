@@ -338,7 +338,7 @@ const messages = {
 		"legal.backToLearning": "Back to learning hub",
 		"analytics.consentTitle": "Help improve Tradely",
 		"analytics.consentSummary":
-			"Optional analytics help us improve learning. You can continue with necessary storage only.",
+			"Optional analytics help us improve learning. Until you choose, we only count page views anonymously, without cookies. You can continue with necessary storage only, which also stops that count.",
 		"analytics.details": "How analytics are used",
 		"analytics.consentDescription":
 			"Allow analytics, heatmaps, and masked session recordings to improve Tradely. Replay text and inputs are masked; protected lesson content and media are blocked. Recordings are kept for 30 days. You can withdraw consent in Privacy choices.",
@@ -651,7 +651,7 @@ const messages = {
 		"legal.backToLearning": "返回学习中心",
 		"analytics.consentTitle": "帮助改进 Tradely",
 		"analytics.consentSummary":
-			"可选分析用于改进学习体验。你也可以仅使用必要存储继续学习。",
+			"可选分析用于改进学习体验。在你选择之前，我们只匿名统计页面浏览，不使用 Cookie。你也可以仅使用必要存储继续学习，这也会停止该统计。",
 		"analytics.details": "分析数据如何使用",
 		"analytics.consentDescription":
 			"允许分析、热图和经过遮盖的会话回放，以改进 Tradely。回放文字和输入内容会被遮盖，受保护的课程内容和媒体会被屏蔽。回放保留 30 天，可随时通过隐私设置撤回同意。",

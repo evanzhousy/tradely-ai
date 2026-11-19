@@ -28,13 +28,14 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Privacy policy",
 			intro:
 				"This policy explains how Tradely collects, uses, and protects information when you use the Tradely learning hub at tradely.ai.",
-			lastUpdated: "Last updated: September 9, 2026",
+			lastUpdated: "Last updated: November 19, 2026",
 			sections: [
 				{
 					heading: "Information we collect",
 					paragraphs: [
 						"When you create or use a Tradely account, we receive the identity and contact details provided through Neon Auth, such as your name, email address, and account identifiers.",
 						"We record learning activity needed to operate the hub, including lesson completion, video resume position, content version, and timestamps. If you allow analytics, we also receive limited page-usage, learning-milestone, browser-performance, and error-diagnostic information through PostHog and Google Analytics 4. PostHog additionally records masked session replays and click, movement, and scroll heatmaps to help us understand usability. Replay text and inputs are masked; protected lesson content, images, video, canvas, and embedded frames are blocked. Recordings are retained for 30 days. PostHog may process the client IP for coarse location and bot detection, but the Tradely project discards it instead of storing it with events. Google Analytics may process device and approximate location data for aggregated reporting. Tradely removes query strings from its custom event payloads, and Google Analytics redacts email addresses plus selected sensitive query keys. Tradely does not send lesson text, payment details, or your email address to either analytics provider.",
+						"Until you choose Allow analytics or Use necessary only, Tradely counts page views anonymously through PostHog, without cookies or browser storage. Each count records the page address without query strings, its title, the referring page, and your browser, operating system, device type, screen size, language and time zone. PostHog tells visitors apart for one day with a hash of the request's IP address and browser details and a secret that changes daily; the Tradely project does not keep the IP address, and these counts are not linked to you or your account. The count ends when you make either choice and does not run if your browser sends Do Not Track. The page that is open when you choose may already have been counted. Google Analytics receives nothing before you allow analytics.",
 					],
 				},
 				{
@@ -62,7 +63,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Service providers and partner boundary",
 					paragraphs: [
-						"Our service providers may include Neon Auth for identity, Stripe for billing, Neon for the Tradely database, Vercel for application delivery, Cloudflare R2 for media storage, and PostHog and Google Analytics for consented product analytics and error diagnostics. They process information only as needed to provide their infrastructure and services.",
+						"Our service providers may include Neon Auth for identity, Stripe for billing, Neon for the Tradely database, Vercel for application delivery, Cloudflare R2 for media storage, PostHog for anonymous page-view counts, and PostHog and Google Analytics for consented product analytics and error diagnostics. They process information only as needed to provide their infrastructure and services.",
 						"TradingFlow is an independent partnered product. Tradely does not share your Neon Auth account, billing record, learning record, or customer identifiers with TradingFlow. Links to TradingFlow are outbound practice links; any TradingFlow account or subscription is governed by TradingFlow's own terms and privacy practices.",
 					],
 				},
@@ -174,7 +175,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Cookie policy",
 			intro:
 				"This policy describes the browser storage and cookies Tradely uses to keep the learning hub dependable and remember your choices.",
-			lastUpdated: "Last updated: September 9, 2026",
+			lastUpdated: "Last updated: November 19, 2026",
 			sections: [
 				{
 					heading: "Strictly necessary storage",
@@ -191,7 +192,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Optional measurement",
 					paragraphs: [
-						"Tradely initializes PostHog and Google Analytics 4 in an opted-out state. No analytics events or Google tag are sent until you choose Allow analytics. After consent, PostHog may use browser storage and cookies to connect page usage, learning milestones, web-vitals measurements, and error diagnostics across a session. Google Analytics 4 receives consented page views and typed product events for aggregate reporting. PostHog also captures heatmap coordinates and masked session replays after consent, with query-free URLs and 30-day recording retention. Replay text and inputs are masked; protected lesson content and media are blocked. Generic element-text autocapture, surveys, console logs, network request/response capture, and Google advertising signals remain disabled.",
+						"Tradely initializes PostHog and Google Analytics 4 in an opted-out state. Until you choose, the only measurement is an anonymous page-view count that sets no cookies and uses no browser storage, described in the Privacy Policy; it ends when you choose and does not run when your browser sends Do Not Track. No other analytics events are sent, and the Google tag is not loaded, until you choose Allow analytics. After consent, PostHog may use browser storage and cookies to connect page usage, learning milestones, web-vitals measurements, and error diagnostics across a session. Google Analytics 4 receives consented page views and typed product events for aggregate reporting. PostHog also captures heatmap coordinates and masked session replays after consent, with query-free URLs and 30-day recording retention. Replay text and inputs are masked; protected lesson content and media are blocked. Generic element-text autocapture, surveys, console logs, network request/response capture, and Google advertising signals remain disabled.",
 						"Analytics is used for product improvement and reliability, not advertising. Tradely does not send the learner's email address, lesson text, payment details, or Neon Auth user ID to Google Analytics. PostHog identifies signed-in analytics only with the Neon Auth user ID.",
 					],
 				},
@@ -209,13 +210,14 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "隐私政策",
 			intro:
 				"本政策说明你使用 tradely.ai 学习中心时，Tradely 如何收集、使用和保护信息。",
-			lastUpdated: "最后更新：2026 年 9 月 9 日",
+			lastUpdated: "最后更新：2026 年 11 月 19 日",
 			sections: [
 				{
 					heading: "我们收集的信息",
 					paragraphs: [
 						"创建或使用 Tradely 账户时，我们会从 Neon Auth 接收你提交的身份和联系方式，例如姓名、邮箱地址和账户标识符。",
 						"为提供学习中心功能，我们会记录课程完成状态、视频播放位置、内容版本和时间戳。如果你允许分析，我们还会通过 PostHog 和 Google Analytics 4 接收有限的页面使用、学习里程碑、浏览器性能和错误诊断信息。PostHog 还会采集经过遮盖的会话回放以及点击、鼠标移动和滚动热图，以改进易用性。回放文字和输入内容会被遮盖；受保护的课程内容、图片、视频、画布和嵌入页面会被屏蔽。回放保留 30 天。PostHog 可能临时处理客户端 IP 用于粗略地区和机器人识别，但 Tradely 项目会丢弃该 IP，不把它与事件一起保存。Google Analytics 可能处理设备和大致位置数据用于汇总报告。Tradely 会从自定义事件载荷中移除查询参数，Google Analytics 会遮盖邮箱地址和选定的敏感查询键。Tradely 不会向任一分析服务发送课程正文、付款信息或邮箱地址。",
+						"在你选择“允许分析”或“仅使用必要功能”之前，Tradely 会通过 PostHog 匿名统计页面浏览，不使用 Cookie 或浏览器存储。每次统计记录不含查询参数的页面地址、页面标题、来源页面，以及你的浏览器、操作系统、设备类型、屏幕尺寸、语言和时区。PostHog 使用请求的 IP 地址和浏览器信息加上每日更换的密钥生成哈希，只在一天内区分访客；Tradely 项目不保留 IP 地址，这些统计也不会与你或你的账户关联。你做出任一选择后，统计即停止；如果浏览器发送“请勿跟踪”（Do Not Track）信号，则不会统计。你做出选择时所在的页面可能已被统计。在你允许分析前，Google Analytics 不会收到任何数据。",
 					],
 				},
 				{
@@ -243,7 +245,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "服务供应商与合作边界",
 					paragraphs: [
-						"我们的服务供应商可能包括负责身份的 Neon Auth、负责账单的 Stripe、负责 Tradely 数据库的 Neon、负责应用交付的 Vercel、负责媒体存储的 Cloudflare R2，以及负责经同意的产品分析和错误诊断的 PostHog 与 Google Analytics。他们仅在提供基础设施和服务所需范围内处理信息。",
+						"我们的服务供应商可能包括负责身份的 Neon Auth、负责账单的 Stripe、负责 Tradely 数据库的 Neon、负责应用交付的 Vercel、负责媒体存储的 Cloudflare R2，负责匿名页面浏览统计的 PostHog，以及负责经同意的产品分析和错误诊断的 PostHog 与 Google Analytics。他们仅在提供基础设施和服务所需范围内处理信息。",
 						"TradingFlow 是独立运营的合作产品。Tradely 不向其分享账户、账单、学习记录或客户标识符；仅在练习链接中使用课程级归因参数。历史合作权益单独处理，TradingFlow 的账户、订阅和数据适用自己的政策。",
 					],
 				},
@@ -353,7 +355,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Cookie 政策",
 			intro:
 				"本政策说明 Tradely 使用哪些浏览器存储和 Cookie，以保持学习中心可靠并记住你的选择。",
-			lastUpdated: "最后更新：2026 年 9 月 9 日",
+			lastUpdated: "最后更新：2026 年 11 月 19 日",
 			sections: [
 				{
 					heading: "必要存储",
@@ -370,7 +372,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "可选统计",
 					paragraphs: [
-						"Tradely 会以默认退出状态初始化 PostHog 和 Google Analytics 4。在你选择允许分析前，不会发送分析事件或加载 Google 标签。同意后，PostHog 可能使用浏览器存储和 Cookie，把同一会话中的页面使用、学习里程碑、Web Vitals 和错误诊断关联起来。Google Analytics 4 会接收经同意的页面浏览和类型化产品事件用于汇总报告。同意后，PostHog 还会采集热图坐标和经过遮盖的会话回放，URL 不含查询参数，回放保留 30 天。回放文字和输入内容会被遮盖；受保护的课程内容和媒体会被屏蔽。通用元素文字自动采集、问卷、控制台日志、网络请求及响应采集和 Google 广告信号仍保持关闭。",
+						"Tradely 会以默认退出状态初始化 PostHog 和 Google Analytics 4。在你做出选择前，唯一的统计是匿名页面浏览计数，不设置 Cookie，也不使用浏览器存储，详见隐私政策；你做出选择后即停止，浏览器发送“请勿跟踪”信号时不会运行。在你选择允许分析前，不会发送其他分析事件，也不会加载 Google 标签。同意后，PostHog 可能使用浏览器存储和 Cookie，把同一会话中的页面使用、学习里程碑、Web Vitals 和错误诊断关联起来。Google Analytics 4 会接收经同意的页面浏览和类型化产品事件用于汇总报告。同意后，PostHog 还会采集热图坐标和经过遮盖的会话回放，URL 不含查询参数，回放保留 30 天。回放文字和输入内容会被遮盖；受保护的课程内容和媒体会被屏蔽。通用元素文字自动采集、问卷、控制台日志、网络请求及响应采集和 Google 广告信号仍保持关闭。",
 						"分析仅用于产品改进和可靠性，不用于广告。Tradely 不会向 Google Analytics 发送学习者的邮箱地址、课程正文、付款信息或 Neon Auth 用户 ID；登录后的 PostHog 分析仅使用 Neon Auth 用户 ID 作为标识。",
 					],
 				},
