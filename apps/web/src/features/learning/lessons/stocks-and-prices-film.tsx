@@ -39,7 +39,8 @@ import {
  * $100.02, and the question: what do 10 shares cost right now? Every other film asks first;
  * here the question would use a word the learner has not met.
  *
- * The quote is a picture, not a table (a pilot, 2026-11-19). The book is a price ladder drawn
+ * The film is drawn, not tabulated: less to read at once, by the owner's decision of
+ * 2026-11-19 (runbook, section 9). The book is a price ladder drawn
  * to scale: each level is a bar at the height of its price, as long as its size, so the
  * spread is a real gap and the last price sits inside it. A rail beside the ladder shows
  * where a trade lands. The question's $100.02 flies onto the rail. Buy 10: the pointer lands
