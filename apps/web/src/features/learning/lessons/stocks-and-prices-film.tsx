@@ -237,18 +237,34 @@ function Scene({
 	);
 	const rowText = narrow ? T.small * 1.15 : T.body;
 	const tokens = Array.from({ length: MINE }, (_, i) => i);
+	// The glosses under ETF and INDEX are tracked capitals where both fit a column, and two
+	// lines of plain small type where they don't: a phone, or a narrow desktop stage.
+	const glossFits = [copy.etfFund, copy.indexNumber].every(
+		(gloss) =>
+			[...t(gloss)].reduce(
+				(w, c) =>
+					w + T.small * ((c.codePointAt(0) ?? 0) > 0x2e80 ? 1.12 : 0.74),
+				0,
+			) <=
+			L.kindW - 24,
+	);
+	const plainGloss = narrow || !glossFits;
+	// Where the glosses take two lines, or the stage is short, the pictures are drawn smaller,
+	// and on a desktop stage a little lower, so the glosses stay clear of them.
+	const smallPics = plainGloss || H < 400;
+	const picY = L.kindPicY + (smallPics && !narrow ? L.kindH * 0.07 : 0);
 	// The fund's basket: one dot a stock, in full rows, centred in the middle column.
 	const id = useId().replace(/:/g, "");
-	const dot = narrow ? 3 : 4;
+	const dot = smallPics ? 3 : 4;
 	const dotRows = instruments.etf.holds / DOT_COLUMNS;
 	const dotsX = L.kindX(1) + L.kindW / 2 - (DOT_COLUMNS * dot) / 2;
-	const dotsY = L.kindPicY - (dotRows * dot) / 2;
+	const dotsY = picY - (dotRows * dot) / 2;
 	// Under each picture, what an option on it delivers.
 	const settleSize = narrow ? T.body : T.head * 0.85;
 	const settleY = L.kindTop + L.kindH - (narrow ? 22 : 30);
 	// The index is its level: a number in a dashed box, nothing to hold.
-	const levelSize = narrow ? T.body * 1.3 : T.head * 1.1;
-	const levelBox = narrow
+	const levelSize = smallPics ? T.body * 1.3 : T.head * 1.1;
+	const levelBox = smallPics
 		? { width: 76, height: 46 }
 		: { width: 116, height: 64 };
 	// The bracket over the ten dollar caps, clear of them.
@@ -262,6 +278,9 @@ function Scene({
 	const avgY = L.priceY(AVERAGE);
 	const heroX = L.readX + (narrow ? 6 : 4);
 	const heroBase = avgY + heroFig * 0.36;
+	// The dollar gap is named on the line above the last price where that line clears the
+	// hero's brackets, and on the line below it on a short stage, where it would not.
+	const overAbove = lastY - (heroBase + 16) >= rowText * 2.6;
 	const level = (side: "ask" | "bid", at: { price: number; size: number }) => {
 		const y = L.priceY(at.price);
 		const key = `${side}-${at.price}`;
@@ -618,7 +637,7 @@ function Scene({
 				{price3(AVERAGE)}
 			</Word>
 			{/* After the hero: the stretch of rail between the last price and that average,
-			    named on the line above the last price. */}
+			    named on the line beside the last price. */}
 			<path
 				data-f="over-gap"
 				d={`M${L.railX} ${lastY}V${avgY}`}
@@ -628,7 +647,7 @@ function Scene({
 			<text
 				data-f="over-label"
 				x={L.readX}
-				y={lastY + rowText * 0.36 - rowText * 1.5}
+				y={lastY + rowText * 0.36 + rowText * (overAbove ? -1.5 : 1.5)}
 				className="wt-film-num"
 				style={{ fontSize: rowText }}
 			>
@@ -690,11 +709,11 @@ function Scene({
 									y={L.kindTop + T.small * 4.1}
 									textAnchor="middle"
 									className={
-										narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"
+										plainGloss ? "wt-film-type wt-film-dim" : "wt-film-tag"
 									}
 									style={{ fontSize: T.small }}
 								>
-									{(narrow && locale === "en"
+									{(plainGloss && locale === "en"
 										? ["a number", "you can't buy"]
 										: [t(copy.indexNumber)]
 									).map((line, lineIndex) => (
@@ -703,7 +722,7 @@ function Scene({
 											x={cx}
 											dy={lineIndex === 0 ? 0 : T.small * 1.35}
 										>
-											{narrow ? line : line.toUpperCase()}
+											{plainGloss ? line : line.toUpperCase()}
 										</tspan>
 									))}
 								</text>
@@ -714,13 +733,12 @@ function Scene({
 									x={cx}
 									y={L.kindTop + T.small * 4.1}
 									textAnchor="middle"
-									// A phone's column is narrower than the tracked capitals: plain small type there.
 									className={
-										narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"
+										plainGloss ? "wt-film-type wt-film-dim" : "wt-film-tag"
 									}
 									style={{ fontSize: T.small }}
 								>
-									{(narrow && locale === "en"
+									{(plainGloss && locale === "en"
 										? ["exchange-traded", "fund"]
 										: [t(copy.etfFund)]
 									).map((line, lineIndex) => (
@@ -729,7 +747,7 @@ function Scene({
 											x={cx}
 											dy={lineIndex === 0 ? 0 : T.small * 1.35}
 										>
-											{narrow ? line : line.toUpperCase()}
+											{plainGloss ? line : line.toUpperCase()}
 										</tspan>
 									))}
 								</text>
@@ -738,7 +756,7 @@ function Scene({
 								<rect
 									data-f="pic-stock"
 									x={cx - L.token / 2}
-									y={L.kindPicY - L.token / 2}
+									y={picY - L.token / 2}
 									width={L.token}
 									height={L.token}
 									rx={narrow ? 3 : 5}
@@ -759,7 +777,7 @@ function Scene({
 									<rect
 										data-f="pic-index"
 										x={cx - levelBox.width / 2}
-										y={L.kindPicY - levelBox.height / 2}
+										y={picY - levelBox.height / 2}
 										width={levelBox.width}
 										height={levelBox.height}
 										rx={6}
@@ -769,7 +787,7 @@ function Scene({
 									<text
 										data-f="index-level"
 										x={cx}
-										y={L.kindPicY + levelSize * 0.36}
+										y={picY + levelSize * 0.36}
 										textAnchor="middle"
 										className="wt-film-num"
 										style={{ fontSize: levelSize }}
@@ -781,7 +799,7 @@ function Scene({
 							{/* From the thing to what an option on it delivers. */}
 							<path
 								data-f={`gives-${kind}`}
-								d={`M${cx} ${L.kindPicY + (dotRows * dot) / 2 + 12}V${settleY - settleSize - 8}m-4 -5l4 5l4 -5`}
+								d={`M${cx} ${picY + (dotRows * dot) / 2 + 12}V${settleY - settleSize - 8}m-4 -5l4 5l4 -5`}
 								className="wt-axis"
 							/>
 							<text
