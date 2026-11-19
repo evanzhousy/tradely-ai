@@ -21,6 +21,9 @@ await page.cdp("Emulation.setDeviceMetricsOverride", {
 await page.goto(`http://localhost:${env.PORT}/learn/${env.LESSON}`);
 await page.evaluate((loc) => {
 	localStorage.setItem("tradely.locale", loc);
+	// An audit page declines analytics, as "Use necessary only" does: no consent banner
+	// over the stage, and no audit visit in the page-view count.
+	localStorage.setItem("tradely.analytics-consent.v2", "denied");
 	// biome-ignore lint/suspicious/noDocumentCookie: the page sets the app's locale cookie, as its switcher does
 	document.cookie = `tradely.locale=${loc}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }, env.LOCALE);
