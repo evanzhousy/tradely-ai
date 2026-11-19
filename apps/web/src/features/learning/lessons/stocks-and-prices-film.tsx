@@ -45,8 +45,9 @@ import {
  * where a trade lands. The question's $100.02 flies onto the rail. Buy 10: the pointer lands
  * at the $100.05 ask, $1,000.50. Sell 10: at the $100.00 bid, $1,000.00, 50¢ apart, with the
  * last price between them. Those trades stay done. The hero: 1,000 shares at once take the
- * asks one level after another, and their average climbs the rail to $100.061, 4.1¢ a share
- * over the last price. Only the prices in play are bright; sizes are bar lengths, not digits.
+ * asks one level after another (290, 500 and 210 shares, counted beside the rail), and their
+ * average climbs the rail to $100.061: $41.30 over the same 1,000 at the last price. Only
+ * the prices in play are bright; the book's sizes are bar lengths, not digits.
  * Last, a stock, an exchange-traded fund (ETF) and an index.
  *
  *   open      0–4        "Stocks and prices"
@@ -72,8 +73,8 @@ const BIG = 1_000;
 const BUY_BIG = tradeAgainst("buy", BIG, BUY10);
 /** What the 1,000 shares cost each, in cents. */
 const AVERAGE = BUY_BIG.notional / BUY_BIG.filled;
-/** How far above the last price that average sits: "4.1¢". */
-const OVER_LAST = `${(AVERAGE - alfaStockBook.last).toFixed(1)}¢`;
+/** What the 1,000 shares cost above the same 1,000 at the last price: "$41.30". */
+const OVER_LAST = usd(BUY_BIG.notional - BIG * alfaStockBook.last);
 const ASKS = [...alfaStockBook.asks].reverse();
 const BIDS = alfaStockBook.bids;
 const MAX_SIZE = Math.max(
@@ -175,8 +176,10 @@ const copy = {
 	last: ["last", "最新"],
 	pay: ["you pay", "你付出"],
 	get: ["you get", "你收到"],
-	/** How far the 1,000 shares' average sits above the last price. */
-	overLast: [`${OVER_LAST} over last`, `每股高 ${OVER_LAST}`],
+	/** The picture shows it; the blind juries still missed the sentence, so it is back. */
+	diff: ["Last trade is neither.", "最新成交不是报价。"],
+	/** What the 1,000 shares cost above the same 1,000 at the last price. */
+	overLast: [`${OVER_LAST} over last`, `比最新价多付 ${OVER_LAST}`],
 	avg: [`average of ${count(BIG)} shares`, `${count(BIG)} 股的均价`],
 	avgShort: [`avg of ${count(BIG)}`, `${count(BIG)} 股的均价`],
 	kindsHead: [
@@ -189,6 +192,8 @@ const copy = {
 	],
 	/** The lesson page never spells ETF out, so the film does, where the word is first met. */
 	etfFund: ["exchange-traded fund", "交易所交易基金"],
+	/** Without it the index's 5,000 was read as the cash an option pays. */
+	indexNumber: ["a number you can't buy", "一个不能买的数"],
 	claimBig: [
 		"Trades happen at quotes, not last prices.",
 		"成交按报价，不按最新成交价。",
@@ -486,6 +491,25 @@ function Scene({
 			{/* The book, as a price ladder to scale, and the rail where trades land. */}
 			{headline("b-head", copy.bookHead, copy.bookHeadShort)}
 			{headline("y-head", copy.buyHead, copy.buyHeadShort)}
+			{/* The qualification beside the buy and sell comparison: its second line. */}
+			<Lines
+				name="y2-head"
+				text={t(copy.diff)}
+				x={margin}
+				y={
+					L.headY +
+					lineCount(
+						t(narrow ? copy.buyHeadShort : copy.buyHead),
+						narrow ? room : room * 0.74,
+						T.head,
+					) *
+						T.head *
+						1.35
+				}
+				size={T.head}
+				maxWidth={narrow ? room : room * 0.74}
+				anchor="start"
+			/>
 			{headline("g-head", copy.bigHead, copy.bigHeadShort)}
 			<g data-f="book">
 				<text
@@ -553,6 +577,21 @@ function Scene({
 			</text>
 			{/* The hero: the average price of 1,000 shares. Its pointer climbs the rail as
 			    the order climbs the asks; the build moves it. */}
+			{/* How many shares the order takes at each level, beside the rail: they add up
+			    to the 1,000. The build counts each with its bar. */}
+			{BUY_BIG.fills.map((fill) => (
+				<text
+					key={fill.price}
+					data-f={`n-ask-${fill.price}`}
+					x={L.railX - (narrow ? 6 : 10)}
+					y={L.priceY(fill.price) + rowText * 0.36}
+					textAnchor="end"
+					className="wt-film-num wt-film-accent"
+					style={{ fontSize: narrow ? T.small : T.small * 1.15 }}
+				>
+					{count(fill.size)}
+				</text>
+			))}
 			{pointer("pt-avg", L.priceY(BUY_BIG.fills[0].price))}
 			<text
 				data-f="p-avg-tag"
@@ -639,6 +678,31 @@ function Scene({
 							>
 								{t(kinds[kind].kind).toUpperCase()}
 							</text>
+							{kind === "index" ? (
+								<text
+									data-f="index-note"
+									x={cx}
+									y={L.kindTop + T.small * 4.1}
+									textAnchor="middle"
+									className={
+										narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"
+									}
+									style={{ fontSize: T.small }}
+								>
+									{(narrow && locale === "en"
+										? ["a number", "you can't buy"]
+										: [t(copy.indexNumber)]
+									).map((line, lineIndex) => (
+										<tspan
+											key={line}
+											x={cx}
+											dy={lineIndex === 0 ? 0 : T.small * 1.35}
+										>
+											{narrow ? line : line.toUpperCase()}
+										</tspan>
+									))}
+								</text>
+							) : null}
 							{kind === "etf" ? (
 								<text
 									data-f="etf-note"
@@ -842,6 +906,8 @@ function build(context: FilmContext) {
 		one("p-get"),
 		one("diff-gap"),
 		one("diff-label"),
+		one("y2-head"),
+		...BUY_BIG.fills.map((fill) => one(`n-ask-${fill.price}`)),
 		one("pt-avg"),
 		one("p-avg-tag"),
 		one("p-avg"),
@@ -1012,6 +1078,7 @@ function build(context: FilmContext) {
 	fadeIn(one("p-get"), 22.25);
 	d.trace(one<SVGPathElement>("diff-gap"), 22.25, { duration: 0.3 });
 	show(one("diff-label"), 22.25, "below", 0.3);
+	show(one("y2-head"), 22.25);
 	tl.set(tick("bid", bestBid), { attr: { class: "wt-film-num" } }, 22.25);
 	tl.to(
 		[tick("ask", bestAsk), tick("bid", bestBid)],
@@ -1023,6 +1090,7 @@ function build(context: FilmContext) {
 	hide(
 		[
 			heads[3],
+			one("y2-head"),
 			one("p-pay"),
 			one("p-get"),
 			one("diff-gap"),
@@ -1036,9 +1104,13 @@ function build(context: FilmContext) {
 	);
 	// The asks are the subject now: the bids stand back, and the best ask's price comes up.
 	tl.to(bidLevels, { opacity: 0.35, duration: 0.3 }, 26.15);
+	// So does the last price, until the average is compared with it.
+	tl.to(one("last"), { opacity: 0.5, duration: 0.3 }, 26.15);
 	tl.to(tick("ask", bestAsk), { opacity: 1, duration: 0.3 }, 26.15);
 	show(heads[4], 26.5, "below", 0.3);
 	const avg = one<SVGTextElement>("p-avg");
+	/** How many shares the big order has taken at a level so far. */
+	const taken = (cents: number) => one(`n-ask-${cents}`);
 	const avgPointer = one("pt-avg");
 	/** What the 10-share buy had already taken of a level. */
 	const before = (cents: number) =>
@@ -1059,15 +1131,16 @@ function build(context: FilmContext) {
 				"width",
 				`${tookW(before(fill.price) + n)}`,
 			);
+			taken(fill.price).textContent = count(n);
 		}
 		const at = filled ? paid / filled : BUY_BIG.fills[0].price;
 		avg.textContent = price3(at);
 		avgPointer.setAttribute("d", `M${L.railX + 1.5} ${L.priceY(at)}l9 -6v12z`);
 	};
-	// The first level is taken in half a second and the average appears at its price; each
-	// further level takes a second, so the climb can be watched.
-	const climbAt = [26.8, 27.9, 29.1];
-	const climbFor = [0.5, 1, 1];
+	// Each level takes a full second, so its count can be read and the climb watched; the
+	// average appears at the first level's price.
+	const climbAt = [26.8, 27.95, 29.1];
+	const climbFor = [1, 1, 1];
 	let filledSoFar = 0;
 	BUY_BIG.fills.forEach((fill, i) => {
 		tl.fromTo(
@@ -1084,11 +1157,17 @@ function build(context: FilmContext) {
 			climbAt[i],
 		);
 		filledSoFar += fill.size;
+		// How many shares it takes here counts up with the bar.
+		fadeIn(taken(fill.price), climbAt[i]);
 		if (i === 0) return;
-		// The level the order has reached comes up; the one it has emptied stands back.
+		// The level the order has reached comes up; the one it has emptied stands back, and
+		// so does its count.
 		tl.to(tick("ask", fill.price), { opacity: 1, duration: 0.3 }, climbAt[i]);
 		tl.to(
-			tick("ask", BUY_BIG.fills[i - 1].price),
+			[
+				tick("ask", BUY_BIG.fills[i - 1].price),
+				taken(BUY_BIG.fills[i - 1].price),
+			],
 			{ opacity: 0.5, duration: 0.3 },
 			climbAt[i],
 		);
@@ -1102,11 +1181,15 @@ function build(context: FilmContext) {
 	});
 	tl.addLabel("hero-lock", 30.5);
 	tl.to(
-		tick("ask", BUY_BIG.fills[BUY_BIG.fills.length - 1].price),
+		[
+			tick("ask", BUY_BIG.fills[BUY_BIG.fills.length - 1].price),
+			taken(BUY_BIG.fills[BUY_BIG.fills.length - 1].price),
+		],
 		{ opacity: 0.5, duration: 0.3 },
 		30.5,
 	);
 	// After the hero: the stretch of rail from the last price up to that average.
+	tl.to(one("last"), { opacity: 1, duration: 0.3 }, 32.9);
 	d.trace(one<SVGPathElement>("over-gap"), 32.9, { duration: 0.4 });
 	show(one("over-label"), 32.9, "below", 0.3);
 
@@ -1127,6 +1210,7 @@ function build(context: FilmContext) {
 			one("lock-avg"),
 			one("over-gap"),
 			one("over-label"),
+			...BUY_BIG.fills.map((fill) => one(`n-ask-${fill.price}`)),
 		],
 		37.0,
 	);
