@@ -1,9 +1,11 @@
+import { useId } from "react";
 import {
 	ALFA,
 	ALFA_SHARES_OUTSTANDING,
 	alfaStockBook,
 	type Copy,
 	count,
+	instruments,
 	pick,
 	signedUsd,
 	usd,
@@ -18,14 +20,11 @@ import {
 	filmFrame,
 	Lines,
 	lineCount,
-	signTone,
 	TitleCard,
 	toneClass,
 	Word,
 } from "../walkthrough/film-kit";
-import { textWidth } from "../walkthrough/text-measure";
 import {
-	companyValue,
 	type Kind,
 	kindOrder,
 	kinds,
@@ -34,8 +33,9 @@ import {
 
 /*
  * Stocks and prices, as a film. This is the course's first lesson, so it says what a share is
- * before its question counts ten of them: one of 50 million slices of a $5 billion company,
- * so each $1 move is $10 on your 10 shares and $50 million on ALFA. Then ALFA's last trade,
+ * before its question counts ten of them. ALFA is one bar of 50,000,000 shares; your ten are
+ * ten squares, drawn large out of a speck of that bar, at $100.00 each. When the price moves
+ * $1, a dollar rises over each square and a bracket over the ten reads +$10. Then ALFA's last trade,
  * $100.02, and the question: what do 10 shares cost right now? Every other film asks first;
  * here the question would use a word the learner has not met.
  *
@@ -50,12 +50,13 @@ import {
  * Last, a stock, an exchange-traded fund (ETF) and an index.
  *
  *   open      0–4        "Stocks and prices"
- *   slice     4–12       50M × $100 = $5B; each $1: $10 for you, $50M for ALFA
+ *   slice     4–12       ALFA's bar, your ten squares, $100.00 each; each $1: +$10
  *   question  12–16.55   last $100.02: what do 10 shares cost?
  *   quote     16.55–37.0 the ladder and the rail; buy 10: $1,000.50, sell 10: $1,000.00,
  *                        a bracket: 50¢; hero: buy 1,000, the average climbs to $100.061;
  *                        after it, the rail between the last price and that average
- *   kinds     37.0–41.45 stock, ETF, index; the index is a number, cash-settled
+ *   kinds     37.0–41.45 stock, ETF, index, drawn: one square, 500 dots, a number; what
+ *                        an option on each delivers
  *   claim     41.45–45.85 you trade against the quote, not the last price
  *   next      45.85–47.45 Next: options, a paid right
  */
@@ -82,7 +83,8 @@ const PRICE_HIGH = Math.max(...alfaStockBook.asks.map((level) => level.price));
 const PRICE_LOW = Math.min(...alfaStockBook.bids.map((level) => level.price));
 /** Cents to "$100.061": the climbing average keeps three places all the way up. */
 const price3 = (cents: number) => `$${(cents / 100).toFixed(3)}`;
-const ROWS = ["buy", "settle"] as const;
+/** The fund's stocks are drawn as dots, this many to a row: 500 make 20 full rows. */
+const DOT_COLUMNS = 25;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -99,25 +101,13 @@ function layout(width: number) {
 	const barMax = narrow ? 84 : room * 0.33;
 	// The rail beside the book: a trade lands on it at the height of the price it got.
 	const railX = barX + barMax + (narrow ? 14 : 28);
-	const colW = (room - (narrow ? 64 : room * 0.24)) / 3;
-	const kindNoteY =
-		H * 0.27 +
-		frame.type.small * 2.2 +
-		frame.type.head * 1.5 +
-		frame.type.small * 1.6;
-	const columnStep = (room - (narrow ? 64 : room * 0.24)) / 3;
-	const trackedTagWidth = (text: string) =>
-		textWidth(text, frame.type.small) +
-		Math.max(0, [...text].length - 1) * frame.type.small * 0.12;
-	// On phones the two glosses use the plain mono small face, without tag tracking.
-	const etfPhoneGap =
-		columnStep -
-		(textWidth("EXCHANGE-TRADED", frame.type.small) +
-			textWidth("A NUMBER", frame.type.small)) /
-			2;
-	const etfWideGap =
-		columnStep -
-		(trackedTagWidth("EXCHANGE-TRADED FUND") + trackedTagWidth("A NUMBER")) / 2;
+	// A share: ALFA as one bar, and your ten shares as ten squares centred under it.
+	const token = narrow ? 22 : 34;
+	const tokenGap = narrow ? 6 : 8;
+	const tokenX0 = (width - (MINE * token + (MINE - 1) * tokenGap)) / 2;
+	const tokenY = H * (narrow ? 0.43 : 0.47);
+	const kindTop = H * (narrow ? 0.27 : 0.25);
+	const kindH = H * (narrow ? 0.55 : 0.6);
 	return {
 		...frame,
 		left,
@@ -129,16 +119,23 @@ function layout(width: number) {
 		barH: Math.min(14, cent * 0.62),
 		railX,
 		readX: railX + (narrow ? 16 : 22),
-		pair: narrow ? [0.27, 0.73] : [0.3, 0.7],
-		colX: (i: number) =>
-			margin +
-			(narrow ? 64 : room * 0.24) +
-			i * ((room - (narrow ? 64 : room * 0.24)) / 3),
-		colW,
-		kindNoteY,
-		kindNoteLineStep: frame.type.small * 1.35,
-		etfGlossPhoneFits: etfPhoneGap >= 6,
-		etfGlossWideFits: etfWideGap >= 10,
+		companyX: narrow ? 28 : margin,
+		companyY: H * 0.27,
+		companyW: width - 2 * (narrow ? 28 : margin),
+		companyH: narrow ? 10 : 12,
+		token,
+		/** How tall a dollar stands over a share. */
+		unitH: narrow ? 6 : 9,
+		tokenX: (i: number) => tokenX0 + i * (token + tokenGap),
+		tokenY,
+		/** The tags under the squares: what one share costs, and what is yours. */
+		readY: tokenY + token + (narrow ? 26 : 30),
+		kindX: (i: number) => margin + (i * room) / 3,
+		kindW: room / 3,
+		kindTop,
+		kindH,
+		/** The middle of a column's picture. */
+		kindPicY: kindTop + kindH * 0.44,
 	};
 }
 
@@ -158,6 +155,7 @@ const copy = {
 		`每动 $1：你的股票变 $${MINE}。`,
 	],
 	yours: [`your ${MINE} shares`, `你的 ${MINE} 股`],
+	each: ["each", "每股"],
 	company: [`ALFA, ${count(SHARES)} shares`, `ALFA，${count(SHARES)} 股`],
 	companyShort: [
 		`ALFA, ${SHARES / 1_000_000}M shares`,
@@ -189,18 +187,8 @@ const copy = {
 		"Stock, ETF, index: what options deliver.",
 		"股票、ETF、指数：期权如何交割？",
 	],
-	buyableBoth: ["Yes, both", "两者均可"],
-	indexNumber: ["a number", "一个数"],
+	/** The lesson page never spells ETF out, so the film does, where the word is first met. */
 	etfFund: ["exchange-traded fund", "交易所交易基金"],
-	rowLabels: {
-		buy: ["buy it?", "能买吗"],
-		settle: ["an option delivers", "期权交割"],
-	},
-	/** On a phone the row labels have 64 px beside the columns. */
-	rowLabelsShort: {
-		buy: ["buy it?", "能买吗"],
-		settle: ["delivers", "交割"],
-	},
 	claimBig: [
 		"Trades happen at quotes, not last prices.",
 		"成交按报价，不按最新成交价。",
@@ -238,6 +226,23 @@ function Scene({
 		/>
 	);
 	const rowText = narrow ? T.small * 1.15 : T.body;
+	const tokens = Array.from({ length: MINE }, (_, i) => i);
+	// The fund's basket: one dot a stock, in full rows, centred in the middle column.
+	const id = useId().replace(/:/g, "");
+	const dot = narrow ? 3 : 4;
+	const dotRows = instruments.etf.holds / DOT_COLUMNS;
+	const dotsX = L.kindX(1) + L.kindW / 2 - (DOT_COLUMNS * dot) / 2;
+	const dotsY = L.kindPicY - (dotRows * dot) / 2;
+	// Under each picture, what an option on it delivers.
+	const settleSize = narrow ? T.body : T.head * 0.85;
+	const settleY = L.kindTop + L.kindH - (narrow ? 22 : 30);
+	// The index is its level: a number in a dashed box, nothing to hold.
+	const levelSize = narrow ? T.body * 1.3 : T.head * 1.1;
+	const levelBox = narrow
+		? { width: 76, height: 46 }
+		: { width: 116, height: 64 };
+	// The bracket over the ten dollar caps, clear of them.
+	const gainY = L.tokenY - 5 - L.unitH - 5;
 	// What you pay and what you get stand beside the rail, each at the height of its price.
 	const fig = narrow ? T.body * 1.1 : T.head * 1.15;
 	const heroFig = T.num * 1.3;
@@ -355,66 +360,127 @@ function Scene({
 				/>
 			</g>
 
-			{/* A share and the company. */}
+			{/* A share and the company: ALFA is one bar, and your ten shares are ten squares,
+			    drawn large beside the speck of the bar that they are. */}
 			{headline("s-head", copy.sliceHead, copy.sliceHeadShort)}
 			{headline("m-head", copy.moveHead, copy.moveHeadShort)}
 			<g data-f="slice">
-				<Word
-					name="px-tag"
-					x={W / 2}
-					y={H * 0.3}
-					size={T.small}
+				<text
+					data-f="co-tag"
+					x={L.companyX}
+					y={L.companyY - T.small * 0.9}
 					className="wt-film-tag"
+					style={{ fontSize: T.small }}
 				>
-					{t(["ALFA · open", "ALFA · 开盘"]).toUpperCase()}
-				</Word>
+					{t(narrow ? copy.companyShort : copy.company).toUpperCase()}
+				</text>
+				<rect
+					data-f="co-bar"
+					x={L.companyX}
+					y={L.companyY}
+					width={L.companyW}
+					height={L.companyH}
+					rx={3}
+					className="wt-film-bar"
+					data-tone="neutral"
+				/>
+				{/* Ten of 50 million shares are far thinner than this mark: it only says where. */}
+				<rect
+					data-f="co-speck"
+					x={W / 2 - 1}
+					y={L.companyY - 3}
+					width={2}
+					height={L.companyH + 6}
+					className="wt-film-bar"
+					data-tone="total"
+				/>
+				<path
+					data-f="zoom"
+					d={`M${W / 2} ${L.companyY + L.companyH + 6}L${L.tokenX(0)} ${L.tokenY - 8}M${W / 2} ${L.companyY + L.companyH + 6}L${L.tokenX(MINE - 1) + L.token} ${L.tokenY - 8}`}
+					className="wt-film-link"
+				/>
+				{tokens.map((i) => (
+					<rect
+						key={`tok-${i}`}
+						data-f={`tok-${i}`}
+						x={L.tokenX(i)}
+						y={L.tokenY}
+						width={L.token}
+						height={L.token}
+						rx={narrow ? 3 : 5}
+						className="wt-film-bar"
+						data-tone="total"
+					/>
+				))}
+				{/* A dollar a share: one green cap over each share, which the build raises with
+				    the price. A bracket over the ten then says what they add up to. */}
+				{tokens.map((i) => (
+					<rect
+						key={`up-${i}`}
+						data-f={`up-${i}`}
+						x={L.tokenX(i)}
+						y={L.tokenY - 5}
+						width={L.token}
+						height={0}
+						rx={2}
+						className="wt-film-bar"
+						data-tone="gain"
+					/>
+				))}
+				<text
+					data-f="px-tag"
+					x={L.tokenX(0)}
+					y={L.readY}
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.each).toUpperCase()}
+				</text>
 				<Word
 					name="px"
-					x={W / 2}
-					y={H * 0.3 + T.title * 1.5}
-					size={T.title * 1.3}
+					x={L.tokenX(0)}
+					y={L.readY + T.num * 1.15}
+					size={T.num}
+					anchor="start"
 					className="wt-film-num wt-film-accent"
 				>
 					{usd(OPEN)}
 				</Word>
-				{(
-					[
-						["mine", copy.yours, copy.yours],
-						["co", copy.company, copy.companyShort],
-					] as const
-				).map(([name, tag, short], i) => (
-					<g key={name}>
-						<Word
-							name={`${name}-tag`}
-							x={W * L.pair[i]}
-							y={H * 0.58}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(narrow ? short : tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`${name}-val`}
-							x={W * L.pair[i]}
-							y={H * 0.58 + T.num * 1.3}
-							size={T.num}
-							className="wt-film-num"
-						>
-							{name === "mine"
-								? usd(MINE * OPEN, 0)
-								: companyValue(SHARES * OPEN, locale)}
-						</Word>
-						<Word
-							name={`${name}-chg`}
-							x={W * L.pair[i]}
-							y={H * 0.58 + T.num * 1.3 + T.body * 1.9}
-							size={T.body}
-							className="wt-film-num wt-film-dim"
-						>
-							{signedUsd(0, 0)}
-						</Word>
-					</g>
-				))}
+				<text
+					data-f="mine-tag"
+					x={L.tokenX(MINE - 1) + L.token}
+					y={L.readY}
+					textAnchor="end"
+					className="wt-film-tag"
+					style={{ fontSize: T.small }}
+				>
+					{t(copy.yours).toUpperCase()}
+				</text>
+				<Word
+					name="mine-val"
+					x={L.tokenX(MINE - 1) + L.token}
+					y={L.readY + T.num * 1.15}
+					size={T.num}
+					anchor="end"
+					className="wt-film-num"
+				>
+					{usd(MINE * OPEN, 0)}
+				</Word>
+				<path
+					data-f="gain-gap"
+					d={`M${L.tokenX(0)} ${gainY + 4}V${gainY}H${L.tokenX(MINE - 1) + L.token}V${gainY + 4}`}
+					className="wt-film-gap"
+					style={{ stroke: "var(--tone-up)" }}
+				/>
+				<Word
+					name="mine-chg"
+					x={W / 2}
+					y={gainY - 8}
+					size={narrow ? T.body * 1.2 : T.head}
+					className={`wt-film-num ${toneClass.up}`}
+				>
+					{signedUsd(MINE * 100, 0)}
+				</Word>
 			</g>
 
 			{/* The book, as a price ladder to scale, and the rail where trades land. */}
@@ -528,58 +594,58 @@ function Scene({
 			<Brackets name="lock-avg" glow />
 			<Brackets name="lock-index" />
 
-			{/* Three kinds of underlying. */}
+			{/* Three kinds of underlying, drawn: one share of one company, a fund's basket of 500
+			    stocks (500 dots, counted) and an index, which is only a number. Under each, what
+			    an option on it delivers. */}
 			{headline("k-head", copy.kindsHead, copy.kindsHeadShort)}
+			<defs>
+				<pattern
+					id={`dots-${id}`}
+					x={dotsX}
+					y={dotsY}
+					width={dot}
+					height={dot}
+					patternUnits="userSpaceOnUse"
+				>
+					<rect
+						width={dot * 0.55}
+						height={dot * 0.55}
+						className="wt-film-bar"
+						data-tone="total"
+					/>
+				</pattern>
+			</defs>
 			<g data-f="kinds">
-				{kindOrder.map((kind: Kind, i) => (
-					<g key={kind} data-f={`col-${kind}`}>
-						<rect
-							data-f={`colbg-${kind}`}
-							x={L.colX(i) + 4}
-							y={H * 0.27}
-							width={L.colW - 8}
-							height={H * 0.62}
-							rx={12}
-							className="wt-focus-shape"
-						/>
-						<text
-							x={L.colX(i) + L.colW / 2}
-							y={H * 0.27 + T.small * 2.2}
-							textAnchor="middle"
-							className="wt-film-tag"
-							style={{ fontSize: T.small }}
-						>
-							{t(kinds[kind].kind).toUpperCase()}
-						</text>
-						<text
-							x={L.colX(i) + L.colW / 2}
-							y={H * 0.27 + T.small * 2.2 + T.head * 1.5}
-							textAnchor="middle"
-							className="wt-film-num"
-							style={{ fontSize: narrow ? T.body : T.head }}
-						>
-							{kinds[kind].name}
-						</text>
-						{kind === "index" ? (
+				{kindOrder.map((kind: Kind, i) => {
+					const cx = L.kindX(i) + L.kindW / 2;
+					return (
+						<g key={kind} data-f={`col-${kind}`}>
+							<rect
+								data-f={`colbg-${kind}`}
+								x={L.kindX(i) + 6}
+								y={L.kindTop}
+								width={L.kindW - 12}
+								height={L.kindH}
+								rx={12}
+								className="wt-focus-shape"
+							/>
 							<text
-								data-f="index-note"
-								x={L.colX(i) + L.colW / 2}
-								y={L.kindNoteY}
+								data-f={`kind-${kind}`}
+								x={cx}
+								y={L.kindTop + T.small * 2.4}
 								textAnchor="middle"
-								className={narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"}
+								className="wt-film-tag"
 								style={{ fontSize: T.small }}
 							>
-								{narrow
-									? t(copy.indexNumber)
-									: t(copy.indexNumber).toUpperCase()}
+								{t(kinds[kind].kind).toUpperCase()}
 							</text>
-						) : kind === "etf" ? (
-							(narrow || L.etfGlossWideFits) && (
+							{kind === "etf" ? (
 								<text
 									data-f="etf-note"
-									x={L.colX(i) + L.colW / 2}
-									y={L.kindNoteY}
+									x={cx}
+									y={L.kindTop + T.small * 4.1}
 									textAnchor="middle"
+									// A phone's column is narrower than the tracked capitals: plain small type there.
 									className={
 										narrow ? "wt-film-type wt-film-dim" : "wt-film-tag"
 									}
@@ -587,59 +653,81 @@ function Scene({
 								>
 									{(narrow && locale === "en"
 										? ["exchange-traded", "fund"]
-										: narrow
-											? [t(copy.etfFund)]
-											: [t(copy.etfFund).toUpperCase()]
+										: [t(copy.etfFund)]
 									).map((line, lineIndex) => (
 										<tspan
 											key={line}
-											x={L.colX(i) + L.colW / 2}
-											dy={lineIndex === 0 ? 0 : L.kindNoteLineStep}
+											x={cx}
+											dy={lineIndex === 0 ? 0 : T.small * 1.35}
 										>
-											{line}
+											{narrow ? line : line.toUpperCase()}
 										</tspan>
 									))}
 								</text>
-							)
-						) : null}
-						{ROWS.map((row, r) =>
-							row === "buy" && kind !== "index" ? null : (
-								<text
-									key={row}
-									data-f={`cell-${kind}-${row}`}
-									x={L.colX(i) + L.colW / 2}
-									y={H * (0.52 + r * 0.13)}
-									textAnchor="middle"
-									className="wt-film-type"
-									style={{ fontSize: rowText }}
-								>
-									{t(kinds[kind][row])}
-								</text>
-							),
-						)}
-					</g>
-				))}
-				{ROWS.map((row, r) => (
-					<text
-						key={row}
-						x={margin}
-						y={H * (0.52 + r * 0.13)}
-						className="wt-film-type wt-film-dim"
-						style={{ fontSize: T.body }}
-					>
-						{t(narrow ? copy.rowLabelsShort[row] : copy.rowLabels[row])}
-					</text>
-				))}
-				<text
-					data-f="cell-buyable-both"
-					x={(L.colX(0) + L.colW / 2 + L.colX(1) + L.colW / 2) / 2}
-					y={H * 0.52}
-					textAnchor="middle"
-					className="wt-film-type"
-					style={{ fontSize: rowText }}
-				>
-					{t(copy.buyableBoth)}
-				</text>
+							) : null}
+							{kind === "stock" ? (
+								<rect
+									data-f="pic-stock"
+									x={cx - L.token / 2}
+									y={L.kindPicY - L.token / 2}
+									width={L.token}
+									height={L.token}
+									rx={narrow ? 3 : 5}
+									className="wt-film-bar"
+									data-tone="total"
+								/>
+							) : kind === "etf" ? (
+								<rect
+									data-f="pic-etf"
+									x={dotsX}
+									y={dotsY}
+									width={DOT_COLUMNS * dot}
+									height={dotRows * dot}
+									fill={`url(#dots-${id})`}
+								/>
+							) : (
+								<>
+									<rect
+										data-f="pic-index"
+										x={cx - levelBox.width / 2}
+										y={L.kindPicY - levelBox.height / 2}
+										width={levelBox.width}
+										height={levelBox.height}
+										rx={6}
+										className="wt-film-bar"
+										data-tone="model"
+									/>
+									<text
+										data-f="index-level"
+										x={cx}
+										y={L.kindPicY + levelSize * 0.36}
+										textAnchor="middle"
+										className="wt-film-num"
+										style={{ fontSize: levelSize }}
+									>
+										{kinds.index.quote}
+									</text>
+								</>
+							)}
+							{/* From the thing to what an option on it delivers. */}
+							<path
+								data-f={`gives-${kind}`}
+								d={`M${cx} ${L.kindPicY + (dotRows * dot) / 2 + 12}V${settleY - settleSize - 8}m-4 -5l4 5l4 -5`}
+								className="wt-axis"
+							/>
+							<text
+								data-f={`cell-${kind}-settle`}
+								x={cx}
+								y={settleY}
+								textAnchor="middle"
+								className="wt-film-type"
+								style={{ fontSize: settleSize }}
+							>
+								{t(kinds[kind].settle)}
+							</text>
+						</g>
+					);
+				})}
 			</g>
 			<g data-f="claim">
 				<Lines
@@ -675,7 +763,7 @@ function Scene({
 }
 
 function build(context: FilmContext) {
-	const { width: W, locale } = context;
+	const { width: W } = context;
 	const L = layout(W);
 	const d = createDirector(context, L, END);
 	const { tl, one, kids, show, hide } = d;
@@ -695,19 +783,10 @@ function build(context: FilmContext) {
 		);
 	const px = one<SVGTextElement>("px");
 	const mineVal = one<SVGTextElement>("mine-val");
-	const coVal = one<SVGTextElement>("co-val");
-	const mineChg = one<SVGTextElement>("mine-chg");
-	const coChg = one<SVGTextElement>("co-chg");
+	const mineChg = one<SVGGraphicsElement>("mine-chg");
+	const tokens = Array.from({ length: MINE }, (_, i) => one(`tok-${i}`));
+	const ups = Array.from({ length: MINE }, (_, i) => one(`up-${i}`));
 	const dollars = (v: number) => usd(Math.round(v), 2);
-	const whole = (v: number) => usd(Math.round(v), 0);
-	const signed = (v: number) => signedUsd(Math.round(v), 0);
-	const signedMillions = (v: number) => {
-		const m = Math.round(v / 100 / 1_000_000);
-		return locale === "zh"
-			? `${m < 0 ? "−" : m > 0 ? "+" : ""}${Math.abs(m * 100)} 万美元`
-			: `${m < 0 ? "−" : m > 0 ? "+" : ""}$${Math.abs(m)} million`;
-	};
-	const company = (v: number) => companyValue(Math.round(v), locale);
 	const key = (side: "ask" | "bid", cents: number) => `${side}-${cents}`;
 	/** What you took of a level, drawn over its bar. */
 	const took = (side: "ask" | "bid", cents: number) =>
@@ -738,11 +817,6 @@ function build(context: FilmContext) {
 		"g-head",
 		"k-head",
 	].map((name) => one(name));
-	const kindText = [
-		...flat("kinds").filter((el) => el.tagName === "text"),
-		one("index-note"),
-		one("cell-buyable-both"),
-	].filter((el, i, all) => all.indexOf(el) === i);
 	const fadeIn = (targets: Element | Element[], at: number, duration = 0.3) =>
 		tl.fromTo(
 			targets,
@@ -776,7 +850,6 @@ function build(context: FilmContext) {
 		one("over-label"),
 		one("lock-index"),
 		...kindOrder.flatMap((kind) => [one(`col-${kind}`), one(`colbg-${kind}`)]),
-		...kindText,
 		...kids("claim"),
 	]);
 	tl.set(deep, { opacity: 0.4 }, 0);
@@ -791,53 +864,62 @@ function build(context: FilmContext) {
 	// The title is still flying to its corner until 4.9. On a phone it crosses the end of this
 	// headline's row between 4.55 and 4.65, so the headline comes up once it has gone by.
 	show(heads[0], 4.65);
-	show([one("px-tag"), px], 4.95);
-	show([one("mine-tag"), mineVal], 5.55);
-	show([one("co-tag"), coVal], 5.95);
-	// Each $1 move, under its own headline.
+	// ALFA, whole; then your ten shares, drawn large out of a speck of it.
+	fadeIn([one("co-bar"), one("co-tag")], 4.95);
+	fadeIn(one("co-speck"), 5.55);
+	d.trace(one<SVGPathElement>("zoom"), 5.55, { duration: 0.4 });
+	tl.fromTo(
+		tokens,
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, stagger: 0.03, ease: "power3.out" },
+		5.8,
+	);
+	show(one("mine-tag"), 5.8, "below", 0.3);
+	// What one share costs, then what the ten are worth.
+	show([one("px-tag"), px], 6.3);
+	show(mineVal, 6.7);
+	// Each $1 move, under its own headline. What the ten are worth leaves first, since the
+	// price is about to change it; the company stands back.
+	hide(mineVal, 7.85, 0.3);
 	d.swap(heads[0], heads[1], 8.15);
-	hide(one("px-tag"), 7.85);
-	show([mineChg, coChg], 8.15);
-	tl.set(
-		[mineChg, coChg],
-		{ attr: { class: "wt-film-num wt-film-dim" } },
+	tl.to(
+		[one("co-bar"), one("co-tag"), one("mine-tag")],
+		{ opacity: 0.4, duration: 0.3 },
 		8.15,
 	);
-	// Start together once the explanatory headline has settled; each count lasts one second.
-	d.count(px, OPEN + 100, 9.0, dollars, OPEN, 1);
-	d.count(mineVal, MINE * (OPEN + 100), 9.0, whole, MINE * OPEN, 1);
-	d.count(coVal, SHARES * (OPEN + 100), 9.0, company, SHARES * OPEN, 1);
-	// A rounded zero stays dim; the sign colour follows the figure actually being read.
-	[
-		{ target: mineChg, to: MINE * 100, format: signed, unit: 100 },
+	// The magnifier's lines leave: the space over the squares is the dollars' next.
+	tl.to(
+		[one("co-speck"), one("zoom")],
+		{ opacity: 0, duration: 0.3, ease: "power2.in" },
+		8.15,
+	);
+	// The price rises a dollar and a dollar rises over each share. One count drives both, so
+	// every frame agrees: a unit is as tall as the price has moved.
+	const rise = { dollars: 0 };
+	const renderRise = () => {
+		px.textContent = dollars(OPEN + 100 * rise.dollars);
+		for (const up of ups) {
+			up.setAttribute("height", `${L.unitH * rise.dollars}`);
+			up.setAttribute("y", `${L.tokenY - 5 - L.unitH * rise.dollars}`);
+		}
+	};
+	tl.set(ups, { opacity: 1 }, 9.0);
+	tl.fromTo(
+		rise,
+		{ dollars: 0 },
 		{
-			target: coChg,
-			to: SHARES * 100,
-			format: signedMillions,
-			unit: 100_000_000,
+			dollars: 1,
+			duration: 1,
+			ease: "power2.out",
+			immediateRender: false,
+			onStart: renderRise,
+			onUpdate: renderRise,
 		},
-	].forEach(({ target, to, format, unit }) => {
-		const state = { value: 0 };
-		tl.fromTo(
-			state,
-			{ value: 0 },
-			{
-				value: to,
-				duration: 1,
-				ease: "power2.out",
-				immediateRender: false,
-				onUpdate: () => {
-					const tone = signTone(Math.round(Math.round(state.value) / unit));
-					target.textContent = format(state.value);
-					target.setAttribute(
-						"class",
-						`wt-film-num ${tone ? toneClass[tone] : "wt-film-dim"}`,
-					);
-				},
-			},
-			9.0,
-		);
-	});
+		9.0,
+	);
+	// The price settles at 10.0. A bracket over the ten dollars then says what they add up to.
+	d.trace(one<SVGPathElement>("gain-gap"), 10.3, { duration: 0.3 });
+	show(mineChg, 10.3, "below", 0.3);
 
 	// ——— question: the last trade, and what ten shares cost now ———
 	tl.addLabel("question", 12.0);
@@ -1049,18 +1131,22 @@ function build(context: FilmContext) {
 		37.0,
 	);
 	show(heads[5], 37.35);
-	show(kindText, 37.35, "below", 0.3);
 	kindOrder.forEach((kind, i) => {
 		show(one(`col-${kind}`), 37.35 + 0.12 * i, "below", 0.3);
 	});
 	tl.to(one("colbg-index"), { opacity: 1, duration: 0.4 }, 39.45);
+	// The index is the subject now: the stock and the fund stand back.
+	tl.to(
+		[one("col-stock"), one("col-etf")],
+		{ opacity: 0.45, duration: 0.3 },
+		39.45,
+	);
 	d.lock(one<SVGGraphicsElement>("lock-index"), 39.45, {
 		around: one("colbg-index"),
 		pad: 4,
 	});
-	// The last column settles at 37.89: 3.56 s to exit, 1.56 s to index focus.
-	// The headline retains 4.1 s and settles at 37.85, 1.6 s before the index focus.
-	// That focus settles at 39.9, leaving another 1.55 s of quiet comparison.
+	// The last column settles at 37.89, 1.56 s before the index comes into focus; that
+	// focus settles at 39.9 and stands 1.55 s.
 
 	// ——— claim ———
 	tl.addLabel("claim", 41.45);
@@ -1069,7 +1155,6 @@ function build(context: FilmContext) {
 			heads[5],
 			one("lock-index"),
 			...kindOrder.map((kind) => one(`col-${kind}`)),
-			...flat("kinds").filter((el) => el.tagName === "text"),
 		],
 		41.45,
 	);
@@ -1086,8 +1171,8 @@ function build(context: FilmContext) {
 export const stocksAndPricesFilm: Film = {
 	id: "stocks-and-prices",
 	label: [
-		`Stocks and prices, as a short film: a share as one of ${count(SHARES)} slices of a company worth ${companyValue(SHARES * OPEN, "en")}, where a $1 move is $${MINE} on your ${MINE} shares; then ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price3(AVERAGE)}; and a stock, an exchange-traded fund (ETF), and an index, the last a number you can't buy whose options deliver cash`,
-		`股票与价格短片：一股是 ${count(SHARES)} 份中的一份，公司估值 ${companyValue(SHARES * OPEN, "zh")}，涨 $1 你的 ${MINE} 股就多 $${MINE}；然后是 ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price3(AVERAGE)}；以及股票、交易所交易基金（ETF）和指数，指数是一个不能买入的数，它的期权以现金结算`,
+		`Stocks and prices, as a short film: a share as one of ALFA's ${count(SHARES)}, with your ${MINE} drawn as ten squares, where a $1 move is $${MINE} on them; then ALFA's last trade of ${usd(alfaStockBook.last)} and the question of what 10 shares cost now; the quote, where you buy 10 at the ask for ${usd(BUY10.notional)}, sell 10 at the bid for ${usd(SELL10.notional)}, and 1,000 at once run through three offers to an average of ${price3(AVERAGE)}; and a stock, an exchange-traded fund (ETF) drawn as its 500 stocks, and an index, which is only a number and whose options deliver cash`,
+		`股票与价格短片：一股是 ALFA ${count(SHARES)} 股中的一份，你的 ${MINE} 股画成十个方块，涨 $1 它们就多 $${MINE}；然后是 ALFA 最新成交 ${usd(alfaStockBook.last)}，以及现在买 10 股要花多少；报价：买 10 股按卖价付 ${usd(BUY10.notional)}，卖 10 股按买价得 ${usd(SELL10.notional)}，一次买 1,000 股会吃掉三档卖单，均价 ${price3(AVERAGE)}；以及股票、画成 500 只股票的交易所交易基金（ETF）和指数，指数只是一个数，它的期权以现金结算`,
 	],
 	stage: "dark",
 	shots: [
