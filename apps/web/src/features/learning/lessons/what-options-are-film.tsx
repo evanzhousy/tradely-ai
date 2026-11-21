@@ -24,6 +24,7 @@ import {
 	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
+import { textWidth } from "../walkthrough/text-measure";
 import {
 	CALL_COST,
 	call100,
@@ -45,8 +46,9 @@ import {
  * Last, the other side: at $110 you are up $580 and Ben, who wrote the call, is down $580.
  *
  * Drawn with less to read, by the owner's decision of 2026-11-21 (runbook, section 9). The
- * charts carry no axis numbers: a price is named only where a marker stands, and the strike
- * and the premium keep their labels. The call's value is a bar under the marker, split by the
+ * charts carry no axis numbers: each says what it measures, the prices a marker is tried at
+ * stand under the axis as ticks, and the strike and the premium keep their labels. The
+ * question card states the contract once, as 100 squares at $4.20 each. The call's value is a bar under the marker, split by the
  * premium line, so the net gain is the part above it. The contract's 100 shares sit with the
  * value they multiply, and the 100 shares Ben must deliver are drawn and cross from him to you.
  *
@@ -156,6 +158,14 @@ const copy = {
 		`premium ${usd(PREMIUM * 100, 0)}`,
 		`权利金 ${usd(PREMIUM * 100, 0)}`,
 	],
+	/** What each chart measures: the first is the right's value, the second a position's profit. */
+	valueAxis: ["value at expiry", "到期价值"],
+	profitAxis: ["profit at expiry", "到期盈亏"],
+	/** The contract, said once and drawn as 100 squares beside it. */
+	unit: [
+		`1 contract: 100 shares × ${usd(PREMIUM)}`,
+		`1 张合约：100 股 × ${usd(PREMIUM)}`,
+	],
 	strike: ["strike $100", "行权价 $100"],
 	callLabel: ["call", "看涨"],
 	putLabel: ["put", "看跌"],
@@ -163,7 +173,12 @@ const copy = {
 	value: ["value · 100 shares", "价值 · 100 股"],
 	net: ["net", "净盈亏"],
 	sharesAlone: ["100 shares", "100 股"],
+	sharesEntry: ["bought at $100", "$100 买入"],
 	withPut: ["with 95 put", "加 95 看跌"],
+	protectPremium: [
+		`premium ${usd(putCost * 100, 0)}`,
+		`权利金 ${usd(putCost * 100, 0)}`,
+	],
 	putSpot: [`ALFA $${PUT_AT}`, `ALFA $${PUT_AT}`],
 	spotLow: [`ALFA $${LOW}`, `ALFA $${LOW}`],
 	spotHigh: [`ALFA $${HIGH}`, `ALFA $${HIGH}`],
@@ -185,7 +200,10 @@ const copy = {
 	sharesLabel: ["shares alone", "仅持股"],
 	floor: ["loss floor", "亏损下限"],
 	most: ["Max loss: premium", "最多亏权利金"],
-	result: ["100 call · Oct 18: $110", "100 看涨 · 10月18日 $110"],
+	result: [
+		`Your 100 call: ALFA ends at $${HIGH}.`,
+		`你的 100 看涨：ALFA 收于 $${HIGH}。`,
+	],
 	sidesHead: ["The call has two sides.", "看涨合约的双方。"],
 	sidesHeadShort: ["The call has two sides.", "看涨合约的双方。"],
 	sidesObligation: [
@@ -213,6 +231,11 @@ function Scene({
 	const { height: H, type: T, room, narrow, margin } = L;
 	const W = width;
 	const id = useId().replace(/:/g, "");
+	// The question card's contract row: 100 squares and their line, centred under the $420.
+	const lotSide = LOT_COLUMNS * L.lotCell;
+	const unitY = H * 0.3 + T.big * 1.05 + lotSide / 2 + T.body * 1.9;
+	const unitX =
+		W / 2 - (lotSide + 12 + textWidth(pick(copy.unit, locale), T.body)) / 2;
 	const headline = (name: string, text: Copy, short: Copy) => (
 		<Lines
 			name={name}
@@ -270,6 +293,22 @@ function Scene({
 			<Backdrop frame={L} />
 			<defs>
 				<pattern
+					id={`lotq-${id}`}
+					x={unitX}
+					y={unitY - lotSide / 2 - T.body * 0.34}
+					width={L.lotCell}
+					height={L.lotCell}
+					patternUnits="userSpaceOnUse"
+				>
+					<rect
+						width={L.lotCell * 0.7}
+						height={L.lotCell * 0.7}
+						rx={0.6}
+						className="wt-film-bar"
+						data-tone="total"
+					/>
+				</pattern>
+				<pattern
 					id={`lot-${id}`}
 					x={W * L.pair[1] - (LOT_COLUMNS * L.lotCell) / 2}
 					y={L.lotY}
@@ -291,6 +330,9 @@ function Scene({
 				<g data-f="world">
 					{/* The right's value at expiry. */}
 					<g data-f="value-chart">
+						<text x={L.left} y={L.top - 12} className="wt-small">
+							{t(copy.valueAxis)}
+						</text>
 						{zeroLine("v-zero", L.y(0))}
 						<path
 							data-f="strike"
@@ -314,9 +356,11 @@ function Scene({
 						/>
 						<text
 							data-f="premium-label"
-							x={L.right - 4}
+							// At the line's right end; on a phone at its left, where the value bar
+							// under the $110 marker does not reach.
+							x={narrow ? L.left + 4 : L.right - 4}
 							y={L.y(PREMIUM) - 8}
-							textAnchor="end"
+							textAnchor={narrow ? "start" : "end"}
 							className="wt-small wt-halo"
 						>
 							{/* The figure white, like the question's $420 that lands on it. */}
@@ -396,6 +440,9 @@ function Scene({
 
 					{/* Protection beside the shares alone, then a purchased call. */}
 					<g data-f="use-chart">
+						<text x={L.left} y={L.top - 12} className="wt-small">
+							{t(copy.profitAxis)}
+						</text>
 						{zeroLine("u-zero", L.u(0))}
 						<text
 							data-f="u-zero-label"
@@ -538,12 +585,21 @@ function Scene({
 							<Word
 								name={`${name}-tag`}
 								x={margin + i * L.meterCol}
-								y={L.meterY}
+								y={L.meterY - (group === "umeter" ? T.small * 1.5 : 0)}
 								size={T.small}
 								anchor="start"
 								className="wt-film-tag"
 							>
 								{t(tag).toUpperCase()}
+								{group === "umeter" && (
+									<tspan x={margin + i * L.meterCol} dy={T.small * 1.5}>
+										{t(
+											name === "u-shares"
+												? copy.sharesEntry
+												: copy.protectPremium,
+										).toUpperCase()}
+									</tspan>
+								)}
 							</Word>
 							<Word
 								name={name}
@@ -591,6 +647,24 @@ function Scene({
 				>
 					{usd(PREMIUM * 100, 0)}
 				</Word>
+				{/* The contract, said once: 100 squares, one a share, and what each costs. */}
+				<g data-f="q-unit">
+					<rect
+						x={unitX}
+						y={unitY - lotSide / 2 - T.body * 0.34}
+						width={lotSide}
+						height={lotSide}
+						fill={`url(#lotq-${id})`}
+					/>
+					<text
+						x={unitX + lotSide + 12}
+						y={unitY}
+						className="wt-film-type wt-film-dim"
+						style={{ fontSize: T.body }}
+					>
+						{t(copy.unit)}
+					</text>
+				</g>
 				<Lines
 					name="q-line"
 					text={t(copy.qLine)}
@@ -858,6 +932,7 @@ function build(context: FilmContext) {
 		one("put-spot"),
 		one("spot-low"),
 		one("spot-high"),
+		one("q-unit"),
 		barPaid,
 		barNet,
 		one("fall-from"),
@@ -897,11 +972,12 @@ function build(context: FilmContext) {
 	d.tag(4.0);
 	show(one("q-tag"), 4.4);
 	word(one("q-big"), 4.6);
+	show(one("q-unit"), 4.9, "below", 0.3);
 	show(one("q-line"), 5.1);
 
 	// ——— right: what the call is worth at expiry ———
 	tl.addLabel("right", 8.6);
-	hide([one("q-tag"), one("q-line")], 8.6);
+	hide([one("q-tag"), one("q-unit"), one("q-line")], 8.6);
 	rise(8.7);
 	show([one("strike"), one("strike-label")], 9.2);
 	// The $420 the question named lands on the chart as the premium line.
@@ -918,20 +994,13 @@ function build(context: FilmContext) {
 	// The call at $95, then at $110: the meter reads from the marker.
 	d.swap(heads[0], heads[1], 13.5);
 	pop(marker, 13.9);
-	show(one("spot-low"), 13.9, "below", 0.3);
+	// The two prices the call is tried at stand under the axis from here on, as ticks.
+	show([one("spot-low"), one("spot-high")], 13.9, "below", 0.3);
 	show(kids("meter"), 14.0);
 	const onCallRight = onRight(callValue, (spot) => callValue(spot) - PREMIUM);
 	walk(HIGH, HIGH, 13.89, 0.01, () => onCallRight(LOW));
-	// The price it leaves goes as the walk starts; the price it reaches arrives as it lands.
-	hide(one("spot-low"), 15.5, 0.3, 0);
 	tl.set([barPaid, barNet], { opacity: 1 }, 15.5);
 	walk(LOW, HIGH, 15.5, 1.2, onCallRight);
-	tl.fromTo(
-		one("spot-high"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3, ease: "power3.out" },
-		16.4,
-	);
 	d.flip(netResult, netResultNext, 16.05);
 	tl.set(netResult, { opacity: 0 }, 16.35);
 	// The call rests a full second after its 16.7 settlement. With the put's
@@ -943,7 +1012,14 @@ function build(context: FilmContext) {
 	// marker stays with its dimmed curve until the put's $90 example takes over.
 	tl.to(marker, { opacity: 0.3, duration: 0.4 }, 17.7);
 	tl.to(
-		[one("call-line"), one("call-tag"), barPaid, barNet, one("spot-high")],
+		[
+			one("call-line"),
+			one("call-tag"),
+			barPaid,
+			barNet,
+			one("spot-low"),
+			one("spot-high"),
+		],
 		{ opacity: 0.3, duration: 0.4 },
 		17.7,
 	);
@@ -984,7 +1060,11 @@ function build(context: FilmContext) {
 	// protected position settle together; labels land with that construction.
 	d.trace(line("shares-line"), 23.0, { duration: 1.2 });
 	d.trace(line("protect-line"), 23.0, { tip, duration: 1.2 });
-	show([one("shares-tag"), one("fall-from"), ...kids("umeter")], 24.2);
+	// Where ALFA starts and where it falls to stand under the axis from here on, as ticks.
+	show(
+		[one("shares-tag"), one("fall-from"), one("fall-to"), ...kids("umeter")],
+		24.2,
+	);
 	// Everything settles by 24.7. The paired markers fade in only after 1.15 s
 	// of quiet, then the same 1.6 s walk constructs the −$715 loss floor.
 	// The premium tag supplies the initial $215; reveal the protected readout
@@ -995,15 +1075,8 @@ function build(context: FilmContext) {
 		25.85,
 	);
 	tl.to(uPut, { opacity: 1, duration: 0.35 }, 26.3);
-	hide(one("fall-from"), 26.3, 0.3, 0);
 	walk(100, FALL_TO, 26.3, 1.6, onFall);
 	show(one("floor-tag"), 27.7);
-	tl.fromTo(
-		one("fall-to"),
-		{ opacity: 0 },
-		{ opacity: 1, duration: 0.3, ease: "power3.out" },
-		27.6,
-	);
 	d.lock(one<SVGGraphicsElement>("lock-floor"), 27.9, {
 		around: uPut,
 		pad: 5,
@@ -1018,6 +1091,7 @@ function build(context: FilmContext) {
 			one("u-put-tag"),
 			sMarker,
 			pMarker,
+			one("fall-from"),
 			one("fall-to"),
 		],
 		31.9,
