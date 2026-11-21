@@ -140,12 +140,22 @@ for (let i = 0; i < times.length; i++) {
 		const settled = [...svg.querySelectorAll("text")].filter(
 			(t) => t.textContent.trim() && alpha(t) > 0.6 && !flying(t),
 		);
+		// A text's lines: each tspan, and the words the text holds outside any tspan (the first
+		// line of a two-line tag, the word before a coloured figure).
+		const linesOf = (t) => {
+			const spans = [...t.querySelectorAll("tspan")];
+			if (!spans.length) return [t.getBoundingClientRect()];
+			const own = [...t.childNodes]
+				.filter((n) => n.nodeType === 3 && n.textContent.trim())
+				.map((n) => {
+					const range = document.createRange();
+					range.selectNodeContents(n);
+					return range.getBoundingClientRect();
+				});
+			return [...spans.map((s) => s.getBoundingClientRect()), ...own];
+		};
 		const boxesOf = (t, k) =>
-			(t.querySelectorAll("tspan").length
-				? [...t.querySelectorAll("tspan")]
-				: [t]
-			)
-				.map((s) => s.getBoundingClientRect())
+			linesOf(t)
 				.filter((q) => q.width > 0)
 				.map((q) => ({
 					left: q.left + 1,
