@@ -999,6 +999,19 @@
 	line-height: 1.1;
 	letter-spacing: -0.03em;
 }
+/* X embeds: Follow sits beside the handle at 20px; padding gives it a 24px target without moving the line. */
+.options-traders-page .react-tweet-theme a[href*="/intent/follow"] {
+	display: inline-block;
+	padding-block: 2px;
+	margin-block: -2px;
+}
+
+/* Links in a post's text also differ from it by an underline, not only by colour. */
+.options-traders-page .react-tweet-theme p a {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
 .trader-link {
 	color: inherit;
 	text-decoration: none;

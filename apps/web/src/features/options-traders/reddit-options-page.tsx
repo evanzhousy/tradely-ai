@@ -14,6 +14,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@tradely/ui/components/table";
+import { cn } from "@tradely/ui/lib/utils";
 import { useMemo, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
@@ -74,10 +75,12 @@ const postTags = (post: RedditPost) => [
 function ExternalText({
 	href,
 	onClick,
+	className,
 	children,
 }: {
 	href: string;
 	onClick: () => void;
+	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
@@ -85,7 +88,7 @@ function ExternalText({
 			href={href}
 			target="_blank"
 			rel="noopener noreferrer"
-			className="trader-link [overflow-wrap:anywhere]"
+			className={cn("trader-link [overflow-wrap:anywhere]", className)}
 			onClick={onClick}
 		>
 			{children}
@@ -203,6 +206,7 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 									<ExternalText
 										href={subredditUrl(post.subreddit)}
 										onClick={openSubreddit(post.subreddit)}
+										className="inline-flex min-h-6 items-center"
 									>
 										<PlatformIcon
 											platform="reddit.com"
@@ -216,6 +220,7 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 									<ExternalText
 										href={userUrl(post.author)}
 										onClick={openAuthor(post.author)}
+										className="inline-flex min-h-6 items-center"
 									>
 										u/{post.author}
 									</ExternalText>
