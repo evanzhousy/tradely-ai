@@ -314,10 +314,9 @@ const utcDate = new Intl.DateTimeFormat("en-US", {
 	year: "numeric",
 	timeZone: "UTC",
 });
-const utcTimestamp = new Intl.DateTimeFormat("en-US", {
-	month: "short",
-	day: "numeric",
-	year: "numeric",
+// Date and time are formatted apart and joined here: one combined format joins them with ", " in
+// Node but " at " in Safari, which broke hydration there.
+const utcTime = new Intl.DateTimeFormat("en-US", {
 	hour: "numeric",
 	minute: "2-digit",
 	timeZone: "UTC",
@@ -337,7 +336,7 @@ export function formatRecordedTime(value: string | null): string {
 	if (!value) return "Not recorded";
 	const formatted = /^\d{4}-\d{2}-\d{2}$/.test(value)
 		? utcDate.format(new Date(`${value}T00:00:00Z`))
-		: utcTimestamp.format(new Date(value));
+		: `${utcDate.format(new Date(value))}, ${utcTime.format(new Date(value))}`;
 	return formatted.replace(/\s/gu, " ");
 }
 
