@@ -49,6 +49,7 @@ const staticPages: SeoPage[] = [
 			"Explore options traders on X, YouTube and Reddit. Start with a top 30 on X, search the full directory and compare their focus and saved posts.",
 		index: true,
 		sitemap: true,
+		image: "/brand/share/options-traders.png",
 	},
 	{
 		// Stays out of search until it has posts and Reddit's data terms have been read.
@@ -64,6 +65,14 @@ const staticPages: SeoPage[] = [
 		title: "Free Options Trading Course for Beginners | Tradely",
 		description:
 			"Learn how options work, what moves their price, and how to choose, size and exit a first trade. Free visual lessons. No experience needed.",
+		index: true,
+		sitemap: true,
+	},
+	{
+		path: "/connector",
+		title: "Tradely in Claude and ChatGPT: Options Lessons in Chat | Tradely",
+		description:
+			"Add Tradely's free connector to Claude, ChatGPT or Claude Code and play animated options lessons in the conversation: calls and puts, payoff, delta, GEX and volatility.",
 		index: true,
 		sitemap: true,
 	},
@@ -140,6 +149,11 @@ const chineseStaticMetadata: Record<
 		title: "免费期权交易入门课程 | Tradely",
 		description:
 			"学习期权如何运作、什么推动价格，以及如何为第一笔交易选择合约、决定张数并计划离场。免费视觉化课程，无需任何经验。",
+	},
+	"/connector": {
+		title: "在 Claude 和 ChatGPT 中学习期权 | Tradely",
+		description:
+			"把 Tradely 的免费连接器添加到 Claude、ChatGPT 或 Claude Code，在对话中播放期权动画课程：看涨与看跌、盈亏、Delta、GEX 与波动率。",
 	},
 	"/pricing": {
 		title: "免费学习与历史购买 | Tradely",
@@ -295,13 +309,59 @@ const escapeXml = (value: string) =>
 		.replace(/"/g, "&quot;")
 		.replace(/'/g, "&apos;");
 
-export function sitemapXml(): string {
+/** `updated` adds dates known only on the server, such as a page's last data sync, by path. */
+export function sitemapXml(updated: Record<string, string> = {}): string {
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexablePages()
-		.map(
-			(page) =>
-				`  <url><loc>${escapeXml(canonicalUrl(page.path))}</loc>${page.updated ? `<lastmod>${escapeXml(page.updated)}</lastmod>` : ""}</url>`,
-		)
+		.map((page) => {
+			const lastmod = updated[page.path] ?? page.updated;
+			return `  <url><loc>${escapeXml(canonicalUrl(page.path))}</loc>${lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : ""}</url>`;
+		})
 		.join("\n")}\n</urlset>\n`;
+}
+
+const plainTitle = (page: SeoPage) => page.title.replace(/ \| Tradely$/, "");
+const llmsLink = (page: SeoPage, note = "") =>
+	`- [${plainTitle(page)}](${canonicalUrl(page.path)}): ${page.description}${note}`;
+
+/** A plain map of the indexable site for AI assistants (llmstxt.org), from the same page list as the sitemap. */
+export function llmsTxt(): string {
+	const pages = indexablePages();
+	const section = (test: (path: string) => boolean) =>
+		pages.filter((page) => test(page.path));
+	const start = section((path) => path === "/" || path.startsWith("/courses/"));
+	const directory = section((path) => path === "/options-traders");
+	const guidePages = section((path) => path.startsWith("/guides"));
+	const lessons = section((path) => path.startsWith("/learn/"));
+	const other = pages.filter(
+		(page) =>
+			![...start, ...directory, ...guidePages, ...lessons].includes(page),
+	);
+	return [
+		"# Tradely",
+		"",
+		"> Tradely (www.tradely.ai) is a free resource hub for options traders: a visual course from a first stock quote to choosing, sizing and exiting a trade, interactive guides, and a directory of options traders to follow on X, YouTube and Reddit. It is educational and not financial advice.",
+		"",
+		"## Start here",
+		...start.map((page) => llmsLink(page)),
+		"",
+		"## Options traders directory",
+		...directory.map((page) =>
+			llmsLink(
+				page,
+				" The Top 30 on X is ranked mainly by whether a trader's posts name something you can check against the tape, such as a strike and expiry, a large print or a level; it does not measure trading returns, and listing is not an endorsement. Follower counts and saved posts are re-read every week.",
+			),
+		),
+		"",
+		"## Guides",
+		...guidePages.map((page) => llmsLink(page)),
+		"",
+		"## Lessons",
+		...lessons.map((page) => llmsLink(page)),
+		"",
+		"## Optional",
+		...other.map((page) => llmsLink(page)),
+		"",
+	].join("\n");
 }
 
 export function robotsTxt(): string {
