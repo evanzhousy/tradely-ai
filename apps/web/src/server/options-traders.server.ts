@@ -1,6 +1,9 @@
+import { getTweet } from "react-tweet/api";
 import { z } from "zod";
 
+import savedEmbeds from "@/features/options-traders/data/x-embeds.json";
 import {
+	FEATURED_VIEW_THRESHOLD,
 	type LiveSnapshot,
 	PLATFORMS,
 	type PostSnapshot,
@@ -572,6 +575,43 @@ async function readRoster(token: string, signal: AbortSignal) {
 	}
 }
 
+const EMBED_TIMEOUT_MS = 4000;
+const saved = (
+	savedEmbeds as unknown as { tweets: NonNullable<LiveSnapshot["embeds"]> }
+).tweets;
+
+/**
+ * X's own data for each featured post, so posts the live feed added since the weekly sync show as
+ * embeds too. Saved and earlier entries are reused; the rest come from X's syndication endpoint on
+ * the server. A post X does not return in time keeps Tradely's card on the page.
+ */
+async function withEmbeds(
+	snapshot: LiveSnapshot,
+	previous: LiveSnapshot["embeds"],
+): Promise<LiveSnapshot> {
+	const featured = snapshot.posts.filter(
+		(post) => post.views !== null && post.views >= FEATURED_VIEW_THRESHOLD,
+	);
+	const entries = await Promise.all(
+		featured.map(async (post) => {
+			const known = previous?.[post.id] ?? saved[post.id];
+			if (known) return [post.id, known] as const;
+			try {
+				const tweet = await getTweet(post.id, {
+					signal: AbortSignal.timeout(EMBED_TIMEOUT_MS),
+				});
+				return tweet?.id_str === post.id ? ([post.id, tweet] as const) : null;
+			} catch {
+				return null;
+			}
+		}),
+	);
+	return {
+		...snapshot,
+		embeds: Object.fromEntries(entries.filter((entry) => entry !== null)),
+	};
+}
+
 export const optionsTradersFeedResponse = createSnapshotFeed<LiveSnapshot>({
 	name: "Options traders",
 	saved: savedSnapshot,
@@ -585,6 +625,9 @@ export const optionsTradersFeedResponse = createSnapshotFeed<LiveSnapshot>({
 			throw new SourceUnavailable("partial", "source_regressed");
 		}
 		const snapshot = buildLiveSnapshot(lastGood, read, attemptedAt, listed);
-		return roster ? { ...snapshot, profiles: roster } : snapshot;
+		return withEmbeds(
+			roster ? { ...snapshot, profiles: roster } : snapshot,
+			lastGood.embeds,
+		);
 	},
 });

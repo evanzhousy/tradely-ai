@@ -14,10 +14,16 @@ import { TradelyBrand } from "./brand";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
 
+// Guides and the trader directory are written in English only; Chinese readers are told so.
 const navigation = [
-	{ to: "/", key: "nav.learn" },
-	{ to: "/guides", key: "nav.guides" },
-	{ to: "/courses/tradingflow-foundations", key: "nav.course" },
+	{ to: "/", key: "nav.learn", englishOnly: false },
+	{ to: "/guides", key: "nav.guides", englishOnly: true },
+	{
+		to: "/courses/tradingflow-foundations",
+		key: "nav.course",
+		englishOnly: false,
+	},
+	{ to: "/options-traders", key: "nav.optionsTraders", englishOnly: true },
 ] as const;
 
 function NavigationLinks({
@@ -42,7 +48,7 @@ function NavigationLinks({
 			activeProps={{ className: "text-foreground" }}
 		>
 			{t(item.key)}
-			{item.to === "/guides" && locale === "zh" ? (
+			{item.englishOnly && locale === "zh" ? (
 				<span className="ms-1 text-xs">（英文）</span>
 			) : null}
 		</AppLink>
@@ -93,8 +99,15 @@ export default function Header() {
 							className="size-4 rounded-[4px]"
 							aria-hidden="true"
 						/>
-						{t("nav.openTradingFlow")}
-						<ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
+						{/* Between lg and xl the four menu links need the room: the logo stands in, the name stays for screen readers. */}
+						<span className="lg:max-xl:sr-only">
+							{t("nav.openTradingFlow")}
+						</span>
+						<ExternalLinkIcon
+							data-icon="inline-end"
+							aria-hidden="true"
+							className="lg:max-xl:hidden"
+						/>
 					</HeroLink>
 					{/* On phones the menu carries the language switcher, so the bar fits at 320px. */}
 					<div className="hidden sm:flex">

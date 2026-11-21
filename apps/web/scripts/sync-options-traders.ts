@@ -10,7 +10,9 @@
  * the last two hours, or if the mirror answers for fewer than half the traders or posts. A number
  * it cannot read keeps its last saved value (or Notion's, for a new trader), and the run
  * says how many those were. A post the mirror cannot read is dropped only when X's own embed
- * endpoint says it is gone. The output is committed: building or running Tradely never needs Notion.
+ * endpoint says it is gone. Last, it saves X's own data for the most-viewed posts, for the page's
+ * embeds (see sync-x-embeds.ts). The output is committed: building or running Tradely never needs
+ * Notion.
  */
 import { execFileSync } from "node:child_process";
 import {
@@ -24,6 +26,8 @@ import {
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+
+import { syncXEmbeds } from "./sync-x-embeds";
 
 const DEFAULT_FEED = "https://www.tradely.ai/api/options-traders";
 const REDDIT_FEED = "https://www.tradely.ai/api/reddit-options";
@@ -446,6 +450,15 @@ try {
 	redditSummary = `Reddit: saved copy left unchanged (${error instanceof Error ? error.message : String(error)}).`;
 }
 
+// The most-viewed posts' X data, for the page's embeds. A failure keeps last week's file.
+let embedsSummary: string;
+try {
+	embedsSummary = await syncXEmbeds();
+} catch (error) {
+	embedsSummary = `X embeds: saved copy left unchanged (${error instanceof Error ? error.message : String(error)}).`;
+}
+const embedsPath = join(dataDirectory, "x-embeds.json");
+
 execFileSync(
 	"pnpm",
 	[
@@ -456,6 +469,7 @@ execFileSync(
 		profilesPath,
 		postsPath,
 		redditPostsPath,
+		embedsPath,
 	],
 	{
 		cwd: webRoot,
@@ -479,6 +493,7 @@ console.log(
 			: "",
 		`Avatars: ${published.size} published, ${newAvatars.length} added, ${avatarsRemoved.length} removed${avatarsRemoved.length ? ` (${avatarsRemoved.join(", ")})` : ""}.`,
 		redditSummary,
+		embedsSummary,
 	]
 		.filter(Boolean)
 		.join("\n"),

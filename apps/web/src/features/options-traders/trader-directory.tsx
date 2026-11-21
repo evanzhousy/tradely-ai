@@ -1,27 +1,23 @@
 import { useLocation } from "@tanstack/react-router";
-import { Button } from "@tradely/ui/components/button";
 import {
 	Empty,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyTitle,
 } from "@tradely/ui/components/empty";
-import { Field, FieldLabel } from "@tradely/ui/components/field";
-import { Input } from "@tradely/ui/components/input";
-import {
-	NativeSelect,
-	NativeSelectOption,
-} from "@tradely/ui/components/native-select";
-import {
-	ToggleGroup,
-	ToggleGroupItem,
-} from "@tradely/ui/components/toggle-group";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAnalytics } from "@/analytics/context";
 import type { OptionsListFilter } from "@/analytics/events";
 
 import { analyticsPlatformFilter } from "./analytics";
+import { PlatformIcon } from "./brand-icons";
+import {
+	ActionButton,
+	FilterSelect,
+	SearchField,
+	ViewSwitch,
+} from "./controls";
 import {
 	availableLanguages,
 	DEFAULT_FILTERS,
@@ -29,6 +25,7 @@ import {
 	FEATURED_VIEW_THRESHOLD,
 	formatCompact,
 	formatMetricsChecked,
+	type LiveSnapshot,
 	languageLabel,
 	PLATFORMS,
 	type PostWithAuthor,
@@ -40,48 +37,20 @@ import {
 import { FeaturedPosts, PostsTable } from "./saved-posts";
 import { TraderRoster } from "./trader-roster";
 
-function SelectField({
-	id,
-	label,
-	value,
-	onChange,
-	children,
-}: {
-	id: string;
-	label: string;
-	value: string;
-	onChange: (value: string) => void;
-	children: React.ReactNode;
-}) {
-	return (
-		<Field>
-			<FieldLabel htmlFor={id}>{label}</FieldLabel>
-			<NativeSelect
-				aria-label={label}
-				id={id}
-				className="w-full"
-				value={value}
-				onChange={(event) => onChange(event.target.value)}
-			>
-				{children}
-			</NativeSelect>
-		</Field>
-	);
-}
-
 /** One set of controls selects the profiles, the saved posts and every count on the page. */
 export function TraderDirectory({
 	profiles,
 	posts,
 	windowLabel,
 	followerRead,
+	embeds,
 }: {
 	profiles: readonly TraderProfile[];
 	posts: readonly PostWithAuthor[];
 	windowLabel: string;
 	followerRead?: string;
+	embeds?: LiveSnapshot["embeds"];
 }) {
-	const id = useId();
 	const { capture } = useAnalytics();
 	const [filters, setFilters] = useState(DEFAULT_FILTERS);
 	const lastSearch = useRef("");
@@ -226,58 +195,50 @@ export function TraderDirectory({
 						/>
 					))}
 					<div data-trader-controls className="flex flex-col gap-5">
-						<ToggleGroup
-							aria-label="Profile collection"
-							variant="outline"
-							value={[filters.view]}
-							onValueChange={(values) => {
-								if (values[0]) {
+						<ViewSwitch
+							label="Profile collection"
+							value={filters.view}
+							options={[
+								{ value: "top", label: "Top 30 on X" },
+								{ value: "all", label: `All ${profiles.length} profiles` },
+							]}
+							onChange={(view) =>
+								changeFilters(
+									{ ...DEFAULT_FILTERS, view, language: filters.language },
+									"view",
+									view,
+								)
+							}
+						/>
+						<div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+							<SearchField
+								label="Search profiles"
+								placeholder="Name, handle or topic"
+								value={filters.query}
+								className="col-span-2 lg:col-span-1"
+								onChange={(query) =>
 									changeFilters(
 										{
-											...DEFAULT_FILTERS,
-											view: values[0] as DirectoryFilters["view"],
-											language: filters.language,
+											...filters,
+											query,
+											// Search, topic and activity reach the whole directory, as platform and
+											// language do: most matches sit outside the Top 30.
+											view: query ? "all" : filters.view,
 										},
-										"view",
-										values[0],
-									);
+										"search",
+									)
 								}
-							}}
-						>
-							<ToggleGroupItem value="top">Top 30 on X</ToggleGroupItem>
-							<ToggleGroupItem value="all">
-								All {profiles.length} profiles
-							</ToggleGroupItem>
-						</ToggleGroup>
-						<div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-							<Field className="col-span-2 lg:col-span-1">
-								<FieldLabel htmlFor={`${id}-search`}>
-									Search profiles
-								</FieldLabel>
-								<Input
-									id={`${id}-search`}
-									className="ph-no-capture placeholder:text-muted-foreground"
-									type="search"
-									placeholder="Name, handle or topic"
-									value={filters.query}
-									onChange={(event) =>
-										changeFilters(
-											{
-												...filters,
-												query: event.target.value,
-												// Search, topic and activity reach the whole directory, as platform and
-												// language do: most matches sit outside the Top 30.
-												view: event.target.value ? "all" : filters.view,
-											},
-											"search",
-										)
-									}
-								/>
-							</Field>
-							<SelectField
-								id={`${id}-language`}
+							/>
+							<FilterSelect
 								label="Content language"
 								value={filters.language}
+								options={[
+									{ value: "all", label: "All languages" },
+									...languages.map((language) => ({
+										value: language,
+										label: languageLabel(language),
+									})),
+								]}
 								onChange={(language) =>
 									changeFilters(
 										{
@@ -291,20 +252,18 @@ export function TraderDirectory({
 										language,
 									)
 								}
-							>
-								<NativeSelectOption value="all">
-									All languages
-								</NativeSelectOption>
-								{languages.map((language) => (
-									<NativeSelectOption key={language} value={language}>
-										{languageLabel(language)}
-									</NativeSelectOption>
-								))}
-							</SelectField>
-							<SelectField
-								id={`${id}-platform`}
+							/>
+							<FilterSelect
 								label="Platform"
 								value={filters.platform}
+								options={[
+									{ value: "all", label: "All platforms" },
+									...PLATFORMS.map((platform) => ({
+										value: platform.id,
+										label: platform.label,
+										icon: <PlatformIcon platform={platform.id} size={13} />,
+									})),
+								]}
 								onChange={(platform) =>
 									changeFilters(
 										{
@@ -316,20 +275,14 @@ export function TraderDirectory({
 										analyticsPlatformFilter(platform),
 									)
 								}
-							>
-								<NativeSelectOption value="all">
-									All platforms
-								</NativeSelectOption>
-								{PLATFORMS.map((platform) => (
-									<NativeSelectOption key={platform.id} value={platform.id}>
-										{platform.label}
-									</NativeSelectOption>
-								))}
-							</SelectField>
-							<SelectField
-								id={`${id}-topic`}
+							/>
+							<FilterSelect
 								label="Topic"
 								value={filters.topic}
+								options={[
+									{ value: "all", label: "All topics" },
+									...topics.map((topic) => ({ value: topic, label: topic })),
+								]}
 								onChange={(topic) =>
 									changeFilters(
 										{
@@ -341,18 +294,17 @@ export function TraderDirectory({
 										topic,
 									)
 								}
-							>
-								<NativeSelectOption value="all">All topics</NativeSelectOption>
-								{topics.map((topic) => (
-									<NativeSelectOption key={topic} value={topic}>
-										{topic}
-									</NativeSelectOption>
-								))}
-							</SelectField>
-							<SelectField
-								id={`${id}-activity`}
+							/>
+							<FilterSelect
 								label="Activity"
 								value={filters.activity}
+								options={[
+									{ value: "all", label: "Any activity" },
+									...activities.map((activity) => ({
+										value: activity,
+										label: activity,
+									})),
+								]}
 								onChange={(activity) =>
 									changeFilters(
 										{
@@ -364,16 +316,7 @@ export function TraderDirectory({
 										activity,
 									)
 								}
-							>
-								<NativeSelectOption value="all">
-									Any activity
-								</NativeSelectOption>
-								{activities.map((activity) => (
-									<NativeSelectOption key={activity} value={activity}>
-										{activity}
-									</NativeSelectOption>
-								))}
-							</SelectField>
+							/>
 						</div>
 						<div className="flex flex-wrap items-center justify-between gap-3">
 							<p
@@ -390,9 +333,9 @@ export function TraderDirectory({
 									? "Top 30 on X, in rank order"
 									: "Full directory, grouped by platform"}
 							</p>
-							<Button variant="outline" size="sm" onClick={clearFilters}>
+							<ActionButton size="sm" onClick={clearFilters}>
 								Clear filters
-							</Button>
+							</ActionButton>
 						</div>
 					</div>
 					<p className="text-muted-foreground text-xs leading-relaxed">
@@ -426,14 +369,13 @@ export function TraderDirectory({
 									Try a different name or topic, or explore all profiles.
 								</EmptyDescription>
 							</EmptyHeader>
-							<Button
-								variant="outline"
+							<ActionButton
 								onClick={() =>
 									changeFilters({ ...DEFAULT_FILTERS, view: "all" }, "clear")
 								}
 							>
 								Show all profiles
-							</Button>
+							</ActionButton>
 						</Empty>
 					) : null}
 				</div>
@@ -469,7 +411,9 @@ export function TraderDirectory({
 					<p className="max-w-3xl text-muted-foreground text-sm leading-relaxed">
 						Posts are shown as written. Some promote the author's paid rooms,
 						newsletters or trade alerts; Tradely has not reviewed or endorsed
-						any of them.
+						any of them. Posts over {formatCompact(FEATURED_VIEW_THRESHOLD)}{" "}
+						views appear as X embeds drawn from X's public post data; their
+						images, and any video you play, load from X.
 					</p>
 				</div>
 				{featured.length > 0 ? (
@@ -477,7 +421,7 @@ export function TraderDirectory({
 						<h3 className="font-semibold text-xl">
 							Over {formatCompact(FEATURED_VIEW_THRESHOLD)} views
 						</h3>
-						<FeaturedPosts posts={featured} />
+						<FeaturedPosts posts={featured} embeds={embeds} />
 					</div>
 				) : null}
 				{selected.posts.length > 0 ? (
@@ -497,9 +441,9 @@ export function TraderDirectory({
 								recorded language without a saved post in that language.
 							</EmptyDescription>
 						</EmptyHeader>
-						<Button variant="outline" onClick={clearFilters}>
+						<ActionButton onClick={clearFilters}>
 							Clear post filters
-						</Button>
+						</ActionButton>
 					</Empty>
 				)}
 			</section>

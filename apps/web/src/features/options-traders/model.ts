@@ -1,3 +1,5 @@
+import type { Tweet } from "react-tweet/api";
+
 /** The public directory: reviewed profiles, the X posts saved for them, and how a reader narrows both. */
 
 export type TraderPlatform = "x.com" | "youtube.com" | "reddit.com";
@@ -84,7 +86,11 @@ export type PostSnapshot = {
 };
 
 /** The feed adds the trader list only when it came from Notion, so a copy of it is never a fallback. */
-export type LiveSnapshot = PostSnapshot & { profiles?: TraderProfile[] };
+/** `embeds` is X's own data for the featured posts, keyed by post id, for the page's X embeds. */
+export type LiveSnapshot = PostSnapshot & {
+	profiles?: TraderProfile[];
+	embeds?: Record<string, Tweet>;
+};
 
 /**
  * Notion's list decides who is listed and how they are described and ranked, so an edit there shows
@@ -308,10 +314,9 @@ const utcDate = new Intl.DateTimeFormat("en-US", {
 	year: "numeric",
 	timeZone: "UTC",
 });
-const utcTimestamp = new Intl.DateTimeFormat("en-US", {
-	month: "short",
-	day: "numeric",
-	year: "numeric",
+// Date and time are formatted apart and joined here: one combined format joins them with ", " in
+// Node but " at " in Safari, which broke hydration there.
+const utcTime = new Intl.DateTimeFormat("en-US", {
 	hour: "numeric",
 	minute: "2-digit",
 	timeZone: "UTC",
@@ -331,7 +336,7 @@ export function formatRecordedTime(value: string | null): string {
 	if (!value) return "Not recorded";
 	const formatted = /^\d{4}-\d{2}-\d{2}$/.test(value)
 		? utcDate.format(new Date(`${value}T00:00:00Z`))
-		: utcTimestamp.format(new Date(value));
+		: `${utcDate.format(new Date(value))}, ${utcTime.format(new Date(value))}`;
 	return formatted.replace(/\s/gu, " ");
 }
 

@@ -7,14 +7,16 @@
 	},
 	"scripts": {
 		"billing:preflight": "tsx scripts/billing-preflight.ts",
-		"build": "vite build && node ./scripts/copy-vercel-react.mjs && mkdir -p dist/server && SERVER_ENTRY=$(find ../.. -path '*/.vercel/output/functions/__server.func/index.mjs' -print -quit) && test -n \"$SERVER_ENTRY\" && SERVER_DIR=$(dirname \"$SERVER_ENTRY\") && cp -R \"$SERVER_DIR\"/. dist/server/",
+		"build": "vite build --config mcp-app/vite.config.ts && vite build && node ./scripts/copy-vercel-react.mjs && mkdir -p dist/server && SERVER_ENTRY=$(find ../.. -path '*/.vercel/output/functions/__server.func/index.mjs' -print -quit) && test -n \"$SERVER_ENTRY\" && SERVER_DIR=$(dirname \"$SERVER_ENTRY\") && cp -R \"$SERVER_DIR\"/. dist/server/",
 		"check-types": "tsr generate && tsc --noEmit",
 		"check-concepts": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/check-concepts.ts",
 		"check-i18n": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/check-i18n.ts",
 		"options-traders:sync": "tsx scripts/sync-options-traders.ts",
+		"options-traders:embeds": "tsx scripts/sync-x-embeds.ts",
 		"serve": "vite preview",
 		"dev": "vite dev",
 		"learning:preview": "vite --config learning-preview/vite.config.ts",
+		"mcp-app:build": "vite build --config mcp-app/vite.config.ts",
 		"coaching:evaluate": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/evaluate-coaching.ts",
 		"coaching:preflight": "node scripts/coaching-preflight.mjs",
 		"coaching:purge": "pnpm --filter @tradely/db coaching:purge",
@@ -23,6 +25,8 @@
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.1111.0",
 		"@aws-sdk/s3-request-presigner": "^3.1111.0",
+		"@modelcontextprotocol/ext-apps": "2.0.4",
+		"@modelcontextprotocol/server": "2.4.0",
 		"@neondatabase/auth": "0.5.0-beta",
 		"@tailwindcss/vite": "^4.3.3",
 		"@tanstack/react-query": "^5.101.4",
@@ -31,6 +35,8 @@
 		"@tradely/db": "workspace:*",
 		"@tradely/env": "workspace:*",
 		"@tradely/ui": "workspace:*",
+		"@ui-sdk/core": "0.1.0-beta.13",
+		"@ui-sdk/react": "0.1.0-beta.13",
 		"ai": "^7.0.93",
 		"dotenv": "catalog:",
 		"drizzle-orm": "^0.45.2",
@@ -44,6 +50,7 @@
 		"react": "catalog:",
 		"react-dom": "catalog:",
 		"react-markdown": "^10.1.0",
+		"react-tweet": "3.3.1",
 		"remark-gfm": "^4.0.1",
 		"stripe": "^22.4.0",
 		"tailwindcss": "catalog:",
@@ -62,6 +69,7 @@
 		"tsx": "4.23.12",
 		"typescript": "catalog:",
 		"vite": "^8.1.5",
+		"vite-plugin-singlefile": "2.3.4",
 		"web-vitals": "^6.0.1"
 	}
 }

@@ -120,7 +120,8 @@ export default defineConfig({
 		// `_libs/@tanstack/react-router+[...].mjs` as `require_react`. CJS shims such
 		// as use-sync-external-store still emit `__require("react")`; copy-vercel-react.mjs
 		// rewrites those onto the inlined instance so the application and Base UI share one dispatcher.
-		noExternal: [/^@tradely\//],
+		// react-tweet imports CSS modules, which Node cannot load, so the server bundles it too.
+		noExternal: [/^@tradely\//, "react-tweet"],
 	},
 	plugins: [
 		tailwindcss(),

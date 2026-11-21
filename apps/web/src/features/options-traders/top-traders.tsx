@@ -3,6 +3,7 @@ import { ArrowUpRightIcon } from "lucide-react";
 import { useAnalytics } from "@/analytics/context";
 
 import { analyticsPlatform } from "./analytics";
+import { PlatformIcon } from "./brand-icons";
 import { formatCompact, formatHandle, type TraderProfile } from "./model";
 import { TraderAvatar } from "./trader-avatar";
 
@@ -37,7 +38,10 @@ export function TopTraders({ traders }: { traders: TraderProfile[] }) {
 								{trader.name}
 							</span>
 							<span className="mt-0.5 block truncate text-muted-foreground text-xs">
-								<span className="font-mono">{formatHandle(trader)}</span>
+								<span className="inline-flex items-center gap-1 align-middle font-mono">
+									<PlatformIcon platform={trader.platform} size={11} />
+									{formatHandle(trader)}
+								</span>
 								{" · "}
 								{trader.focus.join(", ")}
 							</span>

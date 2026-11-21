@@ -1,0 +1,2 @@
+/* The view runs in the assistant's sandbox, which does not load fonts from data: URIs, so the
+   lesson uses the font stack's system fallbacks instead of bundling Inter and JetBrains Mono. */

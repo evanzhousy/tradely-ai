@@ -1,0 +1,418 @@
+{
+	"version": 1,
+	"fetchedAt": "2026-11-21T18:12:45.619Z",
+	"tweets": {
+		"2117606930042556676": {
+			"__typename": "Tweet",
+			"favorite_count": 212,
+			"lang": "en",
+			"created_at": "2026-11-03T13:16:50.000Z",
+			"display_text_range": [0, 276],
+			"entities": {
+				"symbols": [
+					{
+						"indices": [129, 133],
+						"text": "SPX"
+					}
+				]
+			},
+			"id_str": "2117606930042556676",
+			"text": "Most 0DTE scalpers spend 2 years staring at 1-minute candles before realizing this.\n\nAt a live VIX of 21.40, options are pricing $SPX for 101.7 points of movement today. History says 56 of those points tend to print before 11:30 AM.\n\nThey see \"VIX up a quarter point, market a",
+			"user": {
+				"id_str": "1097056216923164672",
+				"name": "Azraël",
+				"screen_name": "azrael_options",
+				"is_blue_verified": true,
+				"profile_image_shape": "Circle",
+				"verified": false,
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2084271896481157121/UH2W4yXf_normal.jpg"
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2117606930042556676"],
+				"editable_until_msecs": "1793715410000",
+				"edits_remaining": "5",
+				"is_edit_eligible": false
+			},
+			"conversation_count": 4,
+			"news_action_type": "conversation",
+			"isEdited": false,
+			"isStaleEdit": false,
+			"note_tweet": {
+				"id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTE3NjA2OTI5NjE4ODc4NDY0"
+			}
+		},
+		"2119831983610274251": {
+			"__typename": "Tweet",
+			"favorite_count": 42,
+			"lang": "en",
+			"possibly_sensitive": false,
+			"created_at": "2026-11-09T16:38:24.000Z",
+			"display_text_range": [0, 74],
+			"entities": {
+				"media": [
+					{
+						"display_url": "pic.x.com/nLttP2HoAk",
+						"expanded_url": "https://x.com/kiantrades/status/2119831983610274251/photo/1",
+						"indices": [75, 98],
+						"url": "https://t.co/nLttP2HoAk"
+					}
+				],
+				"symbols": [
+					{
+						"indices": [23, 28],
+						"text": "CRWV"
+					}
+				]
+			},
+			"id_str": "2119831983610274251",
+			"text": "These are going to 0 \n\n$CRWV 70/80 call debit spread 10k size $1M December https://t.co/nLttP2HoAk",
+			"user": {
+				"id_str": "1414273270111559685",
+				"name": "Flowseidon",
+				"screen_name": "kiantrades",
+				"is_blue_verified": true,
+				"profile_image_shape": "Circle",
+				"verified": false,
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2085123741236031488/GKotSM4g_normal.jpg"
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2119831983610274251"],
+				"editable_until_msecs": "1794245904000",
+				"edits_remaining": "5",
+				"is_edit_eligible": true
+			},
+			"mediaDetails": [
+				{
+					"display_url": "pic.x.com/nLttP2HoAk",
+					"expanded_url": "https://x.com/kiantrades/status/2119831983610274251/photo/1",
+					"ext_media_availability": {
+						"status": "Available"
+					},
+					"indices": [75, 98],
+					"media_url_https": "https://pbs.twimg.com/media/HWsn47VaIAA-pcA.jpg",
+					"original_info": {
+						"focus_rects": [
+							{
+								"h": 663,
+								"w": 1184,
+								"x": 116,
+								"y": 0
+							},
+							{
+								"h": 663,
+								"w": 663,
+								"x": 637,
+								"y": 0
+							},
+							{
+								"h": 663,
+								"w": 582,
+								"x": 718,
+								"y": 0
+							},
+							{
+								"h": 663,
+								"w": 332,
+								"x": 906,
+								"y": 0
+							},
+							{
+								"h": 663,
+								"w": 1300,
+								"x": 0,
+								"y": 0
+							}
+						],
+						"height": 663,
+						"width": 1300
+					},
+					"sizes": {
+						"large": {
+							"h": 663,
+							"resize": "fit",
+							"w": 1300
+						},
+						"medium": {
+							"h": 612,
+							"resize": "fit",
+							"w": 1200
+						},
+						"small": {
+							"h": 347,
+							"resize": "fit",
+							"w": 680
+						},
+						"thumb": {
+							"h": 150,
+							"resize": "crop",
+							"w": 150
+						}
+					},
+					"type": "photo",
+					"url": "https://t.co/nLttP2HoAk"
+				}
+			],
+			"photos": [
+				{
+					"backgroundColor": {
+						"red": 204,
+						"green": 214,
+						"blue": 221
+					},
+					"cropCandidates": [
+						{
+							"h": 663,
+							"w": 1184,
+							"x": 116,
+							"y": 0
+						},
+						{
+							"h": 663,
+							"w": 663,
+							"x": 637,
+							"y": 0
+						},
+						{
+							"h": 663,
+							"w": 582,
+							"x": 718,
+							"y": 0
+						},
+						{
+							"h": 663,
+							"w": 332,
+							"x": 906,
+							"y": 0
+						},
+						{
+							"h": 663,
+							"w": 1300,
+							"x": 0,
+							"y": 0
+						}
+					],
+					"expandedUrl": "https://x.com/kiantrades/status/2119831983610274251/photo/1",
+					"url": "https://pbs.twimg.com/media/HWsn47VaIAA-pcA.jpg",
+					"width": 1300,
+					"height": 663
+				}
+			],
+			"conversation_count": 9,
+			"news_action_type": "conversation",
+			"isEdited": false,
+			"isStaleEdit": false
+		},
+		"2117273443133739468": {
+			"__typename": "Tweet",
+			"favorite_count": 23,
+			"lang": "en",
+			"possibly_sensitive": false,
+			"created_at": "2026-11-02T15:11:40.000Z",
+			"display_text_range": [0, 171],
+			"entities": {
+				"media": [
+					{
+						"display_url": "pic.x.com/RClVTooJDj",
+						"expanded_url": "https://x.com/AndrewHiesinger/status/2117273443133739468/photo/1",
+						"indices": [172, 195],
+						"url": "https://t.co/RClVTooJDj"
+					}
+				],
+				"symbols": [
+					{
+						"indices": [32, 36],
+						"text": "SPX"
+					}
+				]
+			},
+			"id_str": "2117273443133739468",
+			"text": "Nice little range has formed on $SPX between the Gamma Flip level at 7638 and the Put Wall at 7615. I would keep an eye on this range and how price reacts at these levels. https://t.co/RClVTooJDj",
+			"user": {
+				"id_str": "1350935959999799299",
+				"name": "Andrew Hiesinger",
+				"screen_name": "AndrewHiesinger",
+				"is_blue_verified": true,
+				"profile_image_shape": "Circle",
+				"verified": false,
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2102497318960259072/cvgnmNax_normal.jpg",
+				"highlighted_label": {
+					"badge": {
+						"url": "https://pbs.twimg.com/profile_images/1830098139082047489/OooZ63Uz_bigger.jpg"
+					},
+					"description": "Quant Data",
+					"url": {
+						"url": "https://twitter.com/QuantData",
+						"url_type": "DeepLink"
+					},
+					"user_label_display_type": "Badge",
+					"user_label_type": "BusinessLabel"
+				}
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2117273443133739468"],
+				"editable_until_msecs": "1793635900000",
+				"edits_remaining": "5",
+				"is_edit_eligible": true
+			},
+			"mediaDetails": [
+				{
+					"display_url": "pic.x.com/RClVTooJDj",
+					"expanded_url": "https://x.com/AndrewHiesinger/status/2117273443133739468/photo/1",
+					"ext_media_availability": {
+						"status": "Available"
+					},
+					"indices": [172, 195],
+					"media_url_https": "https://pbs.twimg.com/media/HWIQukPXgAAngDl.jpg",
+					"original_info": {
+						"focus_rects": [
+							{
+								"h": 665,
+								"w": 1188,
+								"x": 131,
+								"y": 0
+							},
+							{
+								"h": 665,
+								"w": 665,
+								"x": 654,
+								"y": 0
+							},
+							{
+								"h": 665,
+								"w": 583,
+								"x": 736,
+								"y": 0
+							},
+							{
+								"h": 665,
+								"w": 333,
+								"x": 922,
+								"y": 0
+							},
+							{
+								"h": 665,
+								"w": 1319,
+								"x": 0,
+								"y": 0
+							}
+						],
+						"height": 665,
+						"width": 1319
+					},
+					"sizes": {
+						"large": {
+							"h": 665,
+							"resize": "fit",
+							"w": 1319
+						},
+						"medium": {
+							"h": 605,
+							"resize": "fit",
+							"w": 1200
+						},
+						"small": {
+							"h": 343,
+							"resize": "fit",
+							"w": 680
+						},
+						"thumb": {
+							"h": 150,
+							"resize": "crop",
+							"w": 150
+						}
+					},
+					"type": "photo",
+					"url": "https://t.co/RClVTooJDj"
+				}
+			],
+			"photos": [
+				{
+					"backgroundColor": {
+						"red": 204,
+						"green": 214,
+						"blue": 221
+					},
+					"cropCandidates": [
+						{
+							"h": 665,
+							"w": 1188,
+							"x": 131,
+							"y": 0
+						},
+						{
+							"h": 665,
+							"w": 665,
+							"x": 654,
+							"y": 0
+						},
+						{
+							"h": 665,
+							"w": 583,
+							"x": 736,
+							"y": 0
+						},
+						{
+							"h": 665,
+							"w": 333,
+							"x": 922,
+							"y": 0
+						},
+						{
+							"h": 665,
+							"w": 1319,
+							"x": 0,
+							"y": 0
+						}
+					],
+					"expandedUrl": "https://x.com/AndrewHiesinger/status/2117273443133739468/photo/1",
+					"url": "https://pbs.twimg.com/media/HWIQukPXgAAngDl.jpg",
+					"width": 1319,
+					"height": 665
+				}
+			],
+			"conversation_count": 5,
+			"news_action_type": "conversation",
+			"isEdited": false,
+			"isStaleEdit": false
+		},
+		"2119253983143276647": {
+			"__typename": "Tweet",
+			"favorite_count": 50,
+			"lang": "en",
+			"created_at": "2026-11-08T02:21:38.000Z",
+			"display_text_range": [0, 276],
+			"entities": {
+				"symbols": [
+					{
+						"indices": [28, 32],
+						"text": "SPX"
+					}
+				]
+			},
+			"id_str": "2119253983143276647",
+			"text": "The Monday expected move on $SPX is one division. Most traders will never run it.\n\nMonday's priced day ranks in the 98th percentile of the last 60 sessions. An SPX-size at-the-money straddle costs about 11,879 dollars at the 9:30 AM bell.\n\nThey see \"a 7,377 close and a VIX at",
+			"user": {
+				"id_str": "1097056216923164672",
+				"name": "Azraël",
+				"screen_name": "azrael_options",
+				"is_blue_verified": true,
+				"profile_image_shape": "Circle",
+				"verified": false,
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2084271896481157121/UH2W4yXf_normal.jpg"
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2119253983143276647"],
+				"editable_until_msecs": "1794108098000",
+				"edits_remaining": "5",
+				"is_edit_eligible": false
+			},
+			"conversation_count": 8,
+			"news_action_type": "conversation",
+			"isEdited": false,
+			"isStaleEdit": false,
+			"note_tweet": {
+				"id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTE5MjUzOTgyNzM2NDY1OTIw"
+			}
+		}
+	}
+}

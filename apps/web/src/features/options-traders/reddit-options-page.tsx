@@ -5,11 +5,6 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "@tradely/ui/components/empty";
-import { Field, FieldLabel } from "@tradely/ui/components/field";
-import {
-	NativeSelect,
-	NativeSelectOption,
-} from "@tradely/ui/components/native-select";
 import {
 	Table,
 	TableBody,
@@ -19,11 +14,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@tradely/ui/components/table";
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
 import { EnglishOnlyNote } from "@/components/english-only-note";
 import { PageIntro } from "@/components/page-intro";
+import { PlatformIcon } from "./brand-icons";
+import { FilterSelect } from "./controls";
 import savedPosts from "./data/reddit-posts.json";
 import {
 	formatDate,
@@ -167,6 +164,11 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 										href={subredditUrl(post.subreddit)}
 										onClick={openSubreddit(post.subreddit)}
 									>
+										<PlatformIcon
+											platform="reddit.com"
+											size={12}
+											className="me-1 inline align-[-0.125em]"
+										/>
 										r/{post.subreddit}
 									</ExternalText>{" "}
 									·{" "}
@@ -202,6 +204,11 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 										href={subredditUrl(post.subreddit)}
 										onClick={openSubreddit(post.subreddit)}
 									>
+										<PlatformIcon
+											platform="reddit.com"
+											size={12}
+											className="me-1 inline align-[-0.125em]"
+										/>
 										r/{post.subreddit}
 									</ExternalText>
 								</span>
@@ -240,52 +247,36 @@ function PostControls({
 	setFilters: (filters: RedditFilters, filter: "subreddit" | "sort") => void;
 	subreddits: readonly { name: string; count: number }[];
 }) {
-	const id = useId();
 	return (
 		<div data-trader-controls className="grid gap-4 sm:grid-cols-2 lg:w-2/3">
-			<Field>
-				<FieldLabel htmlFor={`${id}-subreddit`}>Subreddit</FieldLabel>
-				<NativeSelect
-					id={`${id}-subreddit`}
-					aria-label="Subreddit"
-					className="w-full"
-					value={filters.subreddit}
-					onChange={(event) =>
-						setFilters(
-							{ ...filters, subreddit: event.target.value },
-							"subreddit",
-						)
-					}
-				>
-					<NativeSelectOption value="all">All subreddits</NativeSelectOption>
-					{subreddits.map(({ name, count }) => (
-						<NativeSelectOption key={name} value={name}>
-							r/{name} ({count})
-						</NativeSelectOption>
-					))}
-				</NativeSelect>
-			</Field>
-			<Field>
-				<FieldLabel htmlFor={`${id}-sort`}>Sort by</FieldLabel>
-				<NativeSelect
-					id={`${id}-sort`}
-					aria-label="Sort by"
-					className="w-full"
-					value={filters.sort}
-					onChange={(event) =>
-						setFilters(
-							{
-								...filters,
-								sort: event.target.value === "newest" ? "newest" : "score",
-							},
-							"sort",
-						)
-					}
-				>
-					<NativeSelectOption value="score">Most upvoted</NativeSelectOption>
-					<NativeSelectOption value="newest">Newest</NativeSelectOption>
-				</NativeSelect>
-			</Field>
+			<FilterSelect
+				label="Subreddit"
+				value={filters.subreddit}
+				options={[
+					{ value: "all", label: "All subreddits" },
+					...subreddits.map(({ name, count }) => ({
+						value: name,
+						label: `r/${name} (${count})`,
+					})),
+				]}
+				onChange={(subreddit) =>
+					setFilters({ ...filters, subreddit }, "subreddit")
+				}
+			/>
+			<FilterSelect
+				label="Sort by"
+				value={filters.sort}
+				options={[
+					{ value: "score", label: "Most upvoted" },
+					{ value: "newest", label: "Newest" },
+				]}
+				onChange={(sort) =>
+					setFilters(
+						{ ...filters, sort: sort === "newest" ? "newest" : "score" },
+						"sort",
+					)
+				}
+			/>
 		</div>
 	);
 }
@@ -391,6 +382,11 @@ export function RedditOptionsPage() {
 												})
 											}
 										>
+											<PlatformIcon
+												platform="reddit.com"
+												size={12}
+												className="me-1 inline align-[-0.125em]"
+											/>
 											r/{name}
 										</ExternalText>{" "}
 										<span className="text-muted-foreground">
