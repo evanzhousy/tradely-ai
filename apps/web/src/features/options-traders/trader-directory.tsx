@@ -408,7 +408,9 @@ export function TraderDirectory({
 					<p className="max-w-3xl text-muted-foreground text-sm leading-relaxed">
 						Posts are shown as written. Some promote the author's paid rooms,
 						newsletters or trade alerts; Tradely has not reviewed or endorsed
-						any of them.
+						any of them. Posts over {formatCompact(FEATURED_VIEW_THRESHOLD)}{" "}
+						views appear as X embeds drawn from X's public post data, saved each
+						week; their images load from X.
 					</p>
 				</div>
 				{featured.length > 0 ? (

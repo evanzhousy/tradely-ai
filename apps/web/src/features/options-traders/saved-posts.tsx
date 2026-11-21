@@ -20,6 +20,7 @@ import {
 	type PostWithAuthor,
 } from "./model";
 import { TraderAvatar } from "./trader-avatar";
+import { savedXEmbed, XPostEmbed } from "./x-embed";
 
 const textLanguage = (language: string) =>
 	language === "und" ? undefined : language;
@@ -30,62 +31,76 @@ const postTags = (post: PostWithAuthor) => [
 	...(post.structure && post.structure !== "Other" ? [post.structure] : []),
 ];
 
-/** A saved copy of the post: X's own embed would add its script and cookies to this page. */
+/**
+ * Each post as an X-style embed drawn from data the weekly sync saved, or as Tradely's saved card
+ * when there is none, as for a post the live feed added since. X's own embed is not used: it would
+ * add X's script and cookies to this page.
+ */
 export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
 	const { capture } = useAnalytics();
 	return (
-		<ul className="grid gap-4 md:grid-cols-2">
-			{posts.map((post, index) => (
-				<li
-					key={post.id}
-					className="trader-surface flex min-w-0 flex-col gap-3 p-6"
-				>
-					<div className="flex min-w-0 items-center gap-3">
-						<TraderAvatar profile={post.author} size={40} />
-						<div className="min-w-0">
-							<p className="truncate font-semibold leading-tight">
-								{post.author.name}
-							</p>
-							<p className="truncate font-mono text-muted-foreground text-xs">
-								{formatHandle(post.author)} · {formatDate(post.postedAt)}
-							</p>
-						</div>
-					</div>
-					<p
-						lang={textLanguage(post.language)}
-						dir="auto"
-						className="line-clamp-[10] whitespace-pre-line text-sm leading-relaxed [overflow-wrap:anywhere]"
+		<ul className="grid items-start gap-4 md:grid-cols-2">
+			{posts.map((post, index) => {
+				const tweet = savedXEmbed(post.id);
+				if (tweet) {
+					return (
+						<li key={post.id} className="min-w-0">
+							<XPostEmbed post={post} tweet={tweet} position={index + 1} />
+						</li>
+					);
+				}
+				return (
+					<li
+						key={post.id}
+						className="trader-surface flex min-w-0 flex-col gap-3 p-6"
 					>
-						{post.text}
-					</p>
-					<div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-2">
-						<p className="font-mono text-muted-foreground text-xs tabular-nums">
-							{formatMetric(post.views)} views · {formatMetric(post.likes)}{" "}
-							likes · {formatMetric(post.reposts)} reposts
-						</p>
-						<a
-							href={post.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="trader-link inline-flex items-center gap-1 font-medium text-sm"
-							onClick={() =>
-								capture("options_post_opened", {
-									surface: "options_traders",
-									placement: "featured",
-									platform: "x",
-									post_id: post.id,
-									position: index + 1,
-									handle: post.author.handle,
-								})
-							}
+						<div className="flex min-w-0 items-center gap-3">
+							<TraderAvatar profile={post.author} size={40} />
+							<div className="min-w-0">
+								<p className="truncate font-semibold leading-tight">
+									{post.author.name}
+								</p>
+								<p className="truncate font-mono text-muted-foreground text-xs">
+									{formatHandle(post.author)} · {formatDate(post.postedAt)}
+								</p>
+							</div>
+						</div>
+						<p
+							lang={textLanguage(post.language)}
+							dir="auto"
+							className="line-clamp-[10] whitespace-pre-line text-sm leading-relaxed [overflow-wrap:anywhere]"
 						>
-							<PlatformIcon platform="x.com" size={12} />
-							Open on X
-							<ArrowUpRightIcon aria-hidden="true" size={14} />
-						</a>
-					</div>
-				</li>
-			))}
+							{post.text}
+						</p>
+						<div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-2">
+							<p className="font-mono text-muted-foreground text-xs tabular-nums">
+								{formatMetric(post.views)} views · {formatMetric(post.likes)}{" "}
+								likes · {formatMetric(post.reposts)} reposts
+							</p>
+							<a
+								href={post.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="trader-link inline-flex items-center gap-1 font-medium text-sm"
+								onClick={() =>
+									capture("options_post_opened", {
+										surface: "options_traders",
+										placement: "featured",
+										platform: "x",
+										post_id: post.id,
+										position: index + 1,
+										handle: post.author.handle,
+									})
+								}
+							>
+								<PlatformIcon platform="x.com" size={12} />
+								Open on X
+								<ArrowUpRightIcon aria-hidden="true" size={14} />
+							</a>
+						</div>
+					</li>
+				);
+			})}
 		</ul>
 	);
 }

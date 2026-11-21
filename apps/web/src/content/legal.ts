@@ -28,7 +28,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Privacy policy",
 			intro:
 				"This policy explains how Tradely collects, uses, and protects information when you use the Tradely learning hub at tradely.ai.",
-			lastUpdated: "Last updated: November 19, 2026",
+			lastUpdated: "Last updated: November 21, 2026",
 			sections: [
 				{
 					heading: "Information we collect",
@@ -36,6 +36,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 						"When you create or use a Tradely account, we receive the identity and contact details provided through Neon Auth, such as your name, email address, and account identifiers.",
 						"We record learning activity needed to operate the hub, including lesson completion, video resume position, content version, and timestamps. If you allow analytics, we also receive limited page-usage, learning-milestone, browser-performance, and error-diagnostic information through PostHog and Google Analytics 4. PostHog additionally records masked session replays and click, movement, and scroll heatmaps to help us understand usability. Replay text and inputs are masked; protected lesson content, images, video, canvas, and embedded frames are blocked. Recordings are retained for 30 days. PostHog may process the client IP for coarse location and bot detection, but the Tradely project discards it instead of storing it with events. Google Analytics may process device and approximate location data for aggregated reporting. Tradely removes query strings from its custom event payloads, and Google Analytics redacts email addresses plus selected sensitive query keys. Tradely does not send lesson text, payment details, or your email address to either analytics provider.",
 						"Until you choose Allow analytics or Use necessary only, Tradely counts page views anonymously through PostHog, without cookies or browser storage. Each count records the page address without query strings, its title, the referring page, and your browser, operating system, device type, screen size, language and time zone. PostHog tells visitors apart for one day with a hash of the request's IP address and browser details and a secret that changes daily; the Tradely project does not keep the IP address, and these counts are not linked to you or your account. The count ends when you make either choice and does not run if your browser sends Do Not Track. The page that is open when you choose may already have been counted. Google Analytics receives nothing before you allow analytics.",
+						"On the options-traders page, the most-viewed X posts are shown as embeds that Tradely draws from X's public post data. Tradely loads no X script and sets no X cookies for them, but the images in those posts load from X's image servers, which receive your IP address and browser details as any site serving an image does. Links in a post open on X.",
 					],
 				},
 				{
@@ -210,7 +211,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "隐私政策",
 			intro:
 				"本政策说明你使用 tradely.ai 学习中心时，Tradely 如何收集、使用和保护信息。",
-			lastUpdated: "最后更新：2026 年 11 月 19 日",
+			lastUpdated: "最后更新：2026 年 11 月 21 日",
 			sections: [
 				{
 					heading: "我们收集的信息",
@@ -218,6 +219,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 						"创建或使用 Tradely 账户时，我们会从 Neon Auth 接收你提交的身份和联系方式，例如姓名、邮箱地址和账户标识符。",
 						"为提供学习中心功能，我们会记录课程完成状态、视频播放位置、内容版本和时间戳。如果你允许分析，我们还会通过 PostHog 和 Google Analytics 4 接收有限的页面使用、学习里程碑、浏览器性能和错误诊断信息。PostHog 还会采集经过遮盖的会话回放以及点击、鼠标移动和滚动热图，以改进易用性。回放文字和输入内容会被遮盖；受保护的课程内容、图片、视频、画布和嵌入页面会被屏蔽。回放保留 30 天。PostHog 可能临时处理客户端 IP 用于粗略地区和机器人识别，但 Tradely 项目会丢弃该 IP，不把它与事件一起保存。Google Analytics 可能处理设备和大致位置数据用于汇总报告。Tradely 会从自定义事件载荷中移除查询参数，Google Analytics 会遮盖邮箱地址和选定的敏感查询键。Tradely 不会向任一分析服务发送课程正文、付款信息或邮箱地址。",
 						"在你选择“允许分析”或“仅使用必要功能”之前，Tradely 会通过 PostHog 匿名统计页面浏览，不使用 Cookie 或浏览器存储。每次统计记录不含查询参数的页面地址、页面标题、来源页面，以及你的浏览器、操作系统、设备类型、屏幕尺寸、语言和时区。PostHog 使用请求的 IP 地址和浏览器信息加上每日更换的密钥生成哈希，只在一天内区分访客；Tradely 项目不保留 IP 地址，这些统计也不会与你或你的账户关联。你做出任一选择后，统计即停止；如果浏览器发送“请勿跟踪”（Do Not Track）信号，则不会统计。你做出选择时所在的页面可能已被统计。在你允许分析前，Google Analytics 不会收到任何数据。",
+						"在期权交易者页面，浏览量最高的 X 帖子以嵌入形式展示，由 Tradely 根据 X 的公开帖子数据绘制。Tradely 不会为此加载 X 的脚本或设置 X 的 Cookie，但这些帖子中的图片从 X 的图片服务器加载，该服务器会像任何提供图片的网站一样收到你的 IP 地址和浏览器信息。帖子中的链接会在 X 上打开。",
 					],
 				},
 				{

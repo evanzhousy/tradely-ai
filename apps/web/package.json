@@ -12,6 +12,7 @@
 		"check-concepts": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/check-concepts.ts",
 		"check-i18n": "tsx --tsconfig scripts/coaching-tsconfig.json scripts/check-i18n.ts",
 		"options-traders:sync": "tsx scripts/sync-options-traders.ts",
+		"options-traders:embeds": "tsx scripts/sync-x-embeds.ts",
 		"serve": "vite preview",
 		"dev": "vite dev",
 		"learning:preview": "vite --config learning-preview/vite.config.ts",
