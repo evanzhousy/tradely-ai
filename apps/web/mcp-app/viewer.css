@@ -8,6 +8,26 @@
 @source "../../../packages/ui/src";
 @source "./";
 
+/* Inter isn't bundled (see no-fonts.css), so a Latin system face comes before the kit's CJK
+   fallbacks; otherwise English would set in PingFang or YaHei, wider than the Inter the films
+   were laid out in. */
+@theme inline {
+	--font-sans:
+		"Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto,
+		"Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB",
+		"Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
+	--font-mono:
+		"JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas,
+		"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+		"Noto Sans SC", monospace;
+}
+
+/* System faces (SF, Segoe UI Variable) widen small sizes by optical sizing. The films scale a
+   measured title down into the corner tag and expect width to follow size, as Inter's does. */
+html {
+	font-optical-sizing: none;
+}
+
 body {
 	margin: 0;
 }

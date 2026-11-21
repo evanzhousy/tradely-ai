@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
 	RESOURCE_MIME_TYPE,
 	registerAppResource,
@@ -21,7 +22,8 @@ import viewerHtml from "../../mcp-app/dist/index.html?raw";
  * conversation through MCP Apps. Hosts without MCP Apps get the same lesson as text and a link.
  */
 
-const VIEWER_URI = "ui://tradely/lesson-viewer.html";
+/** Hosts cache a view by its URI, so a changed view gets a new one. */
+const VIEWER_URI = `ui://tradely/lesson-viewer-${createHash("sha256").update(viewerHtml).digest("hex").slice(0, 12)}.html`;
 const COURSE_URL = "https://www.tradely.ai/courses/tradingflow-foundations";
 const NOT_ADVICE = {
 	en: "Educational only, not investment advice.",
@@ -116,8 +118,10 @@ export function createTradelyMcpServer() {
 			annotations: readOnly,
 			_meta: { ui: { resourceUri: VIEWER_URI } },
 		},
-		async ({ lesson, locale = "en" }) => {
-			logToolCall("show_lesson", { lesson, locale });
+		async ({ lesson, locale: requested }) => {
+			// Without a requested language the view follows the host's; the text falls back to English.
+			const locale = requested ?? "en";
+			logToolCall("show_lesson", { lesson, locale: requested ?? "host" });
 			const slug: McpLessonSlug = lesson;
 			const title = titleOf(slug, locale);
 			const url = lessonUrl(slug);
@@ -135,7 +139,12 @@ export function createTradelyMcpServer() {
 						].join("\n"),
 					},
 				],
-				structuredContent: { lesson: slug, locale, title, url },
+				structuredContent: {
+					lesson: slug,
+					...(requested ? { locale: requested } : {}),
+					title,
+					url,
+				},
 			};
 		},
 	);
