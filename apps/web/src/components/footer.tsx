@@ -140,7 +140,7 @@ export function Footer() {
 				<a
 					href={CONTENT_LICENSE_URL}
 					target="_blank"
-					rel="license noopener noreferrer"
+					rel="noopener noreferrer"
 					className={cn(footerLink, "text-xs")}
 				>
 					{t("footer.contentLicense")}

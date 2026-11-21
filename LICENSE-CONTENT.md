@@ -16,7 +16,7 @@ repository, including when it is written inside a source file:
 - lesson, unit, guide and glossary text, and concept definitions;
 - film scripts, storyboards, on-screen text and the worked numbers in them;
 - questions, cases, scenarios, answers and feedback;
-- rendered films, posters and captions of Tradely lessons;
+- Tradely's own lesson films and companion videos, and their captions;
 - translations of any of these.
 
 Most of it lives in `apps/web/src/content/`, `apps/web/src/features/learning/`,
@@ -48,6 +48,7 @@ They stay with their owners.
 - **Tradely's name, owl mascot and logos**, including the files in
   `apps/web/public/brand/` and the 3D owl in `apps/web/public/models/tradely-avatar/`.
 - **TradingFlow's name, logo, screenshots and videos**: `apps/web/public/partners/`,
+  the TradingFlow-branded lesson posters and captions in
   `apps/web/public/media/tradingflow/`, `videos/tradingflow-academy/`,
   `videos/tradingflow-concept-cards/`, `videos/market-recap/` and
   `videos/gex-screener-paper-collage/`.
