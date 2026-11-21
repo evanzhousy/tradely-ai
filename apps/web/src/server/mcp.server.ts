@@ -75,7 +75,7 @@ export function createTradelyMcpServer() {
 		{
 			title: "List Tradely lessons",
 			description:
-				"List every lesson in Tradely's free options course, in order, with its title, a one-line summary and its link. Lessons marked [interactive] can be played in the conversation with show_lesson.",
+				"List every lesson in Tradely's free options course, in order, with its title, a one-line summary and its link. Lessons marked [interactive] also have an animated version with a practice task.",
 			inputSchema: z.object({ locale: localeSchema }),
 			annotations: { ...readOnly, title: "List Tradely lessons" },
 		},
