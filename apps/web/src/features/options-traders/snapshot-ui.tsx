@@ -1,5 +1,4 @@
 import { buttonVariants } from "@tradely/ui/components/button";
-import { Link as HeroLink } from "@tradely/ui/components/link";
 import { ExternalLinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -129,7 +128,7 @@ export function OpenOptionTrades({
 }) {
 	const { capture } = useAnalytics();
 	return (
-		<HeroLink
+		<a
 			href={`https://app.tradingflow.com/app/option-trades/live?utm_source=tradely&utm_medium=${surface}`}
 			target="_blank"
 			rel="noopener noreferrer"
@@ -140,6 +139,6 @@ export function OpenOptionTrades({
 		>
 			Open Option Trades
 			<ExternalLinkIcon aria-hidden="true" size={14} className="ms-1.5" />
-		</HeroLink>
+		</a>
 	);
 }
