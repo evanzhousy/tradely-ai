@@ -24,6 +24,8 @@
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.1111.0",
 		"@aws-sdk/s3-request-presigner": "^3.1111.0",
+		"@modelcontextprotocol/ext-apps": "2.0.4",
+		"@modelcontextprotocol/server": "2.4.0",
 		"@neondatabase/auth": "0.5.0-beta",
 		"@tailwindcss/vite": "^4.3.3",
 		"@tanstack/react-query": "^5.101.4",
@@ -66,6 +68,7 @@
 		"tsx": "4.23.12",
 		"typescript": "catalog:",
 		"vite": "^8.1.5",
+		"vite-plugin-singlefile": "2.3.4",
 		"web-vitals": "^6.0.1"
 	}
 }

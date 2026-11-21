@@ -1,0 +1,13 @@
+@import "@tradely/ui/globals.css";
+@import "../src/styles/pages.css";
+@import "../src/styles/walkthrough.css";
+
+/* Built from this folder, Tailwind doesn't reach the kit's app-wide sources; name what the view renders. */
+@source "../src/features/learning";
+@source "../src/content";
+@source "../../../packages/ui/src";
+@source "./";
+
+body {
+	margin: 0;
+}
