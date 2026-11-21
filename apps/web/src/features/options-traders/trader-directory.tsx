@@ -11,6 +11,7 @@ import { useAnalytics } from "@/analytics/context";
 import type { OptionsListFilter } from "@/analytics/events";
 
 import { analyticsPlatformFilter } from "./analytics";
+import { PlatformIcon } from "./brand-icons";
 import {
 	ActionButton,
 	FilterSelect,
@@ -257,6 +258,7 @@ export function TraderDirectory({
 									...PLATFORMS.map((platform) => ({
 										value: platform.id,
 										label: platform.label,
+										icon: <PlatformIcon platform={platform.id} size={13} />,
 									})),
 								]}
 								onChange={(platform) =>

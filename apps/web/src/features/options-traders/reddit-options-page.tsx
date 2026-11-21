@@ -19,6 +19,7 @@ import { useAnalytics } from "@/analytics/context";
 import { AppLink } from "@/components/app-link";
 import { EnglishOnlyNote } from "@/components/english-only-note";
 import { PageIntro } from "@/components/page-intro";
+import { PlatformIcon } from "./brand-icons";
 import { FilterSelect } from "./controls";
 import savedPosts from "./data/reddit-posts.json";
 import {
@@ -163,6 +164,11 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 										href={subredditUrl(post.subreddit)}
 										onClick={openSubreddit(post.subreddit)}
 									>
+										<PlatformIcon
+											platform="reddit.com"
+											size={12}
+											className="me-1 inline align-[-0.125em]"
+										/>
 										r/{post.subreddit}
 									</ExternalText>{" "}
 									·{" "}
@@ -198,6 +204,11 @@ function RedditPostsTable({ posts }: { posts: readonly RedditPost[] }) {
 										href={subredditUrl(post.subreddit)}
 										onClick={openSubreddit(post.subreddit)}
 									>
+										<PlatformIcon
+											platform="reddit.com"
+											size={12}
+											className="me-1 inline align-[-0.125em]"
+										/>
 										r/{post.subreddit}
 									</ExternalText>
 								</span>
@@ -371,6 +382,11 @@ export function RedditOptionsPage() {
 												})
 											}
 										>
+											<PlatformIcon
+												platform="reddit.com"
+												size={12}
+												className="me-1 inline align-[-0.125em]"
+											/>
 											r/{name}
 										</ExternalText>{" "}
 										<span className="text-muted-foreground">

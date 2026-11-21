@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { AppLink } from "@/components/app-link";
 import { EnglishOnlyNote } from "@/components/english-only-note";
 import { PageIntro } from "@/components/page-intro";
+import { PlatformIcon } from "./brand-icons";
 import {
 	attachAuthors,
 	formatDate,
@@ -162,6 +163,7 @@ export function OptionsTradersPage() {
 					...platformCounts.map((platform) => ({
 						href: `#${platform.anchor}`,
 						label: `${platform.label} · ${platform.count}`,
+						platform: platform.id,
 					})),
 					{ href: "#most-viewed-posts", label: "Most-viewed posts" },
 					{ href: "#method", label: "Method" },
@@ -171,6 +173,9 @@ export function OptionsTradersPage() {
 						href={link.href}
 						className={buttonVariants({ variant: "outline", size: "sm" })}
 					>
+						{"platform" in link ? (
+							<PlatformIcon platform={link.platform} size={13} />
+						) : null}
 						{link.label}
 					</a>
 				))}

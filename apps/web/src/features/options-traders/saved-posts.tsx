@@ -10,7 +10,7 @@ import {
 import { ArrowUpRightIcon } from "lucide-react";
 
 import { useAnalytics } from "@/analytics/context";
-
+import { PlatformIcon } from "./brand-icons";
 import {
 	formatDate,
 	formatHandle,
@@ -79,6 +79,7 @@ export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
 								})
 							}
 						>
+							<PlatformIcon platform="x.com" size={12} />
 							Open on X
 							<ArrowUpRightIcon aria-hidden="true" size={14} />
 						</a>
@@ -155,6 +156,7 @@ export function PostsTable({ posts }: { posts: readonly PostWithAuthor[] }) {
 											})
 										}
 									>
+										<PlatformIcon platform="x.com" size={12} />
 										Open on X
 										<ArrowUpRightIcon aria-hidden="true" size={12} />
 										<span className="sr-only">

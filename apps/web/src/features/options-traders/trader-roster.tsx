@@ -5,6 +5,7 @@ import { useAnalytics } from "@/analytics/context";
 import type { OptionsTradersSurface } from "@/analytics/events";
 
 import { analyticsPlatform } from "./analytics";
+import { PlatformIcon } from "./brand-icons";
 import {
 	formatCompact,
 	formatDate,
@@ -66,7 +67,8 @@ function TraderCard({
 						{String(profile.rank).padStart(2, "0")}
 					</span>
 				) : (
-					<span className="font-mono text-muted-foreground text-xs">
+					<span className="inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs">
+						<PlatformIcon platform={profile.platform} size={12} />
 						{platform.label}
 					</span>
 				)}
@@ -104,6 +106,7 @@ function TraderCard({
 							})
 						}
 					>
+						<PlatformIcon platform={profile.platform} size={13} />
 						{formatHandle(profile)}
 						<ArrowUpRightIcon aria-hidden="true" size={14} />
 						<span className="sr-only">(opens {platform.label} profile)</span>
