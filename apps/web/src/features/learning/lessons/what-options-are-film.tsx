@@ -81,6 +81,23 @@ const FALL_TO = 80;
 /** The shares Ben must deliver, drawn as squares: this many to a row. */
 const LOT_COLUMNS = 10;
 const LOT = 100;
+/**
+ * Rough rendered width of the films' sans at a size, to centre a row on its text. The kit's
+ * `textWidth` is the mono measure, a quarter wider for a Latin sentence.
+ */
+const sansWidth = (text: string, size: number) => {
+	let em = 0;
+	for (const char of text)
+		em +=
+			(char.codePointAt(0) ?? 0) > 0x2e80
+				? 1
+				: /[\d$×]/.test(char)
+					? 0.6
+					: /[ :.,]/.test(char)
+						? 0.27
+						: 0.5;
+	return em * size;
+};
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -235,7 +252,35 @@ function Scene({
 	const lotSide = LOT_COLUMNS * L.lotCell;
 	const unitY = H * 0.3 + T.big * 1.05 + lotSide / 2 + T.body * 1.9;
 	const unitX =
-		W / 2 - (lotSide + 12 + textWidth(pick(copy.unit, locale), T.body)) / 2;
+		W / 2 - (lotSide + 12 + sansWidth(pick(copy.unit, locale), T.body)) / 2;
+	// On a stage narrower than a phone's (an assistant's lesson view), two things give way so
+	// nothing meets the frame's edge or a line. The uses meter's second column moves left
+	// until its widest tag keeps a 12 px side gutter.
+	const tagRoom = Math.max(
+		...[copy.withPut, copy.protectPremium].map(
+			(tag) =>
+				textWidth(t(tag).toUpperCase(), T.small) +
+				t(tag).length * T.small * 0.12,
+		),
+	);
+	const usesCol = narrow
+		? Math.min(L.meterCol, W - margin - tagRoom - 12)
+		: L.meterCol;
+	// And the premium's label backs away from the put line, which comes down through the
+	// corner the label sits in.
+	const putAtLabel = L.x(
+		put100.strike -
+			(PREMIUM + ((T.small + 10) * VALUE_TOP) / (L.bottom - L.top)) / 100,
+	);
+	const premiumX = narrow
+		? Math.max(
+				14,
+				Math.min(
+					L.left + 4,
+					putAtLabel - 10 - textWidth(t(copy.premium), T.small),
+				),
+			)
+		: L.right - 4;
 	const headline = (name: string, text: Copy, short: Copy) => (
 		<Lines
 			name={name}
@@ -358,7 +403,7 @@ function Scene({
 							data-f="premium-label"
 							// At the line's right end; on a phone at its left, where the value bar
 							// under the $110 marker does not reach.
-							x={narrow ? L.left + 4 : L.right - 4}
+							x={premiumX}
 							y={L.y(PREMIUM) - 8}
 							textAnchor={narrow ? "start" : "end"}
 							className="wt-small wt-halo"
@@ -580,39 +625,43 @@ function Scene({
 				] as const
 			).map(([group, cells]) => (
 				<g key={group} data-f={group}>
-					{cells.map(([name, tag, start, className], i) => (
-						<g key={name}>
-							<Word
-								name={`${name}-tag`}
-								x={margin + i * L.meterCol}
-								y={L.meterY - (group === "umeter" ? T.small * 1.5 : 0)}
-								size={T.small}
-								anchor="start"
-								className="wt-film-tag"
-							>
-								{t(tag).toUpperCase()}
-								{group === "umeter" && (
-									<tspan x={margin + i * L.meterCol} dy={T.small * 1.5}>
-										{t(
-											name === "u-shares"
-												? copy.sharesEntry
-												: copy.protectPremium,
-										).toUpperCase()}
-									</tspan>
-								)}
-							</Word>
-							<Word
-								name={name}
-								x={margin + i * L.meterCol}
-								y={L.meterNum + (name === "u-put" ? T.head * 1.55 : 0)}
-								size={T.head * (name === "u-put" ? 1.6 : 1.15)}
-								anchor="start"
-								className={className}
-							>
-								{start}
-							</Word>
-						</g>
-					))}
+					{cells.map(([name, tag, start, className], i) => {
+						const column =
+							margin + i * (group === "umeter" ? usesCol : L.meterCol);
+						return (
+							<g key={name}>
+								<Word
+									name={`${name}-tag`}
+									x={column}
+									y={L.meterY - (group === "umeter" ? T.small * 1.5 : 0)}
+									size={T.small}
+									anchor="start"
+									className="wt-film-tag"
+								>
+									{t(tag).toUpperCase()}
+									{group === "umeter" && (
+										<tspan x={column} dy={T.small * 1.5}>
+											{t(
+												name === "u-shares"
+													? copy.sharesEntry
+													: copy.protectPremium,
+											).toUpperCase()}
+										</tspan>
+									)}
+								</Word>
+								<Word
+									name={name}
+									x={column}
+									y={L.meterNum + (name === "u-put" ? T.head * 1.55 : 0)}
+									size={T.head * (name === "u-put" ? 1.6 : 1.15)}
+									anchor="start"
+									className={className}
+								>
+									{start}
+								</Word>
+							</g>
+						);
+					})}
 				</g>
 			))}
 			<Word
