@@ -46,6 +46,13 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					],
 				},
 				{
+					heading: "Tradely connector for AI assistants",
+					paragraphs: [
+						"Tradely offers a connector for AI assistants such as Claude and ChatGPT at https://www.tradely.ai/mcp. It needs no sign-in. When an assistant uses it, Tradely receives only the request: which lesson or list was asked for and, if the assistant gives one, the language. Tradely does not receive your name, account, messages or conversation, and does not link connector requests to a Tradely account.",
+						"Our hosting provider, Vercel, keeps request logs, including the time, the lesson asked for and the IP address of the server or device that sent the request (usually the assistant's servers), for a limited time to run and secure the service. A lesson shown in an assistant runs inside that assistant's sandbox, loads nothing from tradely.ai and records no analytics. If you open the full lesson on tradely.ai, the rest of this policy applies. How the assistant handles your conversation is governed by its provider's policies.",
+					],
+				},
+				{
 					heading: "Billing information",
 					paragraphs: [
 						"Tradely no longer sells course access. Stripe remains the processor for previous payments, refunds, invoices, and subscription management. Tradely retains the customer and purchase references needed to support those records; payment status does not restrict lessons. Tradely never stores your full card number.",
@@ -85,7 +92,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					heading: "Children and policy changes",
 					paragraphs: [
 						"Tradely is intended for adults and is not directed to children under 13. We may update this policy when the service or legal requirements change; the updated date above indicates when the latest version took effect.",
-						"For questions or privacy requests, contact Tradely support through tradely.ai.",
+						"For questions or privacy requests, contact Tradely support at support@tradely.ai.",
 					],
 				},
 			],
@@ -229,6 +236,13 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 					],
 				},
 				{
+					heading: "面向 AI 助手的 Tradely 连接器",
+					paragraphs: [
+						"Tradely 在 https://www.tradely.ai/mcp 提供面向 Claude、ChatGPT 等 AI 助手的连接器，无需登录。助手使用它时，Tradely 只收到请求本身：请求的是哪节课或课程列表，以及助手提供的语言（如有）。Tradely 不会收到你的姓名、账户、消息或对话内容，也不会把连接器请求与任何 Tradely 账户关联。",
+						"我们的托管服务商 Vercel 会在有限时间内保存请求日志，包括时间、请求的课程，以及发送请求的服务器或设备的 IP 地址（通常是助手的服务器），用于运行和保护服务。助手中显示的课程在该助手的沙盒内运行，不从 tradely.ai 加载任何内容，也不记录分析数据。如果你在 tradely.ai 打开完整课程，则适用本政策其余部分。助手如何处理你的对话，适用其提供方的政策。",
+					],
+				},
+				{
 					heading: "账单信息",
 					paragraphs: [
 						"Tradely 不再出售课程访问权。Stripe 继续处理历史付款、退款、发票和订阅管理。Tradely 保留处理历史账单所需的客户和购买引用，付款状态不影响免费学习，且不会存储完整银行卡号。",
@@ -267,7 +281,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "儿童与政策变更",
 					paragraphs: [
-						"Tradely 面向成年人，不针对 13 岁以下儿童。服务或法律要求变化时，我们可能更新本政策；上方日期表示最新版本生效时间。隐私问题或请求可通过 tradely.ai 联系 Tradely 支持。",
+						"Tradely 面向成年人，不针对 13 岁以下儿童。服务或法律要求变化时，我们可能更新本政策；上方日期表示最新版本生效时间。隐私问题或请求请发送邮件至 support@tradely.ai 联系 Tradely 支持。",
 					],
 				},
 			],

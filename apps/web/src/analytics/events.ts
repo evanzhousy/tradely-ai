@@ -78,6 +78,7 @@ export type AnalyticsRouteName =
 	| "terms"
 	| "risk_disclosure"
 	| "cookies"
+	| "connector"
 	| "not_found";
 
 type LabEventProperties = {
@@ -597,6 +598,7 @@ export function analyticsRouteName(pathname: string): AnalyticsRouteName {
 	if (pathname === "/terms") return "terms";
 	if (pathname === "/risk-disclosure") return "risk_disclosure";
 	if (pathname === "/cookies") return "cookies";
+	if (pathname === "/connector") return "connector";
 	return "not_found";
 }
 
