@@ -16,6 +16,7 @@ import {
 	formatHandle,
 	formatMetric,
 	formatRecordedTime,
+	type LiveSnapshot,
 	languageLabel,
 	type PostWithAuthor,
 } from "./model";
@@ -36,12 +37,18 @@ const postTags = (post: PostWithAuthor) => [
  * when there is none, as for a post the live feed added since. X's own embed is not used: it would
  * add X's script and cookies to this page.
  */
-export function FeaturedPosts({ posts }: { posts: readonly PostWithAuthor[] }) {
+export function FeaturedPosts({
+	posts,
+	embeds,
+}: {
+	posts: readonly PostWithAuthor[];
+	embeds?: LiveSnapshot["embeds"];
+}) {
 	const { capture } = useAnalytics();
 	return (
 		<ul className="grid items-start gap-4 md:grid-cols-2">
 			{posts.map((post, index) => {
-				const tweet = savedXEmbed(post.id);
+				const tweet = embeds?.[post.id] ?? savedXEmbed(post.id);
 				if (tweet) {
 					return (
 						<li key={post.id} className="min-w-0">

@@ -184,6 +184,7 @@ export function OptionsTradersPage() {
 			<TraderDirectory
 				profiles={profiles}
 				posts={posts}
+				embeds={snapshot.embeds}
 				followerRead={followerRead}
 				windowLabel={formatDateRange(
 					snapshot.digestWindow.from,

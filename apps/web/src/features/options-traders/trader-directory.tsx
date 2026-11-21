@@ -25,6 +25,7 @@ import {
 	FEATURED_VIEW_THRESHOLD,
 	formatCompact,
 	formatMetricsChecked,
+	type LiveSnapshot,
 	languageLabel,
 	PLATFORMS,
 	type PostWithAuthor,
@@ -42,11 +43,13 @@ export function TraderDirectory({
 	posts,
 	windowLabel,
 	followerRead,
+	embeds,
 }: {
 	profiles: readonly TraderProfile[];
 	posts: readonly PostWithAuthor[];
 	windowLabel: string;
 	followerRead?: string;
+	embeds?: LiveSnapshot["embeds"];
 }) {
 	const { capture } = useAnalytics();
 	const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -409,8 +412,8 @@ export function TraderDirectory({
 						Posts are shown as written. Some promote the author's paid rooms,
 						newsletters or trade alerts; Tradely has not reviewed or endorsed
 						any of them. Posts over {formatCompact(FEATURED_VIEW_THRESHOLD)}{" "}
-						views appear as X embeds drawn from X's public post data, saved each
-						week; their images load from X.
+						views appear as X embeds drawn from X's public post data; their
+						images, and any video you play, load from X.
 					</p>
 				</div>
 				{featured.length > 0 ? (
@@ -418,7 +421,7 @@ export function TraderDirectory({
 						<h3 className="font-semibold text-xl">
 							Over {formatCompact(FEATURED_VIEW_THRESHOLD)} views
 						</h3>
-						<FeaturedPosts posts={featured} />
+						<FeaturedPosts posts={featured} embeds={embeds} />
 					</div>
 				) : null}
 				{selected.posts.length > 0 ? (

@@ -7,9 +7,9 @@
  *
  * Only posts at or above the featured view threshold are embedded; the table keeps its rows. A post
  * X no longer returns (deleted, private, suspended or not found) gets no entry, and the page keeps
- * its saved card for it.
+ * its saved card for it. When the request itself fails, last week's entry is kept.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getTweet } from "react-tweet/api";
@@ -32,8 +32,12 @@ export async function syncXEmbeds(): Promise<string> {
 	const featured = posts.filter(
 		(post) => post.views !== null && post.views >= FEATURED_VIEW_THRESHOLD,
 	);
+	const previous: Record<string, unknown> = existsSync(embedsPath)
+		? (JSON.parse(readFileSync(embedsPath, "utf8")).tweets ?? {})
+		: {};
 	const tweets: Record<string, unknown> = {};
 	const missing: string[] = [];
+	const kept: string[] = [];
 	for (const [index, post] of featured.entries()) {
 		if (index > 0) await new Promise((done) => setTimeout(done, SPACING_MS));
 		try {
@@ -41,7 +45,10 @@ export async function syncXEmbeds(): Promise<string> {
 			if (tweet && tweet.id_str === post.id) tweets[post.id] = tweet;
 			else missing.push(post.id);
 		} catch {
-			missing.push(post.id);
+			if (previous[post.id]) {
+				tweets[post.id] = previous[post.id];
+				kept.push(post.id);
+			} else missing.push(post.id);
 		}
 	}
 	writeFileSync(
@@ -52,7 +59,7 @@ export async function syncXEmbeds(): Promise<string> {
 			"\t",
 		)}\n`,
 	);
-	return `X embeds: ${Object.keys(tweets).length} of ${featured.length} featured posts saved${missing.length ? `; not returned by X: ${missing.join(", ")}` : ""}.`;
+	return `X embeds: ${Object.keys(tweets).length} of ${featured.length} featured posts saved${kept.length ? `; X failed, last week's kept: ${kept.join(", ")}` : ""}${missing.length ? `; not returned by X: ${missing.join(", ")}` : ""}.`;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

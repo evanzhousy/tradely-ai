@@ -1,3 +1,5 @@
+import type { Tweet } from "react-tweet/api";
+
 /** The public directory: reviewed profiles, the X posts saved for them, and how a reader narrows both. */
 
 export type TraderPlatform = "x.com" | "youtube.com" | "reddit.com";
@@ -84,7 +86,11 @@ export type PostSnapshot = {
 };
 
 /** The feed adds the trader list only when it came from Notion, so a copy of it is never a fallback. */
-export type LiveSnapshot = PostSnapshot & { profiles?: TraderProfile[] };
+/** `embeds` is X's own data for the featured posts, keyed by post id, for the page's X embeds. */
+export type LiveSnapshot = PostSnapshot & {
+	profiles?: TraderProfile[];
+	embeds?: Record<string, Tweet>;
+};
 
 /**
  * Notion's list decides who is listed and how they are described and ranked, so an edit there shows
