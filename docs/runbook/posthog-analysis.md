@@ -11,7 +11,7 @@ for deeper incident triage.
 
 ## Agent Handoff
 
-Last updated: 2026-10-16
+Last updated: 2026-11-21
 
 The fresh read-only analysis verified project `582920` after correcting an initial
 connector context mismatch. The report and native aggregate evidence are external
@@ -47,6 +47,23 @@ pacing events (`visual_lesson_film_paused`, `visual_lesson_scene_replayed`,
 `visual_lesson_rate_changed`, commit 697ec456) are live in the production bundle
 and had no events yet. Per-shot pacing needs tens of viewers per film; until then
 "Film pacing" reports a measurement gap, not shot rankings.
+
+2026-11-21 traffic read (read-only; report in the external evidence folder
+`tradely-film-evidence/2026-11-21/posthog-traffic/`). Lessons for the next run:
+
+- Cohort 526042 keys only on `$internal_or_test_user` or a `@tradingflow.com`
+  email, so the owner's signed-out browsing and agent checks count as outside
+  traffic. Classify people by `$screen_width`/`$screen_height`, `$timezone`,
+  `$os` and referrer before calling anyone an outside visitor; at this volume one
+  person can be most of the views.
+- An identical Linux / Chrome / 1920x1080 / New York timezone visitor with a
+  `google` referrer, one page and about 5 seconds recurs (Sep 30, Nov 14, Nov 21,
+  the last also in the anonymous stream). Treat it as automated, not search.
+- TradingFlow referral exposure is measured in project `300646`, host
+  `tradingflow.com` (the landing site moved there around Oct 22; project 344580
+  has no events since Aug 30). `$autocapture` there records link targets in
+  `elements_chain_href`, so clicks to `tradely.ai` are countable.
+- `$web_vitals` carry no `route_name`; group them by `$pathname`.
 
 ## Recommended Invocation
 
