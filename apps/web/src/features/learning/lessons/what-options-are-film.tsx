@@ -12,6 +12,7 @@ import type { Film, FilmContext } from "../walkthrough/film";
 import {
 	Backdrop,
 	Brackets,
+	clamp,
 	createDirector,
 	EndCard,
 	filmFrame,
@@ -43,6 +44,12 @@ import {
  * purchased 105 call bought for $215 is the only extra example: its maximum loss is $215.
  * Last, the other side: at $110 you are up $580 and Ben, who wrote the call, is down $580.
  *
+ * Drawn with less to read, by the owner's decision of 2026-11-21 (runbook, section 9). The
+ * charts carry no axis numbers: a price is named only where a marker stands, and the strike
+ * and the premium keep their labels. The call's value is a bar under the marker, split by the
+ * premium line, so the net gain is the part above it. The contract's 100 shares sit with the
+ * value they multiply, and the 100 shares Ben must deliver are drawn and cross from him to you.
+ *
  *   open      0–4        "Options"
  *   question  4–8.6      $420 for the Oct 18 100 call; ALFA ends at $95?
  *   right     8.6–21.6   the call: $0 at $95, $1,000 at $110; the put at $90
@@ -69,6 +76,9 @@ const NET_HIGH = callValue(HIGH) - PREMIUM;
 /** Where the 95 put starts to pay for itself: below it, the shares with the put lose less. */
 const SAVES_BELOW = 95 - putCost / 100;
 const FALL_TO = 80;
+/** The shares Ben must deliver, drawn as squares: this many to a row. */
+const LOT_COLUMNS = 10;
+const LOT = 100;
 
 function layout(width: number) {
 	const frame = filmFrame(width);
@@ -95,6 +105,16 @@ function layout(width: number) {
 					`${i ? "L" : "M"}${x(spot).toFixed(1)} ${scale(f(spot)).toFixed(1)}`,
 			)
 			.join("");
+	// The two results, and the block of 100 shares midway between them and the line under
+	// them. Its squares shrink on a short stage so that it fits there.
+	const sideNum = H * 0.4 + T.big * 0.95;
+	const lotCell = clamp(3, H * 0.0098, 5);
+	const lotY =
+		(sideNum +
+			T.big * 0.1 +
+			(H * 0.78 - T.body) -
+			(LOT / LOT_COLUMNS) * lotCell) /
+		2;
 	return {
 		...frame,
 		left,
@@ -107,10 +127,13 @@ function layout(width: number) {
 		path,
 		meterY,
 		meterNum,
-		meterCol: narrow ? 120 : 220,
-		sideNum: H * 0.4 + T.big * 0.95,
-		sideBasisTag: H * 0.4 + T.big * 1.27 + T.small * 1.5,
-		sideBasis: H * 0.4 + T.big * 1.27 + T.small * 1.5 + T.body * 1.6,
+		meterCol: narrow ? 160 : 220,
+		/** A price is named under the axis, where the marker stands. */
+		spotY: bottom + 20,
+		/** The 100 shares of the two-sides shot: a square's pitch, and the block's top. */
+		lotCell,
+		lotY,
+		sideNum,
 		pair: narrow ? [0.27, 0.73] : [0.3, 0.7],
 	};
 }
@@ -129,31 +152,23 @@ const copy = {
 	callHeadShort: ["Worth ALFA above $100.", "价值看 ALFA 高出 $100 多少。"],
 	putHead: ["Put: right to sell at strike.", "看跌：有权按行权价卖出。"],
 	putHeadShort: ["Put: sell at strike.", "看跌：按行权价卖出。"],
-	axis: [
-		"Oct 18 value · 1 contract = 100 shares",
-		"10月18日价值 · 1 张合约 = 100 股",
-	],
-	axisShort: [
-		"expiry value · 1 contract = 100 shares",
-		"到期价值 · 1 张合约 = 100 股",
-	],
 	premium: [
-		`premium ${usd(PREMIUM)}/share × 100 = ${usd(PREMIUM * 100, 0)}`,
-		`权利金：每股 ${usd(PREMIUM)} × 100 = ${usd(PREMIUM * 100, 0)}`,
+		`premium ${usd(PREMIUM * 100, 0)}`,
+		`权利金 ${usd(PREMIUM * 100, 0)}`,
 	],
 	strike: ["strike $100", "行权价 $100"],
 	callLabel: ["call", "看涨"],
 	putLabel: ["put", "看跌"],
-	value: ["value", "价值"],
+	/** The contract is 100 shares: the unit sits with the value it multiplies. */
+	value: ["value · 100 shares", "价值 · 100 股"],
 	net: ["net", "净盈亏"],
 	sharesAlone: ["100 shares", "100 股"],
-	sharesEntry: ["bought at $100", "$100 买入"],
 	withPut: ["with 95 put", "加 95 看跌"],
-	protectPremium: [
-		`premium ${usd(putCost * 100, 0)}`,
-		`权利金 ${usd(putCost * 100, 0)}`,
-	],
 	putSpot: [`ALFA $${PUT_AT}`, `ALFA $${PUT_AT}`],
+	spotLow: [`ALFA $${LOW}`, `ALFA $${LOW}`],
+	spotHigh: [`ALFA $${HIGH}`, `ALFA $${HIGH}`],
+	fallFrom: ["ALFA $100", "ALFA $100"],
+	fallTo: [`ALFA $${FALL_TO}`, `ALFA $${FALL_TO}`],
 	protectHead: [
 		"Two uses: protect shares; buy a call alone.",
 		"两种用途：保护持股，或单独买入看涨。",
@@ -167,13 +182,10 @@ const copy = {
 		`Premium ${usd(viewCost * 100, 0)}`,
 		`权利金 ${usd(viewCost * 100, 0)}`,
 	],
-	sharesLabel: ["100 shares", "100 股"],
+	sharesLabel: ["shares alone", "仅持股"],
 	floor: ["loss floor", "亏损下限"],
 	most: ["Max loss: premium", "最多亏权利金"],
-	profitAxis: ["profit at Oct 18", "10月18日的盈亏"],
 	result: ["100 call · Oct 18: $110", "100 看涨 · 10月18日 $110"],
-	holderBasis: ["value − premium", "价值 − 权利金"],
-	writerBasis: ["premium − value", "权利金 − 价值"],
 	sidesHead: ["The call has two sides.", "看涨合约的双方。"],
 	sidesHeadShort: ["The call has two sides.", "看涨合约的双方。"],
 	sidesObligation: [
@@ -212,45 +224,22 @@ function Scene({
 			anchor="start"
 		/>
 	);
-	const xTicks = [80, 90, 100, 110, 120];
-	const ticks = (
-		name: string,
-		values: number[],
-		scale: (v: number) => number,
-	) => (
-		<g data-f={name}>
-			{values.map((v) => (
-				<g key={v}>
-					<path
-						d={`M${L.left} ${scale(v)}H${L.right}`}
-						className={v === 0 ? "wt-axis" : "wt-grid"}
-					/>
-					<text
-						x={L.left - 8}
-						y={scale(v) + 4}
-						textAnchor="end"
-						className="wt-small"
-					>
-						{v === 0
-							? "$0"
-							: narrow
-								? `${v < 0 ? "−" : ""}${Math.abs(v) / 1000}k`
-								: signedUsd(v * 100, 0).replace("+", "")}
-					</text>
-				</g>
-			))}
-			{xTicks.map((v) => (
-				<text
-					key={v}
-					x={L.x(v)}
-					y={L.bottom + 16}
-					textAnchor={v === X[1] ? "end" : "middle"}
-					className="wt-small"
-				>
-					{`$${v}`}
-				</text>
-			))}
-		</g>
+	/** A chart's only scaffold: the zero line. Prices are named where a marker stands. */
+	const zeroLine = (name: string, y: number) => (
+		<path data-f={name} d={`M${L.left} ${y}H${L.right}`} className="wt-axis" />
+	);
+	/** A price under the axis, at the spot it names. */
+	const spotLabel = (name: string, text: Copy, spot: number, tone = "") => (
+		<text
+			data-f={name}
+			x={L.x(spot)}
+			y={L.spotY}
+			textAnchor={spot === X[0] ? "start" : "middle"}
+			className={`wt-halo wt-marker-label ${tone}`}
+			style={tone ? undefined : { fill: "var(--tone-ink)" }}
+		>
+			{t(text)}
+		</text>
 	);
 	/**
 	 * A line's label at a point: below it and to the right, or above it and to the left, so a
@@ -279,15 +268,30 @@ function Scene({
 	return (
 		<>
 			<Backdrop frame={L} />
+			<defs>
+				<pattern
+					id={`lot-${id}`}
+					x={W * L.pair[1] - (LOT_COLUMNS * L.lotCell) / 2}
+					y={L.lotY}
+					width={L.lotCell}
+					height={L.lotCell}
+					patternUnits="userSpaceOnUse"
+				>
+					<rect
+						width={L.lotCell * 0.7}
+						height={L.lotCell * 0.7}
+						rx={0.6}
+						className="wt-film-bar"
+						data-tone="total"
+					/>
+				</pattern>
+			</defs>
 
 			<g data-f="depth">
 				<g data-f="world">
 					{/* The right's value at expiry. */}
 					<g data-f="value-chart">
-						<text x={L.left} y={L.top - 12} className="wt-small">
-							{t(narrow ? copy.axisShort : copy.axis)}
-						</text>
-						{ticks("v-ticks", [0, 1000, 2000], L.y)}
+						{zeroLine("v-zero", L.y(0))}
 						<path
 							data-f="strike"
 							d={`M${L.x(100)} ${L.top}V${L.bottom}`}
@@ -319,6 +323,28 @@ function Scene({
 							{t(copy.premium).replace(usd(PREMIUM * 100, 0), "")}
 							<tspan className="wt-film-num">{usd(PREMIUM * 100, 0)}</tspan>
 						</text>
+						{/* The call's value, drawn: a bar under the marker. The premium line splits it
+						    into the premium paid back and, above the line, the net gain. */}
+						<rect
+							data-f="v-bar-paid"
+							x={L.x(LOW) - 5}
+							y={L.y(0)}
+							width={10}
+							height={0}
+							rx={2}
+							className="wt-film-bar"
+							data-tone="neutral"
+						/>
+						<rect
+							data-f="v-bar-net"
+							x={L.x(LOW) - 5}
+							y={L.y(0)}
+							width={10}
+							height={0}
+							rx={2}
+							className="wt-film-bar"
+							data-tone="gain"
+						/>
 						<path
 							data-f="call-line"
 							d={L.path(callValue, L.y)}
@@ -355,6 +381,8 @@ function Scene({
 						>
 							{t(copy.putSpot)}
 						</text>
+						{spotLabel("spot-low", copy.spotLow, LOW, toneClass.call)}
+						{spotLabel("spot-high", copy.spotHigh, HIGH, toneClass.call)}
 						<circle
 							data-f="marker"
 							cx={L.x(LOW)}
@@ -368,10 +396,18 @@ function Scene({
 
 					{/* Protection beside the shares alone, then a purchased call. */}
 					<g data-f="use-chart">
-						<text x={L.left} y={L.top - 12} className="wt-small">
-							{t(copy.profitAxis)}
+						{zeroLine("u-zero", L.u(0))}
+						<text
+							data-f="u-zero-label"
+							x={L.left - 8}
+							y={L.u(0) + 4}
+							textAnchor="end"
+							className="wt-small"
+						>
+							$0
 						</text>
-						{ticks("u-ticks", [-1000, 0, 1000], L.u)}
+						{spotLabel("fall-from", copy.fallFrom, 100)}
+						{spotLabel("fall-to", copy.fallTo, FALL_TO)}
 						<path
 							data-f="shares-line"
 							d={L.path(shares, L.u)}
@@ -502,21 +538,12 @@ function Scene({
 							<Word
 								name={`${name}-tag`}
 								x={margin + i * L.meterCol}
-								y={L.meterY - (group === "umeter" ? T.small * 1.5 : 0)}
+								y={L.meterY}
 								size={T.small}
 								anchor="start"
 								className="wt-film-tag"
 							>
 								{t(tag).toUpperCase()}
-								{group === "umeter" && (
-									<tspan x={margin + i * L.meterCol} dy={T.small * 1.5}>
-										{t(
-											name === "u-shares"
-												? copy.sharesEntry
-												: copy.protectPremium,
-										).toUpperCase()}
-									</tspan>
-								)}
 							</Word>
 							<Word
 								name={name}
@@ -605,24 +632,10 @@ function Scene({
 			<g data-f="sides">
 				{(
 					[
-						[
-							"you",
-							copy.you,
-							copy.holderBasis,
-							`${usd(callValue(HIGH) * 100, 0)} − ${usd(PREMIUM * 100, 0)}`,
-							signedUsd(NET_HIGH * 100, 0),
-							"wt-film-gain",
-						],
-						[
-							"ben",
-							copy.ben,
-							copy.writerBasis,
-							`${usd(PREMIUM * 100, 0)} − ${usd(callValue(HIGH) * 100, 0)}`,
-							signedUsd(-NET_HIGH * 100, 0),
-							"wt-film-loss",
-						],
+						["you", copy.you, signedUsd(NET_HIGH * 100, 0), "wt-film-gain"],
+						["ben", copy.ben, signedUsd(-NET_HIGH * 100, 0), "wt-film-loss"],
 					] as const
-				).map(([name, tag, basisLabel, basis, after, tone], i) => (
+				).map(([name, tag, after, tone], i) => (
 					<g key={name}>
 						<Word
 							name={`${name}-tag`}
@@ -632,24 +645,6 @@ function Scene({
 							className="wt-film-tag"
 						>
 							{t(tag).toUpperCase()}
-						</Word>
-						<Word
-							name={`${name}-basis-tag`}
-							x={W * L.pair[i]}
-							y={L.sideBasisTag}
-							size={T.small}
-							className="wt-film-tag"
-						>
-							{t(basisLabel)}
-						</Word>
-						<Word
-							name={`${name}-basis`}
-							x={W * L.pair[i]}
-							y={L.sideBasis}
-							size={T.body}
-							className="wt-film-num wt-film-dim"
-						>
-							{basis}
 						</Word>
 						<Word
 							name={`${name}-after`}
@@ -671,6 +666,17 @@ function Scene({
 					maxWidth={room}
 					className="wt-film-type wt-film-dim"
 				/>
+				{/* The obligation, drawn: 100 squares, one a share, which the build moves from
+				    Ben to you. */}
+				<g data-f="lot">
+					<rect
+						x={W * L.pair[1] - (LOT_COLUMNS * L.lotCell) / 2}
+						y={L.lotY}
+						width={LOT_COLUMNS * L.lotCell}
+						height={(LOT / LOT_COLUMNS) * L.lotCell}
+						fill={`url(#lot-${id})`}
+					/>
+				</g>
 				<Lines
 					name="sides-obligation"
 					text={t(copy.sidesObligation)}
@@ -749,6 +755,8 @@ function build(context: FilmContext) {
 	const sMarker = one("s-marker");
 	const pMarker = one("p-marker");
 	const saveClip = one("save-clip");
+	const barPaid = one("v-bar-paid");
+	const barNet = one("v-bar-net");
 	const dollars = (v: number) => usd(Math.round(v) * 100, 0);
 	const signed = (v: number) =>
 		Math.round(v) === 0 ? "$0" : signedUsd(Math.round(v) * 100, 0);
@@ -799,6 +807,18 @@ function build(context: FilmContext) {
 				`wt-film-num ${Math.round(f(spot)) === 0 ? "wt-film-dim" : role}`,
 			);
 			if (netAt) {
+				// The value bar stands under the marker; the premium line splits it.
+				const worth = f(spot);
+				const paid = Math.min(worth, PREMIUM);
+				for (const bar of [barPaid, barNet])
+					bar.setAttribute("x", `${L.x(spot) - 5}`);
+				barPaid.setAttribute("y", `${L.y(paid)}`);
+				barPaid.setAttribute("height", `${L.y(0) - L.y(paid)}`);
+				barNet.setAttribute("y", `${L.y(worth)}`);
+				barNet.setAttribute(
+					"height",
+					`${Math.max(0, L.y(PREMIUM) - L.y(worth))}`,
+				);
 				const net = netAt(spot);
 				netResult.textContent = signed(net);
 				signColor(netResult, net);
@@ -836,6 +856,13 @@ function build(context: FilmContext) {
 		one("call-tag"),
 		one("put-tag"),
 		one("put-spot"),
+		one("spot-low"),
+		one("spot-high"),
+		barPaid,
+		barNet,
+		one("fall-from"),
+		one("fall-to"),
+		one("lot"),
 		marker,
 		one("shares-line"),
 		one("protect-line"),
@@ -891,10 +918,20 @@ function build(context: FilmContext) {
 	// The call at $95, then at $110: the meter reads from the marker.
 	d.swap(heads[0], heads[1], 13.5);
 	pop(marker, 13.9);
+	show(one("spot-low"), 13.9, "below", 0.3);
 	show(kids("meter"), 14.0);
 	const onCallRight = onRight(callValue, (spot) => callValue(spot) - PREMIUM);
 	walk(HIGH, HIGH, 13.89, 0.01, () => onCallRight(LOW));
+	// The price it leaves goes as the walk starts; the price it reaches arrives as it lands.
+	hide(one("spot-low"), 15.5, 0.3, 0);
+	tl.set([barPaid, barNet], { opacity: 1 }, 15.5);
 	walk(LOW, HIGH, 15.5, 1.2, onCallRight);
+	tl.fromTo(
+		one("spot-high"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		16.4,
+	);
 	d.flip(netResult, netResultNext, 16.05);
 	tl.set(netResult, { opacity: 0 }, 16.35);
 	// The call rests a full second after its 16.7 settlement. With the put's
@@ -906,7 +943,7 @@ function build(context: FilmContext) {
 	// marker stays with its dimmed curve until the put's $90 example takes over.
 	tl.to(marker, { opacity: 0.3, duration: 0.4 }, 17.7);
 	tl.to(
-		[one("call-line"), one("call-tag")],
+		[one("call-line"), one("call-tag"), barPaid, barNet, one("spot-high")],
 		{ opacity: 0.3, duration: 0.4 },
 		17.7,
 	);
@@ -947,7 +984,7 @@ function build(context: FilmContext) {
 	// protected position settle together; labels land with that construction.
 	d.trace(line("shares-line"), 23.0, { duration: 1.2 });
 	d.trace(line("protect-line"), 23.0, { tip, duration: 1.2 });
-	show([one("shares-tag"), ...kids("umeter")], 24.2);
+	show([one("shares-tag"), one("fall-from"), ...kids("umeter")], 24.2);
 	// Everything settles by 24.7. The paired markers fade in only after 1.15 s
 	// of quiet, then the same 1.6 s walk constructs the −$715 loss floor.
 	// The premium tag supplies the initial $215; reveal the protected readout
@@ -958,8 +995,15 @@ function build(context: FilmContext) {
 		25.85,
 	);
 	tl.to(uPut, { opacity: 1, duration: 0.35 }, 26.3);
+	hide(one("fall-from"), 26.3, 0.3, 0);
 	walk(100, FALL_TO, 26.3, 1.6, onFall);
 	show(one("floor-tag"), 27.7);
+	tl.fromTo(
+		one("fall-to"),
+		{ opacity: 0 },
+		{ opacity: 1, duration: 0.3, ease: "power3.out" },
+		27.6,
+	);
 	d.lock(one<SVGGraphicsElement>("lock-floor"), 27.9, {
 		around: uPut,
 		pad: 5,
@@ -968,7 +1012,14 @@ function build(context: FilmContext) {
 	// Keep one headline across both uses. The loss meter and brackets keep their
 	// full 3.55 s settled stand before the comparison marks leave with the hero.
 	hide(
-		[one("u-shares-tag"), uShares, one("u-put-tag"), sMarker, pMarker],
+		[
+			one("u-shares-tag"),
+			uShares,
+			one("u-put-tag"),
+			sMarker,
+			pMarker,
+			one("fall-to"),
+		],
 		31.9,
 	);
 	tl.to(
@@ -999,16 +1050,17 @@ function build(context: FilmContext) {
 	show(one("sides-line"), 36.35);
 	show(one("sides-obligation"), 36.35);
 	show([one("you-tag"), one("ben-tag")], 36.35);
-	// Build the two mirrored bases as one proof. After a full second of quiet,
-	// reveal both settled results together; the original 2.7 s result rest remains.
-	show(
-		[
-			one("you-basis-tag"),
-			one("ben-basis-tag"),
-			one("you-basis"),
-			one("ben-basis"),
-		],
-		36.35,
+	// The obligation first: the 100 shares stand under Ben, then cross to you. After they
+	// settle, both results land together; their 2.7 s rest is unchanged.
+	show(one("lot"), 36.35);
+	tl.to(
+		one("lot"),
+		{
+			x: W * (L.pair[0] - L.pair[1]),
+			duration: 0.8,
+			ease: "power2.inOut",
+		},
+		36.95,
 	);
 	word(one("you-after"), 37.85);
 	word(one("ben-after"), 37.85);
