@@ -10,7 +10,7 @@ Updated October 23, 2026. Every lesson in the course (53 of them) opens with a s
 - **Silent and bilingual.** All on-screen text exists in English and Simplified Chinese; there is no narration or music.
 - **Real cuts between shots.** Each shot replaces the last; the film never piles one figure on top of another.
 - **Pure autoplay.** The film starts when it is on screen, pauses off screen or in a hidden tab, plays at **1.5× by default** (1× and 2× are offered and the learner's choice is remembered; until October 16, 2026 the default was 2×), and can be scrubbed by shot. With reduced motion it shows the end of each shot for as long as the shot would have lasted.
-- **Two frames.** 16:9 on wider screens; a portrait 4:5 frame below 520 px, where the film also runs to the lesson card's inner edge. Type is sized to the frame, so text keeps a readable size on a phone.
+- **Two frames.** 16:9 on wider screens; a portrait 4:5 frame below 520 px, where the film also runs to the lesson card's inner edge. Type is sized to the frame, so text keeps a readable size on a phone. A column narrower than the audited phone layout (354 px, the column of a 390 px window) shows that layout reduced, type and all, instead of a tighter one: to 91.5 % at a 360 px window, 80 % at 320 px, and about 83–94 % in the /mcp lesson view in a phone chat.
 - **About 40–45 seconds at 1×** (about 27–30 s at the default 1.5×), in 6–8 shots, with one hero moment at 55–65 % of the runtime. The last film of a module ends on "Next: the module checkpoint". Module checkpoints have no film; they stay quizzes.
 
 ## 2. Where things live
@@ -272,7 +272,7 @@ Caution turns olive on a light page because a yellow dark enough to read is the 
 - **Words with the motion.** The headline that names a change stays up through the change: never swap a headline in the middle of a carry, a count or a draw, and never animate a change after its headline has gone.
 - Tape notation (`10 @ $4.10`) belongs on tapes and tickets, never in a headline. In a sentence, write "10 at $4.10" or "10 张 $4.10".
 - Keep text off the frame edges: anchor the last tick label of an axis to its end, and leave a right margin on the phone for labels near the edge.
-- On a phone, prefer short labels and stacked layouts over shrinking type below the frame's minimums.
+- On a phone, prefer short labels and stacked layouts over shrinking type below the frame's minimums. Below a 390 px window the whole frame is already reduced (section 1), so a phone layout that only just fits reads smaller still on most Android phones: leave it room.
 
 **Motion**
 - One thing moves at a time. Marks that are one thing (the bars of one histogram, the rows of one table, the legs of one structure) move together, or with a stagger spread over at most 0.5 s in total; a stagger of 0.3 s or more between items is only for an order that is itself the lesson.
@@ -341,7 +341,7 @@ A film is done when `check` prints nothing but its stamp and each capture's two 
    ```bash
    cd apps/web && npx vite dev --port 8262 --strictPort
    ```
-3. **Scan every half second** at 1440×900 and at 390×844 (device scale 2, mobile), in English and in Chinese. In development the player exposes the timeline as `window.__tradelyFilm`, so a headless browser can pause it, seek to each time, take a screenshot of `.wt-film`, and run these checks in the page:
+3. **Scan every half second** at 1440×900 and at 390×844 (device scale 2, mobile), in English and in Chinese. The 390 capture is the narrowest layout a film ever gets: below it the player shows that layout reduced (`PHONE_LAYOUT` in `walkthrough/film.tsx`), so it stands for every narrower phone. Wider phones (a 412 or 430 px window) lay out at 376 or 394 px and are not captured. In development the player exposes the timeline as `window.__tradelyFilm`, so a headless browser can pause it, seek to each time, take a screenshot of `.wt-film`, and run these checks in the page:
 
    ```js
    // Seek. Wait about 70 ms before measuring.
@@ -446,6 +446,8 @@ It fails on a wrong choice without a why, a right choice with one, an independen
 - **A Scene re-renders at every shot change.** The player's shot is React state, so the whole Scene runs again at each label. Put-call parity's Scene once sampled the option model about 2,500 times to size a formula; that blocked the page for about a second at every label, the timeline stood still (GSAP's lag smoothing absorbs the gap) and the real-time playthrough showed a stall at each one. Keep a Scene cheap: work constants out from as few model calls as the shape of the values allows, and run `film-audit.sh play` after changing one.
 - **The phone frame is not a scaled desktop.** Each film needs its own phone choices: short labels, stacked layouts, labels anchored away from curves and edges.
 - **The wide frame is the player's width, not the window's.** At a 1440 window the film is about 900 px wide, so type clamped to its minimums takes a larger share of the frame. A meter placed under a two-line headline met the chart's caption; place stacked blocks from `lineCount` and the type sizes, not from fractions of the height alone.
+- **A layout nobody audited.** Until November 21, 2026 a film laid itself out at its column's width down to 280 px, while the audit covered one phone layout (354 px). At a 360 px window, a common Android width, 30 of the 58 films had text over text, text struck by a line or text cut by the frame. A narrower column now shows the audited layout reduced. Do not lower that floor without adding the narrower layout to the audit. Evidence: `~/Desktop/Projects/tradely-film-evidence/2026-11-21/narrow-pass/`.
+- **The scan skipped part of a label.** It boxed a text by its tspans alone, so the words a text holds outside a tspan (the first line of a two-line tag, the word before a coloured figure) were never checked against anything; a headline sat on "100 SHARES" and the scan printed `overlaps=0`. Fixed November 21, 2026. A clean scan still cannot see text behind a filled shape: read the frames (step 4).
 - **A single-number dash array merges into a dashed line's own pattern.** Drawing a `5 4` dashed line with `strokeDasharray: length` gave `736px, 4px`, and the whole line showed ahead of the pen. Give dash and gap both: `` `${length} ${length}` `` (the kit's `trace` does).
 - **Film colours change on the timeline.** The diagrams' 0.3 s CSS colour transition made a scrubbed frame show a colour on its way; film marks take no CSS transition, so a class or fill set at a time is that colour at that time.
 - **A carry's path can cross what the learner is reading.** A print flying from venue C to a strip under the NBBO crossed the NBBO figure; the strip moved under C. Start a carry clear of other marks and land it on the matching text.
