@@ -1,5 +1,6 @@
 {
 	"name": "@tradely/db",
+	"license": "MIT",
 	"type": "module",
 	"exports": {
 		".": {

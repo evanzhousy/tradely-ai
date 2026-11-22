@@ -7,6 +7,10 @@ import { AppLink } from "@/components/app-link";
 import { useI18n } from "@/i18n/provider";
 import { TradelyBrand } from "./brand";
 
+const CONTENT_LICENSE_URL =
+	"https://creativecommons.org/licenses/by-nc-sa/4.0/";
+const SOURCE_CODE_URL = "https://github.com/evanzhousy/tradely-ai";
+
 /** Every footer link and action: muted, underlined on hover, at least 24px tall to tap. */
 const footerLink =
 	"plain-link min-h-6 text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline";
@@ -130,8 +134,25 @@ export function Footer() {
 					) : null}
 				</FooterGroup>
 			</div>
-			<div className="mx-auto max-w-[1480px] px-4 pb-8 text-muted-foreground text-xs sm:px-6 lg:px-8">
-				{t("footer.rights", { year })}
+			<div className="mx-auto flex max-w-[1480px] flex-wrap items-baseline gap-x-3 gap-y-1 px-4 pb-8 text-muted-foreground text-xs sm:px-6 lg:px-8">
+				<span>{t("footer.rights", { year })}</span>
+				{/* Course content and code are open: LICENSE-CONTENT.md and LICENSE in the repository. */}
+				<a
+					href={CONTENT_LICENSE_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					className={cn(footerLink, "text-xs")}
+				>
+					{t("footer.contentLicense")}
+				</a>
+				<a
+					href={SOURCE_CODE_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					className={cn(footerLink, "text-xs")}
+				>
+					{t("footer.sourceCode")}
+				</a>
 			</div>
 		</footer>
 	);

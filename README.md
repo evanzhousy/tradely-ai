@@ -86,3 +86,13 @@ refund/dispute revocation path.
 ## Trust and accessibility surface
 
 The shared shell includes a keyboard-visible skip link, semantic landmarks, a native language selector, reduced-motion support, and a footer linking to the Privacy Policy, Terms of Service, Options Risk Disclosure, and Cookie Policy. Course metadata and all shell controls support English and Simplified Chinese; lesson bodies currently remain English with an explicit language note until a reviewed translation is available.
+
+## License
+
+- Source code: [MIT License](LICENSE).
+- Course content (lesson text, films, cases and their translations):
+  [CC BY-NC-SA 4.0](LICENSE-CONTENT.md). Credit Tradely, link the lesson, keep
+  it non-commercial and share adaptations under the same licence.
+- Not covered by either licence: the Tradely and TradingFlow names and logos,
+  TradingFlow's videos, third-party posts on the options-traders pages and two
+  side projects. [LICENSE-CONTENT.md](LICENSE-CONTENT.md) lists them.

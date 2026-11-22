@@ -101,7 +101,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 			title: "Terms of service",
 			intro:
 				"These terms govern your use of the Tradely learning hub, its curriculum, and member features.",
-			lastUpdated: "Last updated: August 31, 2026",
+			lastUpdated: "Last updated: November 21, 2026",
 			sections: [
 				{
 					heading: "Educational service",
@@ -130,7 +130,8 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "Content and acceptable use",
 					paragraphs: [
-						"Tradely and its licensors retain rights in the curriculum, videos, written lessons, branding, and software. You may use them for personal learning during authorized access. Do not copy, resell, publicly redistribute, reverse engineer, or remove notices from the service.",
+						"Tradely's source code is open source under the MIT License, and its course content (lesson text, films, cases and their translations) is licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0). You may use, adapt and share them on those licences' terms; the LICENSE and LICENSE-CONTENT.md files at github.com/evanzhousy/tradely-ai say what each covers.",
+						"The Tradely name, owl and logos, TradingFlow's material and the third-party posts shown on the site are not covered by those licences and stay with their owners. Do not resell course content, interfere with the service, or remove licence or attribution notices.",
 					],
 				},
 				{
@@ -289,7 +290,7 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 		terms: {
 			title: "服务条款",
 			intro: "本条款约束你对 Tradely 学习中心、课程内容和会员功能的使用。",
-			lastUpdated: "最后更新：2026 年 8 月 31 日",
+			lastUpdated: "最后更新：2026 年 11 月 21 日",
 			sections: [
 				{
 					heading: "教育服务",
@@ -318,7 +319,8 @@ const documents: Record<Locale, Record<LegalPageId, LegalDocument>> = {
 				{
 					heading: "内容与合理使用",
 					paragraphs: [
-						"Tradely 及其许可方拥有课程、视频、文字、品牌和软件的权利。你可以在获得授权期间用于个人学习，但不得复制、转售、公开传播、反向工程或移除服务中的权利声明。",
+						"Tradely 的源代码以 MIT 许可证开源；课程内容（课程文字、动画、案例及其译文）采用知识共享 署名-非商业性使用-相同方式共享 4.0 国际许可协议（CC BY-NC-SA 4.0）。你可以按这些许可的条款使用、改编和分享；各许可的适用范围见 github.com/evanzhousy/tradely-ai 中的 LICENSE 和 LICENSE-CONTENT.md 文件。",
+						"Tradely 名称、猫头鹰形象和标志、TradingFlow 的材料以及网站上展示的第三方帖子不在这些许可范围内，权利归各自所有者。请勿转售课程内容、干扰服务运行，或移除许可与署名声明。",
 					],
 				},
 				{
