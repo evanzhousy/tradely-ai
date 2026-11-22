@@ -174,6 +174,8 @@ const copy = {
 	sizeA: [`example: ${PLAN_SPREADS} spreads`, `示例 ${PLAN_SPREADS} 组`],
 	sizeJoin: [", ", "："],
 	sizeB: [` of ${dollars(ACCOUNT)}`, `，账户 ${dollars(ACCOUNT)}`],
+	/** The account on a phone's second line, where the Chinese line breaks at its comma. */
+	sizeBLine: [`of ${dollars(ACCOUNT)}`, `账户 ${dollars(ACCOUNT)}`],
 	eHead: ["Oct 18: three ends.", "10月18日：三种结局。"],
 	e2Head: ["Unclosed, you get shares.", "不平仓，就会拿到股票。"],
 	below: [
@@ -265,6 +267,9 @@ function Scene({
 	const t = (value: Copy) => pick(value, locale);
 	const L = layout(width);
 	const { height: H, type: T, room, narrow, margin } = L;
+	// The example's size line, on a phone: where it breaks onto a second line.
+	const breakAtAccount = narrow && locale === "zh";
+	const breakAtAmount = narrow && !breakAtAccount;
 	const W = width;
 	const headRoom = narrow ? room : room * 0.74;
 	const headline = (name: string, text: Copy) => (
@@ -650,16 +655,23 @@ function Scene({
 				className="wt-film-type"
 			>
 				{t(copy.sizeA)}
-				{narrow ? "" : t(copy.sizeJoin)}
-				{/* A phone sets the amount on a second line, clear of the rising payoff line. */}
+				{breakAtAmount ? "" : t(copy.sizeJoin)}
+				{/* A phone breaks the line clear of the rising payoff line: in English before the
+				    amount, in Chinese at the comma after it, where the desktop sentence pauses. */}
 				<tspan
-					x={narrow ? L.left + 12 : undefined}
-					dy={narrow ? L.label * 1.3 : undefined}
+					x={breakAtAmount ? L.left + 12 : undefined}
+					dy={breakAtAmount ? L.label * 1.3 : undefined}
 					className={`wt-film-num ${toneClass.down}`}
 				>
 					{signedDollars(-worstCase(PLAN_SPREADS))}
 				</tspan>
-				{t(copy.sizeB)}
+				{breakAtAccount ? (
+					<tspan x={L.left + 12} dy={L.label * 1.3}>
+						{t(copy.sizeBLine)}
+					</tspan>
+				) : (
+					t(copy.sizeB)
+				)}
 			</Word>
 			<Brackets name="lock-worst" tone="loss" glow />
 
