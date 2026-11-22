@@ -1,7 +1,360 @@
 {
 	"version": 1,
-	"fetchedAt": "2026-11-21T18:12:45.619Z",
+	"fetchedAt": "2026-11-22T18:53:00.354Z",
 	"tweets": {
+		"2123351316739060001": {
+			"__typename": "Tweet",
+			"favorite_count": 237,
+			"lang": "en",
+			"possibly_sensitive": false,
+			"created_at": "2026-11-19T09:42:58.000Z",
+			"display_text_range": [0, 273],
+			"entities": {
+				"media": [
+					{
+						"display_url": "pic.x.com/fzW7KUKlCZ",
+						"expanded_url": "https://x.com/VolSignals/status/2123351316739060001/photo/1",
+						"indices": [274, 297],
+						"url": "https://t.co/fzW7KUKlCZ"
+					}
+				]
+			},
+			"id_str": "2123351316739060001",
+			"text": "Most people think Friday's expiration clears out the short gamma.\n\n-most people haven't looked at what's actually expiring\n\ndown here the expiring options are the LONG gamma in the MM position\n\n✓ SPX ~7320 with Friday's options: MMs short $1.3bn per 1%\n✓ same level without https://t.co/fzW7KUKlCZ",
+			"user": {
+				"id_str": "1174510105674571777",
+				"name": "VolSignals",
+				"screen_name": "VolSignals",
+				"is_blue_verified": true,
+				"profile_image_shape": "Square",
+				"verified": false,
+				"verified_type": "Business",
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/1926357211887927296/FhQByCai_normal.jpg"
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2123351316739060001"],
+				"editable_until_msecs": "1795084978000",
+				"edits_remaining": "5",
+				"is_edit_eligible": true
+			},
+			"mediaDetails": [
+				{
+					"display_url": "pic.x.com/fzW7KUKlCZ",
+					"expanded_url": "https://x.com/VolSignals/status/2123351316739060001/photo/1",
+					"ext_media_availability": {
+						"status": "Available"
+					},
+					"indices": [274, 297],
+					"media_url_https": "https://pbs.twimg.com/media/HXeoteZX0AAfbUO.jpg",
+					"original_info": {
+						"focus_rects": [
+							{
+								"h": 1075,
+								"w": 1920,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 1080,
+								"w": 1080,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 1080,
+								"w": 947,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 1080,
+								"w": 540,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 1080,
+								"w": 1920,
+								"x": 0,
+								"y": 0
+							}
+						],
+						"height": 1080,
+						"width": 1920
+					},
+					"sizes": {
+						"large": {
+							"h": 1080,
+							"resize": "fit",
+							"w": 1920
+						},
+						"medium": {
+							"h": 675,
+							"resize": "fit",
+							"w": 1200
+						},
+						"small": {
+							"h": 383,
+							"resize": "fit",
+							"w": 680
+						},
+						"thumb": {
+							"h": 150,
+							"resize": "crop",
+							"w": 150
+						}
+					},
+					"type": "photo",
+					"url": "https://t.co/fzW7KUKlCZ"
+				}
+			],
+			"photos": [
+				{
+					"backgroundColor": {
+						"red": 204,
+						"green": 214,
+						"blue": 221
+					},
+					"cropCandidates": [
+						{
+							"h": 1075,
+							"w": 1920,
+							"x": 0,
+							"y": 0
+						},
+						{
+							"h": 1080,
+							"w": 1080,
+							"x": 0,
+							"y": 0
+						},
+						{
+							"h": 1080,
+							"w": 947,
+							"x": 0,
+							"y": 0
+						},
+						{
+							"h": 1080,
+							"w": 540,
+							"x": 0,
+							"y": 0
+						},
+						{
+							"h": 1080,
+							"w": 1920,
+							"x": 0,
+							"y": 0
+						}
+					],
+					"expandedUrl": "https://x.com/VolSignals/status/2123351316739060001/photo/1",
+					"url": "https://pbs.twimg.com/media/HXeoteZX0AAfbUO.jpg",
+					"width": 1920,
+					"height": 1080
+				}
+			],
+			"conversation_count": 14,
+			"news_action_type": "conversation",
+			"quoted_tweet": {
+				"favorite_count": 1066,
+				"lang": "en",
+				"possibly_sensitive": false,
+				"reply_count": 61,
+				"retweet_count": 170,
+				"created_at": "2026-11-18T23:49:21.000Z",
+				"display_text_range": [0, 140],
+				"entities": {
+					"media": [
+						{
+							"display_url": "pic.x.com/YFibEK4Net",
+							"expanded_url": "https://x.com/Barchart/status/2123201926921633890/photo/1",
+							"indices": [139, 162],
+							"url": "https://t.co/YFibEK4Net"
+						}
+					]
+				},
+				"id_str": "2123201926921633890",
+				"text": "S&amp;P 500 dealer gamma is now at one of the most negative levels ever recorded, which could amplify volatility over the coming weeks 🚨 🚨 https://t.co/YFibEK4Net",
+				"user": {
+					"id_str": "28212513",
+					"name": "Barchart",
+					"screen_name": "Barchart",
+					"is_blue_verified": true,
+					"profile_image_shape": "Square",
+					"verified": false,
+					"verified_type": "Business",
+					"profile_image_url_https": "https://pbs.twimg.com/profile_images/896104027179687936/vc5zkLpM_normal.jpg"
+				},
+				"edit_control": {
+					"edit_tweet_ids": ["2123201926921633890"],
+					"editable_until_msecs": "1795049361000",
+					"edits_remaining": "5",
+					"is_edit_eligible": false
+				},
+				"mediaDetails": [
+					{
+						"display_url": "pic.x.com/YFibEK4Net",
+						"expanded_url": "https://x.com/Barchart/status/2123201926921633890/photo/1",
+						"ext_media_availability": {
+							"status": "Available"
+						},
+						"indices": [139, 162],
+						"media_url_https": "https://pbs.twimg.com/media/HXcg5srWMAA29ut.png",
+						"original_info": {
+							"focus_rects": [
+								{
+									"h": 402,
+									"w": 717,
+									"x": 0,
+									"y": 0
+								},
+								{
+									"h": 495,
+									"w": 495,
+									"x": 0,
+									"y": 0
+								},
+								{
+									"h": 495,
+									"w": 434,
+									"x": 0,
+									"y": 0
+								},
+								{
+									"h": 495,
+									"w": 248,
+									"x": 0,
+									"y": 0
+								},
+								{
+									"h": 495,
+									"w": 717,
+									"x": 0,
+									"y": 0
+								}
+							],
+							"height": 495,
+							"width": 717
+						},
+						"sizes": {
+							"large": {
+								"h": 495,
+								"resize": "fit",
+								"w": 717
+							},
+							"medium": {
+								"h": 495,
+								"resize": "fit",
+								"w": 717
+							},
+							"small": {
+								"h": 469,
+								"resize": "fit",
+								"w": 680
+							},
+							"thumb": {
+								"h": 150,
+								"resize": "crop",
+								"w": 150
+							}
+						},
+						"type": "photo",
+						"url": "https://t.co/YFibEK4Net"
+					}
+				],
+				"photos": [
+					{
+						"backgroundColor": {
+							"red": 204,
+							"green": 214,
+							"blue": 221
+						},
+						"cropCandidates": [
+							{
+								"h": 402,
+								"w": 717,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 495,
+								"w": 495,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 495,
+								"w": 434,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 495,
+								"w": 248,
+								"x": 0,
+								"y": 0
+							},
+							{
+								"h": 495,
+								"w": 717,
+								"x": 0,
+								"y": 0
+							}
+						],
+						"expandedUrl": "https://x.com/Barchart/status/2123201926921633890/photo/1",
+						"url": "https://pbs.twimg.com/media/HXcg5srWMAA29ut.png",
+						"width": 717,
+						"height": 495
+					}
+				],
+				"isEdited": false,
+				"isStaleEdit": false
+			},
+			"isEdited": false,
+			"isStaleEdit": false,
+			"note_tweet": {
+				"id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTIzMzUxMzE2NjMwMDQwNTc2"
+			}
+		},
+		"2122481373596299525": {
+			"__typename": "Tweet",
+			"favorite_count": 207,
+			"lang": "en",
+			"created_at": "2026-11-17T00:06:07.000Z",
+			"display_text_range": [0, 279],
+			"entities": {
+				"symbols": [
+					{
+						"indices": [77, 81],
+						"text": "SPX"
+					}
+				]
+			},
+			"id_str": "2122481373596299525",
+			"text": "Most 0DTE traders will never learn this about the overnight options ledger.\n\n$SPX closed at 7,417 with the VIX at 22.91, which prices 107.1 points of movement for tomorrow, a 97th percentile reading for the last 60 sessions. At 8:30 AM, Retail Sales and Core Retail Sales land on",
+			"user": {
+				"id_str": "1097056216923164672",
+				"name": "Azraël",
+				"screen_name": "azrael_options",
+				"is_blue_verified": true,
+				"profile_image_shape": "Circle",
+				"verified": false,
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2084271896481157121/UH2W4yXf_normal.jpg"
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2122481373596299525"],
+				"editable_until_msecs": "1794877567000",
+				"edits_remaining": "5",
+				"is_edit_eligible": false
+			},
+			"conversation_count": 18,
+			"news_action_type": "conversation",
+			"isEdited": false,
+			"isStaleEdit": false,
+			"note_tweet": {
+				"id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTIyNDgxMzczMTg1MjQxMDg4"
+			}
+		},
 		"2117606930042556676": {
 			"__typename": "Tweet",
 			"favorite_count": 212,
@@ -39,6 +392,45 @@
 			"isStaleEdit": false,
 			"note_tweet": {
 				"id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTE3NjA2OTI5NjE4ODc4NDY0"
+			}
+		},
+		"2123206230680199356": {
+			"__typename": "Tweet",
+			"favorite_count": 90,
+			"lang": "en",
+			"created_at": "2026-11-19T00:06:27.000Z",
+			"display_text_range": [0, 276],
+			"entities": {
+				"symbols": [
+					{
+						"indices": [52, 56],
+						"text": "SPX"
+					}
+				]
+			},
+			"id_str": "2123206230680199356",
+			"text": "Nobody tells beginners this about tomorrow's open.\n\n$SPX closed at 7,324 tonight, and the options market has already priced 113.3 points of range either way for the next session. The floor dealers defend sits just 4.5 points above the lower halfway line, so a single weak hour",
+			"user": {
+				"id_str": "1097056216923164672",
+				"name": "Azraël",
+				"screen_name": "azrael_options",
+				"is_blue_verified": true,
+				"profile_image_shape": "Circle",
+				"verified": false,
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2084271896481157121/UH2W4yXf_normal.jpg"
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2123206230680199356"],
+				"editable_until_msecs": "1795050387000",
+				"edits_remaining": "5",
+				"is_edit_eligible": false
+			},
+			"conversation_count": 15,
+			"news_action_type": "conversation",
+			"isEdited": false,
+			"isStaleEdit": false,
+			"note_tweet": {
+				"id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTIzMjA2MjMwMzc0MDEwODgw"
 			}
 		},
 		"2119831983610274251": {
@@ -198,6 +590,167 @@
 				}
 			],
 			"conversation_count": 9,
+			"news_action_type": "conversation",
+			"isEdited": false,
+			"isStaleEdit": false
+		},
+		"2121315732327964882": {
+			"__typename": "Tweet",
+			"favorite_count": 18,
+			"lang": "en",
+			"possibly_sensitive": false,
+			"created_at": "2026-11-13T18:54:17.000Z",
+			"display_text_range": [0, 138],
+			"entities": {
+				"media": [
+					{
+						"display_url": "pic.x.com/n4jLwpsPeU",
+						"expanded_url": "https://x.com/kiantrades/status/2121315732327964882/photo/1",
+						"indices": [139, 162],
+						"url": "https://t.co/n4jLwpsPeU"
+					}
+				],
+				"symbols": [
+					{
+						"indices": [82, 86],
+						"text": "SPY"
+					}
+				]
+			},
+			"id_str": "2121315732327964882",
+			"text": "update on the 0dte ETF filter. Streak was broken today. Whale bought $440k of the $SPY 752 puts for around 1.6/con. They are down over 60% https://t.co/n4jLwpsPeU",
+			"user": {
+				"id_str": "1414273270111559685",
+				"name": "Flowseidon",
+				"screen_name": "kiantrades",
+				"is_blue_verified": true,
+				"profile_image_shape": "Circle",
+				"verified": false,
+				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2085123741236031488/GKotSM4g_normal.jpg"
+			},
+			"edit_control": {
+				"edit_tweet_ids": ["2121315732327964882"],
+				"editable_until_msecs": "1794599657000",
+				"edits_remaining": "5",
+				"is_edit_eligible": true
+			},
+			"mediaDetails": [
+				{
+					"display_url": "pic.x.com/n4jLwpsPeU",
+					"expanded_url": "https://x.com/kiantrades/status/2121315732327964882/photo/1",
+					"ext_media_availability": {
+						"status": "Available"
+					},
+					"indices": [139, 162],
+					"media_url_https": "https://pbs.twimg.com/media/HXBtPGIb0AAKFOl.png",
+					"original_info": {
+						"focus_rects": [
+							{
+								"h": 188,
+								"w": 336,
+								"x": 18,
+								"y": 0
+							},
+							{
+								"h": 188,
+								"w": 188,
+								"x": 92,
+								"y": 0
+							},
+							{
+								"h": 188,
+								"w": 165,
+								"x": 104,
+								"y": 0
+							},
+							{
+								"h": 188,
+								"w": 94,
+								"x": 139,
+								"y": 0
+							},
+							{
+								"h": 188,
+								"w": 438,
+								"x": 0,
+								"y": 0
+							}
+						],
+						"height": 188,
+						"width": 438
+					},
+					"sizes": {
+						"large": {
+							"h": 188,
+							"resize": "fit",
+							"w": 438
+						},
+						"medium": {
+							"h": 188,
+							"resize": "fit",
+							"w": 438
+						},
+						"small": {
+							"h": 188,
+							"resize": "fit",
+							"w": 438
+						},
+						"thumb": {
+							"h": 150,
+							"resize": "crop",
+							"w": 150
+						}
+					},
+					"type": "photo",
+					"url": "https://t.co/n4jLwpsPeU"
+				}
+			],
+			"photos": [
+				{
+					"backgroundColor": {
+						"red": 204,
+						"green": 214,
+						"blue": 221
+					},
+					"cropCandidates": [
+						{
+							"h": 188,
+							"w": 336,
+							"x": 18,
+							"y": 0
+						},
+						{
+							"h": 188,
+							"w": 188,
+							"x": 92,
+							"y": 0
+						},
+						{
+							"h": 188,
+							"w": 165,
+							"x": 104,
+							"y": 0
+						},
+						{
+							"h": 188,
+							"w": 94,
+							"x": 139,
+							"y": 0
+						},
+						{
+							"h": 188,
+							"w": 438,
+							"x": 0,
+							"y": 0
+						}
+					],
+					"expandedUrl": "https://x.com/kiantrades/status/2121315732327964882/photo/1",
+					"url": "https://pbs.twimg.com/media/HXBtPGIb0AAKFOl.png",
+					"width": 438,
+					"height": 188
+				}
+			],
+			"conversation_count": 6,
 			"news_action_type": "conversation",
 			"isEdited": false,
 			"isStaleEdit": false
@@ -374,45 +927,6 @@
 			"news_action_type": "conversation",
 			"isEdited": false,
 			"isStaleEdit": false
-		},
-		"2119253983143276647": {
-			"__typename": "Tweet",
-			"favorite_count": 50,
-			"lang": "en",
-			"created_at": "2026-11-08T02:21:38.000Z",
-			"display_text_range": [0, 276],
-			"entities": {
-				"symbols": [
-					{
-						"indices": [28, 32],
-						"text": "SPX"
-					}
-				]
-			},
-			"id_str": "2119253983143276647",
-			"text": "The Monday expected move on $SPX is one division. Most traders will never run it.\n\nMonday's priced day ranks in the 98th percentile of the last 60 sessions. An SPX-size at-the-money straddle costs about 11,879 dollars at the 9:30 AM bell.\n\nThey see \"a 7,377 close and a VIX at",
-			"user": {
-				"id_str": "1097056216923164672",
-				"name": "Azraël",
-				"screen_name": "azrael_options",
-				"is_blue_verified": true,
-				"profile_image_shape": "Circle",
-				"verified": false,
-				"profile_image_url_https": "https://pbs.twimg.com/profile_images/2084271896481157121/UH2W4yXf_normal.jpg"
-			},
-			"edit_control": {
-				"edit_tweet_ids": ["2119253983143276647"],
-				"editable_until_msecs": "1794108098000",
-				"edits_remaining": "5",
-				"is_edit_eligible": false
-			},
-			"conversation_count": 8,
-			"news_action_type": "conversation",
-			"isEdited": false,
-			"isStaleEdit": false,
-			"note_tweet": {
-				"id": "Tm90ZVR3ZWV0UmVzdWx0czoyMTE5MjUzOTgyNzM2NDY1OTIw"
-			}
 		}
 	}
 }
