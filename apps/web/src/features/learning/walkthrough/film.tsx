@@ -87,9 +87,17 @@ export function shotStill(
 	);
 }
 
+/**
+ * The width a film is laid out at. Its svg fills the column whatever that width is, so a
+ * layout width other than the column's scales the whole frame: a column wider than 820 px
+ * shows the 820 px layout enlarged, and one narrower than the phone layout the audit covers
+ * shows that layout reduced, type included, instead of a tighter layout nobody has checked.
+ * The audited phone layout is 354 px wide: a 390 px window's column, inside the frame's border.
+ */
+const PHONE_LAYOUT = 354;
 const stageWidth = (element: HTMLElement) => {
 	const next = Math.round(element.clientWidth);
-	return next > 0 ? Math.max(280, Math.min(next, 820)) : null;
+	return next > 0 ? Math.max(PHONE_LAYOUT, Math.min(next, 820)) : null;
 };
 
 /**
