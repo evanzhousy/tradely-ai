@@ -248,6 +248,20 @@ function Scene({
 	const rowY = (i: number) =>
 		H * (narrow ? 0.34 : 0.3) + i * H * (narrow ? 0.12 : 0.115);
 	const { figure, figX, longX, inputsX } = signComparison(L);
+	// "same inputs" stands between the two results where, at `inputsX`, it clears each by a
+	// small-type gutter. Where it can't (English on a phone, where it ran into "+$665k"), it
+	// takes its own line under them, centred in their gap. Its width counts the tag's 0.12 em
+	// tracking.
+	const sameInputs = t(copy.sameInputs);
+	const shortLeft = figX - textWidth(money(-LONG), figure * 1.5);
+	const sameInputsHalf =
+		(textWidth(sameInputs, T.small) + [...sameInputs].length * T.small * 0.12) /
+		2;
+	const inputsBelow =
+		Math.min(
+			inputsX - sameInputsHalf - longX,
+			shortLeft - (inputsX + sameInputsHalf),
+		) < T.small;
 	// The figures close to their tags, so each row reads as one line.
 	const tagX = L.margin;
 	const shareLabel = (text: string) =>
@@ -654,12 +668,12 @@ function Scene({
 				</Word>
 				<Word
 					name="c-same-inputs"
-					x={inputsX}
-					y={rowY(4) + figure * 2}
+					x={inputsBelow ? (longX + shortLeft) / 2 : inputsX}
+					y={rowY(4) + figure * 2 + (inputsBelow ? T.small * 1.7 : 0)}
 					size={T.small}
 					className="wt-film-tag"
 				>
-					{t(copy.sameInputs)}
+					{sameInputs}
 				</Word>
 			</g>
 			<Lines
