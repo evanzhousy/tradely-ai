@@ -24,7 +24,6 @@ import {
 	toneColor,
 	Word,
 } from "../walkthrough/film-kit";
-import { textWidth } from "../walkthrough/text-measure";
 import {
 	CALL_COST,
 	call100,
@@ -253,34 +252,6 @@ function Scene({
 	const unitY = H * 0.3 + T.big * 1.05 + lotSide / 2 + T.body * 1.9;
 	const unitX =
 		W / 2 - (lotSide + 12 + sansWidth(pick(copy.unit, locale), T.body)) / 2;
-	// On a stage narrower than a phone's (an assistant's lesson view), two things give way so
-	// nothing meets the frame's edge or a line. The uses meter's second column moves left
-	// until its widest tag keeps a 12 px side gutter.
-	const tagRoom = Math.max(
-		...[copy.withPut, copy.protectPremium].map(
-			(tag) =>
-				textWidth(t(tag).toUpperCase(), T.small) +
-				t(tag).length * T.small * 0.12,
-		),
-	);
-	const usesCol = narrow
-		? Math.min(L.meterCol, W - margin - tagRoom - 12)
-		: L.meterCol;
-	// And the premium's label backs away from the put line, which comes down through the
-	// corner the label sits in.
-	const putAtLabel = L.x(
-		put100.strike -
-			(PREMIUM + ((T.small + 10) * VALUE_TOP) / (L.bottom - L.top)) / 100,
-	);
-	const premiumX = narrow
-		? Math.max(
-				14,
-				Math.min(
-					L.left + 4,
-					putAtLabel - 10 - textWidth(t(copy.premium), T.small),
-				),
-			)
-		: L.right - 4;
 	const headline = (name: string, text: Copy, short: Copy) => (
 		<Lines
 			name={name}
@@ -403,7 +374,7 @@ function Scene({
 							data-f="premium-label"
 							// At the line's right end; on a phone at its left, where the value bar
 							// under the $110 marker does not reach.
-							x={premiumX}
+							x={narrow ? L.left + 4 : L.right - 4}
 							y={L.y(PREMIUM) - 8}
 							textAnchor={narrow ? "start" : "end"}
 							className="wt-small wt-halo"
@@ -626,8 +597,7 @@ function Scene({
 			).map(([group, cells]) => (
 				<g key={group} data-f={group}>
 					{cells.map(([name, tag, start, className], i) => {
-						const column =
-							margin + i * (group === "umeter" ? usesCol : L.meterCol);
+						const column = margin + i * L.meterCol;
 						return (
 							<g key={name}>
 								<Word
